@@ -1,0 +1,50 @@
+name: Autonomous Agent Full Workflow
+
+on:
+  pull_request:
+    types: [opened, synchronize, ready_for_review]
+  push:
+    branches: [main]
+
+jobs:
+  workflow:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: Gather context
+        run: python .github/scripts/gather_context.py
+
+      - name: Run AI agent
+        run: python .github/scripts/ai_agent_main.py --context examples/context.json
+
+      - name: Enforce policy
+        run: python .github/scripts/check_policy.py
+
+      - name: Run tests
+        run: python .github/scripts/test_runner.py
+
+      - name: Generate documentation
+        run: python .github/scripts/docgen.py
+
+      - name: Handle errors and branching
+        run: python .github/scripts/error_handler.py
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: outputs
+          path: |
+            results.json
+            audit.log
+            diagrams/
