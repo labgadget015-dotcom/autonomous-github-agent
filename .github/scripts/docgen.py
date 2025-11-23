@@ -1,4 +1,4 @@
-docgen.py#!/usr/bin/env python3
+#!/usr/bin/env python3
 """Documentation generator for automated documentation."""
 
 import sys
