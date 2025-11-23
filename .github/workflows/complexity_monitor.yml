@@ -1,0 +1,256 @@
+name: Code Complexity Monitoring
+
+on:
+  pull_request:
+    types: [opened, synchronize, ready_for_review]
+  push:
+    branches: [main, develop]
+  schedule:
+    - cron: '0 3 * * 1'  # Weekly on Monday at 3 AM
+  workflow_dispatch:
+
+env:
+  PYTHON_VERSION: '3.11'
+  MAX_CYCLOMATIC_COMPLEXITY: 10
+  MAX_MAINTAINABILITY_INDEX: 20  # Below 20 is considered problematic
+
+jobs:
+  radon-complexity-analysis:
+    name: Radon Complexity Analysis
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # For comparing with base branch
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+      
+      - name: Install dependencies
+        run: |
+          pip install radon
+      
+      - name: Run Radon Cyclomatic Complexity
+        id: radon_cc
+        run: |
+          mkdir -p reports
+          radon cc .github/scripts -a -s -j > reports/radon-cc.json
+          echo "## Cyclomatic Complexity Report" > reports/radon-summary.md
+          radon cc .github/scripts -a -s >> reports/radon-summary.md
+        continue-on-error: true
+      
+      - name: Run Radon Maintainability Index
+        run: |
+          echo "\n## Maintainability Index" >> reports/radon-summary.md
+          radon mi .github/scripts -s >> reports/radon-summary.md
+          radon mi .github/scripts -j > reports/radon-mi.json
+        continue-on-error: true
+      
+      - name: Run Radon Raw Metrics
+        run: |
+          echo "\n## Raw Metrics" >> reports/radon-summary.md
+          radon raw .github/scripts -s >> reports/radon-summary.md
+          radon raw .github/scripts -j > reports/radon-raw.json
+        continue-on-error: true
+      
+      - name: Run Radon Halstead Complexity
+        run: |
+          echo "\n## Halstead Complexity" >> reports/radon-summary.md
+          radon hal .github/scripts -f >> reports/radon-summary.md
+        continue-on-error: true
+      
+      - name: Parse complexity and check thresholds
+        id: check_complexity
+        run: |
+          python3 << 'EOF'
+          import json
+          import sys
+          import os
+          
+          try:
+              # Parse Cyclomatic Complexity
+              with open('reports/radon-cc.json') as f:
+                  cc_data = json.load(f)
+              
+              high_complexity_files = []
+              max_cc = int(os.getenv('MAX_CYCLOMATIC_COMPLEXITY', '10'))
+              
+              for filepath, metrics in cc_data.items():
+                  for metric in metrics:
+                      if metric.get('complexity', 0) > max_cc:
+                          high_complexity_files.append({
+                              'file': filepath,
+                              'function': metric.get('name'),
+                              'complexity': metric.get('complexity'),
+                              'lineno': metric.get('lineno')
+                          })
+              
+              print(f"\n📊 Complexity Analysis Results:")
+              print(f"  High complexity functions found: {len(high_complexity_files)}")
+              
+              if high_complexity_files:
+                  print("\n🔴 Functions exceeding complexity threshold:")
+                  for item in high_complexity_files[:10]:  # Show top 10
+                      print(f"  - {item['function']} in {item['file']}: {item['complexity']}")
+                  
+                  # Set output for PR comment
+                  with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+                      f.write(f"high_complexity_count={len(high_complexity_files)}\n")
+              
+              # Parse Maintainability Index
+              with open('reports/radon-mi.json') as f:
+                  mi_data = json.load(f)
+              
+              low_maintainability = []
+              max_mi = int(os.getenv('MAX_MAINTAINABILITY_INDEX', '20'))
+              
+              for filepath, metrics in mi_data.items():
+                  mi = metrics.get('mi', 100)
+                  if mi < max_mi:
+                      low_maintainability.append({
+                          'file': filepath,
+                          'mi': mi,
+                          'rank': metrics.get('rank')
+                      })
+              
+              if low_maintainability:
+                  print(f"\n⚠️  Files with low maintainability: {len(low_maintainability)}")
+                  for item in low_maintainability[:5]:
+                      print(f"  - {item['file']}: MI={item['mi']:.2f} (Rank: {item['rank']})")
+              
+              print("\n✅ Complexity analysis complete.")
+              
+          except Exception as e:
+              print(f"Error during complexity analysis: {e}")
+              sys.exit(0)
+          EOF
+      
+      - name: Upload Radon reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: radon-complexity-reports
+          path: reports/
+          retention-days: 30
+      
+      - name: Comment complexity issues on PR
+        if: github.event_name == 'pull_request' && steps.check_complexity.outputs.high_complexity_count != ''
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            
+            let comment = '## 📊 Code Complexity Analysis\n\n';
+            
+            try {
+              const summary = fs.readFileSync('reports/radon-summary.md', 'utf8');
+              const ccData = JSON.parse(fs.readFileSync('reports/radon-cc.json', 'utf8'));
+              
+              let highComplexityFuncs = [];
+              for (const [filepath, metrics] of Object.entries(ccData)) {
+                for (const metric of metrics) {
+                  if (metric.complexity > 10) {
+                    highComplexityFuncs.push({
+                      file: filepath,
+                      name: metric.name,
+                      complexity: metric.complexity,
+                      lineno: metric.lineno
+                    });
+                  }
+                }
+              }
+              
+              if (highComplexityFuncs.length > 0) {
+                comment += `### ⚠️ High Complexity Functions Detected\n\n`;
+                comment += `Found ${highComplexityFuncs.length} function(s) exceeding complexity threshold of 10:\n\n`;
+                comment += '| Function | File | Complexity | Line |\n';
+                comment += '|----------|------|------------|------|\n';
+                
+                highComplexityFuncs.slice(0, 10).forEach(func => {
+                  comment += `| \`${func.name}\` | \`${func.file}\` | ${func.complexity} | ${func.lineno} |\n`;
+                });
+                
+                comment += '\n**Recommendation:** Consider refactoring these functions to improve maintainability.\n';
+              } else {
+                comment += '✅ All functions are within acceptable complexity thresholds.\n';
+              }
+              
+              comment += '\n---\n';
+              comment += '*View detailed complexity reports in the Actions artifacts.*';
+              
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: comment
+              });
+            } catch (e) {
+              console.log('Error creating complexity comment:', e);
+            }
+  
+  create-complexity-issue:
+    name: Create Issue for High Complexity
+    runs-on: ubuntu-latest
+    needs: [radon-complexity-analysis]
+    if: failure() && github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Download Radon reports
+        uses: actions/download-artifact@v4
+        with:
+          name: radon-complexity-reports
+          path: reports/
+      
+      - name: Create GitHub issue for complexity problems
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            
+            try {
+              const ccData = JSON.parse(fs.readFileSync('reports/radon-cc.json', 'utf8'));
+              
+              let highComplexityFuncs = [];
+              for (const [filepath, metrics] of Object.entries(ccData)) {
+                for (const metric of metrics) {
+                  if (metric.complexity > 15) {  // Critical threshold
+                    highComplexityFuncs.push({
+                      file: filepath,
+                      name: metric.name,
+                      complexity: metric.complexity,
+                      lineno: metric.lineno
+                    });
+                  }
+                }
+              }
+              
+              if (highComplexityFuncs.length > 0) {
+                let body = '## 🔴 Critical Code Complexity Issues\n\n';
+                body += `Found ${highComplexityFuncs.length} function(s) with critically high complexity (>15):\n\n`;
+                
+                highComplexityFuncs.forEach((func, idx) => {
+                  body += `### ${idx + 1}. \`${func.name}\`\n`;
+                  body += `**File:** \`${func.file}:${func.lineno}\`\n`;
+                  body += `**Cyclomatic Complexity:** ${func.complexity}\n\n`;
+                });
+                
+                body += '\n---\n';
+                body += '**Action Required:** These functions require immediate refactoring to improve code quality and maintainability.\n\n';
+                body += `[View Full Report](${context.payload.repository.html_url}/actions/runs/${context.runId})`;
+                
+                github.rest.issues.create({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  title: `🔴 Critical Code Complexity Issues - ${new Date().toISOString().split('T')[0]}`,
+                  body: body,
+                  labels: ['code-quality', 'complexity', 'automated']
+                });
+              }
+            } catch (e) {
+              console.log('Error creating issue:', e);
+            }
