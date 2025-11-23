@@ -26,8 +26,7 @@ jobs:
         run: python .github/scripts/gather_context.py
 
       - name: Run AI agent
-        run: python .github/scripts/ai_agent_main.py --context examples/context.json
-
+      run: python .github/scripts/ai_agent_main.py --context context.json
       - name: Enforce policy
         run: python .github/scripts/check_policy.py
 
