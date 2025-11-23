@@ -1,0 +1,136 @@
+# Policy Configuration for Autonomous GitHub Agent
+# This file defines security policies, code quality standards, and operational rules
+
+security:
+  # Vulnerability scanning thresholds
+  vulnerability_severity:
+    block_on:
+      - CRITICAL
+      - HIGH
+    warn_on:
+      - MEDIUM
+    ignore:
+      - LOW
+      - INFORMATIONAL
+  
+  # Dependency scanning
+  dependency_check:
+    enabled: true
+    auto_update: false  # Manual review required
+    allowed_licenses:
+      - MIT
+      - Apache-2.0
+      - BSD-3-Clause
+      - ISC
+    blocked_licenses:
+      - GPL-3.0
+      - AGPL-3.0
+
+  # Secret scanning
+  secrets:
+    block_commit: true
+    patterns:
+      - "(?i)(api[_-]?key|apikey)\\s*[:=]\\s*['\"]?[a-zA-Z0-9]{20,}"
+      - "(?i)(secret|password)\\s*[:=]\\s*['\"]?[a-zA-Z0-9]{8,}"
+      - "(?i)(token)\\s*[:=]\\s*['\"]?[a-zA-Z0-9]{20,}"
+
+code_quality:
+  # Python standards
+  python:
+    min_coverage: 80  # Minimum test coverage percentage
+    max_complexity: 10  # Maximum cyclomatic complexity
+    max_line_length: 120
+    enforce_type_hints: true
+    
+  # Code quality tools
+  tools:
+    flake8:
+      enabled: true
+      max_violations: 0
+    black:
+      enabled: true
+      line_length: 120
+    mypy:
+      enabled: true
+      strict: true
+    pylint:
+      enabled: true
+      min_score: 8.0
+    bandit:
+      enabled: true
+      severity: medium
+
+  # Pre-commit hooks
+  pre_commit:
+    enabled: true
+    auto_fix: true
+
+testing:
+  # Test requirements
+  requirements:
+    min_coverage: 80
+    require_unit_tests: true
+    require_integration_tests: false
+  
+  # Test execution
+  execution:
+    parallel: true
+    timeout: 300  # seconds
+    retry_failed: 2
+
+documentation:
+  # Documentation requirements
+  requirements:
+    require_docstrings: true
+    require_readme: true
+    require_changelog: true
+  
+  # Auto-generation
+  auto_generate:
+    api_docs: true
+    architecture_diagram: true
+    coverage_badge: true
+
+workflow:
+  # CI/CD behavior
+  ci_cd:
+    cache_dependencies: true
+    parallel_jobs: true
+    matrix_testing: true
+    
+  # Pull request rules
+  pull_request:
+    require_review: false  # Set to true in production
+    auto_merge: false
+    require_passing_tests: true
+    require_updated_docs: true
+  
+  # Notifications
+  notifications:
+    on_failure: true
+    on_success: false
+    channels:
+      - github_issue
+
+ai_agent:
+  # Chain-of-Thought template selection
+  cot_selection:
+    auto_select: true
+    complexity_thresholds:
+      simple: 0.3  # Use zero-shot or few-shot
+      moderate: 0.6  # Use step-back or analogical
+      complex: 1.0  # Use compositional or multimodal
+  
+  # Agent behavior
+  behavior:
+    max_retries: 3
+    timeout: 600  # seconds
+    log_level: INFO
+    
+  # Safety controls
+  safety:
+    require_human_approval:
+      - delete_operations
+      - production_deployments
+      - security_changes
+    auto_rollback: true
