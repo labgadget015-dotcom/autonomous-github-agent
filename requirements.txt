@@ -9,11 +9,17 @@ json5>=0.9.0
 # Testing
 pytest>=7.4.0
 pytest-cov>=4.1.0
+pytest-xdist>=3.3.0  # Parallel test execution
+pytest-asyncio>=0.21.0  # Async test support
 
 # Code Quality
 flake8>=6.1.0
 black>=23.0.0
 mypy>=1.5.0
+pylint>=3.0.0  # Additional static analysis
+bandit>=1.7.5  # Security vulnerability scanning
+radon>=6.0.1  # Code complexity metrics
+isort>=5.12.0  # Import sorting
 
 # Workflow Orchestration
 prefect>=2.13.0
@@ -24,3 +30,19 @@ PyGithub>=2.1.0
 # Documentation
 mkdocs>=1.5.0
 mkdocs-material>=9.4.0
+
+# Pre-commit hooks
+pre-commit>=3.5.0
+
+# Code coverage badges
+coverage>=7.3.0
+coverage-badge>=1.1.0
+
+# Performance and monitoring
+psutil>=5.9.0  # System metrics
+prometheus-client>=0.18.0  # Prometheus exporter
+
+# Utilities
+colorama>=0.4.6  # Colored terminal output
+click>=8.1.0  # CLI tool support
+rich>=13.0.0  # Rich terminal output
