@@ -1,0 +1,13 @@
+[
+  {
+    "Project/Agent": "[Enter Name]",
+    "Objective + Leverage": "[Describe compounding outcomes, downstream benefits]",
+    "Automation": "[Manual tasks identified, automated, idempotency]",
+    "Interoperability & Reuse": "[Modular design, docs, reusable components]",
+    "Feedback Loops": "[Observability, metrics, adaptive feedback]",
+    "Benchmarking": "[Benchmarks, playbook codification]",
+    "Ecosystem Leverage": "[External collab, OSS ready]",
+    "Inspiration & Culture": "['What if?' mindset, radical alternatives reviewed]",
+    "Status/Notes": "[Ready/In Progress/Blocked/Notes]"
+  }
+]
