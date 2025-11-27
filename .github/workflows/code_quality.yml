@@ -1,5 +1,12 @@
 name: Code Quality Analysis
 
+# Permissions needed for SARIF uploads and creating issues
+permissions:
+  contents: read
+  security-events: write
+  issues: write
+  pull-requests: write
+
 on:
   pull_request:
     types: [opened, synchronize, ready_for_review]
@@ -11,17 +18,20 @@ on:
 
 env:
   PYTHON_VERSION: '3.11'
-  CACHE_VERSION: v1
+  CACHE_VERSION: v2
+  QUALITY_THRESHOLD: 7.0  # Minimum code quality score
+  COMPLEXITY_THRESHOLD: 10  # Maximum cyclomatic complexity
 
 jobs:
-  # Job 1: Parallel Static Analysis
+  # Job 1: Parallel Static Analysis with async execution
   static-analysis:
-    name: Static Analysis (Pylint, Flake8, MyPy)
+    name: Static Analysis (${{ matrix.tool }})
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        tool: [pylint, flake8, mypy]
+        tool: [pylint, flake8, mypy, bandit]
       fail-fast: false
+      max-parallel: 4  # Run all 4 tools in parallel
     
     steps:
       - name: Checkout code
@@ -34,9 +44,11 @@ jobs:
           cache: 'pip'
       
       - name: Cache dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
-          path: ~/.cache/pip
+          path: |
+            ~/.cache/pip
+            .mypy_cache
           key: ${{ runner.os }}-pip-${{ env.CACHE_VERSION }}-${{ hashFiles('**/requirements.txt') }}
           restore-keys: |
             ${{ runner.os }}-pip-${{ env.CACHE_VERSION }}-
@@ -45,29 +57,38 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+          pip install pylint flake8 mypy bandit radon
       
       - name: Run Pylint
         if: matrix.tool == 'pylint'
         run: |
           mkdir -p reports
           pylint .github/scripts --output-format=json > reports/pylint-report.json || true
-          pylint .github/scripts --output-format=text
+          pylint .github/scripts --output-format=text --exit-zero
         continue-on-error: true
       
       - name: Run Flake8
         if: matrix.tool == 'flake8'
         run: |
           mkdir -p reports
-          flake8 .github/scripts --format=json --output-file=reports/flake8-report.json || true
-          flake8 .github/scripts --show-source --statistics
+          flake8 .github/scripts --format=json --output-file=reports/flake8-report.json --exit-zero
+          flake8 .github/scripts --show-source --statistics --exit-zero
         continue-on-error: true
       
       - name: Run MyPy
         if: matrix.tool == 'mypy'
         run: |
           mkdir -p reports
-          mypy .github/scripts --json-report reports/mypy || true
-          mypy .github/scripts
+          mypy .github/scripts --json-report reports/mypy --ignore-missing-imports --no-error-summary || true
+          mypy .github/scripts --ignore-missing-imports || true
+        continue-on-error: true
+      
+      - name: Run Bandit
+        if: matrix.tool == 'bandit'
+        run: |
+          mkdir -p reports
+          bandit -r .github/scripts -f json -o reports/bandit-report.json --exit-zero
+          bandit -r .github/scripts -ll --exit-zero
         continue-on-error: true
       
       - name: Upload analysis results
@@ -77,7 +98,40 @@ jobs:
           path: reports/
           retention-days: 30
 
-  # Job 2: Code Formatting Check
+  # Job 2: Code Complexity Analysis with Radon
+  complexity-analysis:
+    name: Code Complexity (Radon)
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      
+      - name: Install Radon
+        run: pip install radon
+      
+      - name: Run Radon complexity analysis
+        run: |
+          mkdir -p reports
+          radon cc .github/scripts -a -j > reports/radon-cc.json || true
+          radon cc .github/scripts -a --total-average
+          radon mi .github/scripts -j > reports/radon-mi.json || true
+          radon mi .github/scripts
+        continue-on-error: true
+      
+      - name: Upload complexity reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: radon-complexity-report
+          path: reports/
+          retention-days: 30
+
+  # Job 3: Code Formatting Check
   formatting:
     name: Code Formatting (Black, isort)
     runs-on: ubuntu-latest
@@ -93,36 +147,21 @@ jobs:
           cache: 'pip'
       
       - name: Install dependencies
-        run: |
-          pip install black isort
+        run: pip install black isort
       
       - name: Check with Black
-        run: |
-          black --check --diff .github/scripts
+        run: black --check --diff .github/scripts
         continue-on-error: true
       
       - name: Check with isort
-        run: |
-          isort --check-only --diff .github/scripts
+        run: isort --check-only --diff .github/scripts
         continue-on-error: true
-      
-      - name: Comment formatting issues
-        if: failure() && github.event_name == 'pull_request'
-        uses: actions/github-script@v7
-        with:
-          script: |
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: '⚠️ Code formatting issues detected. Run `black .` and `isort .` to fix.'
-            })
 
-  # Job 3: Aggregate Results
+  # Job 4: Aggregate Results and Comment on PR
   aggregate:
     name: Aggregate Quality Metrics
     runs-on: ubuntu-latest
-    needs: [static-analysis, formatting]
+    needs: [static-analysis, complexity-analysis, formatting]
     if: always()
     
     steps:
@@ -140,39 +179,134 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
       
       - name: Install dependencies
-        run: |
-          pip install rich click
+        run: pip install rich click
       
-      - name: Generate summary
+      - name: Generate comprehensive summary
+        id: generate-summary
         run: |
-          python -c "
-import json
-import os
-from pathlib import Path
+          python3 << 'PYTHON_SCRIPT'
+          import json
+          import os
+          from pathlib import Path
+          import sys
 
-reports_dir = Path('reports')
-summary = []
-summary.append('# 📊 Code Quality Summary')
-summary.append('')
-
-for tool_dir in reports_dir.iterdir():
-    if tool_dir.is_dir():
-        summary.append(f'## {tool_dir.name.upper()}')
-        for report_file in tool_dir.iterdir():
-            if report_file.suffix == '.json':
-                try:
-                    with open(report_file) as f:
-                        data = json.load(f)
-                    summary.append(f'- Report found: {report_file.name}')
-                except:
-                    summary.append(f'- Error reading: {report_file.name}')
-        summary.append('')
-
-with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as f:
-    f.write('\\n'.join(summary))
-          "
+          reports_dir = Path('reports')
+          summary = []
+          summary.append('# 📊 Code Quality Analysis Summary')
+          summary.append('')
+          
+          quality_score = 10.0
+          issues_found = {}
+          
+          # Parse all reports
+          for tool_dir in reports_dir.iterdir():
+              if tool_dir.is_dir():
+                  tool_name = tool_dir.name.replace('-report', '').upper()
+                  summary.append(f'## {tool_name}')
+                  
+                  for report_file in tool_dir.iterdir():
+                      if report_file.suffix == '.json':
+                          try:
+                              with open(report_file) as f:
+                                  data = json.load(f)
+                                  
+                                  if 'pylint' in report_file.name:
+                                      issues = len(data) if isinstance(data, list) else 0
+                                      issues_found['pylint'] = issues
+                                      summary.append(f'- **Issues found:** {issues}')
+                                      
+                                  elif 'flake8' in report_file.name:
+                                      issues = len(data) if isinstance(data, list) else 0
+                                      issues_found['flake8'] = issues
+                                      summary.append(f'- **Issues found:** {issues}')
+                                      
+                                  elif 'bandit' in report_file.name:
+                                      results = data.get('results', [])
+                                      high = len([r for r in results if r.get('issue_severity') == 'HIGH'])
+                                      medium = len([r for r in results if r.get('issue_severity') == 'MEDIUM'])
+                                      low = len([r for r in results if r.get('issue_severity') == 'LOW'])
+                                      issues_found['bandit'] = {'high': high, 'medium': medium, 'low': low}
+                                      summary.append(f'- 🔴 **HIGH:** {high}')
+                                      summary.append(f'- 🟡 **MEDIUM:** {medium}')
+                                      summary.append(f'- 🟢 **LOW:** {low}')
+                                      
+                                  elif 'radon' in report_file.name:
+                                      summary.append(f'- **Report:** {report_file.name}')
+                                      
+                          except Exception as e:
+                              summary.append(f'- ⚠️ Error reading {report_file.name}: {str(e)}')
+                  summary.append('')
+          
+          # Calculate overall quality score
+          pylint_issues = issues_found.get('pylint', 0)
+          flake8_issues = issues_found.get('flake8', 0)
+          bandit_data = issues_found.get('bandit', {})
+          
+          quality_score -= min(pylint_issues * 0.1, 3.0)
+          quality_score -= min(flake8_issues * 0.1, 3.0)
+          quality_score -= min(bandit_data.get('high', 0) * 1.0, 2.0)
+          quality_score -= min(bandit_data.get('medium', 0) * 0.3, 1.0)
+          
+          summary.append(f'## Overall Quality Score: {quality_score:.1f}/10.0')
+          summary.append('')
+          
+          # Check thresholds
+          threshold = float(os.getenv('QUALITY_THRESHOLD', '7.0'))
+          if quality_score < threshold:
+              summary.append(f'❌ **Quality score {quality_score:.1f} is below threshold {threshold}**')
+              summary.append('Please address the issues above before merging.')
+              sys.exit(1)
+          else:
+              summary.append(f'✅ **Quality score {quality_score:.1f} meets threshold {threshold}**')
+          
+          # Write to GitHub Step Summary
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as f:
+              f.write('\\n'.join(summary))
+          
+          # Save summary for PR comment
+          with open('quality-summary.md', 'w') as f:
+              f.write('\\n'.join(summary))
+          
+          print('\\n'.join(summary))
+          PYTHON_SCRIPT
       
-      - name: Check quality thresholds
-        run: |
-          echo "Checking quality thresholds..."
-          echo "All checks passed!"
+      - name: Comment on PR with quality metrics
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            
+            try {
+              const summary = fs.readFileSync('quality-summary.md', 'utf8');
+              
+              await github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: summary + '\\n\\n---\\n*Automated quality analysis. View full details in the [Actions tab](' + context.payload.repository.html_url + '/actions/runs/' + context.runId + ').*'
+              });
+            } catch (e) {
+              console.log('Could not post comment:', e);
+            }
+      
+      - name: Create issue if quality below threshold
+        if: failure() && github.ref == 'refs/heads/main'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            
+            try {
+              const summary = fs.readFileSync('quality-summary.md', 'utf8');
+              
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: `⚠️ Code Quality Below Threshold - ${new Date().toISOString().split('T')[0]}`,
+                body: summary + '\\n\\n---\\n**Action Required:** Code quality has fallen below acceptable thresholds.\\n[View Full Report](' + context.payload.repository.html_url + '/actions/runs/' + context.runId + ')',
+                labels: ['code-quality', 'automated', 'urgent']
+              });
+            } catch (e) {
+              console.log('Could not create issue:', e);
+            }
