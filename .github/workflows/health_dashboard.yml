@@ -1,0 +1,282 @@
+name: Automated Health Dashboard & Reporting
+
+# Comprehensive daily/weekly repository health reporting
+# Aggregates metrics from all workflows and generates dashboard
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+on:
+  schedule:
+    - cron: '0 8 * * *'  # Daily at 8 AM UTC
+    - cron: '0 8 * * 1'  # Weekly on Monday at 8 AM UTC
+  workflow_dispatch:
+  workflow_run:
+    workflows: ["Code Quality Analysis", "Test Coverage & Multi-Version Testing", "Enhanced Security Scanning"]
+    types:
+      - completed
+
+env:
+  PYTHON_VERSION: '3.11'
+
+jobs:
+  aggregate-metrics:
+    name: Aggregate All Metrics
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      
+      - name: Install dependencies
+        run: |
+          pip install requests PyGithub rich tabulate matplotlib pandas
+      
+      - name: Fetch workflow metrics
+        id: fetch-metrics
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python3 << 'PYTHON_SCRIPT'
+          import os
+          import json
+          import requests
+          from datetime import datetime, timedelta
+          from github import Github
+          
+          # Initialize GitHub API
+          g = Github(os.environ['GITHUB_TOKEN'])
+          repo = g.get_repo(os.environ['GITHUB_REPOSITORY'])
+          
+          # Fetch recent workflow runs
+          workflows = repo.get_workflows()
+          
+          metrics = {
+              'timestamp': datetime.now().isoformat(),
+              'workflows': {},
+              'summary': {
+                  'total_runs': 0,
+                  'success_rate': 0,
+                  'avg_duration': 0,
+                  'failure_count': 0
+              }
+          }
+          
+          total_duration = 0
+          total_runs = 0
+          success_count = 0
+          
+          for workflow in workflows:
+              runs = workflow.get_runs()[:10]  # Last 10 runs
+              
+              if runs.totalCount > 0:
+                  workflow_metrics = {
+                      'name': workflow.name,
+                      'runs': runs.totalCount,
+                      'successes': sum(1 for r in runs if r.conclusion == 'success'),
+                      'failures': sum(1 for r in runs if r.conclusion == 'failure'),
+                      'avg_duration_sec': 0
+                  }
+                  
+                  durations = []
+                  for run in runs:
+                      if run.created_at and run.updated_at:
+                          duration = (run.updated_at - run.created_at).total_seconds()
+                          durations.append(duration)
+                  
+                  if durations:
+                      workflow_metrics['avg_duration_sec'] = sum(durations) / len(durations)
+                  
+                  metrics['workflows'][workflow.name] = workflow_metrics
+                  
+                  total_runs += workflow_metrics['runs']
+                  success_count += workflow_metrics['successes']
+                  total_duration += workflow_metrics['avg_duration_sec'] * workflow_metrics['runs']
+          
+          # Calculate summary
+          if total_runs > 0:
+              metrics['summary']['total_runs'] = total_runs
+              metrics['summary']['success_rate'] = round((success_count / total_runs) * 100, 2)
+              metrics['summary']['avg_duration'] = round(total_duration / total_runs, 2)
+              metrics['summary']['failure_count'] = total_runs - success_count
+          
+          # Save metrics
+          with open('metrics.json', 'w') as f:
+              json.dump(metrics, f, indent=2)
+          
+          print(f"Collected metrics from {len(metrics['workflows'])} workflows")
+          PYTHON_SCRIPT
+      
+      - name: Generate comprehensive dashboard
+        id: generate-dashboard
+        run: |
+          python3 << 'PYTHON_SCRIPT'
+          import json
+          import os
+          from datetime import datetime
+          
+          # Load metrics
+          with open('metrics.json') as f:
+              metrics = json.load(f)
+          
+          dashboard = []
+          dashboard.append('# 📊 Repository Health Dashboard')
+          dashboard.append(f'*Generated: {datetime.now().strftime("%Y-%m-%d %H:%M:%S UTC")}*')
+          dashboard.append('')
+          
+          # Summary section
+          summary = metrics['summary']
+          dashboard.append('## 🎯 Overall Health Metrics')
+          dashboard.append('')
+          dashboard.append(f'- **Total Workflow Runs:** {summary["total_runs"]}')
+          dashboard.append(f'- **Success Rate:** {summary["success_rate"]}%')
+          dashboard.append(f'- **Average Duration:** {summary["avg_duration"]:.0f}s')
+          dashboard.append(f'- **Failed Runs:** {summary["failure_count"]}')
+          dashboard.append('')
+          
+          # Status badge
+          if summary['success_rate'] >= 90:
+              status = '🟢 **Excellent**'
+          elif summary['success_rate'] >= 75:
+              status = '🟡 **Good**'
+          else:
+              status = '🔴 **Needs Attention**'
+          
+          dashboard.append(f'### Health Status: {status}')
+          dashboard.append('')
+          
+          # Individual workflow metrics
+          dashboard.append('## 📈 Workflow Performance')
+          dashboard.append('')
+          dashboard.append('| Workflow | Runs | Success | Failures | Avg Duration |')
+          dashboard.append('|----------|------|---------|----------|--------------|')
+          
+          for name, wf in metrics['workflows'].items():
+              success_pct = round((wf['successes'] / wf['runs'] * 100) if wf['runs'] > 0 else 0, 1)
+              duration_min = round(wf['avg_duration_sec'] / 60, 1)
+              dashboard.append(f"| {name[:40]} | {wf['runs']} | {wf['successes']} ({success_pct}%) | {wf['failures']} | {duration_min}m |")
+          
+          dashboard.append('')
+          
+          # Recommendations
+          dashboard.append('## 💡 Recommendations')
+          dashboard.append('')
+          
+          if summary['failure_count'] > 5:
+              dashboard.append('- ⚠️ High failure count detected. Review recent failed runs.')
+          
+          if summary['avg_duration'] > 600:
+              dashboard.append('- ⏱️ Average workflow duration is high. Consider optimizing CI/CD pipeline.')
+          
+          if summary['success_rate'] < 80:
+              dashboard.append('- 🔧 Success rate below 80%. Immediate attention required.')
+          
+          if summary['success_rate'] >= 90:
+              dashboard.append('- ✅ Excellent success rate! Keep up the good work.')
+          
+          dashboard.append('')
+          
+          # Footer
+          dashboard.append('---')
+          dashboard.append('*This dashboard is automatically updated daily and after each workflow run.*')
+          
+          # Write to file
+          dashboard_text = '\n'.join(dashboard)
+          with open('HEALTH_DASHBOARD.md', 'w') as f:
+              f.write(dashboard_text)
+          
+          # Also write to step summary
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'w') as f:
+              f.write(dashboard_text)
+          
+          print(dashboard_text)
+          PYTHON_SCRIPT
+      
+      - name: Update README with badges
+        run: |
+          python3 << 'PYTHON_SCRIPT'
+          import json
+          import re
+          
+          # Load metrics
+          with open('metrics.json') as f:
+              metrics = json.load(f)
+          
+          summary = metrics['summary']
+          
+          # Generate badge URLs
+          success_rate = summary['success_rate']
+          
+          # Color coding for badges
+          if success_rate >= 90:
+              color = 'brightgreen'
+          elif success_rate >= 75:
+              color = 'yellow'
+          else:
+              color = 'red'
+          
+          badge_url = f"https://img.shields.io/badge/Health-{success_rate}%25-{color}"
+          
+          # Read current README
+          try:
+              with open('README.md', 'r') as f:
+                  readme = f.read()
+              
+              # Update or insert health badge
+              badge_markdown = f"![Health Status]({badge_url})"
+              
+              if '![Health Status]' in readme:
+                  # Update existing badge
+                  readme = re.sub(r'!\[Health Status\]\(.*?\)', badge_markdown, readme)
+              else:
+                  # Insert at top after title
+                  lines = readme.split('\n')
+                  if len(lines) > 0:
+                      lines.insert(1, f'\n{badge_markdown}\n')
+                      readme = '\n'.join(lines)
+              
+              with open('README.md', 'w') as f:
+                  f.write(readme)
+              
+              print("Updated README with health badge")
+          except FileNotFoundError:
+              print("README.md not found, skipping badge update")
+          PYTHON_SCRIPT
+      
+      - name: Commit dashboard updates
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add HEALTH_DASHBOARD.md README.md || true
+          git diff --quiet && git diff --staged --quiet || git commit -m "chore: Update health dashboard [skip ci]"
+          git push || true
+      
+      - name: Create weekly summary issue
+        if: github.event.schedule == '0 8 * * 1'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            
+            try {
+              const dashboard = fs.readFileSync('HEALTH_DASHBOARD.md', 'utf8');
+              
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: `📊 Weekly Health Report - ${new Date().toISOString().split('T')[0]}`,
+                body: dashboard + '\n\n---\n*Automated weekly health report. Review and take action on any recommendations.*',
+                labels: ['health-report', 'automated', 'weekly']
+              });
+              
+              console.log('Created weekly health report issue');
+            } catch (e) {
+              console.log('Error creating issue:', e);
+            }
