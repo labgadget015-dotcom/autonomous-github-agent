@@ -9,6 +9,11 @@ on:
       - '**.md'
       - 'docs/**'
 
+      # Cancel in-progress runs for the same PR
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   PYTHON_VERSION: '3.11'
   CACHE_VERSION: v1
