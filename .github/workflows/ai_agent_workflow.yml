@@ -43,6 +43,8 @@ jobs:
           path: |
             ~/.cache/pip
             ~/.local
+                        .pytest_cache/
+                                    .mypy_cache/
           key: ${{ runner.os }}-pip-${{ env.CACHE_VERSION }}-${{ hashFiles('requirements.txt') }}
           restore-keys: |
             ${{ runner.os }}-pip-${{ env.CACHE_VERSION }}-
