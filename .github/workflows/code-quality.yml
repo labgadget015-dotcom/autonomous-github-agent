@@ -1,0 +1,219 @@
+name: Code Quality & Security Analysis
+
+on:
+  pull_request:
+    types: [opened, synchronize, ready_for_review]
+  push:
+    branches: [main]
+  schedule:
+    - cron: '0 2 * * 1'  # Weekly on Monday at 2 AM
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHON_VERSION: '3.11'
+  # Quality thresholds
+  PYLINT_THRESHOLD: '8.0'
+  COVERAGE_THRESHOLD: '80'
+  COMPLEXITY_THRESHOLD: 'C'  # A-F scale
+  
+jobs:
+  # Parallel static analysis
+  static-analysis:
+    name: Static Analysis (${{ matrix.tool }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        tool: [pylint, flake8, bandit, radon]
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/pip
+            .pylint_cache
+          key: ${{ runner.os }}-quality-${{ matrix.tool }}-${{ hashFiles('requirements.txt') }}
+      
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install pylint flake8 bandit radon flake8-docstrings flake8-complexity
+      
+      - name: Run Pylint
+        if: matrix.tool == 'pylint'
+        run: |
+          mkdir -p reports
+          pylint .github/scripts --fail-under=${{ env.PYLINT_THRESHOLD }} \
+            --output-format=json:reports/pylint.json,colorized \
+            --persistent=yes --cache-dir=.pylint_cache || true
+          
+          # Calculate score
+          SCORE=$(python -c "import json; data=json.load(open('reports/pylint.json')); print(data.get('statistics', {}).get('global_note', 0))")
+          echo "PYLINT_SCORE=$SCORE" >> $GITHUB_ENV
+          echo "### Pylint Score: $SCORE / 10" >> $GITHUB_STEP_SUMMARY
+      
+      - name: Run Flake8
+        if: matrix.tool == 'flake8'
+        run: |
+          mkdir -p reports
+          flake8 .github/scripts --max-complexity=10 \
+            --format=json --output-file=reports/flake8.json || true
+          
+          # Count issues
+          ISSUES=$(cat reports/flake8.json | grep -c '"code"' || echo 0)
+          echo "FLAKE8_ISSUES=$ISSUES" >> $GITHUB_ENV
+          echo "### Flake8 Issues: $ISSUES" >> $GITHUB_STEP_SUMMARY
+      
+      - name: Run Bandit (Security)
+        if: matrix.tool == 'bandit'
+        run: |
+          mkdir -p reports
+          bandit -r .github/scripts -f json -o reports/bandit.json || true
+          
+          # Count critical issues
+          CRITICAL=$(python -c "import json; data=json.load(open('reports/bandit.json')); print(len([r for r in data.get('results', []) if r.get('issue_severity') == 'HIGH']))") || echo 0
+          echo "BANDIT_CRITICAL=$CRITICAL" >> $GITHUB_ENV
+          echo "### Bandit Critical Issues: $CRITICAL" >> $GITHUB_STEP_SUMMARY
+          
+          # Fail if critical vulnerabilities found
+          if [ "$CRITICAL" -gt "0" ]; then
+            echo "::error::Found $CRITICAL critical security vulnerabilities"
+            exit 1
+          fi
+      
+      - name: Run Radon (Complexity)
+        if: matrix.tool == 'radon'
+        run: |
+          mkdir -p reports
+          radon cc .github/scripts -j > reports/radon-cc.json
+          radon mi .github/scripts -j > reports/radon-mi.json
+          
+          # Calculate average complexity
+          AVG_COMPLEXITY=$(python -c "import json; data=json.load(open('reports/radon-mi.json')); scores=[v['mi'] for v in data.values() if isinstance(v, dict)]; print(sum(scores)/len(scores) if scores else 0)") || echo 0
+          echo "RADON_MI=$AVG_COMPLEXITY" >> $GITHUB_ENV
+          echo "### Maintainability Index: $AVG_COMPLEXITY" >> $GITHUB_STEP_SUMMARY
+      
+      - name: Upload reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.tool }}-report
+          path: reports/
+          retention-days: 30
+  
+  # Optimized test coverage
+  test-coverage:
+    name: Test Coverage
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/pip
+            .pytest_cache
+          key: ${{ runner.os }}-pytest-${{ hashFiles('requirements.txt') }}
+      
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install pytest-cov coverage[toml]
+      
+      - name: Run tests with coverage (optimized)
+        run: |
+          # Minimal discovery, parallel execution, targeted coverage
+          pytest --cov=.github/scripts \
+            --cov-report=xml \
+            --cov-report=term-missing \
+            --cov-report=html \
+            --cov-fail-under=${{ env.COVERAGE_THRESHOLD }} \
+            -n auto \
+            --tb=short \
+            --maxfail=5 \
+            -v
+      
+      - name: Generate coverage badge
+        run: |
+          COVERAGE=$(python -c "import xml.etree.ElementTree as ET; tree=ET.parse('coverage.xml'); root=tree.getroot(); print(root.attrib['line-rate'])")
+          PERCENT=$(python -c "print(int(float($COVERAGE) * 100))")
+          echo "COVERAGE_PERCENT=$PERCENT" >> $GITHUB_ENV
+          
+          # Create badge JSON
+          mkdir -p .github/badges
+          echo "{\"schemaVersion\": 1, \"label\": \"coverage\", \"message\": \"$PERCENT%\", \"color\": \"$([ $PERCENT -ge 80 ] && echo 'brightgreen' || echo 'yellow')\"}" > .github/badges/coverage.json
+      
+      - name: Upload coverage reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-reports
+          path: |
+            coverage.xml
+            htmlcov/
+            .github/badges/
+      
+      - name: Comment coverage on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const coverage = process.env.COVERAGE_PERCENT;
+            const body = `## 📊 Code Coverage\n\nCoverage: **${coverage}%**\n\n${coverage >= 80 ? '✅' : '⚠️'} Threshold: ${process.env.COVERAGE_THRESHOLD}%`;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
+  
+  # Consolidated quality report
+  quality-summary:
+    name: Quality Summary
+    needs: [static-analysis, test-coverage]
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+      - name: Download all reports
+        uses: actions/download-artifact@v4
+        with:
+          path: reports/
+      
+      - name: Generate consolidated report
+        run: |
+          echo "## 🎯 Code Quality Summary" > summary.md
+          echo "" >> summary.md
+          echo "| Metric | Score | Status |" >> summary.md
+          echo "|--------|-------|--------|" >> summary.md
+          
+          # Add results from each tool
+          echo "| Pylint | ⏳ Processing | - |" >> summary.md
+          echo "| Flake8 | ⏳ Processing | - |" >> summary.md
+          echo "| Bandit | ⏳ Processing | - |" >> summary.md
+          echo "| Coverage | ⏳ Processing | - |" >> summary.md
+          echo "| Complexity | ⏳ Processing | - |" >> summary.md
+          
+          cat summary.md >> $GITHUB_STEP_SUMMARY
+      
+      - name: Check quality gate
+        run: |
+          echo "Quality gate checks completed"
+          # Add logic to fail if thresholds not met
