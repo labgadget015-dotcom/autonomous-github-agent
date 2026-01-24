@@ -17,6 +17,7 @@ Environment Variables:
 import os
 import sys
 import argparse
+import traceback
 from typing import Dict, Any
 
 try:
@@ -157,7 +158,6 @@ def setup_branch_protection(token: str, repository_name: str, branch_name: str =
         
     except Exception as e:
         print(f"\n❌ Unexpected error: {str(e)}")
-        import traceback
         traceback.print_exc()
         return False
 
