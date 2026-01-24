@@ -1,0 +1,93 @@
+# Code Analysis Configuration
+# Used by parallel_code_analyzer.py and CI/CD workflows
+
+# Quality thresholds - CI will fail if below these values
+thresholds:
+  pylint: 8.0              # Minimum Pylint score (0-10)
+  flake8_max_errors: 10    # Maximum Flake8 errors allowed
+  complexity: 10           # Maximum cyclomatic complexity per function
+  maintainability: 65      # Minimum maintainability index (0-100)
+  security: "medium"       # Minimum Bandit severity (low, medium, high)
+  coverage: 80             # Minimum test coverage percentage
+  
+# Targets for analysis
+targets:
+  - .github/scripts
+  - tests
+
+# Exclusion patterns
+exclude_patterns:
+  - __pycache__
+  - "*.pyc"
+  - .git
+  - .venv
+  - venv
+  - node_modules
+  - dist
+  - build
+
+# Tool-specific configurations
+pylint:
+  disable:
+    - C0111  # Missing docstring
+    - R0903  # Too few public methods
+  enable:
+    - useless-suppression
+  max_line_length: 100
+  
+flake8:
+  max_line_length: 100
+  ignore:
+    - E203  # Whitespace before ':'
+    - W503  # Line break before binary operator
+  max_complexity: 10
+  
+bandit:
+  exclude_dirs:
+    - tests
+    - .github/scripts/test_*.py
+  skips:
+    - B101  # Assert used (OK in tests)
+  
+radon:
+  complexity_grade_threshold: B  # A, B, C, D, E, F
+  maintainability_threshold: 65
+  show_complexity: true
+  
+# Coverage settings
+coverage:
+  targets:
+    - .github/scripts
+  omit:
+    - "*/tests/*"
+    - "*/test_*.py"
+    - "*/__init__.py"
+  fail_under: 80
+  
+# Escalation rules - auto-create issues
+escalation:
+  enabled: true
+  create_issue_on_failure: true
+  severity_labels:
+    critical: "priority: critical"
+    high: "priority: high"
+    medium: "priority: medium"
+    low: "priority: low"
+  assignees:
+    - "@repo-owner"
+  
+# Performance optimization
+performance:
+  parallel_jobs: 4
+  cache_enabled: true
+  timeout_seconds: 600
+  
+# Reporting
+reporting:
+  formats:
+    - json
+    - markdown
+    - html
+  upload_artifacts: true
+  post_pr_comment: true
+  update_readme_badge: true

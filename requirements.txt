@@ -26,6 +26,7 @@ prefect>=2.13.0
 
 # GitHub API
 PyGithub>=2.1.0
+requests>=2.31.0  # HTTP requests library
 
 # Documentation
 mkdocs>=1.5.0

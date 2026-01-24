@@ -1,0 +1,259 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "🔍 Analyze Code",
+      "type": "shell",
+      "command": "python",
+      "args": [".github/scripts/parallel_code_analyzer.py"],
+      "group": "build",
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "🧪 Test Fast",
+      "type": "shell",
+      "command": "python",
+      "args": ["scripts/test-local.py", "--fast"],
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "🧪 Test Full Suite",
+      "type": "shell",
+      "command": "python",
+      "args": ["scripts/test-local.py"],
+      "group": "test",
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "✨ Format Code",
+      "type": "shell",
+      "command": "python",
+      "args": ["scripts/test-local.py", "--fix"],
+      "group": "build",
+      "presentation": {
+        "reveal": "silent",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "🔒 Security Scan",
+      "type": "shell",
+      "command": "bandit",
+      "args": ["-r", ".github/scripts/", "-f", "json", "-o", "bandit-report.json"],
+      "group": "build",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "📊 Complexity Report",
+      "type": "shell",
+      "command": "python",
+      "args": [".github/scripts/complexity_reporter.py"],
+      "group": "build",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "📈 Generate Dashboard",
+      "type": "shell",
+      "command": "python",
+      "args": [".github/scripts/health_dashboard_generator.py"],
+      "group": "build",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "🏷️ Update Badges",
+      "type": "shell",
+      "command": "python",
+      "args": [".github/scripts/badge_generator.py"],
+      "group": "build",
+      "presentation": {
+        "reveal": "silent",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "✅ Validate Implementation",
+      "type": "shell",
+      "command": "python",
+      "args": ["scripts/validate-implementation.py"],
+      "group": "build",
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "🚀 Workflow Optimization",
+      "type": "shell",
+      "command": "python",
+      "args": [".github/scripts/workflow_optimizer.py"],
+      "group": "build",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "💰 Cost Analysis",
+      "type": "shell",
+      "command": "python",
+      "args": [".github/scripts/cost_calculator.py"],
+      "group": "build",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "⏱️ Performance Benchmark",
+      "type": "shell",
+      "command": "python",
+      "args": [".github/scripts/performance_benchmark.py"],
+      "group": "build",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "📬 Send Notification",
+      "type": "shell",
+      "command": "python",
+      "args": [".github/scripts/notification_manager.py"],
+      "group": "build",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "🐳 Docker: Build",
+      "type": "shell",
+      "command": "docker-compose",
+      "args": ["build"],
+      "group": "build",
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "🐳 Docker: Start",
+      "type": "shell",
+      "command": "docker-compose",
+      "args": ["up", "-d"],
+      "group": "build",
+      "presentation": {
+        "reveal": "silent",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "🐳 Docker: Stop",
+      "type": "shell",
+      "command": "docker-compose",
+      "args": ["down"],
+      "group": "build",
+      "presentation": {
+        "reveal": "silent",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "🐳 Docker: Logs",
+      "type": "shell",
+      "command": "docker-compose",
+      "args": ["logs", "-f", "agent"],
+      "group": "build",
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      },
+      "problemMatcher": [],
+      "isBackground": true
+    },
+    {
+      "label": "📊 Start Monitoring",
+      "type": "shell",
+      "command": "docker-compose",
+      "args": ["--profile", "monitoring", "up", "-d"],
+      "group": "build",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "🎯 Complete Pipeline",
+      "type": "shell",
+      "command": "${command:workbench.action.terminal.sendSequence}",
+      "args": [{"text": "make all\n"}],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      },
+      "problemMatcher": [],
+      "dependsOrder": "sequence",
+      "dependsOn": [
+        "✨ Format Code",
+        "🔍 Analyze Code",
+        "🧪 Test Full Suite",
+        "✅ Validate Implementation"
+      ]
+    },
+    {
+      "label": "⚡ Pre-Commit Check",
+      "type": "shell",
+      "command": "make",
+      "args": ["pre-commit"],
+      "group": "build",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    }
+  ]
+}
