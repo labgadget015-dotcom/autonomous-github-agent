@@ -35,6 +35,15 @@ help:
 	@echo "  make validate       - Validate all implementations"
 	@echo "  make all            - Run complete CI/CD pipeline"
 	@echo ""
+	@echo "Release & Maintenance:"
+	@echo "  make changelog      - Generate CHANGELOG.md"
+	@echo "  make deps-check     - Check for outdated dependencies"
+	@echo "  make deps-update    - Update patch-level dependencies"
+	@echo "  make release-patch  - Create patch release (0.0.x)"
+	@echo "  make release-minor  - Create minor release (0.x.0)"
+	@echo "  make release-major  - Create major release (x.0.0)"
+	@echo "  make monitor        - Monitor GitHub Actions workflows"
+	@echo ""
 	@echo "Utility Commands:"
 	@echo "  make test           - Run tests in Docker container"
 	@echo "  make shell          - Open shell in running container"
@@ -188,3 +197,33 @@ all: format lint analyze security complexity test-full validate dashboard badges
 # Quick quality check before commit
 pre-commit: format lint test-local
 	@echo "✅ Pre-commit checks passed!"
+
+# Release and maintenance commands
+changelog:
+	@echo "📝 Generating CHANGELOG..."
+	python .github/scripts/changelog_generator.py
+
+deps-check:
+	@echo "🔍 Checking for outdated dependencies..."
+	python .github/scripts/dependency_updater.py
+
+deps-update:
+	@echo "📦 Updating patch-level dependencies..."
+	python .github/scripts/dependency_updater.py --auto-patch
+
+release-patch:
+	@echo "🚀 Creating patch release..."
+	python .github/scripts/release_manager.py patch
+
+release-minor:
+	@echo "🚀 Creating minor release..."
+	python .github/scripts/release_manager.py minor
+
+release-major:
+	@echo "🚀 Creating major release..."
+	python .github/scripts/release_manager.py major
+
+monitor:
+	@echo "📊 Monitoring GitHub Actions..."
+	@echo "Usage: python .github/scripts/workflow_monitor.py <owner/repo> --recent 10"
+	@echo "   or: python .github/scripts/workflow_monitor.py <owner/repo> --monitor <run-id>"
