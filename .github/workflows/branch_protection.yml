@@ -1,0 +1,56 @@
+name: Branch Protection Setup
+
+on:
+  workflow_dispatch:  # Allow manual triggering
+    inputs:
+      branch_name:
+        description: 'Branch to protect'
+        required: false
+        default: 'main'
+      verify_only:
+        description: 'Only verify existing protection (do not modify)'
+        required: false
+        default: 'false'
+
+permissions:
+  contents: read
+
+jobs:
+  setup-branch-protection:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+      
+      - name: Install dependencies
+        run: |
+          pip install PyGithub
+      
+      - name: Verify branch protection
+        if: github.event.inputs.verify_only == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: |
+          python .github/scripts/setup_branch_protection.py --verify-only
+      
+      - name: Setup branch protection
+        if: github.event.inputs.verify_only != 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: |
+          echo "Note: This workflow requires a token with admin permissions."
+          echo "The default GITHUB_TOKEN may not have sufficient permissions."
+          echo "Please use a Personal Access Token with 'repo' scope for admin tasks."
+          echo ""
+          echo "To run this manually with proper permissions:"
+          echo "  export GITHUB_TOKEN='your_personal_access_token'"
+          echo "  python .github/scripts/setup_branch_protection.py"

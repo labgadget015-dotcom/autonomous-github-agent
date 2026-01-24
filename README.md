@@ -219,6 +219,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [Multimodal CoT](https://www.promptingguide.ai/techniques/multimodalcot)
 - [GitHub Actions Documentation](https://docs.github.com/en/actions)
 - [Prefect Workflow Orchestration](https://www.prefect.io/)
+- [Branch Protection Setup Guide](docs/BRANCH_PROTECTION_GUIDE.md) - Secure your main branch
 
 ## Support
 
