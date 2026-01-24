@@ -205,3 +205,7 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+EXAMPLE_ANALYSIS_REPORT.md
+COPILOT_DEMO_REPORT.md
+COPILOT_INTEGRATION_REPORT.md
+copilot_integration_results.json
