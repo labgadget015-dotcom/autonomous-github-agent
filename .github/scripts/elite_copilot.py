@@ -16,6 +16,8 @@ import sys
 import json
 import time
 import asyncio
+import yaml
+import traceback
 from pathlib import Path
 from typing import Dict, List, Any, Optional
 from dataclasses import dataclass, asdict
@@ -125,7 +127,6 @@ class EliteCopilot:
         
         if config_path and Path(config_path).exists():
             with open(config_path, 'r') as f:
-                import yaml
                 user_config = yaml.safe_load(f)
                 default_config.update(user_config)
         
@@ -315,7 +316,7 @@ class EliteCopilot:
         
         return recommendations
     
-    def provide_assistance(self, query: str, context: Optional[Dict] = None) -> str:
+    def provide_assistance(self, query: str, context: Optional[Dict[str, Any]] = None) -> str:
         """
         Provide intelligent assistance for developer queries
         
@@ -490,7 +491,6 @@ def main():
         sys.exit(1)
     except Exception as e:
         print(f"\n❌ Error: {e}")
-        import traceback
         traceback.print_exc()
         sys.exit(1)
 

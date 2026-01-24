@@ -15,6 +15,7 @@ import os
 import sys
 import json
 import asyncio
+import traceback
 from pathlib import Path
 from typing import Dict, List, Any, Optional
 from datetime import datetime
@@ -346,7 +347,6 @@ async def main():
         sys.exit(1)
     except Exception as e:
         print(f"\n❌ Fatal error: {e}")
-        import traceback
         traceback.print_exc()
         sys.exit(1)
 

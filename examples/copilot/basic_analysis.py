@@ -6,6 +6,9 @@ This example demonstrates how to:
 1. Initialize the Elite Copilot
 2. Run a basic repository analysis
 3. View and interpret results
+
+Usage:
+    python examples/copilot/basic_analysis.py
 """
 
 import sys

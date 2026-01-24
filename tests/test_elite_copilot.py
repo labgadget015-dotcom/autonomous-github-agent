@@ -332,6 +332,3 @@ class TestCopilotModes:
         assert copilot.mode == CopilotMode.MENTOR
         # In mentor mode, should provide educational content
 
-
-if __name__ == '__main__':
-    pytest.main([__file__, '-v'])
