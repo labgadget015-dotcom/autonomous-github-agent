@@ -169,6 +169,9 @@ jobs:
     name: 🔒 Security Guardian Mode
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request' || github.event_name == 'push'
+    permissions:
+      contents: read
+      security-events: write
     
     steps:
       - name: 📥 Checkout Code
@@ -202,6 +205,9 @@ jobs:
     name: ⚡ Performance Monitor
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
+    permissions:
+      contents: read
+      pull-requests: read
     
     steps:
       - name: 📥 Checkout Code
@@ -235,6 +241,9 @@ jobs:
     name: 📅 Daily Repository Summary
     runs-on: ubuntu-latest
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    permissions:
+      contents: read
+      issues: write
     
     steps:
       - name: 📥 Checkout Code
