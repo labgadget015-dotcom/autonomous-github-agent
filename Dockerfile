@@ -2,7 +2,7 @@
 # Optimized for build speed, caching, security, and size
 
 # Stage 1: Builder
-FROM python:3.11.7-slim AS builder
+FROM python:3.11-slim AS builder
 
 WORKDIR /build
 
@@ -14,15 +14,16 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     g++ \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements first for better layer caching
+# Copy requirements first for better layer caching (least changing)
 COPY requirements.txt .
 
 # Install Python dependencies with pip cache mount for faster rebuilds
 RUN --mount=type=cache,target=/root/.cache/pip \
-    pip install --user --no-warn-script-location -r requirements.txt
+    pip install --user --no-warn-script-location --no-cache-dir \
+    -r requirements.txt
 
 # Stage 2: Runtime
-FROM python:3.11.7-slim
+FROM python:3.11-slim
 
 # Add security labels
 LABEL maintainer="Autonomous GitHub Agent" \
@@ -39,15 +40,24 @@ RUN groupadd -r -g 1000 agent && \
 # Copy Python packages from builder stage
 COPY --from=builder --chown=agent:agent /root/.local /home/agent/.local
 
-# Copy application code - order from least to most frequently changing
-COPY --chown=agent:agent .github/ ./.github/
-COPY --chown=agent:agent *.py ./
+# Copy configuration files (change less frequently)
+COPY --chown=agent:agent .github/config/ ./.github/config/
+COPY --chown=agent:agent monitoring/ ./monitoring/
 COPY --chown=agent:agent *.yml *.yaml ./
+
+# Copy scripts (change moderately)
+COPY --chown=agent:agent .github/scripts/ ./.github/scripts/
+COPY --chown=agent:agent scripts/ ./scripts/
+
+# Copy application code last (changes most frequently)
+COPY --chown=agent:agent *.py ./
 
 # Set environment variables
 ENV PATH=/home/agent/.local/bin:$PATH \
     PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
+    ANALYSIS_CACHE=true \
+    USE_ORJSON=true \
     PIP_NO_CACHE_DIR=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1
 

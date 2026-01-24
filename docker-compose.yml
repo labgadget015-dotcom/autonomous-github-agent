@@ -8,6 +8,9 @@ services:
       dockerfile: Dockerfile
       cache_from:
         - autonomous-github-agent:latest
+      # BuildKit optimizations
+      args:
+        BUILDKIT_INLINE_CACHE: "1"
     image: autonomous-github-agent:latest
     container_name: autonomous-agent-dev
     

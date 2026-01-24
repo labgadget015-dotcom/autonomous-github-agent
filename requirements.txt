@@ -13,6 +13,7 @@ pytest-xdist>=3.3.0  # Parallel test execution
 pytest-asyncio>=0.21.0  # Async test support
 
 # Code Quality
+ruff>=0.1.0  # Fast linter (replaces flake8, isort, some pylint)
 flake8>=6.1.0
 black>=23.0.0
 mypy>=1.5.0
@@ -20,6 +21,7 @@ pylint>=3.0.0  # Additional static analysis
 bandit>=1.7.5  # Security vulnerability scanning
 radon>=6.0.1  # Code complexity metrics
 isort>=5.12.0  # Import sorting
+orjson>=3.9.0  # Fast JSON parser (3-5x faster than json)
 
 # Workflow Orchestration
 prefect>=2.13.0
