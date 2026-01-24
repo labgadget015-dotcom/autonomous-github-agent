@@ -251,15 +251,29 @@ def main():
                 ["git", "config", "--get", "remote.origin.url"],
                 capture_output=True,
                 text=True,
-                check=True
+                check=True,
+                shell=False  # Explicitly disable shell for security
             )
             git_url = result.stdout.strip()
             
             # Parse repository from git URL
             # Handle both HTTPS and SSH URLs
-            if "github.com/" in git_url:
-                repository_name = git_url.split("github.com/")[-1]
-                repository_name = repository_name.replace(".git", "")
+            # HTTPS: https://github.com/owner/repo.git
+            # SSH: git@github.com:owner/repo.git
+            # Note: We validate the URL starts with expected GitHub URL patterns
+            # to prevent URL substring attacks
+            if "github.com" in git_url:
+                # Extract the owner/repo part more safely
+                if git_url.startswith("https://github.com/"):
+                    # HTTPS URL
+                    repository_name = git_url.replace("https://github.com/", "")
+                    repository_name = repository_name.replace(".git", "")
+                elif git_url.startswith("git@github.com:"):
+                    # SSH URL
+                    repository_name = git_url.replace("git@github.com:", "")
+                    repository_name = repository_name.replace(".git", "")
+                else:
+                    raise ValueError("Unrecognized GitHub URL format")
             else:
                 raise ValueError("Could not parse repository name from git URL")
                 
