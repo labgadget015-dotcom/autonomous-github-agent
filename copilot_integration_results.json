@@ -1,0 +1,28 @@
+{
+  "session_id": "hub_1769234461",
+  "start_time": "2026-01-24T06:01:01.621618",
+  "components": {
+    "elite_copilot": {
+      "status": "success",
+      "health_score": 100,
+      "insights_count": 5,
+      "recommendations_count": 1
+    },
+    "autopilot": {
+      "status": "skipped",
+      "reason": "GITHUB_TOKEN not available"
+    },
+    "llm_router": {
+      "status": "success",
+      "local_llm_calls": 0,
+      "cloud_llm_calls": 0,
+      "estimated_savings": 0.0
+    },
+    "async_analyzer": {
+      "status": "success",
+      "tools_run": 3,
+      "total_duration": 0.0029578208923339844
+    }
+  },
+  "overall_status": "running"
+}
