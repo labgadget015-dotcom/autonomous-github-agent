@@ -58,10 +58,21 @@ def test_pygithub_available():
             version = github.__version__
         except AttributeError:
             # PyGithub doesn't always expose __version__
-            from importlib.metadata import version as get_version
             try:
-                version = get_version('PyGithub')
-            except Exception:
+                from importlib.metadata import version as get_version
+            except ImportError:
+                # Fallback for Python < 3.8
+                try:
+                    from importlib_metadata import version as get_version
+                except ImportError:
+                    get_version = None
+            
+            if get_version:
+                try:
+                    version = get_version('PyGithub')
+                except Exception:
+                    version = "unknown"
+            else:
                 version = "unknown"
         print(f"✅ PyGithub is available (version: {version})")
         return True

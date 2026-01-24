@@ -39,7 +39,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
         run: |
-          python .github/scripts/setup_branch_protection.py --verify-only
+          python .github/scripts/setup_branch_protection.py --verify-only --branch ${{ github.event.inputs.branch_name || 'main' }}
       
       - name: Setup branch protection
         if: github.event.inputs.verify_only != 'true'
@@ -47,10 +47,12 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
         run: |
-          echo "Note: This workflow requires a token with admin permissions."
-          echo "The default GITHUB_TOKEN may not have sufficient permissions."
-          echo "Please use a Personal Access Token with 'repo' scope for admin tasks."
+          echo "⚠️  Note: The default GITHUB_TOKEN may not have admin permissions."
+          echo "If this fails, the setup script needs to be run locally with a Personal Access Token."
           echo ""
-          echo "To run this manually with proper permissions:"
+          echo "To run manually with proper permissions:"
           echo "  export GITHUB_TOKEN='your_personal_access_token'"
-          echo "  python .github/scripts/setup_branch_protection.py"
+          echo "  python .github/scripts/setup_branch_protection.py --branch ${{ github.event.inputs.branch_name || 'main' }}"
+          echo ""
+          echo "Attempting to verify current protection status..."
+          python .github/scripts/setup_branch_protection.py --verify-only --branch ${{ github.event.inputs.branch_name || 'main' }} || true

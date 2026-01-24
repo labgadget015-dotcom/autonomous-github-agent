@@ -128,6 +128,25 @@ Push to your repository, and the workflow will automatically run on:
 - Pull requests (opened, synchronized, ready for review)
 - Pushes to main branch
 
+### 6. Protect Your Main Branch (Recommended)
+
+Secure your repository by setting up branch protection:
+
+```bash
+# Set your GitHub token
+export GITHUB_TOKEN='your_github_personal_access_token'
+
+# Run the branch protection setup
+python .github/scripts/setup_branch_protection.py
+```
+
+This will configure your main branch to:
+- Require pull request reviews before merging
+- Prevent direct pushes
+- Block force pushes and deletions
+
+See [BRANCH_PROTECTION_QUICKSTART.md](BRANCH_PROTECTION_QUICKSTART.md) for details.
+
 ## Workflow Pipeline
 
 The GitHub Actions workflow executes these stages:

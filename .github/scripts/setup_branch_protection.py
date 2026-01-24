@@ -7,6 +7,7 @@ to prevent direct pushes, require PR reviews, and enforce status checks.
 
 Usage:
     python setup_branch_protection.py
+    python setup_branch_protection.py --verify-only
 
 Environment Variables:
     GITHUB_TOKEN: GitHub Personal Access Token with repo admin access
@@ -15,6 +16,7 @@ Environment Variables:
 
 import os
 import sys
+import argparse
 from typing import Dict, Any
 
 try:
@@ -209,6 +211,22 @@ def verify_branch_protection(token: str, repository_name: str, branch_name: str 
 
 def main():
     """Main entry point for the script."""
+    # Parse command line arguments
+    parser = argparse.ArgumentParser(
+        description='Configure branch protection for GitHub repositories'
+    )
+    parser.add_argument(
+        '--verify-only',
+        action='store_true',
+        help='Only verify existing protection settings without applying changes'
+    )
+    parser.add_argument(
+        '--branch',
+        default='main',
+        help='Branch name to protect (default: main)'
+    )
+    args = parser.parse_args()
+    
     print("=" * 70)
     print("GitHub Branch Protection Setup")
     print("=" * 70)
@@ -252,12 +270,22 @@ def main():
             sys.exit(1)
     
     print(f"\nRepository: {repository_name}")
-    print(f"Branch: main")
+    print(f"Branch: {args.branch}")
     print()
     
     # Check current protection status
     print("Checking current branch protection status...")
-    verify_branch_protection(token, repository_name, "main")
+    is_protected = verify_branch_protection(token, repository_name, args.branch)
+    
+    # If verify-only mode, exit after verification
+    if args.verify_only:
+        print("\n" + "=" * 70)
+        if is_protected:
+            print("Verification complete: Branch protection is configured")
+        else:
+            print("Verification complete: Branch protection is NOT configured")
+        print("=" * 70)
+        sys.exit(0 if is_protected else 1)
     
     # Ask for confirmation
     print("\n" + "-" * 70)
@@ -268,7 +296,7 @@ def main():
         sys.exit(0)
     
     # Apply branch protection
-    success = setup_branch_protection(token, repository_name, "main")
+    success = setup_branch_protection(token, repository_name, args.branch)
     
     if success:
         print("\n" + "=" * 70)
