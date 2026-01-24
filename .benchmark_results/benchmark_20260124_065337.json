@@ -1,0 +1,16 @@
+{
+  "timestamp": "2026-01-24T06:53:37.259172",
+  "benchmarks": [
+    {
+      "timestamp": "2026-01-24T06:53:37.121906",
+      "benchmark_name": "test_suite",
+      "duration_seconds": 0.017177820205688477,
+      "cpu_usage_percent": 0,
+      "memory_mb": 0,
+      "success": false,
+      "metadata": {
+        "test_framework": "pytest"
+      }
+    }
+  ]
+}
