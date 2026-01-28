@@ -1,6 +1,6 @@
 {
-  "session_id": "hub_1769237029",
-  "start_time": "2026-01-24T06:43:49.798268",
+  "session_id": "hub_1769578245",
+  "start_time": "2026-01-28T05:30:45.630958",
   "components": {
     "elite_copilot": {
       "status": "success",
@@ -21,7 +21,7 @@
     "async_analyzer": {
       "status": "success",
       "tools_run": 3,
-      "total_duration": 0.0031876564025878906
+      "total_duration": 0.0045642852783203125
     }
   },
   "overall_status": "running"
