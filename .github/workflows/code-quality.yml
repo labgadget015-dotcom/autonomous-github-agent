@@ -53,7 +53,7 @@ jobs:
       - name: Run Pylint
         if: matrix.tool == 'pylint'
         run: |
-          mkdir -p reports
+          mkdir -p reports .github/badges
           pylint .github/scripts --fail-under=${{ env.PYLINT_THRESHOLD }} \
             --output-format=json:reports/pylint.json,colorized \
             --persistent=yes --cache-dir=.pylint_cache || true
@@ -62,6 +62,19 @@ jobs:
           SCORE=$(python -c "import json; data=json.load(open('reports/pylint.json')); print(data.get('statistics', {}).get('global_note', 0))")
           echo "PYLINT_SCORE=$SCORE" >> $GITHUB_ENV
           echo "### Pylint Score: $SCORE / 10" >> $GITHUB_STEP_SUMMARY
+          
+          # Generate quality badge
+          SCORE_INT=$(python -c "print(int(float($SCORE)))")
+          if [ $SCORE_INT -ge 9 ]; then
+            COLOR="brightgreen"
+          elif [ $SCORE_INT -ge 8 ]; then
+            COLOR="green"
+          elif [ $SCORE_INT -ge 7 ]; then
+            COLOR="yellow"
+          else
+            COLOR="orange"
+          fi
+          echo "{\"schemaVersion\": 1, \"label\": \"code quality\", \"message\": \"$SCORE/10\", \"color\": \"$COLOR\"}" > .github/badges/quality.json
       
       - name: Run Flake8
         if: matrix.tool == 'flake8'
@@ -78,13 +91,20 @@ jobs:
       - name: Run Bandit (Security)
         if: matrix.tool == 'bandit'
         run: |
-          mkdir -p reports
+          mkdir -p reports .github/badges
           bandit -r .github/scripts -f json -o reports/bandit.json || true
           
           # Count critical issues
           CRITICAL=$(python -c "import json; data=json.load(open('reports/bandit.json')); print(len([r for r in data.get('results', []) if r.get('issue_severity') == 'HIGH']))") || echo 0
           echo "BANDIT_CRITICAL=$CRITICAL" >> $GITHUB_ENV
           echo "### Bandit Critical Issues: $CRITICAL" >> $GITHUB_STEP_SUMMARY
+          
+          # Generate security badge
+          if [ "$CRITICAL" -eq "0" ]; then
+            echo "{\"schemaVersion\": 1, \"label\": \"security\", \"message\": \"passing\", \"color\": \"brightgreen\"}" > .github/badges/security.json
+          else
+            echo "{\"schemaVersion\": 1, \"label\": \"security\", \"message\": \"$CRITICAL issues\", \"color\": \"red\"}" > .github/badges/security.json
+          fi
           
           # Fail if critical vulnerabilities found
           if [ "$CRITICAL" -gt "0" ]; then
@@ -108,7 +128,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.tool }}-report
-          path: reports/
+          path: |
+            reports/
+            .github/badges/
           retention-days: 30
   
   # Optimized test coverage
@@ -156,9 +178,32 @@ jobs:
           PERCENT=$(python -c "print(int(float($COVERAGE) * 100))")
           echo "COVERAGE_PERCENT=$PERCENT" >> $GITHUB_ENV
           
-          # Create badge JSON
+          # Create badge JSON for shields.io endpoint
           mkdir -p .github/badges
-          echo "{\"schemaVersion\": 1, \"label\": \"coverage\", \"message\": \"$PERCENT%\", \"color\": \"$([ $PERCENT -ge 80 ] && echo 'brightgreen' || echo 'yellow')\"}" > .github/badges/coverage.json
+          
+          # Determine color based on coverage
+          if [ $PERCENT -ge 90 ]; then
+            COLOR="brightgreen"
+          elif [ $PERCENT -ge 80 ]; then
+            COLOR="green"
+          elif [ $PERCENT -ge 70 ]; then
+            COLOR="yellow"
+          elif [ $PERCENT -ge 60 ]; then
+            COLOR="orange"
+          else
+            COLOR="red"
+          fi
+          
+          echo "{\"schemaVersion\": 1, \"label\": \"coverage\", \"message\": \"$PERCENT%\", \"color\": \"$COLOR\"}" > .github/badges/coverage.json
+      
+      - name: Commit coverage badge
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add .github/badges/coverage.json
+          git diff --staged --quiet || git commit -m "chore: update coverage badge [skip ci]"
+          git push
       
       - name: Upload coverage reports
         uses: actions/upload-artifact@v4
@@ -192,10 +237,34 @@ jobs:
     if: always()
     
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
       - name: Download all reports
         uses: actions/download-artifact@v4
         with:
           path: reports/
+      
+      - name: Consolidate badges
+        run: |
+          mkdir -p .github/badges
+          
+          # Copy badges from artifacts
+          find reports -name "*.json" -path "*badges*" -exec cp {} .github/badges/ \; || true
+          
+          # Generate build status badge
+          echo "{\"schemaVersion\": 1, \"label\": \"build\", \"message\": \"passing\", \"color\": \"brightgreen\"}" > .github/badges/build.json
+      
+      - name: Commit all badges
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add .github/badges/*.json || true
+          git diff --staged --quiet || git commit -m "chore: update CI/CD badges [skip ci]"
+          git push || true
       
       - name: Generate consolidated report
         run: |
