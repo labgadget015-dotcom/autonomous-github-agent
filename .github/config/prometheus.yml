@@ -21,16 +21,29 @@ rule_files:
 # Scrape configurations
 scrape_configs:
   # GitHub Actions Workflow Metrics
+  # Note: This is a placeholder configuration. In production, you would:
+  # 1. Use Pushgateway to push metrics from GitHub Actions
+  # 2. Set up a metrics endpoint that serves the prometheus.txt file
+  # 3. Use node_exporter with textfile collector
   - job_name: 'github-actions-workflows'
-    metrics_path: '/monitoring/metrics/prometheus.txt'
+    honor_labels: true
     static_configs:
-      - targets: ['localhost:9090']
+      - targets: []  # Configure your metrics endpoint here
         labels:
           service: 'github-actions'
           environment: 'production'
     
     scrape_interval: 15m
     scrape_timeout: 30s
+    
+  # For file-based metrics, use node_exporter textfile collector:
+  # 1. Install node_exporter on your server
+  # 2. Copy prometheus.txt to /var/lib/node_exporter/textfile_collector/
+  # 3. Uncomment and configure this job:
+  #
+  # - job_name: 'node-exporter'
+  #   static_configs:
+  #     - targets: ['localhost:9100']
 
   # GitHub API Rate Limits
   - job_name: 'github-api-rate-limits'
