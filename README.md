@@ -1,5 +1,11 @@
 # Autonomous GitHub Agent
 
+[![Build Status](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/labgadget015-dotcom/autonomous-github-agent/main/.github/badges/build.json)](https://github.com/labgadget015-dotcom/autonomous-github-agent/actions)
+[![Code Coverage](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/labgadget015-dotcom/autonomous-github-agent/main/.github/badges/coverage.json)](https://github.com/labgadget015-dotcom/autonomous-github-agent/actions)
+[![Code Quality](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/labgadget015-dotcom/autonomous-github-agent/main/.github/badges/quality.json)](https://github.com/labgadget015-dotcom/autonomous-github-agent/actions)
+[![Security](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/labgadget015-dotcom/autonomous-github-agent/main/.github/badges/security.json)](https://github.com/labgadget015-dotcom/autonomous-github-agent/security)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 > Universal AI agent workflow with chain-of-thought prompting templates, CI/CD integration, and modular orchestration for autonomous GitHub automation
 
 ## Overview

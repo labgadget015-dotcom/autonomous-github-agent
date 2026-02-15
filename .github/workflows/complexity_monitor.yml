@@ -168,14 +168,32 @@ jobs:
               if (highComplexityFuncs.length > 0) {
                 comment += `### ⚠️ High Complexity Functions Detected\n\n`;
                 comment += `Found ${highComplexityFuncs.length} function(s) exceeding complexity threshold of 10:\n\n`;
-                comment += '| Function | File | Complexity | Line |\n';
-                comment += '|----------|------|------------|------|\n';
+                comment += '| Function | File | Complexity | Line | Recommendation |\n';
+                comment += '|----------|------|------------|------|----------------|\n';
                 
                 highComplexityFuncs.slice(0, 10).forEach(func => {
-                  comment += `| \`${func.name}\` | \`${func.file}\` | ${func.complexity} | ${func.lineno} |\n`;
+                  let recommendation = '';
+                  if (func.complexity > 20) {
+                    recommendation = '🔴 Critical - Immediate refactoring required';
+                  } else if (func.complexity > 15) {
+                    recommendation = '🟡 High - Refactor soon';
+                  } else {
+                    recommendation = '🟢 Moderate - Consider refactoring';
+                  }
+                  comment += `| \`${func.name}\` | \`${func.file}\` | ${func.complexity} | ${func.lineno} | ${recommendation} |\n`;
                 });
                 
-                comment += '\n**Recommendation:** Consider refactoring these functions to improve maintainability.\n';
+                comment += '\n### 💡 Refactoring Suggestions\n\n';
+                comment += 'To reduce complexity, consider:\n';
+                comment += '- **Extract Method**: Break down large functions into smaller, focused functions\n';
+                comment += '- **Simplify Conditionals**: Use guard clauses and early returns\n';
+                comment += '- **Replace Nested Loops**: Consider using list comprehensions or functional patterns\n';
+                comment += '- **Reduce Branch Depth**: Flatten nested if-else statements\n\n';
+                
+                comment += '### 📚 Resources\n\n';
+                comment += '- [Understanding Cyclomatic Complexity](https://en.wikipedia.org/wiki/Cyclomatic_complexity)\n';
+                comment += '- [Python Refactoring Patterns](https://refactoring.guru/refactoring/catalog)\n';
+                comment += '- [Code Complexity Best Practices](https://docs.python.org/3/faq/programming.html#what-are-the-best-practices-for-using-import-in-a-module)\n';
               } else {
                 comment += '✅ All functions are within acceptable complexity thresholds.\n';
               }

@@ -1,0 +1,103 @@
+# Prometheus Configuration for GitHub Actions Monitoring
+# This configuration monitors GitHub Actions workflows and metrics
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    monitor: 'github-actions-monitor'
+    project: 'autonomous-github-agent'
+
+# Alerting configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: []
+
+# Rule files
+rule_files:
+  - "alerting-rules.yml"
+
+# Scrape configurations
+scrape_configs:
+  # GitHub Actions Workflow Metrics
+  # Note: This is a placeholder configuration. In production, you would:
+  # 1. Use Pushgateway to push metrics from GitHub Actions
+  # 2. Set up a metrics endpoint that serves the prometheus.txt file
+  # 3. Use node_exporter with textfile collector
+  - job_name: 'github-actions-workflows'
+    honor_labels: true
+    static_configs:
+      - targets: []  # Configure your metrics endpoint here
+        labels:
+          service: 'github-actions'
+          environment: 'production'
+    
+    scrape_interval: 15m
+    scrape_timeout: 30s
+    
+  # For file-based metrics, use node_exporter textfile collector:
+  # 1. Install node_exporter on your server
+  # 2. Copy prometheus.txt to /var/lib/node_exporter/textfile_collector/
+  # 3. Uncomment and configure this job:
+  #
+  # - job_name: 'node-exporter'
+  #   static_configs:
+  #     - targets: ['localhost:9100']
+
+  # GitHub API Rate Limits
+  - job_name: 'github-api-rate-limits'
+    metrics_path: '/monitoring/metrics/rate_limit.json'
+    static_configs:
+      - targets: ['api.github.com']
+        labels:
+          service: 'github-api'
+          environment: 'production'
+    
+    scrape_interval: 5m
+    scrape_timeout: 10s
+
+  # Code Quality Metrics
+  - job_name: 'code-quality-metrics'
+    static_configs:
+      - targets: ['localhost:9091']
+        labels:
+          service: 'code-quality'
+          environment: 'production'
+    
+    scrape_interval: 30m
+
+  # Security Scan Metrics
+  - job_name: 'security-scan-metrics'
+    static_configs:
+      - targets: ['localhost:9092']
+        labels:
+          service: 'security'
+          environment: 'production'
+    
+    scrape_interval: 1h
+
+  # Test Coverage Metrics
+  - job_name: 'test-coverage-metrics'
+    static_configs:
+      - targets: ['localhost:9093']
+        labels:
+          service: 'test-coverage'
+          environment: 'production'
+    
+    scrape_interval: 30m
+
+# Storage configuration
+storage:
+  tsdb:
+    retention:
+      time: 90d
+      size: 10GB
+    wal_compression: true
+
+# Remote write configuration (optional - for Grafana Cloud, etc.)
+# remote_write:
+#   - url: https://prometheus-prod-01.grafana.net/api/prom/push
+#     basic_auth:
+#       username: your-username
+#       password: your-api-key
