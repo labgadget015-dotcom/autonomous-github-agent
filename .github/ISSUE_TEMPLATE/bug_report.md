@@ -6,37 +6,52 @@ labels: bug
 assignees: ''
 ---
 
+**Before submitting:** Please search existing issues to avoid duplicates.
+
 ## Bug Description
-A clear and concise description of what the bug is.
+<!-- Provide a clear and concise description of what the bug is -->
+
+
 
 ## Steps to Reproduce
-1. Go to '...'
-2. Click on '...'
-3. Scroll down to '...'
-4. See error
+<!-- Provide detailed steps to reproduce the issue -->
+1. 
+2. 
+3. 
+4. 
 
 ## Expected Behavior
-A clear and concise description of what you expected to happen.
+<!-- Describe what you expected to happen -->
+
+
 
 ## Actual Behavior
-A clear and concise description of what actually happened.
+<!-- Describe what actually happened -->
+
+
 
 ## Environment
-- **OS**: [e.g. Windows 11, Ubuntu 22.04, macOS 13]
-- **Python Version**: [e.g. 3.11.2]
-- **Repository Version**: [e.g. commit hash or tag]
-- **Installation Method**: [e.g. pip, docker, source]
+<!-- Provide information about your environment -->
+- **OS**: <!-- e.g., Windows 11, Ubuntu 22.04, macOS 13 -->
+- **Python Version**: <!-- e.g., 3.11.2 -->
+- **Repository Version**: <!-- e.g., commit hash or tag -->
+- **Installation Method**: <!-- e.g., pip, docker, source -->
 
 ## Error Messages
+<!-- Paste any error messages or logs here -->
 ```
-Paste any error messages or logs here
+
 ```
 
 ## Screenshots
-If applicable, add screenshots to help explain your problem.
+<!-- If applicable, add screenshots to help explain your problem -->
+
+
 
 ## Additional Context
-Add any other context about the problem here.
+<!-- Add any other context about the problem here -->
+
+
 
 ## Checklist
 - [ ] I have searched existing issues to ensure this is not a duplicate
