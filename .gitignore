@@ -205,3 +205,8 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# Overseer generated files
+overseer-results.json
+README_ENHANCED.md
+CONTRIBUTING_ENHANCED.md
