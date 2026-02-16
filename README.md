@@ -6,7 +6,7 @@
 [![Security](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/labgadget015-dotcom/autonomous-github-agent/main/.github/badges/security.json)](https://github.com/labgadget015-dotcom/autonomous-github-agent/security)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-> Universal AI agent workflow with chain-of-thought prompting templates, CI/CD integration, and modular orchestration for autonomous GitHub automation
+> Universal AI agent workflow with chain-of-thought prompting templates, CI/CD integration, modular orchestration, and advanced full-stack repository oversight for autonomous GitHub automation
 
 ## Overview
 
@@ -17,6 +17,7 @@ This repository provides a comprehensive starter kit for building autonomous AI 
 - **Modular Architecture** - Separate, testable components for each workflow stage
 - **Policy Enforcement** - Built-in compliance and security checks
 - **Artifact-Driven Collaboration** - Complete audit trails and documentation
+- **🆕 Repository Overseer** - Advanced full-stack repository management and improvement system
 
 ## Features
 
@@ -25,6 +26,110 @@ This repository provides a comprehensive starter kit for building autonomous AI 
 ✅ **Modular Python Scripts** for context gathering, reasoning, policy, testing, and docs
 ✅ **Requirements Management** with all necessary dependencies
 ✅ **MIT Licensed** for open collaboration
+✅ **🆕 Advanced Repository Overseer** - Automated code analysis, documentation generation, dependency management, CI/CD optimization, issue triaging, and real-time monitoring
+
+## 🎯 Repository Overseer
+
+The Repository Overseer is an advanced full-stack system that automatically manages and improves repositories across seven key dimensions:
+
+### 1. **Deep Code Analysis** 🔍
+- AST-based refactoring opportunity detection
+- Architectural improvement suggestions (SOLID, design patterns)
+- Performance optimization identification
+- Code complexity analysis
+- Quality score calculation
+
+### 2. **Smart Documentation Generation** 📚
+- Auto-generate README.md from code annotations
+- Create CONTRIBUTING.md guidelines
+- Generate API documentation
+- Framework-aware content
+
+### 3. **Intelligent Dependency Management** 📦
+- Detect outdated packages
+- Identify vulnerable dependencies
+- Auto-suggest secure upgrades
+- Security patch recommendations
+- Multi-ecosystem support (Python, JavaScript)
+
+### 4. **CI/CD Workflow Optimization** ⚙️
+- Analyze existing workflows
+- Suggest caching strategies
+- Recommend matrix testing
+- Identify missing workflows (test, lint, deploy)
+- Performance optimization tips
+
+### 5. **Automated Issue Triaging** 🏷️
+- Pattern-based label assignment
+- Intelligent priority detection
+- Security issue identification
+- Auto-categorization (bug, enhancement, documentation, etc.)
+
+### 6. **Automation Script Generation** 🤖
+- Code formatting scripts (Python, JavaScript)
+- Release tagging automation
+- Environment setup scripts
+- Cross-platform support
+
+### 7. **Real-time Repository Monitoring** 📊
+- Code quality metrics
+- Performance tracking
+- Security posture analysis
+- Collaboration health checks
+- Actionable recommendations
+
+### Quick Start with Repository Overseer
+
+```bash
+# Run full repository analysis
+python run_overseer.py
+
+# Run only code analysis
+python run_overseer.py --only code
+
+# Analyze specific repository
+python run_overseer.py --repo /path/to/repo
+
+# Save results to custom path
+python run_overseer.py --output analysis-results.json
+
+# Use custom configuration
+python run_overseer.py --config custom-config.json
+```
+
+### Example Output
+
+```
+============================================================
+REPOSITORY OVERSEER ANALYSIS COMPLETE
+============================================================
+
+📊 Analysis Summary:
+
+  Code Quality:
+    - Quality Score: 87/100
+    - Refactoring Opportunities: 12
+    - Architectural Improvements: 3
+    - Performance Issues: 5
+
+  Dependencies:
+    - Vulnerable Packages: 2
+    - Outdated Packages: 8
+    - Upgrade Recommendations: 10
+
+  CI/CD:
+    - Workflow Optimizations: 4
+    - Test Improvements: 2
+
+  Monitoring:
+    - Total Recommendations: 15
+    - High Priority: 3
+    - Medium Priority: 7
+    - Low Priority: 5
+
+📁 Detailed results saved to: overseer-results.json
+============================================================
+```
 
 ## Chain-of-Thought Prompt Templates
 
