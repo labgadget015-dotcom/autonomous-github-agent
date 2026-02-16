@@ -131,32 +131,37 @@ Examples:
         print("REPOSITORY OVERSEER ANALYSIS COMPLETE")
         print("=" * 60)
         
-        if 'analyses' in results:
+        # Handle different result structures based on analysis mode
+        analyses = results.get('analyses', results)
+        
+        if analyses:
             print("\n📊 Analysis Summary:")
             
-            if 'code' in results['analyses']:
-                code = results['analyses']['code']
+            # Extract analysis data based on structure
+            code = analyses.get('code', {})
+            deps = analyses.get('dependencies', {})
+            cicd = analyses.get('cicd', {})
+            monitor = analyses.get('monitoring', {})
+            
+            if code:
                 print(f"\n  Code Quality:")
-                print(f"    - Quality Score: {code.get('quality_score', 0)}/100")
+                print(f"    - Quality Score: {code.get('quality_score', code.get('code_quality_score', 0))}/100")
                 print(f"    - Refactoring Opportunities: {len(code.get('refactoring_opportunities', []))}")
                 print(f"    - Architectural Improvements: {len(code.get('architectural_improvements', []))}")
                 print(f"    - Performance Issues: {len(code.get('performance_optimizations', []))}")
             
-            if 'dependencies' in results['analyses']:
-                deps = results['analyses']['dependencies']
+            if deps:
                 print(f"\n  Dependencies:")
                 print(f"    - Vulnerable Packages: {len(deps.get('vulnerable_packages', []))}")
                 print(f"    - Outdated Packages: {len(deps.get('outdated_packages', []))}")
                 print(f"    - Upgrade Recommendations: {len(deps.get('upgrade_recommendations', []))}")
             
-            if 'cicd' in results['analyses']:
-                cicd = results['analyses']['cicd']
+            if cicd:
                 print(f"\n  CI/CD:")
                 print(f"    - Workflow Optimizations: {len(cicd.get('workflow_optimizations', []))}")
                 print(f"    - Test Improvements: {len(cicd.get('test_improvements', []))}")
             
-            if 'monitoring' in results['analyses']:
-                monitor = results['analyses']['monitoring']
+            if monitor:
                 recs = monitor.get('recommendations', [])
                 print(f"\n  Monitoring:")
                 print(f"    - Total Recommendations: {len(recs)}")

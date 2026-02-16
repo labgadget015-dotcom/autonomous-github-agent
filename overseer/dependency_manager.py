@@ -226,7 +226,7 @@ class DependencyManager:
             elif operator == '==':
                 return current_parts == vuln_parts
             
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug(f"Error comparing versions {current} and {vuln_version}: {e}")
         
         return False

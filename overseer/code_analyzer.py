@@ -171,22 +171,18 @@ class CodeAnalyzer:
     def _detect_magic_numbers(self, tree: ast.AST, file_path: Path):
         """Detect magic numbers that should be constants"""
         for node in ast.walk(tree):
-            if isinstance(node, ast.Num):
+            # Support both old ast.Num and new ast.Constant for compatibility
+            if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)):
                 # Ignore 0, 1, -1 as they're commonly used
-                if node.n not in (0, 1, -1) and not isinstance(node.n, float):
-                    # Check if it's in a constant assignment
-                    parent = getattr(node, 'parent', None)
-                    if not (isinstance(parent, ast.Assign) and 
-                            isinstance(parent.targets[0], ast.Name) and 
-                            parent.targets[0].id.isupper()):
-                        self.results['refactoring'].append({
-                            'type': 'magic_number',
-                            'file': str(file_path.relative_to(self.repo_path)),
-                            'line': node.lineno,
-                            'value': node.n,
-                            'severity': 'low',
-                            'recommendation': f'Magic number {node.n} should be a named constant.'
-                        })
+                if node.value not in (0, 1, -1, 0.0, 1.0, -1.0) and isinstance(node.value, int):
+                    self.results['refactoring'].append({
+                        'type': 'magic_number',
+                        'file': str(file_path.relative_to(self.repo_path)),
+                        'line': node.lineno,
+                        'value': node.value,
+                        'severity': 'low',
+                        'recommendation': f'Magic number {node.value} should be a named constant.'
+                    })
     
     def _detect_architectural_issues(self, tree: ast.AST, file_path: Path):
         """Detect architectural issues and improvement opportunities"""
