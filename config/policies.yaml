@@ -1,0 +1,54 @@
+# Policy Configuration
+# Defines which actions require approval and which are auto-approved
+
+# Actions that require human approval
+requires_approval:
+  - delete_main_branch
+  - force_push_protected
+  - modify_repo_settings
+  - deploy_production
+  - delete_repository
+  - change_permissions
+  - modify_secrets
+  - delete_workflow
+  - close_pull_request  # Only if not by author
+  - merge_to_protected_branch
+  - delete_release
+  - modify_branch_protection
+
+# Actions that are automatically approved
+auto_approved:
+  - delete_stale_branch
+  - update_dependencies
+  - fix_linting
+  - label_issue
+  - add_comment
+  - create_branch
+  - run_tests
+  - update_documentation
+  - create_issue
+  - assign_issue
+  - add_reviewer
+  - request_review
+  - update_readme
+
+# Users to escalate approvals to (GitHub usernames)
+escalation_users:
+  - repo-admin
+  - tech-lead
+
+# Approval timeout in hours
+approval_timeout_hours: 24
+
+# Auto-approve if tests pass
+auto_approve_on_tests_pass: true
+
+# Require approval for PRs affecting these paths
+protected_paths:
+  - .github/workflows/
+  - config/
+  - core/
+  - agents/
+
+# Maximum operations per hour (rate limiting)
+max_operations_per_hour: 100
