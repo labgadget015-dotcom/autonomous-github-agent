@@ -5,9 +5,12 @@ Tests for Orchestrator Agent.
 import pytest
 import asyncio
 from unittest.mock import Mock, MagicMock, patch, AsyncMock
-
 import sys
-sys.path.insert(0, '/home/runner/work/autonomous-github-agent/autonomous-github-agent')
+from pathlib import Path
+
+# Add project root to path
+project_root = Path(__file__).parent.parent
+sys.path.insert(0, str(project_root))
 
 from agents.orchestrator_agent import OrchestratorAgent
 from core.agent_base import BaseAgent

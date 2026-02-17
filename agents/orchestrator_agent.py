@@ -10,9 +10,12 @@ import logging
 import asyncio
 from typing import Dict, Any, List, Optional
 from datetime import datetime
-
 import sys
-sys.path.insert(0, '/home/runner/work/autonomous-github-agent/autonomous-github-agent')
+from pathlib import Path
+
+# Add project root to path
+project_root = Path(__file__).parent.parent
+sys.path.insert(0, str(project_root))
 
 from core.agent_base import BaseAgent
 from core.message_queue import MessageQueue
