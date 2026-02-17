@@ -210,7 +210,7 @@ class IntelligentCache:
         self.cache.clear()
         logger.info("Cache cleared")
 
-    def get_stats(self) -> Dict[str, any]:
+    def get_stats(self) -> Dict[str, Any]:
         """Get cache performance statistics."""
         total_requests = self.stats['hits'] + self.stats['misses']
         hit_rate = self.stats['hits'] / total_requests if total_requests > 0 else 0

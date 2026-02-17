@@ -6,10 +6,6 @@ anthropic>=0.8.0
 scikit-learn>=1.3.0  # ML algorithms for priority scoring and caching
 numpy>=1.24.0  # Numerical computing
 scipy>=1.11.0  # Scientific computing
-spacy>=3.6.0  # NLP and entity recognition
-sentence-transformers>=2.2.0  # Semantic embeddings
-transformers>=4.30.0  # Pre-trained models for summarization
-torch>=2.0.0  # Deep learning framework
 
 # Data Processing
 PyYAML>=6.0
