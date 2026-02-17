@@ -1,6 +1,6 @@
 # Contributing Guide
 
-Thank you for your interest in contributing to !
+Thank you for your interest in contributing to autonomous-github-agent!
 
 ## Getting Started
 

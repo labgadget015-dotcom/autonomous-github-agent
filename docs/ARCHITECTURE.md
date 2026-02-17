@@ -1,6 +1,6 @@
 # Architecture
 
-*System architecture for *
+*System architecture for autonomous-github-agent*
 
 ## Overview
 
