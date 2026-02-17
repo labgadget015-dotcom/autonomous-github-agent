@@ -47,7 +47,7 @@ class AccessPredictor:
         
         # Calculate access frequency
         recent_accesses = []
-   for access_time, access_key in self.access_history:
+        for access_time, access_key in self.access_history:
             if access_key == key and current_time - access_time < 3600:  # Last hour
                 recent_accesses.append(access_time)
         
