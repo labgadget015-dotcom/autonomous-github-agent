@@ -6,16 +6,15 @@ using NLP techniques and pattern matching (simplified version without heavy mode
 
 import re
 import logging
-from typing import Dict, List, Any, Set, Tuple
+from typing import Dict, List, Any, Set
 from collections import Counter, defaultdict
-from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
 
 class CommitSummarizer:
     """Generate intelligent summaries of commits and changes."""
-    
+
     def __init__(self):
         """Initialize the commit summarizer."""
         # Action verbs for categorization
@@ -44,7 +43,7 @@ class CommitSummarizer:
             'doc': 'documentation',
             'document': 'documentation',
         }
-        
+
         # Component patterns
         self.component_patterns = [
             (r'\b(api|endpoint|route)s?\b', 'API'),
@@ -58,7 +57,7 @@ class CommitSummarizer:
             (r'\b(config|configuration|setting)s?\b', 'Configuration'),
             (r'\b(deploy|deployment|release)\b', 'Deployment'),
         ]
-    
+
     def generate_summary(self, commits: List[Any]) -> Dict[str, Any]:
         """Generate intelligent summary from commits.
         
@@ -70,27 +69,27 @@ class CommitSummarizer:
         """
         if not commits:
             return self._empty_summary()
-        
+
         # Extract information from commits
         messages = []
         authors = set()
         files_changed = set()
         total_additions = 0
         total_deletions = 0
-        
+
         for commit in commits:
             # Get commit message
             commit_obj = getattr(commit, 'commit', commit)
             message = getattr(commit_obj, 'message', '')
             messages.append(message)
-            
+
             # Get author
             author = getattr(commit_obj, 'author', None)
             if author:
                 author_name = getattr(author, 'name', None)
                 if author_name:
                     authors.add(author_name)
-            
+
             # Get stats
             stats = getattr(commit, 'stats', {})
             if isinstance(stats, dict):
@@ -99,32 +98,32 @@ class CommitSummarizer:
             else:
                 total_additions += getattr(stats, 'additions', 0)
                 total_deletions += getattr(stats, 'deletions', 0)
-            
+
             # Get files
             files = getattr(commit, 'files', [])
             for f in (files if hasattr(files, '__iter__') else []):
                 filename = getattr(f, 'filename', str(f))
                 files_changed.add(filename)
-        
+
         # Analyze commits
         themes = self._extract_themes(messages)
         actions = self._categorize_actions(messages)
         components = self._identify_components(messages)
-        
+
         # Generate summary text
         summary_text = self._generate_summary_text(
             len(commits), authors, themes, actions, components,
             total_additions, total_deletions, len(files_changed)
         )
-        
+
         # Generate insights
         insights = self._generate_insights(
             commits, themes, actions, components
         )
-        
+
         # Recommend actions
         recommended_actions = self._recommend_actions(insights, themes, actions)
-        
+
         return {
             'summary': summary_text,
             'key_themes': themes,
@@ -141,7 +140,7 @@ class CommitSummarizer:
             'insights': insights,
             'recommended_actions': recommended_actions
         }
-    
+
     def _extract_themes(self, messages: List[str]) -> List[Dict[str, Any]]:
         """Extract key themes from commit messages.
         
@@ -153,19 +152,19 @@ class CommitSummarizer:
         """
         # Combine all messages
         combined = ' '.join(messages).lower()
-        
+
         # Extract words
         words = re.findall(r'\b[a-z]{4,}\b', combined)
-        
+
         # Count frequencies
         word_counts = Counter(words)
-        
+
         # Filter common words
         stop_words = {
             'this', 'that', 'with', 'from', 'have', 'been',
             'were', 'their', 'there', 'would', 'could', 'should'
         }
-        
+
         themes = []
         for word, count in word_counts.most_common(10):
             if word not in stop_words and count > 1:
@@ -174,9 +173,9 @@ class CommitSummarizer:
                     'frequency': count,
                     'importance': min(count / len(messages), 1.0)
                 })
-        
+
         return themes[:5]  # Top 5 themes
-    
+
     def _categorize_actions(self, messages: List[str]) -> Dict[str, int]:
         """Categorize commit actions.
         
@@ -187,17 +186,17 @@ class CommitSummarizer:
             Dictionary of action categories and counts
         """
         actions = defaultdict(int)
-        
+
         for message in messages:
             message_lower = message.lower()
-            
+
             # Check each action verb
             for verb, category in self.action_verbs.items():
                 if verb in message_lower:
                     actions[category] += 1
-        
+
         return dict(actions)
-    
+
     def _identify_components(self, messages: List[str]) -> Dict[str, int]:
         """Identify affected components.
         
@@ -208,17 +207,17 @@ class CommitSummarizer:
             Dictionary of components and mention counts
         """
         components = defaultdict(int)
-        
+
         for message in messages:
             message_lower = message.lower()
-            
+
             # Check each component pattern
             for pattern, component_name in self.component_patterns:
                 if re.search(pattern, message_lower):
                     components[component_name] += 1
-        
+
         return dict(sorted(components.items(), key=lambda x: x[1], reverse=True))
-    
+
     def _generate_summary_text(self, commit_count: int, authors: Set[str],
                                themes: List[Dict], actions: Dict[str, int],
                                components: Dict[str, int],
@@ -240,44 +239,44 @@ class CommitSummarizer:
             Summary text
         """
         parts = []
-        
+
         # Overall stats
         parts.append(f"{commit_count} commit{'s' if commit_count != 1 else ''}")
-        
+
         if authors:
             author_count = len(authors)
             parts.append(f"by {author_count} author{'s' if author_count != 1 else ''}")
-        
+
         parts.append(f"affecting {files_changed} file{'s' if files_changed != 1 else ''}")
-        
+
         summary = " ".join(parts) + "."
-        
+
         # Code changes
         if additions > 0 or deletions > 0:
             summary += f" Total changes: +{additions} -{deletions} lines."
-        
+
         # Main actions
         if actions:
             top_actions = sorted(actions.items(), key=lambda x: x[1], reverse=True)[:3]
             action_text = ", ".join([f"{count} {action}" for action, count in top_actions])
             summary += f" Primary actions: {action_text}."
-        
+
         # Components
         if components:
             top_components = list(components.keys())[:3]
             component_text = ", ".join(top_components)
             summary += f" Components affected: {component_text}."
-        
+
         # Themes
         if themes:
             top_themes = [t['theme'] for t in themes[:3]]
             theme_text = ", ".join(top_themes)
             summary += f" Key themes: {theme_text}."
-        
+
         return summary
-    
+
     def _generate_insights(self, commits: List[Any], themes: List[Dict],
-                          actions: Dict[str, int], 
+                          actions: Dict[str, int],
                           components: Dict[str, int]) -> List[str]:
         """Generate actionable insights.
         
@@ -291,32 +290,32 @@ class CommitSummarizer:
             List of insight strings
         """
         insights = []
-        
+
         # Check for high activity
         if len(commits) > 20:
             insights.append(f"High activity period with {len(commits)} commits")
-        
+
         # Check for fixes
         fix_count = actions.get('fixes', 0)
         if fix_count > len(commits) * 0.3:
             insights.append(f"Significant bug fixing activity ({fix_count} fixes)")
-        
+
         # Check for refactoring
         refactor_count = actions.get('refactoring', 0)
         if refactor_count > 0:
-            insights.append(f"Code quality improvements through refactoring")
-        
+            insights.append("Code quality improvements through refactoring")
+
         # Check for security
         if 'Security' in components:
             insights.append("Security-related changes detected - review recommended")
-        
+
         # Check for breaking changes
         for commit in commits:
             message = getattr(getattr(commit, 'commit', commit), 'message', '')
             if 'breaking' in message.lower() or 'BREAKING' in message:
                 insights.append("Breaking changes detected - version bump may be needed")
                 break
-        
+
         # Check for test coverage
         if 'Tests' in components:
             insights.append("Test coverage maintained or improved")
@@ -324,16 +323,16 @@ class CommitSummarizer:
             test_count = actions.get('testing', 0)
             if test_count == 0 and len(commits) > 5:
                 insights.append("No test updates detected - consider adding tests")
-        
+
         # Check for documentation
         if 'Documentation' in components:
             insights.append("Documentation updated")
         else:
             if len(commits) > 10:
                 insights.append("Consider updating documentation for recent changes")
-        
+
         return insights
-    
+
     def _recommend_actions(self, insights: List[str], themes: List[Dict],
                           actions: Dict[str, int]) -> List[str]:
         """Recommend follow-up actions.
@@ -347,7 +346,7 @@ class CommitSummarizer:
             List of recommended actions
         """
         recommendations = []
-        
+
         # Based on insights
         for insight in insights:
             if 'security' in insight.lower():
@@ -358,21 +357,21 @@ class CommitSummarizer:
                 recommendations.append("Add test coverage for new changes")
             elif 'documentation' in insight.lower() and 'consider' in insight.lower():
                 recommendations.append("Update README and API documentation")
-        
+
         # Based on action types
         if actions.get('fixes', 0) > 5:
             recommendations.append("Consider investigating root causes of bugs")
-        
+
         if actions.get('additions', 0) > 10:
             recommendations.append("Review new code for quality and performance")
-        
+
         # Default recommendations
         if not recommendations:
             recommendations.append("Review changes and update changelog")
             recommendations.append("Run full test suite before release")
-        
+
         return recommendations[:5]  # Top 5 recommendations
-    
+
     def _empty_summary(self) -> Dict[str, Any]:
         """Return empty summary for no commits."""
         return {
@@ -391,7 +390,7 @@ class CommitSummarizer:
             'insights': [],
             'recommended_actions': []
         }
-    
+
     def summarize_by_author(self, commits: List[Any]) -> Dict[str, Dict]:
         """Generate per-author summaries.
         
@@ -402,19 +401,19 @@ class CommitSummarizer:
             Dictionary of author -> summary
         """
         by_author = defaultdict(list)
-        
+
         for commit in commits:
             commit_obj = getattr(commit, 'commit', commit)
             author = getattr(commit_obj, 'author', None)
-            
+
             if author:
                 author_name = getattr(author, 'name', 'Unknown')
                 by_author[author_name].append(commit)
-        
+
         summaries = {}
         for author, author_commits in by_author.items():
             summaries[author] = self.generate_summary(author_commits)
-        
+
         return summaries
 
 
@@ -433,7 +432,7 @@ if __name__ == "__main__":
     # Example usage
     print("Commit Summarizer - Example Usage\n")
     print("="*70)
-    
+
     # Mock commits
     class MockCommit:
         def __init__(self, message, author, additions, deletions):
@@ -443,7 +442,7 @@ if __name__ == "__main__":
             })
             self.stats = {'additions': additions, 'deletions': deletions}
             self.files = []
-    
+
     commits = [
         MockCommit("Fix critical security vulnerability in auth", "Alice", 10, 5),
         MockCommit("Add new API endpoint for user management", "Bob", 150, 20),
@@ -453,33 +452,33 @@ if __name__ == "__main__":
         MockCommit("Fix bug in user authentication flow", "Alice", 15, 8),
         MockCommit("Optimize database queries for performance", "Charlie", 40, 25),
     ]
-    
+
     summarizer = CommitSummarizer()
     summary = summarizer.generate_summary(commits)
-    
+
     print("Summary:")
     print(f"  {summary['summary']}\n")
-    
+
     print("Key Themes:")
     for theme in summary['key_themes']:
         print(f"  - {theme['theme']} (frequency: {theme['frequency']})")
-    
+
     print("\nAction Breakdown:")
     for action, count in summary['action_breakdown'].items():
         print(f"  - {action}: {count}")
-    
+
     print("\nComponents Affected:")
     for component, count in summary['components_affected'].items():
         print(f"  - {component}: {count} mentions")
-    
+
     print("\nStatistics:")
     for key, value in summary['statistics'].items():
         print(f"  - {key}: {value}")
-    
+
     print("\nInsights:")
     for insight in summary['insights']:
         print(f"  • {insight}")
-    
+
     print("\nRecommended Actions:")
     for i, action in enumerate(summary['recommended_actions'], 1):
         print(f"  {i}. {action}")
