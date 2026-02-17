@@ -131,6 +131,71 @@ REPOSITORY OVERSEER ANALYSIS COMPLETE
 ============================================================
 ```
 
+### Configuration
+
+The overseer can be configured using `overseer-config.json`:
+
+```json
+{
+  "code_analysis": {
+    "enabled": true,
+    "complexity_threshold": 10,
+    "max_function_length": 50
+  },
+  "dependency_management": {
+    "enabled": true,
+    "check_vulnerabilities": true,
+    "auto_suggest_upgrades": true
+  },
+  "cicd": {
+    "enabled": true,
+    "optimize_workflows": true
+  }
+}
+```
+
+### Automated Execution with GitHub Actions
+
+The overseer can run automatically on schedule or on specific events:
+
+```yaml
+# .github/workflows/repository-overseer.yml
+on:
+  schedule:
+    - cron: '0 0 * * 0'  # Weekly
+  push:
+    branches: [main]
+  workflow_dispatch:
+```
+
+The workflow will:
+- 📊 Analyze code quality and suggest improvements
+- 🔒 Scan dependencies for vulnerabilities
+- ⚡ Optimize CI/CD workflows
+- 📝 Generate documentation
+- 🏷️ Auto-triage issues
+- 🤖 Create automation scripts
+- 📈 Monitor repository health
+
+Results are uploaded as artifacts and critical findings create GitHub issues automatically.
+
+### Advanced Usage
+
+**Run specific analysis:**
+```bash
+python run_overseer.py --only deps --verbose
+```
+
+**Use custom config:**
+```bash
+python run_overseer.py --config my-config.json
+```
+
+**Analyze external repository:**
+```bash
+python run_overseer.py --repo /path/to/project
+```
+
 ## Chain-of-Thought Prompt Templates
 
 This repository includes comprehensive CoT templates for advanced AI reasoning:
