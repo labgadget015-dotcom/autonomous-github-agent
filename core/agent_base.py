@@ -12,7 +12,7 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 
 from .github_client import GitHubClient
-from .llm_provider import LLMProvider
+from .llm_provider import LLMClient
 from .audit_logger import AuditLogger
 from .policy_engine import PolicyEngine
 
@@ -43,7 +43,7 @@ class BaseAgent(ABC):
         self.name = name
         self.config = config
         self.github = GitHubClient(config)
-        self.llm = LLMProvider(config)
+        self.llm = LLMClient(config)
         self.audit = AuditLogger(config)
         self.policy = PolicyEngine(config)
         
