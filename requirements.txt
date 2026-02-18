@@ -30,6 +30,15 @@ prefect>=2.13.0
 PyGithub>=2.1.0
 requests>=2.31.0  # HTTP requests library
 
+# Inter-agent messaging
+redis>=5.0.0  # Redis client for message queue
+
+# Database
+psycopg2-binary>=2.9.0  # PostgreSQL adapter
+
+# Cloud storage
+boto3>=1.28.0  # AWS SDK for S3 archival
+
 # Documentation
 mkdocs>=1.5.0
 mkdocs-material>=9.4.0
