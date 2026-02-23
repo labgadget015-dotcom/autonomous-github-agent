@@ -54,9 +54,9 @@ jobs:
         id: bandit
         run: |
           mkdir -p reports
-          bandit -r .github/scripts -f json -o reports/bandit-report.json --exit-zero
-          bandit -r .github/scripts -f sarif -o reports/bandit-report.sarif --exit-zero
-          bandit -r .github/scripts -ll
+          bandit -r core/ agents/ autopilot/ .github/scripts -f json -o reports/bandit-report.json --exit-zero
+          bandit -r core/ agents/ autopilot/ .github/scripts -f sarif -o reports/bandit-report.sarif --exit-zero
+          bandit -r core/ agents/ autopilot/ .github/scripts -ll
         continue-on-error: true
       
       - name: Upload Bandit SARIF results
