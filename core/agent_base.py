@@ -7,7 +7,7 @@ GitHub integration, LLM integration, audit logging, and policy enforcement.
 """
 
 import logging
-from typing import Dict, Any, Optional
+from typing import Dict, Any
 from abc import ABC, abstractmethod
 from datetime import datetime
 

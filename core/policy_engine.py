@@ -7,7 +7,7 @@ Provides governance rules and escalation logic for agent actions.
 
 import logging
 import yaml
-from typing import Dict, Any, Optional, List
+from typing import Dict, Any, Optional
 from pathlib import Path
 
 logging.basicConfig(level=logging.INFO)

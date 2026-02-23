@@ -17,8 +17,8 @@ from pathlib import Path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
-from core.agent_base import BaseAgent
-from core.message_queue import MessageQueue
+from core.agent_base import BaseAgent  # noqa: E402
+from core.message_queue import MessageQueue  # noqa: E402
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

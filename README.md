@@ -1,9 +1,8 @@
 # Autonomous GitHub Agent
 
-[![Build Status](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/labgadget015-dotcom/autonomous-github-agent/main/.github/badges/build.json)](https://github.com/labgadget015-dotcom/autonomous-github-agent/actions)
-[![Code Coverage](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/labgadget015-dotcom/autonomous-github-agent/main/.github/badges/coverage.json)](https://github.com/labgadget015-dotcom/autonomous-github-agent/actions)
-[![Code Quality](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/labgadget015-dotcom/autonomous-github-agent/main/.github/badges/quality.json)](https://github.com/labgadget015-dotcom/autonomous-github-agent/actions)
-[![Security](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/labgadget015-dotcom/autonomous-github-agent/main/.github/badges/security.json)](https://github.com/labgadget015-dotcom/autonomous-github-agent/security)
+[![CI](https://github.com/labgadget015-dotcom/autonomous-github-agent/actions/workflows/ai_agent_workflow.yml/badge.svg)](https://github.com/labgadget015-dotcom/autonomous-github-agent/actions/workflows/ai_agent_workflow.yml)
+[![Security Scan](https://github.com/labgadget015-dotcom/autonomous-github-agent/actions/workflows/security_scan.yml/badge.svg)](https://github.com/labgadget015-dotcom/autonomous-github-agent/actions/workflows/security_scan.yml)
+[![Code Quality](https://github.com/labgadget015-dotcom/autonomous-github-agent/actions/workflows/code-quality-optimized.yml/badge.svg)](https://github.com/labgadget015-dotcom/autonomous-github-agent/actions/workflows/code-quality-optimized.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 > Universal AI agent workflow with chain-of-thought prompting templates, CI/CD integration, modular orchestration, and advanced full-stack repository oversight for autonomous GitHub automation
@@ -415,7 +414,7 @@ This will configure your main branch to:
 - Prevent direct pushes
 - Block force pushes and deletions
 
-See [BRANCH_PROTECTION_QUICKSTART.md](BRANCH_PROTECTION_QUICKSTART.md) for details.
+See [BRANCH_PROTECTION_QUICKSTART.md](docs/BRANCH_PROTECTION_QUICKSTART.md) for details.
 
 ## Workflow Pipeline
 

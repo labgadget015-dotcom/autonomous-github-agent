@@ -61,6 +61,13 @@ jobs:
           python -m pip install --upgrade pip wheel
           pip install -r requirements.txt
       
+      - name: Run ruff lint (fast, zero-config)
+        run: |
+          ruff check core/ agents/ autopilot/ .github/scripts \
+            --output-format=github \
+            --exit-zero
+        continue-on-error: true
+
       - name: Run parallel code analysis
         id: analysis
         run: |
