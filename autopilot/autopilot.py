@@ -37,7 +37,7 @@ class GitHubAutopilot:
         self.start_time = time.time()
         self.config = self._load_config(config_path)
         self.github = self._init_github_client()
-        self.repo_data = {}
+        self.repo_data: dict[str, Any] = {}
 
     def _load_config(self, config_path: str) -> dict:
         """Load configuration from YAML file"""
@@ -55,7 +55,7 @@ class GitHubAutopilot:
             raise ValueError("GITHUB_TOKEN environment variable not set")
         return Github(token)
 
-    def fetch_repo_data(self, owner: str, name: str) -> dict[str, Any]:
+    def fetch_repo_data(self, owner: str, name: str) -> dict[str, Any] | None:
         """Fetch issues, PRs, and recent commits for a single repository"""
         try:
             repo = self.github.get_repo(f"{owner}/{name}")
@@ -272,7 +272,7 @@ class GitHubAutopilot:
 
         return "\n".join(summary)
 
-    def run(self, output_file: str = None) -> str:
+    def run(self, output_file: str | None = None) -> str:
         """Main execution: fetch data, analyze, generate summary"""
         print("=" * 60)
         print("GitHub Autopilot v0 - Daily Summary Generator")

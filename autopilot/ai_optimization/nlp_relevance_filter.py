@@ -7,6 +7,7 @@ repository content for relevance and importance.
 import logging
 import re
 from collections import Counter
+from collections.abc import Callable
 from typing import Any
 
 logger = logging.getLogger(__name__)
@@ -496,7 +497,10 @@ class NLPRelevanceFilter:
         }
 
     def filter_items(
-        self, items: list[Any], min_relevance: float = 0.3, get_text: callable = None
+        self,
+        items: list[Any],
+        min_relevance: float = 0.3,
+        get_text: Callable[..., Any] | None = None,
     ) -> list[tuple[Any, dict]]:
         """Filter items by relevance.
 

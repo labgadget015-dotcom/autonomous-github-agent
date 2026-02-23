@@ -8,6 +8,7 @@ import logging
 import random
 import time
 from collections import defaultdict, deque
+from collections.abc import Callable
 from typing import Any
 
 logger = logging.getLogger(__name__)
@@ -24,7 +25,7 @@ class APIOptimizationAgent:
             discount_factor: Discount factor for future rewards
         """
         # Q-learning parameters
-        self.q_table = defaultdict(lambda: defaultdict(float))
+        self.q_table: Any = defaultdict(lambda: defaultdict(float))
         self.learning_rate = learning_rate
         self.discount_factor = discount_factor
         self.epsilon = 0.1  # Exploration rate
@@ -33,7 +34,7 @@ class APIOptimizationAgent:
         self.strategies = ["batch", "sequential", "parallel", "adaptive"]
 
         # Performance history
-        self.history = deque(maxlen=1000)
+        self.history: deque[Any] = deque(maxlen=1000)
         self.rate_limit_violations = 0
         self.total_requests = 0
 
@@ -100,7 +101,7 @@ class APIOptimizationAgent:
             logger.debug(f"Exploring strategy: {strategy}")
         else:
             # Exploit: best known strategy
-            strategy = max(self.q_table[state], key=self.q_table[state].get)
+            strategy = max(self.q_table[state], key=lambda s: self.q_table[state][s])
             logger.debug(f"Exploiting best strategy: {strategy}")
 
         return strategy
@@ -181,7 +182,7 @@ class APIOptimizationAgent:
         return reward
 
     def execute_with_strategy(
-        self, strategy: str, api_calls: list[callable], timeout: float = 30.0
+        self, strategy: str, api_calls: list[Callable[..., Any]], timeout: float = 30.0
     ) -> dict[str, Any]:
         """Execute API calls using specified strategy.
 
@@ -245,7 +246,9 @@ class APIOptimizationAgent:
             "strategy": strategy,
         }
 
-    def _execute_batch(self, api_calls: list[callable], timeout: float) -> list[Any]:
+    def _execute_batch(
+        self, api_calls: list[Callable[..., Any]], timeout: float
+    ) -> list[Any]:
         """Execute calls in batches."""
         # Simplified batching - in reality would use GraphQL or batch endpoints
         results = []
@@ -253,7 +256,9 @@ class APIOptimizationAgent:
             results.append(call())
         return results
 
-    def _execute_adaptive(self, api_calls: list[callable], timeout: float) -> list[Any]:
+    def _execute_adaptive(
+        self, api_calls: list[Callable[..., Any]], timeout: float
+    ) -> list[Any]:
         """Execute calls adaptively based on rate limits."""
         results = []
         start_time = time.time()

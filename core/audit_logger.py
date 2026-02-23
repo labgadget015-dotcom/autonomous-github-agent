@@ -144,7 +144,7 @@ class AuditLogger:
     async def _write_to_postgres(self, log_entry: dict[str, Any]):
         """Write log entry to PostgreSQL"""
         try:
-            cursor = self._pg_conn.cursor()
+            cursor = self._pg_conn.cursor()  # type: ignore[attr-defined]
             cursor.execute(
                 """
                 INSERT INTO audit_logs
@@ -162,7 +162,7 @@ class AuditLogger:
                     log_entry["rollback"],
                 ),
             )
-            self._pg_conn.commit()
+            self._pg_conn.commit()  # type: ignore[attr-defined]
         except Exception as e:
             logger.error(f"Failed to write to PostgreSQL: {str(e)}")
 

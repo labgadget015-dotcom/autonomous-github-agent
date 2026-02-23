@@ -40,14 +40,14 @@ class MessageQueue:
         self.config = config
         self._redis_client = None
         self._pubsub = None
-        self._subscriptions = {}
+        self._subscriptions: dict[str, Any] = {}
 
         # Initialize Redis if available
         if self._init_redis():
             logger.info("Message queue initialized with Redis")
         else:
             logger.warning("Redis not available. Using in-memory queue.")
-            self._in_memory_queue = []
+            self._in_memory_queue: list[Any] = []
 
     def _init_redis(self) -> bool:
         """
@@ -68,8 +68,8 @@ class MessageQueue:
             )
 
             # Test connection
-            self._redis_client.ping()
-            self._pubsub = self._redis_client.pubsub()
+            self._redis_client.ping()  # type: ignore[attr-defined]
+            self._pubsub = self._redis_client.pubsub()  # type: ignore[attr-defined]
 
             return True
 

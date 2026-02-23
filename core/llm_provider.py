@@ -140,7 +140,7 @@ class LLMClient:
 
         messages.append({"role": "user", "content": prompt})
 
-        response = self._client.chat.completions.create(
+        response = self._client.chat.completions.create(  # type: ignore[attr-defined]
             model=self.model,
             messages=messages,
             max_tokens=max_tokens,
@@ -182,7 +182,7 @@ class LLMClient:
         if system_prompt:
             kwargs["system"] = system_prompt
 
-        response = self._client.messages.create(**kwargs)
+        response = self._client.messages.create(**kwargs)  # type: ignore[attr-defined]
 
         # Track token usage
         if hasattr(response, "usage"):
