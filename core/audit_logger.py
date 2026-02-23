@@ -2,9 +2,11 @@
 """
 Audit Logger
 
-Provides immutable audit trail with rollback instructions for all agent actions.
+Provides immutable, hash-chained audit trail with rollback instructions.
+Each entry stores sha256(prev_hash + entry_json) for tamper detection.
 """
 
+import hashlib
 import json
 import logging
 from datetime import datetime
@@ -43,6 +45,9 @@ class AuditLogger:
         log_path = config.get("audit_log_path", "logs/audit.jsonl")
         self.log_file = Path(log_path)
         self.log_file.parent.mkdir(parents=True, exist_ok=True)
+
+        # Hash-chain: each entry is chained to the previous via SHA-256
+        self._chain_head: str = self._load_chain_head()
 
         # PostgreSQL connection (if configured)
         self._pg_conn = None
@@ -102,18 +107,8 @@ class AuditLogger:
         task_id: str,
         status: str = "success",
     ):
-        """
-        Log an agent action to the audit trail.
-
-        Args:
-            agent: Name of the agent performing the action
-            action: Action type
-            params: Action parameters
-            result: Action result
-            task_id: Unique task identifier
-            status: Action status ('success', 'error', 'pending')
-        """
-        log_entry = {
+        """Log an agent action to the hash-chained audit trail."""
+        entry_body = {
             "timestamp": datetime.now().isoformat(),
             "task_id": task_id,
             "agent": agent,
@@ -123,15 +118,17 @@ class AuditLogger:
             "status": status,
             "rollback": self._generate_rollback_instructions(action, params, result),
         }
+        chain_hash = self._compute_chain_hash(self._chain_head, entry_body)
+        log_entry = {**entry_body, "chain_hash": chain_hash}
+        self._chain_head = chain_hash
 
-        # Write to local file
         await self._write_to_file(log_entry)
-
-        # Write to PostgreSQL if configured
         if self._pg_conn:
             await self._write_to_postgres(log_entry)
-
-        logger.info(f"Logged action: {agent}.{action} (task_id: {task_id})")
+        logger.info(
+            "Logged action: %s.%s (task_id: %s, hash: %s)",
+            agent, action, task_id, chain_hash[:12],
+        )
 
     async def _write_to_file(self, log_entry: dict[str, Any]):
         """Write log entry to local file"""
@@ -165,6 +162,65 @@ class AuditLogger:
             self._pg_conn.commit()  # type: ignore[attr-defined]
         except Exception as e:
             logger.error(f"Failed to write to PostgreSQL: {str(e)}")
+
+    # ------------------------------------------------------------------
+    # Hash-chain helpers
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def _compute_chain_hash(prev_hash: str, entry: dict[str, Any]) -> str:
+        """SHA-256 of prev_hash + canonical JSON of entry (no chain_hash key)."""
+        payload = prev_hash + json.dumps(entry, sort_keys=True, default=str)
+        return hashlib.sha256(payload.encode()).hexdigest()
+
+    def _load_chain_head(self) -> str:
+        """Read the chain_hash of the last entry in the log file (or genesis)."""
+        genesis = "0" * 64
+        if not self.log_file.exists():
+            return genesis
+        last_hash = genesis
+        try:
+            with open(self.log_file) as f:
+                for line in f:
+                    line = line.strip()
+                    if not line:
+                        continue
+                    entry = json.loads(line)
+                    last_hash = entry.get("chain_hash", last_hash)
+        except Exception:
+            pass
+        return last_hash
+
+    def verify_chain(self) -> tuple[bool, list[str]]:
+        """Verify the integrity of the entire audit log chain.
+
+        Returns:
+            (ok, errors) — ok is True if chain is intact; errors lists
+            any detected tampering with entry identifiers.
+        """
+        errors: list[str] = []
+        if not self.log_file.exists():
+            return True, []
+        prev_hash = "0" * 64
+        try:
+            with open(self.log_file) as f:
+                for lineno, line in enumerate(f, 1):
+                    line = line.strip()
+                    if not line:
+                        continue
+                    entry = json.loads(line)
+                    stored_hash = entry.pop("chain_hash", None)
+                    expected = self._compute_chain_hash(prev_hash, entry)
+                    if stored_hash != expected:
+                        errors.append(
+                            f"Line {lineno} (task_id={entry.get('task_id')}): "
+                            f"hash mismatch — expected {expected[:16]}… "
+                            f"got {str(stored_hash)[:16]}…"
+                        )
+                    prev_hash = stored_hash or expected
+        except Exception as exc:
+            errors.append(f"Parse error: {exc}")
+        return len(errors) == 0, errors
 
     def _generate_rollback_instructions(
         self, action: str, params: dict[str, Any], result: dict[str, Any]

@@ -3,11 +3,14 @@
 LLM Provider
 
 Provides an abstraction layer for LLM providers (OpenAI, Anthropic, etc.)
-with unified interface and error handling.
+with unified interface, error handling, and per-session cost tracking.
 """
 
+import json
 import logging
+from datetime import datetime
 from enum import Enum
+from pathlib import Path
 from typing import Any
 
 logging.basicConfig(level=logging.INFO)
@@ -51,6 +54,22 @@ class LLMClient:
         self._initialize_client()
 
         self.total_tokens = 0
+
+        # Cost tracking — prices per 1k tokens (input, output) in USD
+        self._PRICING: dict[str, tuple[float, float]] = {
+            "gpt-4o": (0.005, 0.015),
+            "gpt-4o-mini": (0.00015, 0.0006),
+            "gpt-4": (0.03, 0.06),
+            "gpt-4-turbo": (0.01, 0.03),
+            "gpt-3.5-turbo": (0.0005, 0.0015),
+            "claude-3-5-sonnet-20241022": (0.003, 0.015),
+            "claude-3-5-haiku-20241022": (0.001, 0.005),
+            "claude-3-opus-20240229": (0.015, 0.075),
+        }
+        self._session_input_tokens: int = 0
+        self._session_output_tokens: int = 0
+        self._session_cost_usd: float = 0.0
+        self._costs_file = Path(self.config.get("llm_costs_file", ".llm_costs.jsonl"))
         logger.info(
             f"LLM client initialized with provider: {self.provider}, model: {self.model}"  # noqa: E501
         )
@@ -150,6 +169,9 @@ class LLMClient:
         # Track token usage
         if hasattr(response, "usage"):
             self.total_tokens += response.usage.total_tokens
+            self._record_cost(
+                response.usage.prompt_tokens, response.usage.completion_tokens
+            )
 
         return {
             "content": response.choices[0].message.content,
@@ -189,6 +211,7 @@ class LLMClient:
             self.total_tokens += (
                 response.usage.input_tokens + response.usage.output_tokens
             )
+            self._record_cost(response.usage.input_tokens, response.usage.output_tokens)
 
         return {
             "content": response.content[0].text,
@@ -216,3 +239,49 @@ class LLMClient:
     def reset_token_usage(self):
         """Reset token usage counter"""
         self.total_tokens = 0
+
+    # ------------------------------------------------------------------
+    # Cost tracking
+    # ------------------------------------------------------------------
+
+    def _record_cost(self, input_tokens: int, output_tokens: int) -> None:
+        """Accumulate cost and append a record to the costs JSONL file."""
+        price_in, price_out = self._PRICING.get(self.model, (0.01, 0.03))
+        call_cost = (
+            (input_tokens / 1000 * price_in) + (output_tokens / 1000 * price_out)
+        )
+        self._session_input_tokens += input_tokens
+        self._session_output_tokens += output_tokens
+        self._session_cost_usd += call_cost
+        record = {
+            "timestamp": datetime.now().isoformat(),
+            "model": self.model,
+            "input_tokens": input_tokens,
+            "output_tokens": output_tokens,
+            "cost_usd": round(call_cost, 6),
+            "session_total_usd": round(self._session_cost_usd, 6),
+        }
+        logger.info(
+            "LLM cost: $%.4f (in=%d, out=%d) session_total=$%.4f",
+            call_cost, input_tokens, output_tokens, self._session_cost_usd,
+        )
+        try:
+            with open(self._costs_file, "a") as f:
+                f.write(json.dumps(record) + "\n")
+        except Exception as exc:
+            logger.warning("Failed to write cost record: %s", exc)
+
+    def get_session_cost(self) -> dict[str, Any]:
+        """Return session-level token and cost summary."""
+        return {
+            "model": self.model,
+            "input_tokens": self._session_input_tokens,
+            "output_tokens": self._session_output_tokens,
+            "total_tokens": self._session_input_tokens + self._session_output_tokens,
+            "cost_usd": round(self._session_cost_usd, 6),
+        }
+
+    def cost_limit_exceeded(self, max_usd: float) -> bool:
+        """Return True if session cost has exceeded *max_usd*."""
+        return self._session_cost_usd > max_usd
+
