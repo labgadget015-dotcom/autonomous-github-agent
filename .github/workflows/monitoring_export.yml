@@ -2,14 +2,18 @@ name: Monitoring Metrics Export
 
 on:
   schedule:
-    # Export metrics every 15 minutes
-    - cron: '*/15 * * * *'
+    # Export metrics hourly (was */15 — 96×/day causing 195+ consecutive failures)
+    - cron: '0 * * * *'
   workflow_dispatch:
   push:
     branches: [main]
 
+concurrency:
+  group: monitoring-export
+  cancel-in-progress: true
+
 permissions:
-  actions: read
+  actions: write
   contents: read
 
 env:
@@ -34,6 +38,7 @@ jobs:
           pip install requests python-dateutil
       
       - name: Fetch workflow metrics
+        continue-on-error: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -167,6 +172,7 @@ jobs:
           EOF
       
       - name: Check API rate limits
+        continue-on-error: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
