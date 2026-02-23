@@ -4,14 +4,16 @@ This module provides comprehensive performance tracking and benchmarking
 capabilities for the GitHub Autopilot AI optimization system.
 """
 
-import time
-import psutil
-import logging
-from typing import Dict, Any, Callable, Optional
-from datetime import datetime
-from collections import deque
-import statistics
 import json
+import logging
+import statistics
+import time
+from collections import deque
+from collections.abc import Callable
+from datetime import datetime
+from typing import Any
+
+import psutil
 
 logger = logging.getLogger(__name__)
 
@@ -137,7 +139,7 @@ class PerformanceMonitor:
 
         return result
 
-    def get_metric_stats(self, metric_name: str) -> Optional[Dict[str, float]]:
+    def get_metric_stats(self, metric_name: str) -> dict[str, float] | None:
         """Get statistics for a specific metric.
 
         Args:
@@ -165,7 +167,7 @@ class PerformanceMonitor:
             "latest": values[-1] if values else None,
         }
 
-    def get_benchmark_stats(self, name: str) -> Optional[Dict[str, Any]]:
+    def get_benchmark_stats(self, name: str) -> dict[str, Any] | None:
         """Get statistics for a specific benchmark.
 
         Args:
@@ -213,7 +215,7 @@ class PerformanceMonitor:
         }
         logger.info("Baseline metrics established")
 
-    def compare_to_baseline(self) -> Dict[str, Dict[str, float]]:
+    def compare_to_baseline(self) -> dict[str, dict[str, float]]:
         """Compare current metrics to baseline.
 
         Returns:
@@ -243,7 +245,7 @@ class PerformanceMonitor:
 
         return comparison
 
-    def get_summary(self) -> Dict[str, Any]:
+    def get_summary(self) -> dict[str, Any]:
         """Get comprehensive performance summary.
 
         Returns:
@@ -326,7 +328,7 @@ class PerformanceMonitor:
 
         print("\n" + "=" * 70 + "\n")
 
-    def check_performance_targets(self, targets: Dict[str, float]) -> Dict[str, bool]:
+    def check_performance_targets(self, targets: dict[str, float]) -> dict[str, bool]:
         """Check if performance meets target thresholds.
 
         Args:
@@ -385,7 +387,7 @@ if __name__ == "__main__":
     # Run benchmarks
     print("Running performance benchmarks...")
 
-    for i in range(5):
+    for _ in range(5):
         result = monitor.benchmark(example_task, name="example_task")
 
     # Record some metrics
@@ -400,7 +402,7 @@ if __name__ == "__main__":
     monitor.set_baseline()
 
     # Simulate improvement
-    for i in range(3):
+    for _ in range(3):
         monitor.record_metric("cache_hit_rate", 0.92)
         monitor.record_metric("api_calls_per_run", 3)
 

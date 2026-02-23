@@ -5,11 +5,11 @@ Audit Logger
 Provides immutable audit trail with rollback instructions for all agent actions.
 """
 
-import logging
 import json
-from typing import Dict, Any, Optional
+import logging
 from datetime import datetime
 from pathlib import Path
+from typing import Any
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -27,7 +27,7 @@ class AuditLogger:
     - S3 archival support (optional)
     """
 
-    def __init__(self, config: Dict[str, Any]):
+    def __init__(self, config: dict[str, Any]):
         """
         Initialize audit logger.
 
@@ -97,8 +97,8 @@ class AuditLogger:
         self,
         agent: str,
         action: str,
-        params: Dict[str, Any],
-        result: Dict[str, Any],
+        params: dict[str, Any],
+        result: dict[str, Any],
         task_id: str,
         status: str = "success",
     ):
@@ -133,7 +133,7 @@ class AuditLogger:
 
         logger.info(f"Logged action: {agent}.{action} (task_id: {task_id})")
 
-    async def _write_to_file(self, log_entry: Dict[str, Any]):
+    async def _write_to_file(self, log_entry: dict[str, Any]):
         """Write log entry to local file"""
         try:
             with open(self.log_file, "a") as f:
@@ -141,13 +141,13 @@ class AuditLogger:
         except Exception as e:
             logger.error(f"Failed to write to audit log file: {str(e)}")
 
-    async def _write_to_postgres(self, log_entry: Dict[str, Any]):
+    async def _write_to_postgres(self, log_entry: dict[str, Any]):
         """Write log entry to PostgreSQL"""
         try:
             cursor = self._pg_conn.cursor()
             cursor.execute(
                 """
-                INSERT INTO audit_logs 
+                INSERT INTO audit_logs
                 (timestamp, task_id, agent, action, params, result, status, rollback)
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
                 """,
@@ -167,7 +167,7 @@ class AuditLogger:
             logger.error(f"Failed to write to PostgreSQL: {str(e)}")
 
     def _generate_rollback_instructions(
-        self, action: str, params: Dict[str, Any], result: Dict[str, Any]
+        self, action: str, params: dict[str, Any], result: dict[str, Any]
     ) -> str:
         """
         Generate rollback instructions for an action.
@@ -182,10 +182,10 @@ class AuditLogger:
         """
         rollback_map = {
             "create_issue": "Close the issue manually or via API",
-            "create_branch": f"Delete branch: git branch -D {params.get('branch_name', 'unknown')}",
+            "create_branch": f"Delete branch: git branch -D {params.get('branch_name', 'unknown')}",  # noqa: E501
             "merge_pr": "Revert the merge commit",
-            "delete_branch": f"Restore branch from commit: {result.get('last_commit', 'unknown')}",
-            "update_file": f"Revert file changes: git checkout {result.get('previous_sha', 'HEAD~1')} -- {params.get('file_path', '')}",
+            "delete_branch": f"Restore branch from commit: {result.get('last_commit', 'unknown')}",  # noqa: E501
+            "update_file": f"Revert file changes: git checkout {result.get('previous_sha', 'HEAD~1')} -- {params.get('file_path', '')}",  # noqa: E501
             "add_label": f"Remove label: {params.get('label', '')}",
             "assign_issue": f"Unassign user: {params.get('assignee', '')}",
         }
@@ -213,8 +213,8 @@ class AuditLogger:
 
     def get_logs(
         self,
-        agent: Optional[str] = None,
-        action: Optional[str] = None,
+        agent: str | None = None,
+        action: str | None = None,
         limit: int = 100,
     ) -> list:
         """
@@ -231,7 +231,7 @@ class AuditLogger:
         logs = []
 
         try:
-            with open(self.log_file, "r") as f:
+            with open(self.log_file) as f:
                 for line in f:
                     entry = json.loads(line.strip())
 

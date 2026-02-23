@@ -4,10 +4,10 @@ This module uses Natural Language Processing to analyze and filter
 repository content for relevance and importance.
 """
 
-import re
 import logging
-from typing import Dict, List, Any, Tuple
+import re
 from collections import Counter
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -96,7 +96,7 @@ class NLPRelevanceFilter:
             r"(help|question|wondering|confused|understand)",
         ]
 
-    def analyze_relevance(self, text: str, context: str = "") -> Dict[str, Any]:
+    def analyze_relevance(self, text: str, context: str = "") -> dict[str, Any]:
         """Analyze text relevance using NLP techniques.
 
         Args:
@@ -149,7 +149,7 @@ class NLPRelevanceFilter:
             "sentiment": self._analyze_sentiment(text_lower),
         }
 
-    def _extract_entities(self, text: str) -> List[str]:
+    def _extract_entities(self, text: str) -> list[str]:
         """Extract entities from text (simplified without spaCy).
 
         Args:
@@ -179,7 +179,7 @@ class NLPRelevanceFilter:
 
         return entities
 
-    def _extract_keywords(self, text: str) -> List[str]:
+    def _extract_keywords(self, text: str) -> list[str]:
         """Extract important keywords from text.
 
         Args:
@@ -246,7 +246,7 @@ class NLPRelevanceFilter:
         # Return most common
         return [word for word, _ in word_counts.most_common(20)]
 
-    def _calculate_urgency(self, text: str, keywords: List[str]) -> float:
+    def _calculate_urgency(self, text: str, keywords: list[str]) -> float:
         """Calculate urgency score.
 
         Args:
@@ -273,7 +273,7 @@ class NLPRelevanceFilter:
 
         return min(score, 1.0)
 
-    def _calculate_importance(self, text: str, keywords: List[str]) -> float:
+    def _calculate_importance(self, text: str, keywords: list[str]) -> float:
         """Calculate importance score.
 
         Args:
@@ -303,7 +303,7 @@ class NLPRelevanceFilter:
 
         return min(score, 1.0)
 
-    def _calculate_action_required(self, text: str, keywords: List[str]) -> float:
+    def _calculate_action_required(self, text: str, keywords: list[str]) -> float:
         """Calculate action required score.
 
         Args:
@@ -332,7 +332,7 @@ class NLPRelevanceFilter:
 
         return min(score, 1.0)
 
-    def _calculate_noise_level(self, text: str, keywords: List[str]) -> float:
+    def _calculate_noise_level(self, text: str, keywords: list[str]) -> float:
         """Calculate noise level (inverse of signal quality).
 
         Args:
@@ -481,7 +481,7 @@ class NLPRelevanceFilter:
         else:
             return "neutral"
 
-    def _default_analysis(self) -> Dict[str, Any]:
+    def _default_analysis(self) -> dict[str, Any]:
         """Return default analysis for empty/invalid input."""
         return {
             "relevance_score": 0.0,
@@ -496,8 +496,8 @@ class NLPRelevanceFilter:
         }
 
     def filter_items(
-        self, items: List[Any], min_relevance: float = 0.3, get_text: callable = None
-    ) -> List[Tuple[Any, Dict]]:
+        self, items: list[Any], min_relevance: float = 0.3, get_text: callable = None
+    ) -> list[tuple[Any, dict]]:
         """Filter items by relevance.
 
         Args:
@@ -565,5 +565,5 @@ if __name__ == "__main__":
         print(f"Action Required: {analysis['action_required']}")
         print(f"Sentiment: {analysis['sentiment']}")
         print(
-            f"Key Entities: {', '.join(analysis['key_entities']) if analysis['key_entities'] else 'None'}"
+            f"Key Entities: {', '.join(analysis['key_entities']) if analysis['key_entities'] else 'None'}"  # noqa: E501
         )

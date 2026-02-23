@@ -7,13 +7,13 @@ GitHub integration, LLM integration, audit logging, and policy enforcement.
 """
 
 import logging
-from typing import Dict, Any
 from abc import ABC, abstractmethod
 from datetime import datetime
+from typing import Any
 
+from .audit_logger import AuditLogger
 from .github_client import GitHubClient
 from .llm_provider import LLMClient
-from .audit_logger import AuditLogger
 from .policy_engine import PolicyEngine
 
 logging.basicConfig(level=logging.INFO)
@@ -32,7 +32,7 @@ class BaseAgent(ABC):
     - Policy enforcement
     """
 
-    def __init__(self, name: str, config: Dict[str, Any]):
+    def __init__(self, name: str, config: dict[str, Any]):
         """
         Initialize the base agent.
 
@@ -50,7 +50,7 @@ class BaseAgent(ABC):
         self._initialized = True
         logger.info(f"Initialized agent: {self.name}")
 
-    async def execute(self, task: Dict[str, Any]) -> Dict[str, Any]:
+    async def execute(self, task: dict[str, Any]) -> dict[str, Any]:
         """
         Execute a task with full lifecycle management.
 
@@ -136,7 +136,7 @@ class BaseAgent(ABC):
                 "agent": self.name,
             }
 
-    def validate(self, task: Dict[str, Any]) -> bool:
+    def validate(self, task: dict[str, Any]) -> bool:
         """
         Validate task parameters.
 
@@ -150,7 +150,7 @@ class BaseAgent(ABC):
         return all(field in task for field in required_fields)
 
     @abstractmethod
-    async def _execute(self, task: Dict[str, Any]) -> Dict[str, Any]:
+    async def _execute(self, task: dict[str, Any]) -> dict[str, Any]:
         """
         Execute the actual task logic. Must be implemented by subclasses.
 
@@ -162,7 +162,7 @@ class BaseAgent(ABC):
         """
         pass
 
-    def get_capabilities(self) -> Dict[str, Any]:
+    def get_capabilities(self) -> dict[str, Any]:
         """
         Get agent capabilities.
 

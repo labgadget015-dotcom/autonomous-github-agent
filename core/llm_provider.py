@@ -7,8 +7,8 @@ with unified interface and error handling.
 """
 
 import logging
-from typing import Dict, Any, Optional
 from enum import Enum
+from typing import Any
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -32,7 +32,7 @@ class LLMClient:
     - Token usage tracking
     """
 
-    def __init__(self, config: Dict[str, Any]):
+    def __init__(self, config: dict[str, Any]):
         """
         Initialize LLM client.
 
@@ -52,7 +52,7 @@ class LLMClient:
 
         self.total_tokens = 0
         logger.info(
-            f"LLM client initialized with provider: {self.provider}, model: {self.model}"
+            f"LLM client initialized with provider: {self.provider}, model: {self.model}"  # noqa: E501
         )
 
     def _get_default_model(self) -> str:
@@ -93,10 +93,10 @@ class LLMClient:
     async def generate(
         self,
         prompt: str,
-        system_prompt: Optional[str] = None,
+        system_prompt: str | None = None,
         max_tokens: int = 1000,
         temperature: float = 0.7,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Generate text using the LLM.
 
@@ -128,10 +128,10 @@ class LLMClient:
     async def _generate_openai(
         self,
         prompt: str,
-        system_prompt: Optional[str],
+        system_prompt: str | None,
         max_tokens: int,
         temperature: float,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Generate text using OpenAI"""
         messages = []
 
@@ -167,10 +167,10 @@ class LLMClient:
     async def _generate_anthropic(
         self,
         prompt: str,
-        system_prompt: Optional[str],
+        system_prompt: str | None,
         max_tokens: int,
         temperature: float,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Generate text using Anthropic"""
         kwargs = {
             "model": self.model,

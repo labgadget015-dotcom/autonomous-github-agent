@@ -4,11 +4,11 @@ This module provides intelligent API request optimization to minimize
 rate limiting and maximize throughput using adaptive strategies.
 """
 
-import time
 import logging
-from typing import Dict, List, Any, Tuple
-from collections import deque, defaultdict
 import random
+import time
+from collections import defaultdict, deque
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -46,7 +46,7 @@ class APIOptimizationAgent:
 
     def get_state(
         self, rate_limit_remaining: int, data_staleness: float, priority: str
-    ) -> Tuple:
+    ) -> tuple:
         """Get current state for decision making.
 
         Args:
@@ -63,7 +63,7 @@ class APIOptimizationAgent:
 
         return (limit_bucket, staleness_bucket, priority)
 
-    def _discretize(self, value: float, buckets: List[float]) -> int:
+    def _discretize(self, value: float, buckets: list[float]) -> int:
         """Discretize continuous value into buckets.
 
         Args:
@@ -78,7 +78,7 @@ class APIOptimizationAgent:
                 return i
         return len(buckets) - 1
 
-    def choose_strategy(self, state: Tuple, force_exploit: bool = False) -> str:
+    def choose_strategy(self, state: tuple, force_exploit: bool = False) -> str:
         """Choose API request strategy for current state.
 
         Args:
@@ -106,7 +106,7 @@ class APIOptimizationAgent:
         return strategy
 
     def update_q_value(
-        self, state: Tuple, action: str, reward: float, next_state: Tuple
+        self, state: tuple, action: str, reward: float, next_state: tuple
     ):
         """Update Q-value based on experience.
 
@@ -181,8 +181,8 @@ class APIOptimizationAgent:
         return reward
 
     def execute_with_strategy(
-        self, strategy: str, api_calls: List[callable], timeout: float = 30.0
-    ) -> Dict[str, Any]:
+        self, strategy: str, api_calls: list[callable], timeout: float = 30.0
+    ) -> dict[str, Any]:
         """Execute API calls using specified strategy.
 
         Args:
@@ -245,7 +245,7 @@ class APIOptimizationAgent:
             "strategy": strategy,
         }
 
-    def _execute_batch(self, api_calls: List[callable], timeout: float) -> List[Any]:
+    def _execute_batch(self, api_calls: list[callable], timeout: float) -> list[Any]:
         """Execute calls in batches."""
         # Simplified batching - in reality would use GraphQL or batch endpoints
         results = []
@@ -253,7 +253,7 @@ class APIOptimizationAgent:
             results.append(call())
         return results
 
-    def _execute_adaptive(self, api_calls: List[callable], timeout: float) -> List[Any]:
+    def _execute_adaptive(self, api_calls: list[callable], timeout: float) -> list[Any]:
         """Execute calls adaptively based on rate limits."""
         results = []
         start_time = time.time()
@@ -272,7 +272,7 @@ class APIOptimizationAgent:
 
         return results
 
-    def optimize_request_batch(self, requests: List[Dict]) -> List[List[Dict]]:
+    def optimize_request_batch(self, requests: list[dict]) -> list[list[dict]]:
         """Optimize batching of requests.
 
         Args:
@@ -317,7 +317,7 @@ class APIOptimizationAgent:
 
         logger.info(f"Rate limits updated: {remaining}/{limit} remaining")
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Get optimization statistics.
 
         Returns:
