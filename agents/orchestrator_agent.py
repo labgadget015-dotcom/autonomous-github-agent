@@ -6,12 +6,12 @@ Master orchestrator that manages task delegation, routing, and coordination
 among specialized agents.
 """
 
-import logging
 import asyncio
-from typing import Dict, Any, List, Optional
-from datetime import datetime
+import logging
 import sys
+from datetime import datetime
 from pathlib import Path
+from typing import Any
 
 # Add project root to path
 project_root = Path(__file__).parent.parent
@@ -36,7 +36,7 @@ class OrchestratorAgent(BaseAgent):
     - Load balancing
     """
 
-    def __init__(self, config: Dict[str, Any]):
+    def __init__(self, config: dict[str, Any]):
         """
         Initialize orchestrator agent.
 
@@ -72,7 +72,7 @@ class OrchestratorAgent(BaseAgent):
         self.agent_registry[agent_name] = agent_instance
         logger.info(f"Registered agent: {agent_name}")
 
-    def get_supported_actions(self) -> List[str]:
+    def get_supported_actions(self) -> list[str]:
         """
         Get list of actions this agent supports.
 
@@ -88,7 +88,7 @@ class OrchestratorAgent(BaseAgent):
             "get_agent_status",
         ]
 
-    async def _execute(self, task: Dict[str, Any]) -> Dict[str, Any]:
+    async def _execute(self, task: dict[str, Any]) -> dict[str, Any]:
         """
         Execute orchestrator task.
 
@@ -122,7 +122,7 @@ class OrchestratorAgent(BaseAgent):
         else:
             raise ValueError(f"Unknown action: {action}")
 
-    async def _delegate_task(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    async def _delegate_task(self, params: dict[str, Any]) -> dict[str, Any]:
         """
         Delegate a task to the appropriate agent.
 
@@ -176,7 +176,7 @@ class OrchestratorAgent(BaseAgent):
             logger.error(f"Error delegating task to {agent_name}: {str(e)}")
             return {"status": "error", "error": str(e), "agent": agent_name}
 
-    def _determine_agent(self, task_type: str) -> Optional[str]:
+    def _determine_agent(self, task_type: str) -> str | None:
         """
         Determine which agent should handle a task type.
 
@@ -200,7 +200,7 @@ class OrchestratorAgent(BaseAgent):
 
         return task_agent_map.get(task_type)
 
-    async def _route_task(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    async def _route_task(self, params: dict[str, Any]) -> dict[str, Any]:
         """
         Route a task to an agent using the configured routing strategy.
 
@@ -230,7 +230,7 @@ class OrchestratorAgent(BaseAgent):
             "priority": priority,
         }
 
-    async def _execute_parallel(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    async def _execute_parallel(self, params: dict[str, Any]) -> dict[str, Any]:
         """
         Execute multiple tasks in parallel.
 
@@ -272,7 +272,7 @@ class OrchestratorAgent(BaseAgent):
 
         return {"status": "completed", "total_tasks": len(tasks), "results": results}
 
-    async def _execute_sequential(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    async def _execute_sequential(self, params: dict[str, Any]) -> dict[str, Any]:
         """
         Execute multiple tasks sequentially.
 
@@ -311,7 +311,7 @@ class OrchestratorAgent(BaseAgent):
             "results": results,
         }
 
-    async def _create_approval_issue(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    async def _create_approval_issue(self, params: dict[str, Any]) -> dict[str, Any]:
         """
         Create a GitHub issue for approval.
 
@@ -339,9 +339,9 @@ class OrchestratorAgent(BaseAgent):
         body = f"""
 ## Approval Request
 
-**Action:** {action}  
-**Agent:** {agent}  
-**Reason:** {reason}  
+**Action:** {action}  # noqa: W291
+**Agent:** {agent}  # noqa: W291
+**Reason:** {reason}  # noqa: W291
 **Requested:** {datetime.now().isoformat()}
 
 ### Task Details
@@ -350,7 +350,7 @@ class OrchestratorAgent(BaseAgent):
 ```
 
 ### Instructions
-To approve this action, comment with: `/approve`  
+To approve this action, comment with: `/approve`  # noqa: W291
 To reject this action, comment with: `/reject`
 
 **Note:** This issue was automatically created by the Orchestrator Agent.
@@ -377,7 +377,7 @@ To reject this action, comment with: `/reject`
             logger.error(f"Error creating approval issue: {str(e)}")
             return {"status": "error", "error": str(e)}
 
-    async def _get_agent_status(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    async def _get_agent_status(self, params: dict[str, Any]) -> dict[str, Any]:
         """
         Get status of all registered agents.
 

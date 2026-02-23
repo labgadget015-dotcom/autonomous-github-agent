@@ -5,14 +5,15 @@ and predicts when cached data becomes stale, dramatically reducing API calls
 while maintaining data freshness.
 """
 
-import time
-import pickle
 import hashlib
-from typing import Any, Dict, List, Optional, Tuple
+import logging
+import pickle
+import time
 from collections import deque
+from typing import Any
+
 import numpy as np
 from sklearn.ensemble import RandomForestClassifier
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -78,7 +79,7 @@ class AccessPredictor:
         staleness_prob = self.staleness_model.predict_proba(features)[0][1]
         return staleness_prob
 
-    def predict_next_access(self, current_key: Optional[str] = None) -> List[str]:
+    def predict_next_access(self, current_key: str | None = None) -> list[str]:
         """Predict which keys are likely to be accessed next."""
         if len(self.access_history) < 100:
             return []
@@ -99,7 +100,7 @@ class AccessPredictor:
 
         return []
 
-    def train(self, staleness_data: List[Tuple[np.ndarray, bool]]):
+    def train(self, staleness_data: list[tuple[np.ndarray, bool]]):
         """Train the staleness prediction model."""
         if len(staleness_data) < 50:
             logger.warning("Insufficient training data for staleness model")
@@ -117,7 +118,7 @@ class IntelligentCache:
     """AI-powered cache with predictive invalidation and prefetching."""
 
     def __init__(self, max_size: int = 1000, ttl: int = 3600):
-        self.cache: Dict[str, Tuple[Any, float]] = {}
+        self.cache: dict[str, tuple[Any, float]] = {}
         self.max_size = max_size
         self.default_ttl = ttl
         self.predictor = AccessPredictor()
@@ -211,7 +212,7 @@ class IntelligentCache:
         self.cache.clear()
         logger.info("Cache cleared")
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get cache performance statistics."""
         total_requests = self.stats["hits"] + self.stats["misses"]
         hit_rate = self.stats["hits"] / total_requests if total_requests > 0 else 0
@@ -270,7 +271,7 @@ if __name__ == "__main__":
     # Test cache performance
     for i in range(100):
         repo_id = i % 10  # Access same 10 repos repeatedly
-        result = cache.get(f"repo_{repo_id}", lambda: expensive_api_call(repo_id))
+        result = cache.get(f"repo_{repo_id}", lambda r=repo_id: expensive_api_call(r))
 
         if i % 20 == 0:
             stats = cache.get_stats()

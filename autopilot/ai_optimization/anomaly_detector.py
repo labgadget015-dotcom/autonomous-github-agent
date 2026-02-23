@@ -5,7 +5,8 @@ helping to identify important updates and potential issues.
 """
 
 import logging
-from typing import Dict, List, Any, Optional, Tuple
+from typing import Any
+
 import numpy as np
 from sklearn.ensemble import IsolationForest
 from sklearn.preprocessing import StandardScaler
@@ -40,7 +41,7 @@ class AnomalyDetector:
             "documentation_ratio",
         ]
 
-    def establish_baseline(self, commits: List[Any]):
+    def establish_baseline(self, commits: list[Any]):
         """Establish baseline metrics from historical commits.
 
         Args:
@@ -85,7 +86,7 @@ class AnomalyDetector:
                 f"Insufficient data for training: {len(features_list)} commits"
             )
 
-    def _extract_commit_features(self, commit: Any) -> Optional[np.ndarray]:
+    def _extract_commit_features(self, commit: Any) -> np.ndarray | None:
         """Extract features from a commit object.
 
         Args:
@@ -166,7 +167,7 @@ class AnomalyDetector:
 
         return (churn + file_factor) / 100.0
 
-    def detect_significant_changes(self, commit: Any) -> Dict[str, Any]:
+    def detect_significant_changes(self, commit: Any) -> dict[str, Any]:
         """Detect if a commit represents a significant change.
 
         Args:
@@ -217,11 +218,11 @@ class AnomalyDetector:
             "explanation": explanation,
             "change_type": change_type,
             "features": {
-                name: float(value) for name, value in zip(self.feature_names, features)
+                name: float(value) for name, value in zip(self.feature_names, features, strict=False)  # noqa: E501
             },
         }
 
-    def _rule_based_detection(self, features: np.ndarray) -> Tuple[bool, float, float]:
+    def _rule_based_detection(self, features: np.ndarray) -> tuple[bool, float, float]:
         """Rule-based anomaly detection as fallback.
 
         Args:
@@ -250,8 +251,8 @@ class AnomalyDetector:
         else:
             # Compare to baseline
             deviations = []
-            for i, (value, mean, std) in enumerate(
-                zip(features, self.baseline["mean"], self.baseline["std"])
+            for _i, (value, mean, std) in enumerate(
+                zip(features, self.baseline["mean"], self.baseline["std"], strict=False)
             ):
                 if std > 0:
                     z_score = abs((value - mean) / std)
@@ -266,7 +267,7 @@ class AnomalyDetector:
 
         return is_anomaly, score, confidence
 
-    def _explain_anomaly(self, features: np.ndarray, baseline: Optional[Dict]) -> str:
+    def _explain_anomaly(self, features: np.ndarray, baseline: dict | None) -> str:
         """Generate human-readable explanation of anomaly.
 
         Args:
@@ -359,7 +360,7 @@ class AnomalyDetector:
         else:
             return "standard_update"
 
-    def analyze_commit_batch(self, commits: List[Any]) -> Dict[str, Any]:
+    def analyze_commit_batch(self, commits: list[Any]) -> dict[str, Any]:
         """Analyze a batch of commits for patterns.
 
         Args:

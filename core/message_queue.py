@@ -5,10 +5,11 @@ Message Queue
 Provides Redis-based inter-agent messaging for task coordination.
 """
 
-import logging
 import json
-from typing import Dict, Any, Optional, Callable
+import logging
+from collections.abc import Callable
 from datetime import datetime
+from typing import Any
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -25,7 +26,7 @@ class MessageQueue:
     - Priority queuing
     """
 
-    def __init__(self, config: Dict[str, Any]):
+    def __init__(self, config: dict[str, Any]):
         """
         Initialize message queue.
 
@@ -79,7 +80,7 @@ class MessageQueue:
             logger.error(f"Failed to connect to Redis: {str(e)}")
             return False
 
-    async def publish(self, channel: str, message: Dict[str, Any]):
+    async def publish(self, channel: str, message: dict[str, Any]):
         """
         Publish a message to a channel.
 
@@ -137,7 +138,7 @@ class MessageQueue:
             if channel in self._subscriptions:
                 del self._subscriptions[channel]
 
-    async def enqueue(self, queue_name: str, task: Dict[str, Any], priority: int = 0):
+    async def enqueue(self, queue_name: str, task: dict[str, Any], priority: int = 0):
         """
         Add a task to a queue.
 
@@ -171,7 +172,7 @@ class MessageQueue:
             self._in_memory_queue.append(task_with_metadata)
             self._in_memory_queue.sort(key=lambda x: -x["priority"])
 
-    async def dequeue(self, queue_name: str) -> Optional[Dict[str, Any]]:
+    async def dequeue(self, queue_name: str) -> dict[str, Any] | None:
         """
         Get the next task from a queue.
 

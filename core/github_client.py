@@ -8,11 +8,12 @@ and error handling.
 
 import logging
 import time
-from typing import Dict, Any, Optional, List
+from typing import Any
+
 from github import Github, GithubException
-from github.Repository import Repository
 from github.Issue import Issue
 from github.PullRequest import PullRequest
+from github.Repository import Repository
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -35,7 +36,7 @@ class GitHubClient:
     - Error handling
     """
 
-    def __init__(self, config: Dict[str, Any]):
+    def __init__(self, config: dict[str, Any]):
         """
         Initialize GitHub client.
 
@@ -70,7 +71,7 @@ class GitHubClient:
 
         self._last_request_time = time.time()
 
-    def check_rate_limit(self) -> Dict[str, Any]:
+    def check_rate_limit(self) -> dict[str, Any]:
         """
         Check current rate limit status.
 
@@ -113,8 +114,8 @@ class GitHubClient:
         repo: str,
         title: str,
         body: str,
-        labels: Optional[List[str]] = None,
-        assignees: Optional[List[str]] = None,
+        labels: list[str] | None = None,
+        assignees: list[str] | None = None,
     ) -> Issue:
         """
         Create a new issue in a repository.
@@ -192,8 +193,8 @@ class GitHubClient:
         owner: str,
         repo: str,
         state: str = "open",
-        labels: Optional[List[str]] = None,
-    ) -> List[Issue]:
+        labels: list[str] | None = None,
+    ) -> list[Issue]:
         """
         List issues in a repository.
 

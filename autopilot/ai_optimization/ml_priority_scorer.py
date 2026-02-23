@@ -5,10 +5,11 @@ and priority based on various features like age, activity, labels, and more.
 """
 
 import logging
-from typing import Dict, List, Any, Tuple
 from datetime import datetime, timedelta
+from typing import Any
+
 import numpy as np
-from sklearn.ensemble import RandomForestClassifier, GradientBoostingRegressor
+from sklearn.ensemble import GradientBoostingRegressor, RandomForestClassifier
 from sklearn.preprocessing import StandardScaler
 
 logger = logging.getLogger(__name__)
@@ -140,7 +141,7 @@ class MLPriorityScorer:
             # Return default features on error
             return np.zeros((1, len(self.feature_names)))
 
-    def _calculate_label_severity(self, labels: List) -> float:
+    def _calculate_label_severity(self, labels: list) -> float:
         """Calculate severity score based on labels.
 
         Args:
@@ -189,7 +190,7 @@ class MLPriorityScorer:
         except Exception:
             return 0.0
 
-    def score(self, item: Any) -> Dict[str, Any]:
+    def score(self, item: Any) -> dict[str, Any]:
         """Score an issue or PR for priority.
 
         Args:
@@ -286,7 +287,7 @@ class MLPriorityScorer:
 
         return score
 
-    def _explain_score(self, features: np.ndarray, score: float) -> Dict[str, Any]:
+    def _explain_score(self, features: np.ndarray, score: float) -> dict[str, Any]:
         """Generate explanation for the score.
 
         Args:
@@ -358,7 +359,7 @@ class MLPriorityScorer:
         else:
             return "minimal"
 
-    def train(self, training_data: List[Tuple[Any, float, int]]):
+    def train(self, training_data: list[tuple[Any, float, int]]):
         """Train the ML model with historical data.
 
         Args:

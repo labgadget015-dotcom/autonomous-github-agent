@@ -6,9 +6,10 @@ Provides governance rules and escalation logic for agent actions.
 """
 
 import logging
-import yaml
-from typing import Dict, Any, Optional
 from pathlib import Path
+from typing import Any
+
+import yaml
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -25,7 +26,7 @@ class PolicyEngine:
     - Escalation logic
     """
 
-    def __init__(self, config: Dict[str, Any]):
+    def __init__(self, config: dict[str, Any]):
         """
         Initialize policy engine.
 
@@ -48,10 +49,10 @@ class PolicyEngine:
             self.policies["requires_approval"] = config["requires_approval"]
 
         logger.info(
-            f"Policy engine initialized with {len(self.policies.get('requires_approval', []))} approval rules"
+            f"Policy engine initialized with {len(self.policies.get('requires_approval', []))} approval rules"  # noqa: E501
         )
 
-    def _load_policies(self, policy_file: str) -> Dict[str, Any]:
+    def _load_policies(self, policy_file: str) -> dict[str, Any]:
         """
         Load policies from YAML file.
 
@@ -64,7 +65,7 @@ class PolicyEngine:
         try:
             path = Path(policy_file)
             if path.exists():
-                with open(path, "r") as f:
+                with open(path) as f:
                     policies = yaml.safe_load(f)
                     logger.info(f"Loaded policies from {policy_file}")
                     return policies
@@ -75,7 +76,7 @@ class PolicyEngine:
             logger.error(f"Error loading policies: {str(e)}. Using defaults.")
             return self._get_default_policies()
 
-    def _get_default_policies(self) -> Dict[str, Any]:
+    def _get_default_policies(self) -> dict[str, Any]:
         """
         Get default policies.
 
@@ -107,7 +108,7 @@ class PolicyEngine:
             "approval_timeout_hours": 24,
         }
 
-    async def check_action(self, action: str, params: Dict[str, Any]) -> Dict[str, Any]:
+    async def check_action(self, action: str, params: dict[str, Any]) -> dict[str, Any]:
         """
         Check if an action requires approval.
 
@@ -148,7 +149,7 @@ class PolicyEngine:
         logger.info(f"Action '{action}' approved by default policy")
         return {"requires_approval": False, "reason": "Default approval"}
 
-    def _is_destructive_action(self, action: str, params: Dict[str, Any]) -> bool:
+    def _is_destructive_action(self, action: str, params: dict[str, Any]) -> bool:
         """
         Check if action appears destructive based on name or parameters.
 
@@ -199,7 +200,7 @@ class PolicyEngine:
                 self.policies["requires_approval"].remove(action)
                 logger.info(f"Removed approval rule for action: {action}")
 
-    def get_policies(self) -> Dict[str, Any]:
+    def get_policies(self) -> dict[str, Any]:
         """
         Get current policies.
 
@@ -208,12 +209,13 @@ class PolicyEngine:
         """
         return self.policies.copy()
 
-    def save_policies(self, policy_file: Optional[str] = None):
+    def save_policies(self, policy_file: str | None = None):
         """
         Save policies to file.
 
         Args:
-            policy_file: Optional path to save policies (uses config default if not provided)
+            policy_file: Optional path to save policies
+                (uses config default if not provided)
         """
         if not policy_file:
             policy_file = self.config.get("policy_file", "config/policies.yaml")

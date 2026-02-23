@@ -4,10 +4,10 @@ This module generates intelligent summaries of commits and repository changes
 using NLP techniques and pattern matching (simplified version without heavy models).
 """
 
-import re
 import logging
-from typing import Dict, List, Any, Set
+import re
 from collections import Counter, defaultdict
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -58,7 +58,7 @@ class CommitSummarizer:
             (r"\b(deploy|deployment|release)\b", "Deployment"),
         ]
 
-    def generate_summary(self, commits: List[Any]) -> Dict[str, Any]:
+    def generate_summary(self, commits: list[Any]) -> dict[str, Any]:
         """Generate intelligent summary from commits.
 
         Args:
@@ -145,7 +145,7 @@ class CommitSummarizer:
             "recommended_actions": recommended_actions,
         }
 
-    def _extract_themes(self, messages: List[str]) -> List[Dict[str, Any]]:
+    def _extract_themes(self, messages: list[str]) -> list[dict[str, Any]]:
         """Extract key themes from commit messages.
 
         Args:
@@ -192,7 +192,7 @@ class CommitSummarizer:
 
         return themes[:5]  # Top 5 themes
 
-    def _categorize_actions(self, messages: List[str]) -> Dict[str, int]:
+    def _categorize_actions(self, messages: list[str]) -> dict[str, int]:
         """Categorize commit actions.
 
         Args:
@@ -213,7 +213,7 @@ class CommitSummarizer:
 
         return dict(actions)
 
-    def _identify_components(self, messages: List[str]) -> Dict[str, int]:
+    def _identify_components(self, messages: list[str]) -> dict[str, int]:
         """Identify affected components.
 
         Args:
@@ -237,10 +237,10 @@ class CommitSummarizer:
     def _generate_summary_text(
         self,
         commit_count: int,
-        authors: Set[str],
-        themes: List[Dict],
-        actions: Dict[str, int],
-        components: Dict[str, int],
+        authors: set[str],
+        themes: list[dict],
+        actions: dict[str, int],
+        components: dict[str, int],
         additions: int,
         deletions: int,
         files_changed: int,
@@ -303,11 +303,11 @@ class CommitSummarizer:
 
     def _generate_insights(
         self,
-        commits: List[Any],
-        themes: List[Dict],
-        actions: Dict[str, int],
-        components: Dict[str, int],
-    ) -> List[str]:
+        commits: list[Any],
+        themes: list[dict],
+        actions: dict[str, int],
+        components: dict[str, int],
+    ) -> list[str]:
         """Generate actionable insights.
 
         Args:
@@ -366,8 +366,8 @@ class CommitSummarizer:
         return insights
 
     def _recommend_actions(
-        self, insights: List[str], themes: List[Dict], actions: Dict[str, int]
-    ) -> List[str]:
+        self, insights: list[str], themes: list[dict], actions: dict[str, int]
+    ) -> list[str]:
         """Recommend follow-up actions.
 
         Args:
@@ -405,7 +405,7 @@ class CommitSummarizer:
 
         return recommendations[:5]  # Top 5 recommendations
 
-    def _empty_summary(self) -> Dict[str, Any]:
+    def _empty_summary(self) -> dict[str, Any]:
         """Return empty summary for no commits."""
         return {
             "summary": "No commits to summarize",
@@ -424,7 +424,7 @@ class CommitSummarizer:
             "recommended_actions": [],
         }
 
-    def summarize_by_author(self, commits: List[Any]) -> Dict[str, Dict]:
+    def summarize_by_author(self, commits: list[Any]) -> dict[str, dict]:
         """Generate per-author summaries.
 
         Args:
