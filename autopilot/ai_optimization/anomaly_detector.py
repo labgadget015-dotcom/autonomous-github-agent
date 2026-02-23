@@ -27,7 +27,7 @@ class AnomalyDetector:
             contamination=contamination, random_state=42, n_estimators=100
         )
         self.scaler = StandardScaler()
-        self.baseline = None
+        self.baseline: dict[str, Any] | None = None
         self.trained = False
 
         # Feature names for explanation
@@ -387,7 +387,7 @@ class AnomalyDetector:
         total_commits = len(commits)
         significant_count = len(results)
 
-        change_types = {}
+        change_types: dict[str, int] = {}
         for r in results:
             change_type = r["change_type"]
             change_types[change_type] = change_types.get(change_type, 0) + 1

@@ -10,6 +10,7 @@ import logging
 import pickle
 import time
 from collections import deque
+from collections.abc import Callable
 from typing import Any
 
 import numpy as np
@@ -135,7 +136,7 @@ class IntelligentCache:
         """Generate consistent hash for cache key."""
         return hashlib.sha256(key.encode()).hexdigest()
 
-    def get(self, key: str, fetch_func: callable) -> Any:
+    def get(self, key: str, fetch_func: Callable[..., Any]) -> Any:
         """Get value from cache or fetch if needed."""
         hashed_key = self._hash_key(key)
         current_time = time.time()

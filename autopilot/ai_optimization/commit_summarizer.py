@@ -201,7 +201,7 @@ class CommitSummarizer:
         Returns:
             Dictionary of action categories and counts
         """
-        actions = defaultdict(int)
+        actions: defaultdict[str, int] = defaultdict(int)
 
         for message in messages:
             message_lower = message.lower()
@@ -222,7 +222,7 @@ class CommitSummarizer:
         Returns:
             Dictionary of components and mention counts
         """
-        components = defaultdict(int)
+        components: defaultdict[str, int] = defaultdict(int)
 
         for message in messages:
             message_lower = message.lower()

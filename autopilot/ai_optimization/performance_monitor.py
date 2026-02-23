@@ -27,7 +27,7 @@ class PerformanceMonitor:
         Args:
             history_size: Maximum number of historical records to keep
         """
-        self.metrics = {
+        self.metrics: dict[str, Any] = {
             # Speed metrics
             "execution_time": deque(maxlen=history_size),
             "api_response_time": deque(maxlen=history_size),
@@ -45,7 +45,7 @@ class PerformanceMonitor:
             "cost_per_execution": deque(maxlen=history_size),
         }
 
-        self.benchmarks = {}
+        self.benchmarks: dict[str, Any] = {}
         self.baseline = None
         self.process = psutil.Process()
 
@@ -65,7 +65,7 @@ class PerformanceMonitor:
     def benchmark(
         self,
         func: Callable,
-        name: str = None,
+        name: str | None = None,
         track_memory: bool = True,
         track_cpu: bool = True,
     ) -> Any:
@@ -251,7 +251,7 @@ class PerformanceMonitor:
         Returns:
             Dictionary with all performance data
         """
-        summary = {
+        summary: dict[str, Any] = {
             "timestamp": datetime.now().isoformat(),
             "metrics": {},
             "benchmarks": {},

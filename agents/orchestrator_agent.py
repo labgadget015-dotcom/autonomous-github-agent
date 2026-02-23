@@ -49,7 +49,7 @@ class OrchestratorAgent(BaseAgent):
         self.message_queue = MessageQueue(config)
 
         # Registry of available agents
-        self.agent_registry = {}
+        self.agent_registry: dict[str, Any] = {}
 
         # Task routing strategy
         self.routing_strategy = config.get("routing_strategy", "priority")
@@ -132,7 +132,7 @@ class OrchestratorAgent(BaseAgent):
         Returns:
             Result from the delegated agent
         """
-        task_type = params.get("task_type")
+        task_type = params.get("task_type") or ""
         task_data = params.get("task_data", {})
 
         # Determine which agent should handle this task
@@ -210,7 +210,7 @@ class OrchestratorAgent(BaseAgent):
         Returns:
             Routing decision
         """
-        task_type = params.get("task_type")
+        task_type = params.get("task_type") or ""
         priority = params.get("priority", 0)
 
         agent_name = self._determine_agent(task_type)
