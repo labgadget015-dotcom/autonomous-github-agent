@@ -397,7 +397,8 @@ class NLPRelevanceFilter:
             List of (item, analysis) tuples for relevant items
         """
         if get_text is None:
-            get_text = lambda x: str(x)
+            def get_text(x):
+                return str(x)
 
         relevant_items = []
 

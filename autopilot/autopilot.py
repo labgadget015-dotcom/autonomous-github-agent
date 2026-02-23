@@ -116,7 +116,7 @@ class GitHubAutopilot:
                 score = weights.get('issue_count', 1) + priority_bonus
                 
                 # Check labels
-                labels = [l.name.lower() for l in issue.labels]
+                labels = [label.name.lower() for label in issue.labels]
                 if 'urgent' in labels:
                     score += weights.get('urgent_label', 10)
                 if 'enhancement' in labels:
@@ -143,7 +143,7 @@ class GitHubAutopilot:
                 score = (days_open * weights.get('pr_age_days', 2)) + priority_bonus
                 
                 # Check labels
-                labels = [l.name.lower() for l in pr.labels]
+                labels = [label.name.lower() for label in pr.labels]
                 if 'urgent' in labels:
                     score += weights.get('urgent_label', 10)
                 
@@ -214,12 +214,12 @@ class GitHubAutopilot:
                     summary.append(f"- **Recent Activity:** {commit_count} commits in last 24h")
                 
                 if pr_count > 0:
-                    summary.append(f"- **Open PRs:**")
+                    summary.append("- **Open PRs:**")
                     for pr in data['pulls'][:3]:  # Show max 3
                         summary.append(f"  - #{pr.number}: {pr.title}")
                 
                 if issue_count > 0:
-                    urgent_issues = [i for i in data['issues'] if any('urgent' in l.name.lower() for l in i.labels)]
+                    urgent_issues = [i for i in data['issues'] if any('urgent' in lbl.name.lower() for lbl in i.labels)]
                     if urgent_issues:
                         summary.append(f"- **Urgent Issues:** {len(urgent_issues)} urgent")
                         for issue in urgent_issues[:3]:

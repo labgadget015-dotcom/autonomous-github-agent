@@ -144,12 +144,13 @@ jobs:
       
       - name: Install pip-audit
         run: pip install pip-audit
-      
+
       - name: Run pip-audit check
         run: |
           mkdir -p reports
-          pip-audit --format json --output reports/pip-audit-report.json || true
-          pip-audit --desc || true
+          # Scan requirements.txt directly (no install needed, faster)
+          pip-audit -r requirements.txt --format json --output reports/pip-audit-report.json || true
+          pip-audit -r requirements.txt --desc || true
         continue-on-error: true
       
       - name: Upload pip-audit reports
