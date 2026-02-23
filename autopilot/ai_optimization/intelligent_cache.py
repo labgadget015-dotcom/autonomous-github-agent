@@ -22,14 +22,10 @@ class AccessPredictor:
 
     def __init__(self):
         self.staleness_model = RandomForestClassifier(
-            n_estimators=100,
-            max_depth=10,
-            random_state=42
+            n_estimators=100, max_depth=10, random_state=42
         )
         self.access_model = RandomForestClassifier(
-            n_estimators=50,
-            max_depth=8,
-            random_state=42
+            n_estimators=50, max_depth=8, random_state=42
         )
         self.trained = False
         self.access_history = deque(maxlen=10000)
@@ -51,19 +47,23 @@ class AccessPredictor:
                 recent_accesses.append(access_time)
 
         access_frequency = len(recent_accesses)
-        time_since_last_access = current_time - recent_accesses[-1] if recent_accesses else 3600
+        time_since_last_access = (
+            current_time - recent_accesses[-1] if recent_accesses else 3600
+        )
 
         # Key characteristics
         key_hash = int(hashlib.md5(key.encode()).hexdigest()[:8], 16) % 100
 
-        features = np.array([
-            age,
-            age / 60,  # Age in minutes
-            access_frequency,
-            time_since_last_access,
-            key_hash,
-            len(recent_accesses) / (age / 60 + 1)  # Accesses per minute
-        ]).reshape(1, -1)
+        features = np.array(
+            [
+                age,
+                age / 60,  # Age in minutes
+                access_frequency,
+                time_since_last_access,
+                key_hash,
+                len(recent_accesses) / (age / 60 + 1),  # Accesses per minute
+            ]
+        ).reshape(1, -1)
 
         return features
 
@@ -90,10 +90,11 @@ class AccessPredictor:
             next_keys = []
             for i, (_, key) in enumerate(recent_window[:-1]):
                 if key == current_key:
-                    next_keys.append(recent_window[i+1][1])
+                    next_keys.append(recent_window[i + 1][1])
 
             # Return top 3 most common
             from collections import Counter
+
             return [k for k, _ in Counter(next_keys).most_common(3)]
 
         return []
@@ -121,11 +122,11 @@ class IntelligentCache:
         self.default_ttl = ttl
         self.predictor = AccessPredictor()
         self.stats = {
-            'hits': 0,
-            'misses': 0,
-            'stale_hits': 0,
-            'prefetch_hits': 0,
-            'evictions': 0
+            "hits": 0,
+            "misses": 0,
+            "stale_hits": 0,
+            "prefetch_hits": 0,
+            "evictions": 0,
         }
         self.staleness_threshold = 0.3
 
@@ -148,7 +149,7 @@ class IntelligentCache:
             staleness_prob = self.predictor.predict_staleness(key, cache_time)
 
             if staleness_prob < self.staleness_threshold:
-                self.stats['hits'] += 1
+                self.stats["hits"] += 1
                 logger.debug(f"Cache HIT for {key} (staleness: {staleness_prob:.2f})")
 
                 # Trigger predictive prefetch
@@ -156,10 +157,10 @@ class IntelligentCache:
 
                 return value
             else:
-                self.stats['stale_hits'] += 1
+                self.stats["stale_hits"] += 1
                 logger.debug(f"Cache STALE for {key} (staleness: {staleness_prob:.2f})")
         else:
-            self.stats['misses'] += 1
+            self.stats["misses"] += 1
             logger.debug(f"Cache MISS for {key}")
 
         # Fetch fresh data
@@ -184,7 +185,7 @@ class IntelligentCache:
         # Find oldest item
         oldest_key = min(self.cache.keys(), key=lambda k: self.cache[k][1])
         del self.cache[oldest_key]
-        self.stats['evictions'] += 1
+        self.stats["evictions"] += 1
         logger.debug("Evicted oldest cache entry")
 
     def _prefetch_likely_next(self, current_key: str):
@@ -212,35 +213,34 @@ class IntelligentCache:
 
     def get_stats(self) -> Dict[str, Any]:
         """Get cache performance statistics."""
-        total_requests = self.stats['hits'] + self.stats['misses']
-        hit_rate = self.stats['hits'] / total_requests if total_requests > 0 else 0
+        total_requests = self.stats["hits"] + self.stats["misses"]
+        hit_rate = self.stats["hits"] / total_requests if total_requests > 0 else 0
 
         return {
             **self.stats,
-            'total_requests': total_requests,
-            'hit_rate': hit_rate,
-            'cache_size': len(self.cache),
-            'cache_utilization': len(self.cache) / self.max_size
+            "total_requests": total_requests,
+            "hit_rate": hit_rate,
+            "cache_size": len(self.cache),
+            "cache_utilization": len(self.cache) / self.max_size,
         }
 
     def save(self, filepath: str):
         """Save cache to disk."""
-        with open(filepath, 'wb') as f:
-            pickle.dump({
-                'cache': self.cache,
-                'stats': self.stats,
-                'predictor': self.predictor
-            }, f)
+        with open(filepath, "wb") as f:
+            pickle.dump(
+                {"cache": self.cache, "stats": self.stats, "predictor": self.predictor},
+                f,
+            )
         logger.info(f"Cache saved to {filepath}")
 
     def load(self, filepath: str):
         """Load cache from disk."""
         try:
-            with open(filepath, 'rb') as f:
+            with open(filepath, "rb") as f:
                 data = pickle.load(f)
-                self.cache = data['cache']
-                self.stats = data['stats']
-                self.predictor = data['predictor']
+                self.cache = data["cache"]
+                self.stats = data["stats"]
+                self.predictor = data["predictor"]
             logger.info(f"Cache loaded from {filepath}")
         except FileNotFoundError:
             logger.warning(f"Cache file not found: {filepath}")
@@ -248,6 +248,7 @@ class IntelligentCache:
 
 # Global cache instance
 _global_cache = None
+
 
 def get_cache() -> IntelligentCache:
     """Get global cache instance."""
@@ -269,10 +270,7 @@ if __name__ == "__main__":
     # Test cache performance
     for i in range(100):
         repo_id = i % 10  # Access same 10 repos repeatedly
-        result = cache.get(
-            f"repo_{repo_id}",
-            lambda: expensive_api_call(repo_id)
-        )
+        result = cache.get(f"repo_{repo_id}", lambda: expensive_api_call(repo_id))
 
         if i % 20 == 0:
             stats = cache.get_stats()

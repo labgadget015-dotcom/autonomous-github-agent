@@ -18,7 +18,7 @@ class APIOptimizationAgent:
 
     def __init__(self, learning_rate: float = 0.1, discount_factor: float = 0.95):
         """Initialize the API optimization agent.
-        
+
         Args:
             learning_rate: Learning rate for Q-learning
             discount_factor: Discount factor for future rewards
@@ -30,7 +30,7 @@ class APIOptimizationAgent:
         self.epsilon = 0.1  # Exploration rate
 
         # Strategy options
-        self.strategies = ['batch', 'sequential', 'parallel', 'adaptive']
+        self.strategies = ["batch", "sequential", "parallel", "adaptive"]
 
         # Performance history
         self.history = deque(maxlen=1000)
@@ -39,20 +39,21 @@ class APIOptimizationAgent:
 
         # Rate limit tracking
         self.rate_limits = {
-            'remaining': 5000,
-            'limit': 5000,
-            'reset_time': time.time() + 3600
+            "remaining": 5000,
+            "limit": 5000,
+            "reset_time": time.time() + 3600,
         }
 
-    def get_state(self, rate_limit_remaining: int, data_staleness: float,
-                  priority: str) -> Tuple:
+    def get_state(
+        self, rate_limit_remaining: int, data_staleness: float, priority: str
+    ) -> Tuple:
         """Get current state for decision making.
-        
+
         Args:
             rate_limit_remaining: Number of API calls remaining
             data_staleness: How stale is the data (0-1)
             priority: Priority level (low/medium/high/critical)
-            
+
         Returns:
             State tuple
         """
@@ -64,11 +65,11 @@ class APIOptimizationAgent:
 
     def _discretize(self, value: float, buckets: List[float]) -> int:
         """Discretize continuous value into buckets.
-        
+
         Args:
             value: Value to discretize
             buckets: Bucket boundaries
-            
+
         Returns:
             Bucket index
         """
@@ -79,11 +80,11 @@ class APIOptimizationAgent:
 
     def choose_strategy(self, state: Tuple, force_exploit: bool = False) -> str:
         """Choose API request strategy for current state.
-        
+
         Args:
             state: Current state tuple
             force_exploit: If True, always exploit (no exploration)
-            
+
         Returns:
             Strategy name
         """
@@ -104,10 +105,11 @@ class APIOptimizationAgent:
 
         return strategy
 
-    def update_q_value(self, state: Tuple, action: str, reward: float,
-                       next_state: Tuple):
+    def update_q_value(
+        self, state: Tuple, action: str, reward: float, next_state: Tuple
+    ):
         """Update Q-value based on experience.
-        
+
         Args:
             state: Current state
             action: Action taken
@@ -131,16 +133,21 @@ class APIOptimizationAgent:
 
         logger.debug(f"Updated Q({state}, {action}): {current_q:.3f} -> {new_q:.3f}")
 
-    def calculate_reward(self, execution_time: float, rate_limit_used: int,
-                        success: bool, violated_limit: bool) -> float:
+    def calculate_reward(
+        self,
+        execution_time: float,
+        rate_limit_used: int,
+        success: bool,
+        violated_limit: bool,
+    ) -> float:
         """Calculate reward for action taken.
-        
+
         Args:
             execution_time: Time taken to execute
             rate_limit_used: Number of API calls used
             success: Whether operation succeeded
             violated_limit: Whether rate limit was violated
-            
+
         Returns:
             Reward value
         """
@@ -173,15 +180,16 @@ class APIOptimizationAgent:
 
         return reward
 
-    def execute_with_strategy(self, strategy: str, api_calls: List[callable],
-                             timeout: float = 30.0) -> Dict[str, Any]:
+    def execute_with_strategy(
+        self, strategy: str, api_calls: List[callable], timeout: float = 30.0
+    ) -> Dict[str, Any]:
         """Execute API calls using specified strategy.
-        
+
         Args:
             strategy: Strategy to use
             api_calls: List of API call functions
             timeout: Maximum execution time
-            
+
         Returns:
             Dictionary with results and metrics
         """
@@ -190,12 +198,12 @@ class APIOptimizationAgent:
         api_calls_made = 0
 
         try:
-            if strategy == 'batch':
+            if strategy == "batch":
                 # Batch strategy: group calls together
                 results = self._execute_batch(api_calls, timeout)
                 api_calls_made = 1  # Batched into one call
 
-            elif strategy == 'sequential':
+            elif strategy == "sequential":
                 # Sequential strategy: one at a time with delays
                 for call in api_calls:
                     if time.time() - start_time > timeout:
@@ -204,13 +212,13 @@ class APIOptimizationAgent:
                     api_calls_made += 1
                     time.sleep(0.1)  # Small delay between calls
 
-            elif strategy == 'parallel':
+            elif strategy == "parallel":
                 # Parallel strategy: execute all at once
                 for call in api_calls:
                     results.append(call())
                     api_calls_made += 1
 
-            elif strategy == 'adaptive':
+            elif strategy == "adaptive":
                 # Adaptive strategy: based on current rate limits
                 results = self._execute_adaptive(api_calls, timeout)
                 api_calls_made = len(results)
@@ -225,16 +233,16 @@ class APIOptimizationAgent:
         self.total_requests += api_calls_made
 
         # Update rate limits (simulated)
-        self.rate_limits['remaining'] -= api_calls_made
-        violated = self.rate_limits['remaining'] < 0
+        self.rate_limits["remaining"] -= api_calls_made
+        violated = self.rate_limits["remaining"] < 0
 
         return {
-            'results': results,
-            'execution_time': execution_time,
-            'api_calls_made': api_calls_made,
-            'success': success,
-            'violated_limit': violated,
-            'strategy': strategy
+            "results": results,
+            "execution_time": execution_time,
+            "api_calls_made": api_calls_made,
+            "success": success,
+            "violated_limit": violated,
+            "strategy": strategy,
         }
 
     def _execute_batch(self, api_calls: List[callable], timeout: float) -> List[Any]:
@@ -255,91 +263,94 @@ class APIOptimizationAgent:
                 break
 
             # Check rate limits
-            if self.rate_limits['remaining'] < 100:
+            if self.rate_limits["remaining"] < 100:
                 # Low on rate limit, slow down
                 time.sleep(0.5)
 
             results.append(call())
-            self.rate_limits['remaining'] -= 1
+            self.rate_limits["remaining"] -= 1
 
         return results
 
     def optimize_request_batch(self, requests: List[Dict]) -> List[List[Dict]]:
         """Optimize batching of requests.
-        
+
         Args:
             requests: List of request dictionaries
-            
+
         Returns:
             List of optimized batches
         """
         # Group by priority
         priority_groups = defaultdict(list)
         for req in requests:
-            priority = req.get('priority', 'medium')
+            priority = req.get("priority", "medium")
             priority_groups[priority].append(req)
 
         # Create batches
         batches = []
 
         # Process high priority first
-        for priority in ['critical', 'high', 'medium', 'low']:
+        for priority in ["critical", "high", "medium", "low"]:
             if priority in priority_groups:
                 group = priority_groups[priority]
 
                 # Split into batches of 10
                 for i in range(0, len(group), 10):
-                    batches.append(group[i:i+10])
+                    batches.append(group[i : i + 10])
 
         return batches
 
     def update_rate_limits(self, remaining: int, limit: int, reset_time: float):
         """Update rate limit information.
-        
+
         Args:
             remaining: Remaining API calls
             limit: Total API call limit
             reset_time: When limit resets (timestamp)
         """
         self.rate_limits = {
-            'remaining': remaining,
-            'limit': limit,
-            'reset_time': reset_time
+            "remaining": remaining,
+            "limit": limit,
+            "reset_time": reset_time,
         }
 
         logger.info(f"Rate limits updated: {remaining}/{limit} remaining")
 
     def get_statistics(self) -> Dict[str, Any]:
         """Get optimization statistics.
-        
+
         Returns:
             Dictionary with statistics
         """
         return {
-            'total_requests': self.total_requests,
-            'rate_limit_violations': self.rate_limit_violations,
-            'violation_rate': (self.rate_limit_violations / self.total_requests
-                             if self.total_requests > 0 else 0),
-            'current_rate_limit': self.rate_limits,
-            'q_table_size': len(self.q_table),
-            'strategies_learned': len(self.q_table)
+            "total_requests": self.total_requests,
+            "rate_limit_violations": self.rate_limit_violations,
+            "violation_rate": (
+                self.rate_limit_violations / self.total_requests
+                if self.total_requests > 0
+                else 0
+            ),
+            "current_rate_limit": self.rate_limits,
+            "q_table_size": len(self.q_table),
+            "strategies_learned": len(self.q_table),
         }
 
     def should_throttle(self) -> bool:
         """Determine if we should throttle requests.
-        
+
         Returns:
             True if should throttle
         """
         # Throttle if less than 10% remaining
-        remaining_pct = (self.rate_limits['remaining'] /
-                        self.rate_limits['limit'])
+        remaining_pct = self.rate_limits["remaining"] / self.rate_limits["limit"]
 
         return remaining_pct < 0.1
 
 
 # Global optimizer instance
 _global_optimizer = None
+
 
 def get_optimizer() -> APIOptimizationAgent:
     """Get global optimizer instance."""
@@ -356,20 +367,18 @@ if __name__ == "__main__":
     # Mock API calls
     def mock_api_call(i):
         time.sleep(0.01)  # Simulate API delay
-        return {'data': f'result_{i}'}
+        return {"data": f"result_{i}"}
 
     # Create test calls
     api_calls = [lambda i=i: mock_api_call(i) for i in range(20)]
 
     print("API Optimization Agent - Example Usage\n")
-    print("="*70)
+    print("=" * 70)
 
     # Test different strategies
-    for strategy in ['sequential', 'parallel', 'adaptive', 'batch']:
+    for strategy in ["sequential", "parallel", "adaptive", "batch"]:
         state = optimizer.get_state(
-            rate_limit_remaining=1000,
-            data_staleness=0.5,
-            priority='medium'
+            rate_limit_remaining=1000, data_staleness=0.5, priority="medium"
         )
 
         print(f"\nTesting strategy: {strategy}")
@@ -381,26 +390,24 @@ if __name__ == "__main__":
 
         # Calculate reward
         reward = optimizer.calculate_reward(
-            result['execution_time'],
-            result['api_calls_made'],
-            result['success'],
-            result['violated_limit']
+            result["execution_time"],
+            result["api_calls_made"],
+            result["success"],
+            result["violated_limit"],
         )
 
         print(f"  Reward: {reward:.2f}")
 
         # Update Q-value
         next_state = optimizer.get_state(
-            rate_limit_remaining=995,
-            data_staleness=0.2,
-            priority='medium'
+            rate_limit_remaining=995, data_staleness=0.2, priority="medium"
         )
         optimizer.update_q_value(state, strategy, reward, next_state)
 
     # Show statistics
     stats = optimizer.get_statistics()
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
     print("Statistics:")
     for key, value in stats.items():
-        if key != 'current_rate_limit':
+        if key != "current_rate_limit":
             print(f"  {key}: {value}")
