@@ -1,0 +1,327 @@
+name: Agent Dispatcher
+
+# Triggers on key repository events and routes to appropriate workflows.
+# Acts as the central webhook handler for the autonomous agent system.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "core/**"
+      - "agents/**"
+      - "autopilot/**"
+      - "requirements*.txt"
+      - "pyproject.toml"
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+  issues:
+    types: [opened, labeled]
+  workflow_run:
+    workflows: ["Code Quality", "Security Scan", "AI Agent Workflow"]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      dispatch_reason:
+        description: "Reason for manual dispatch"
+        required: false
+        default: "manual trigger"
+
+concurrency:
+  group: agent-dispatcher-${{ github.ref }}
+  cancel-in-progress: false  # never cancel dispatcher — could miss events
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+  actions: read
+
+jobs:
+  # ─────────────────────────────────────────────────────────────────────────────
+  # Route events to appropriate response actions
+  # ─────────────────────────────────────────────────────────────────────────────
+  route:
+    name: Route Event
+    runs-on: ubuntu-latest
+    outputs:
+      event_type: ${{ steps.classify.outputs.event_type }}
+      should_risk_score: ${{ steps.classify.outputs.should_risk_score }}
+      should_label: ${{ steps.classify.outputs.should_label }}
+    steps:
+      - name: Classify event
+        id: classify
+        run: |
+          EVENT="${{ github.event_name }}"
+          echo "event_type=${EVENT}" >> "$GITHUB_OUTPUT"
+
+          if [[ "$EVENT" == "pull_request" ]]; then
+            echo "should_risk_score=true" >> "$GITHUB_OUTPUT"
+            echo "should_label=true" >> "$GITHUB_OUTPUT"
+          elif [[ "$EVENT" == "issues" ]]; then
+            echo "should_risk_score=false" >> "$GITHUB_OUTPUT"
+            echo "should_label=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "should_risk_score=false" >> "$GITHUB_OUTPUT"
+            echo "should_label=false" >> "$GITHUB_OUTPUT"
+          fi
+
+          echo "### 🤖 Agent Dispatcher" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **Event:** \`${EVENT}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **Ref:** \`${{ github.ref }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **Actor:** \`${{ github.actor }}\`" >> "$GITHUB_STEP_SUMMARY"
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # PR risk scoring — posts a risk report comment on each new/updated PR
+  # ─────────────────────────────────────────────────────────────────────────────
+  risk-score-pr:
+    name: Risk Score PR
+    runs-on: ubuntu-latest
+    needs: route
+    if: needs.route.outputs.should_risk_score == 'true' && github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -q PyGithub
+
+      - name: Compute risk score and post comment
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          IS_DRAFT: ${{ github.event.pull_request.draft }}
+          BASE_BRANCH: ${{ github.event.pull_request.base.ref }}
+        run: |
+          python3 - <<'PYEOF'
+          import os, sys, subprocess, json
+          sys.path.insert(0, ".")
+          from core.risk_scorer import score_pull_request
+
+          # Get diff stats
+          base = os.environ["BASE_SHA"]
+          head = os.environ["HEAD_SHA"]
+          diff_stat = subprocess.check_output(
+              ["git", "diff", "--stat", base, head], text=True
+          )
+
+          # Count additions/deletions
+          result = subprocess.check_output(
+              ["git", "diff", "--numstat", base, head], text=True
+          )
+          additions = deletions = 0
+          changed_paths = []
+          for line in result.strip().splitlines():
+              parts = line.split("\t")
+              if len(parts) == 3:
+                  try:
+                      additions += int(parts[0])
+                      deletions += int(parts[1])
+                  except ValueError:
+                      pass
+                  changed_paths.append(parts[2])
+
+          files_changed = len(changed_paths)
+
+          report = score_pull_request(
+              files_changed=files_changed,
+              additions=additions,
+              deletions=deletions,
+              changed_paths=changed_paths,
+              pr_metadata={
+                  "is_draft": os.environ.get("IS_DRAFT", "false").lower() == "true",
+                  "base_branch": os.environ.get("BASE_BRANCH", "main"),
+              },
+          )
+
+          print(f"Risk score: {report.total_score} ({report.band.value})")
+          print(report.as_markdown())
+
+          # Post comment via GitHub API
+          import urllib.request
+          pr_number = os.environ["PR_NUMBER"]
+          token = os.environ["GITHUB_TOKEN"]
+          repo = os.environ.get("GITHUB_REPOSITORY", "")
+          body = report.as_markdown()
+
+          payload = json.dumps({"body": body}).encode()
+          req = urllib.request.Request(
+              f"https://api.github.com/repos/{repo}/issues/{pr_number}/comments",
+              data=payload,
+              headers={
+                  "Authorization": f"token {token}",
+                  "Content-Type": "application/json",
+                  "Accept": "application/vnd.github.v3+json",
+              },
+              method="POST",
+          )
+          try:
+              with urllib.request.urlopen(req) as resp:
+                  print(f"Comment posted: HTTP {resp.status}")
+          except Exception as e:
+              print(f"Warning: could not post comment: {e}")
+
+          # Fail workflow if CRITICAL risk
+          if report.band.value == "CRITICAL":
+              print("::error::PR risk score is CRITICAL — requires manual review before merge.")
+              sys.exit(1)
+          PYEOF
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # Auto-label issues and PRs based on content
+  # ─────────────────────────────────────────────────────────────────────────────
+  auto-label:
+    name: Auto Label
+    runs-on: ubuntu-latest
+    needs: route
+    if: needs.route.outputs.should_label == 'true'
+    steps:
+      - name: Label PR by changed paths
+        if: github.event_name == 'pull_request'
+        uses: actions/labeler@v5
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          sync-labels: false
+
+      - name: Label issue by keywords
+        if: github.event_name == 'issues' && github.event.action == 'opened'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          ISSUE_TITLE: ${{ github.event.issue.title }}
+          ISSUE_BODY: ${{ github.event.issue.body }}
+        run: |
+          python3 - <<'PYEOF'
+          import os, json, urllib.request, re
+
+          token = os.environ["GITHUB_TOKEN"]
+          repo = os.environ.get("GITHUB_REPOSITORY", "")
+          issue_num = os.environ["ISSUE_NUMBER"]
+          title = (os.environ.get("ISSUE_TITLE") or "").lower()
+          body = (os.environ.get("ISSUE_BODY") or "").lower()
+          text = title + " " + body
+
+          labels = []
+          if re.search(r"bug|error|fail|crash|broken|exception", text):
+              labels.append("bug")
+          if re.search(r"feat|feature|add|enhance|implement|support", text):
+              labels.append("enhancement")
+          if re.search(r"security|cve|vuln|exploit|inject|auth|token|secret", text):
+              labels.append("security")
+          if re.search(r"doc|readme|docs|wiki|guide|comment", text):
+              labels.append("documentation")
+          if re.search(r"perf|slow|optim|speed|latency|throughput", text):
+              labels.append("performance")
+          if re.search(r"test|coverage|spec|assert|fixture", text):
+              labels.append("testing")
+          if re.search(r"debt|refactor|cleanup|deprecat|legacy|todo", text):
+              labels.append("technical-debt")
+          if re.search(r"ci|cd|workflow|action|pipeline|build", text):
+              labels.append("ci/cd")
+          if not labels:
+              labels.append("needs-triage")
+
+          payload = json.dumps({"labels": labels}).encode()
+          req = urllib.request.Request(
+              f"https://api.github.com/repos/{repo}/issues/{issue_num}/labels",
+              data=payload,
+              headers={
+                  "Authorization": f"token {token}",
+                  "Content-Type": "application/json",
+                  "Accept": "application/vnd.github.v3+json",
+              },
+              method="POST",
+          )
+          try:
+              with urllib.request.urlopen(req) as resp:
+                  data = json.loads(resp.read())
+                  applied = [l["name"] for l in data]
+                  print(f"Applied labels to #{issue_num}: {applied}")
+          except Exception as e:
+              print(f"Warning: could not apply labels: {e}")
+          PYEOF
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # Notify on upstream workflow failure
+  # ─────────────────────────────────────────────────────────────────────────────
+  handle-workflow-failure:
+    name: Handle Workflow Failure
+    runs-on: ubuntu-latest
+    needs: route
+    if: >
+      github.event_name == 'workflow_run' &&
+      github.event.workflow_run.conclusion == 'failure'
+    steps:
+      - name: Create failure issue
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          FAILED_WORKFLOW: ${{ github.event.workflow_run.name }}
+          RUN_URL: ${{ github.event.workflow_run.html_url }}
+          RUN_ID: ${{ github.event.workflow_run.id }}
+        run: |
+          python3 - <<'PYEOF'
+          import os, json, urllib.request
+
+          token = os.environ["GITHUB_TOKEN"]
+          repo = os.environ.get("GITHUB_REPOSITORY", "")
+          wf = os.environ["FAILED_WORKFLOW"]
+          url = os.environ["RUN_URL"]
+          run_id = os.environ["RUN_ID"]
+
+          title = f"🚨 CI Failure: {wf}"
+          body = (
+              f"## Automated failure report\n\n"
+              f"Workflow **{wf}** failed on run [{run_id}]({url}).\n\n"
+              f"**Auto-created by agent dispatcher.** Please investigate and close when resolved."
+          )
+
+          # Check for existing open issue with same title to avoid duplicates
+          search_url = (
+              f"https://api.github.com/search/issues"
+              f"?q=repo:{repo}+is:issue+is:open+in:title+CI+Failure:{wf.replace(' ', '+')}"
+          )
+          req = urllib.request.Request(
+              search_url,
+              headers={
+                  "Authorization": f"token {token}",
+                  "Accept": "application/vnd.github.v3+json",
+              },
+          )
+          try:
+              with urllib.request.urlopen(req) as resp:
+                  data = json.loads(resp.read())
+                  if data.get("total_count", 0) > 0:
+                      print(f"Duplicate issue exists — skipping creation.")
+                      exit(0)
+          except Exception:
+              pass
+
+          payload = json.dumps({
+              "title": title,
+              "body": body,
+              "labels": ["ci/cd", "bug"],
+          }).encode()
+          req = urllib.request.Request(
+              f"https://api.github.com/repos/{repo}/issues",
+              data=payload,
+              headers={
+                  "Authorization": f"token {token}",
+                  "Content-Type": "application/json",
+                  "Accept": "application/vnd.github.v3+json",
+              },
+              method="POST",
+          )
+          try:
+              with urllib.request.urlopen(req) as resp:
+                  data = json.loads(resp.read())
+                  print(f"Created issue #{data['number']}: {data['title']}")
+          except Exception as e:
+              print(f"Warning: could not create issue: {e}")
+          PYEOF
