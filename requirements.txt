@@ -29,11 +29,19 @@ isort>=5.12.0  # Import sorting
 orjson>=3.9.0  # Fast JSON parser (3-5x faster than json)
 
 # Workflow Orchestration
-prefect>=2.13.0
+# Pinned floor at 2.16.5 to fix CVE-2023-6022 (CSRF -> RCE, CVSS 8.8)
+# and CVE-2024-8183 (CORS misconfiguration)
+prefect>=2.16.5
 
 # GitHub API
 PyGithub>=2.1.0
 requests>=2.31.0  # HTTP requests library
+# Explicit pin to fix CVE-2023-45803 and CVE-2023-43804 (request body/cookie leak on redirect)
+urllib3>=2.0.7
+
+# Environment configuration
+# Required for load_dotenv() used throughout codebase
+python-dotenv>=1.0.0
 
 # Inter-agent messaging
 redis>=5.0.0  # Redis client for message queue
@@ -59,7 +67,11 @@ coverage-badge>=1.1.0
 psutil>=5.9.0  # System metrics
 prometheus-client>=0.18.0  # Prometheus exporter
 
+# Security auditing
+pip-audit>=2.7.0  # Scans installed packages for known CVEs (complement to bandit)
+
 # Utilities
 colorama>=0.4.6  # Colored terminal output
 click>=8.1.0  # CLI tool support
 rich>=13.0.0  # Rich terminal output
+
