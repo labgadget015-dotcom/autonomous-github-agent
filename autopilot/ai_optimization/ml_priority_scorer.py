@@ -20,56 +20,51 @@ class MLPriorityScorer:
     def __init__(self):
         """Initialize the ML priority scorer."""
         self.classifier = RandomForestClassifier(
-            n_estimators=100,
-            max_depth=15,
-            random_state=42,
-            min_samples_split=5
+            n_estimators=100, max_depth=15, random_state=42, min_samples_split=5
         )
         self.regressor = GradientBoostingRegressor(
-            n_estimators=100,
-            max_depth=10,
-            random_state=42
+            n_estimators=100, max_depth=10, random_state=42
         )
         self.scaler = StandardScaler()
         self.trained = False
         self.feature_names = [
-            'issue_age_days',
-            'comment_count',
-            'reaction_count',
-            'author_contributions',
-            'label_severity_score',
-            'linked_prs_count',
-            'mention_count',
-            'activity_trend',
-            'is_stale',
-            'has_milestone',
-            'assignee_count'
+            "issue_age_days",
+            "comment_count",
+            "reaction_count",
+            "author_contributions",
+            "label_severity_score",
+            "linked_prs_count",
+            "mention_count",
+            "activity_trend",
+            "is_stale",
+            "has_milestone",
+            "assignee_count",
         ]
 
         # Priority keywords and their weights
         self.priority_keywords = {
-            'critical': 5.0,
-            'urgent': 4.5,
-            'high': 4.0,
-            'bug': 3.5,
-            'security': 5.0,
-            'breaking': 4.5,
-            'regression': 4.0,
-            'medium': 2.5,
-            'low': 1.5,
-            'enhancement': 2.0,
-            'feature': 2.5,
-            'documentation': 1.5,
-            'good first issue': 1.0,
-            'help wanted': 2.0
+            "critical": 5.0,
+            "urgent": 4.5,
+            "high": 4.0,
+            "bug": 3.5,
+            "security": 5.0,
+            "breaking": 4.5,
+            "regression": 4.0,
+            "medium": 2.5,
+            "low": 1.5,
+            "enhancement": 2.0,
+            "feature": 2.5,
+            "documentation": 1.5,
+            "good first issue": 1.0,
+            "help wanted": 2.0,
         }
 
     def extract_features(self, item: Any) -> np.ndarray:
         """Extract features from an issue or PR object.
-        
+
         Args:
             item: GitHub issue or PR object
-            
+
         Returns:
             Feature vector as numpy array
         """
@@ -79,62 +74,64 @@ class MLPriorityScorer:
             age_days = (datetime.now() - created_at.replace(tzinfo=None)).days
 
             # Count reactions
-            reactions = getattr(item, 'reactions', {})
+            reactions = getattr(item, "reactions", {})
             if isinstance(reactions, dict):
                 reaction_count = sum(reactions.values())
             else:
                 # For PyGithub ReactionsSummary object
-                reaction_count = getattr(reactions, 'total_count', 0)
+                reaction_count = getattr(reactions, "total_count", 0)
 
             # Count comments
-            comment_count = getattr(item, 'comments', 0)
+            comment_count = getattr(item, "comments", 0)
 
             # Label severity score
-            labels = getattr(item, 'labels', [])
+            labels = getattr(item, "labels", [])
             label_severity = self._calculate_label_severity(labels)
 
             # Activity trend (comments in last 7 days vs total)
             activity_trend = self._calculate_activity_trend(item)
 
             # Check if stale (no updates in 30 days)
-            updated_at = getattr(item, 'updated_at', created_at)
+            updated_at = getattr(item, "updated_at", created_at)
             days_since_update = (datetime.now() - updated_at.replace(tzinfo=None)).days
             is_stale = 1 if days_since_update > 30 else 0
 
             # Milestone
-            has_milestone = 1 if getattr(item, 'milestone', None) else 0
+            has_milestone = 1 if getattr(item, "milestone", None) else 0
 
             # Assignees
-            assignees = getattr(item, 'assignees', [])
+            assignees = getattr(item, "assignees", [])
             assignee_count = len(list(assignees)) if assignees else 0
 
             # Linked PRs (for issues)
             linked_prs = 0
-            if hasattr(item, 'pull_request') and item.pull_request is None:
+            if hasattr(item, "pull_request") and item.pull_request is None:
                 # This is an issue, count linked PRs in body
-                body = getattr(item, 'body', '') or ''
-                linked_prs = body.count('#') + body.count('pull/')
+                body = getattr(item, "body", "") or ""
+                linked_prs = body.count("#") + body.count("pull/")
 
             # Mentions
-            body = getattr(item, 'body', '') or ''
-            mention_count = body.count('@')
+            body = getattr(item, "body", "") or ""
+            mention_count = body.count("@")
 
             # Author contributions (placeholder - would need API call)
             author_contributions = 10  # Default value
 
-            features = np.array([
-                age_days,
-                comment_count,
-                reaction_count,
-                author_contributions,
-                label_severity,
-                linked_prs,
-                mention_count,
-                activity_trend,
-                is_stale,
-                has_milestone,
-                assignee_count
-            ])
+            features = np.array(
+                [
+                    age_days,
+                    comment_count,
+                    reaction_count,
+                    author_contributions,
+                    label_severity,
+                    linked_prs,
+                    mention_count,
+                    activity_trend,
+                    is_stale,
+                    has_milestone,
+                    assignee_count,
+                ]
+            )
 
             return features.reshape(1, -1)
 
@@ -145,17 +142,19 @@ class MLPriorityScorer:
 
     def _calculate_label_severity(self, labels: List) -> float:
         """Calculate severity score based on labels.
-        
+
         Args:
             labels: List of label objects
-            
+
         Returns:
             Severity score (0-5)
         """
         severity_score = 0.0
 
         for label in labels:
-            label_name = label.name.lower() if hasattr(label, 'name') else str(label).lower()
+            label_name = (
+                label.name.lower() if hasattr(label, "name") else str(label).lower()
+            )
 
             # Check for priority keywords
             for keyword, weight in self.priority_keywords.items():
@@ -166,21 +165,21 @@ class MLPriorityScorer:
 
     def _calculate_activity_trend(self, item: Any) -> float:
         """Calculate activity trend score.
-        
+
         Args:
             item: GitHub issue or PR object
-            
+
         Returns:
             Activity trend score (0-1)
         """
         try:
-            comment_count = getattr(item, 'comments', 0)
+            comment_count = getattr(item, "comments", 0)
             if comment_count == 0:
                 return 0.0
 
             # In a real implementation, would analyze comment timestamps
             # For now, use a simple heuristic based on update recency
-            updated_at = getattr(item, 'updated_at', item.created_at)
+            updated_at = getattr(item, "updated_at", item.created_at)
             days_since_update = (datetime.now() - updated_at.replace(tzinfo=None)).days
 
             # More recent updates = higher trend
@@ -192,10 +191,10 @@ class MLPriorityScorer:
 
     def score(self, item: Any) -> Dict[str, Any]:
         """Score an issue or PR for priority.
-        
+
         Args:
             item: GitHub issue or PR object
-            
+
         Returns:
             Dictionary with score, confidence, and explanation
         """
@@ -225,24 +224,34 @@ class MLPriorityScorer:
         explanation = self._explain_score(features[0], final_score)
 
         return {
-            'score': round(final_score, 2),
-            'confidence': round(confidence, 2),
-            'factors': explanation,
-            'priority_level': self._score_to_priority(final_score)
+            "score": round(final_score, 2),
+            "confidence": round(confidence, 2),
+            "factors": explanation,
+            "priority_level": self._score_to_priority(final_score),
         }
 
     def _calculate_base_score(self, features: np.ndarray) -> float:
         """Calculate base score using rule-based system.
-        
+
         Args:
             features: Feature vector
-            
+
         Returns:
             Base score (0-100)
         """
-        (age_days, comment_count, reaction_count, author_contrib,
-         label_severity, linked_prs, mentions, activity_trend,
-         is_stale, has_milestone, assignee_count) = features
+        (
+            age_days,
+            comment_count,
+            reaction_count,
+            author_contrib,
+            label_severity,
+            linked_prs,
+            mentions,
+            activity_trend,
+            is_stale,
+            has_milestone,
+            assignee_count,
+        ) = features
 
         score = 0.0
 
@@ -279,69 +288,79 @@ class MLPriorityScorer:
 
     def _explain_score(self, features: np.ndarray, score: float) -> Dict[str, Any]:
         """Generate explanation for the score.
-        
+
         Args:
             features: Feature vector
             score: Calculated score
-            
+
         Returns:
             Dictionary with explanation factors
         """
-        (age_days, comment_count, reaction_count, author_contrib,
-         label_severity, linked_prs, mentions, activity_trend,
-         is_stale, has_milestone, assignee_count) = features
+        (
+            age_days,
+            comment_count,
+            reaction_count,
+            author_contrib,
+            label_severity,
+            linked_prs,
+            mentions,
+            activity_trend,
+            is_stale,
+            has_milestone,
+            assignee_count,
+        ) = features
 
         factors = {
-            'age_days': int(age_days),
-            'comment_count': int(comment_count),
-            'reaction_count': int(reaction_count),
-            'label_severity': round(label_severity, 1),
-            'activity_trend': round(activity_trend, 2),
-            'is_stale': bool(is_stale),
-            'has_milestone': bool(has_milestone),
-            'assignee_count': int(assignee_count)
+            "age_days": int(age_days),
+            "comment_count": int(comment_count),
+            "reaction_count": int(reaction_count),
+            "label_severity": round(label_severity, 1),
+            "activity_trend": round(activity_trend, 2),
+            "is_stale": bool(is_stale),
+            "has_milestone": bool(has_milestone),
+            "assignee_count": int(assignee_count),
         }
 
         # Identify key factors
         key_factors = []
         if label_severity >= 4.0:
-            key_factors.append('high_severity_labels')
+            key_factors.append("high_severity_labels")
         if activity_trend > 0.7:
-            key_factors.append('recent_activity')
+            key_factors.append("recent_activity")
         if comment_count > 10:
-            key_factors.append('high_engagement')
+            key_factors.append("high_engagement")
         if is_stale:
-            key_factors.append('stale_issue')
+            key_factors.append("stale_issue")
         if has_milestone:
-            key_factors.append('has_milestone')
+            key_factors.append("has_milestone")
 
-        factors['key_factors'] = key_factors
+        factors["key_factors"] = key_factors
 
         return factors
 
     def _score_to_priority(self, score: float) -> str:
         """Convert numeric score to priority level.
-        
+
         Args:
             score: Numeric score (0-100)
-            
+
         Returns:
             Priority level string
         """
         if score >= 80:
-            return 'critical'
+            return "critical"
         elif score >= 60:
-            return 'high'
+            return "high"
         elif score >= 40:
-            return 'medium'
+            return "medium"
         elif score >= 20:
-            return 'low'
+            return "low"
         else:
-            return 'minimal'
+            return "minimal"
 
     def train(self, training_data: List[Tuple[Any, float, int]]):
         """Train the ML model with historical data.
-        
+
         Args:
             training_data: List of (item, score, priority_class) tuples
         """
@@ -383,6 +402,7 @@ class MLPriorityScorer:
 # Global scorer instance
 _global_scorer = None
 
+
 def get_scorer() -> MLPriorityScorer:
     """Get global scorer instance."""
     global _global_scorer
@@ -401,9 +421,11 @@ if __name__ == "__main__":
             self.created_at = datetime.now() - timedelta(days=15)
             self.updated_at = datetime.now() - timedelta(days=2)
             self.comments = 8
-            self.reactions = {'total_count': 12}
-            self.labels = [type('Label', (), {'name': 'bug'}),
-                          type('Label', (), {'name': 'high priority'})]
+            self.reactions = {"total_count": 12}
+            self.labels = [
+                type("Label", (), {"name": "bug"}),
+                type("Label", (), {"name": "high priority"}),
+            ]
             self.milestone = None
             self.assignees = []
             self.body = "This is a critical issue @user1 @user2 #123"
@@ -418,6 +440,6 @@ if __name__ == "__main__":
     print(f"Confidence: {result['confidence']}")
     print(f"Key Factors: {result['factors']['key_factors']}")
     print("\nDetailed Factors:")
-    for factor, value in result['factors'].items():
-        if factor != 'key_factors':
+    for factor, value in result["factors"].items():
+        if factor != "key_factors":
             print(f"  {factor}: {value}")
