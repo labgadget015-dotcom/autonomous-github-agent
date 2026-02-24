@@ -1,4 +1,4 @@
-ok#!/usr/bin/env python3
+#!/usr/bin/env python3
 """
 Distributed OpenTelemetry Monitoring
 Comprehensive observability with traces, metrics, and logs
