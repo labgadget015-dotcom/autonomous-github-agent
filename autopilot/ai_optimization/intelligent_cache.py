@@ -229,13 +229,14 @@ class IntelligentCache:
 
     def save(self, filepath: str):
         """Save cache metadata to disk using JSON (safe serialization)."""
-        # Only serialisable data (cache values and stats) are persisted.
+        # Only serializable data (cache values and stats) are persisted.
         # The ML predictor is re-trained at runtime and is not saved.
         try:
-            serialisable_cache = {
+            # Store each entry as a two-element list [value, timestamp]
+            serializable_cache = {
                 k: [v, ts] for k, (v, ts) in self.cache.items()
             }
-            payload = {"cache": serialisable_cache, "stats": self.stats}
+            payload = {"cache": serializable_cache, "stats": self.stats}
             with open(filepath, "w", encoding="utf-8") as f:
                 json.dump(payload, f)
             logger.info(f"Cache saved to {filepath}")
@@ -247,7 +248,8 @@ class IntelligentCache:
         try:
             with open(filepath, encoding="utf-8") as f:
                 data = json.load(f)
-            self.cache = {k: (v, ts) for k, (v, ts) in data["cache"].items()}
+            # JSON arrays deserialize as lists; unpack explicitly for clarity
+            self.cache = {k: (entry[0], entry[1]) for k, entry in data["cache"].items()}
             self.stats = data["stats"]
             logger.info(f"Cache loaded from {filepath}")
         except FileNotFoundError:

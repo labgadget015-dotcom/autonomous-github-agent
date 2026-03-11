@@ -13,6 +13,8 @@ from enum import Enum
 from pathlib import Path
 from typing import Any
 
+from .exceptions import LLMConfigError, LLMError  # noqa: F401 – re-exported for callers
+
 logger = logging.getLogger(__name__)
 
 
@@ -93,7 +95,7 @@ class LLMClient:
                     or self.config.get("OPENAI_API_KEY")
                 )
                 if not api_key:
-                    raise ValueError("OpenAI API key not found in configuration")
+                    raise LLMConfigError("OpenAI API key not found in configuration")
                 self._client = openai.OpenAI(api_key=api_key)
 
             elif self.provider == "anthropic":
@@ -106,11 +108,11 @@ class LLMClient:
                     or self.config.get("ANTHROPIC_API_KEY")
                 )
                 if not api_key:
-                    raise ValueError("Anthropic API key not found in configuration")
+                    raise LLMConfigError("Anthropic API key not found in configuration")
                 self._client = anthropic.Anthropic(api_key=api_key)
 
             else:
-                raise ValueError(f"Unsupported LLM provider: {self.provider}")
+                raise LLMConfigError(f"Unsupported LLM provider: {self.provider}")
 
         except ImportError as e:
             logger.error(f"Failed to import LLM library: {str(e)}")
@@ -145,7 +147,7 @@ class LLMClient:
                     prompt, system_prompt, max_tokens, temperature
                 )
             else:
-                raise ValueError(f"Unsupported provider: {self.provider}")
+                raise LLMConfigError(f"Unsupported provider: {self.provider}")
 
         except Exception as e:
             logger.error(f"Error generating text: {str(e)}")

@@ -319,5 +319,10 @@ class AuditLogger:
         action: str | None = None,
         limit: int = 100,
     ) -> list:
-        """Async alias for :meth:`get_logs` (backwards-compatible name)."""
+        """Async alias for :meth:`get_logs` (backwards-compatible name).
+
+        Declared ``async`` so callers can uniformly ``await`` it alongside
+        other async audit methods.  The underlying I/O is synchronous; the
+        coroutine wrapper adds negligible overhead.
+        """
         return self.get_logs(agent=agent, action=action, limit=limit)
