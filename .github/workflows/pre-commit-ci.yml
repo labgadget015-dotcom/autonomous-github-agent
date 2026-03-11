@@ -65,8 +65,8 @@ jobs:
             echo "Auto-fixing issues found by pre-commit hooks..."
             git add -A
             git commit -m "style: auto-fix pre-commit issues [skip ci]"
-            git push
-            echo "AUTO_FIXED=true" >> $GITHUB_ENV
+            git push || echo "::warning::Auto-fix push failed (fork/restricted branch) — manual pull required"
+            git push || echo "::warning::Auto-fix push failed (fork/restricted branch) — manual pull required"
           else
             echo "No auto-fixable changes found"
             echo "AUTO_FIXED=false" >> $GITHUB_ENV
