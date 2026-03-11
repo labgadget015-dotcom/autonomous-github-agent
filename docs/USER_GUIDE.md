@@ -1,6 +1,6 @@
 # User Guide
 
-*For *
+*For autonomous-github-agent*
 
 ## Installation
 
@@ -8,8 +8,8 @@
 
 ```bash
 # Clone the repository
-git clone <repository-url>
-cd 
+git clone https://github.com/labgadget015-dotcom/autonomous-github-agent
+cd autonomous-github-agent
 
 # Create virtual environment
 python -m venv .venv
