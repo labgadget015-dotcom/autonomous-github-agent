@@ -13,7 +13,6 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
@@ -86,10 +85,10 @@ class AuditLogger:
             import boto3
 
             s3_config = self.config["s3_config"]
+            # Use boto3 default credential chain (env vars, IAM roles, ~/.aws/credentials).
+            # Never pass raw credentials from a config dict to avoid accidental exposure.
             self._s3_client = boto3.client(
                 "s3",
-                aws_access_key_id=s3_config.get("access_key"),
-                aws_secret_access_key=s3_config.get("secret_key"),
                 region_name=s3_config.get("region", "us-east-1"),
             )
             logger.info("S3 client initialized")
@@ -187,8 +186,8 @@ class AuditLogger:
                         continue
                     entry = json.loads(line)
                     last_hash = entry.get("chain_hash", last_hash)
-        except Exception:
-            pass
+        except (OSError, json.JSONDecodeError) as exc:
+            logger.warning("Could not read existing chain head: %s", exc)
         return last_hash
 
     def verify_chain(self) -> tuple[bool, list[str]]:
@@ -312,3 +311,18 @@ class AuditLogger:
         """Close database connections"""
         if self._pg_conn:
             self._pg_conn.close()
+
+    # Alias for backwards-compatibility and test compatibility
+    async def get_audit_trail(
+        self,
+        agent: str | None = None,
+        action: str | None = None,
+        limit: int = 100,
+    ) -> list:
+        """Async alias for :meth:`get_logs` (backwards-compatible name).
+
+        Declared ``async`` so callers can uniformly ``await`` it alongside
+        other async audit methods.  The underlying I/O is synchronous; the
+        coroutine wrapper adds negligible overhead.
+        """
+        return self.get_logs(agent=agent, action=action, limit=limit)

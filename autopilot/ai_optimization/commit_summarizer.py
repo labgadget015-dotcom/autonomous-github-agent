@@ -6,6 +6,7 @@ using NLP techniques and pattern matching (simplified version without heavy mode
 
 import logging
 import re
+import threading
 from collections import Counter, defaultdict
 from typing import Any
 
@@ -451,21 +452,29 @@ class CommitSummarizer:
 
 
 # Global summarizer instance
-_global_summarizer = None
+_global_summarizer: CommitSummarizer | None = None
+_global_summarizer_lock = threading.Lock()
 
 
 def get_summarizer() -> CommitSummarizer:
-    """Get global summarizer instance."""
+    """Get global summarizer instance (thread-safe)."""
     global _global_summarizer
     if _global_summarizer is None:
-        _global_summarizer = CommitSummarizer()
+        with _global_summarizer_lock:
+            if _global_summarizer is None:
+                _global_summarizer = CommitSummarizer()
     return _global_summarizer
 
 
 if __name__ == "__main__":
+    import logging as _logging
+
+    _logging.basicConfig(level=_logging.INFO)
+    _demo_logger = _logging.getLogger(__name__)
+
     # Example usage
-    print("Commit Summarizer - Example Usage\n")
-    print("=" * 70)
+    _demo_logger.info("Commit Summarizer - Example Usage")
+    _demo_logger.info("=" * 70)
 
     # Mock commits
     class MockCommit:
@@ -491,29 +500,28 @@ if __name__ == "__main__":
     summarizer = CommitSummarizer()
     summary = summarizer.generate_summary(commits)
 
-    print("Summary:")
-    print(f"  {summary['summary']}\n")
+    _demo_logger.info("Summary: %s", summary["summary"])
 
-    print("Key Themes:")
+    _demo_logger.info("Key Themes:")
     for theme in summary["key_themes"]:
-        print(f"  - {theme['theme']} (frequency: {theme['frequency']})")
+        _demo_logger.info("  - %s (frequency: %s)", theme["theme"], theme["frequency"])
 
-    print("\nAction Breakdown:")
+    _demo_logger.info("Action Breakdown:")
     for action, count in summary["action_breakdown"].items():
-        print(f"  - {action}: {count}")
+        _demo_logger.info("  - %s: %s", action, count)
 
-    print("\nComponents Affected:")
+    _demo_logger.info("Components Affected:")
     for component, count in summary["components_affected"].items():
-        print(f"  - {component}: {count} mentions")
+        _demo_logger.info("  - %s: %s mentions", component, count)
 
-    print("\nStatistics:")
+    _demo_logger.info("Statistics:")
     for key, value in summary["statistics"].items():
-        print(f"  - {key}: {value}")
+        _demo_logger.info("  - %s: %s", key, value)
 
-    print("\nInsights:")
+    _demo_logger.info("Insights:")
     for insight in summary["insights"]:
-        print(f"  • {insight}")
+        _demo_logger.info("  • %s", insight)
 
-    print("\nRecommended Actions:")
+    _demo_logger.info("Recommended Actions:")
     for i, action in enumerate(summary["recommended_actions"], 1):
-        print(f"  {i}. {action}")
+        _demo_logger.info("  %d. %s", i, action)

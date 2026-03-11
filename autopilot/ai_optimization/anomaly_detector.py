@@ -5,6 +5,7 @@ helping to identify important updates and potential issues.
 """
 
 import logging
+import threading
 from typing import Any
 
 import numpy as np
@@ -404,14 +405,17 @@ class AnomalyDetector:
 
 
 # Global detector instance
-_global_detector = None
+_global_detector: AnomalyDetector | None = None
+_global_detector_lock = threading.Lock()
 
 
 def get_detector() -> AnomalyDetector:
-    """Get global detector instance."""
+    """Get global detector instance (thread-safe)."""
     global _global_detector
     if _global_detector is None:
-        _global_detector = AnomalyDetector()
+        with _global_detector_lock:
+            if _global_detector is None:
+                _global_detector = AnomalyDetector()
     return _global_detector
 
 

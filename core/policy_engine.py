@@ -11,7 +11,6 @@ from typing import Any
 
 import yaml
 
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 

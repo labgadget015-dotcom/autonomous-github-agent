@@ -303,9 +303,14 @@ def main():
     
     # Ask for confirmation
     print("\n" + "-" * 70)
-    response = input("\nDo you want to apply/update branch protection rules? (yes/no): ").strip().lower()
-    
-    if response not in ['yes', 'y']:
+    valid_responses = {"yes", "y", "no", "n"}
+    while True:
+        response = input("\nDo you want to apply/update branch protection rules? (yes/no): ").strip().lower()
+        if response in valid_responses:
+            break
+        print(f"Invalid response '{response}'. Please enter 'yes' or 'no'.")
+
+    if response not in {"yes", "y"}:
         print("\nOperation cancelled by user.")
         sys.exit(0)
     

@@ -6,8 +6,9 @@ while maintaining data freshness.
 """
 
 import hashlib
+import json
 import logging
-import pickle
+import threading
 import time
 from collections import deque
 from collections.abc import Callable
@@ -54,7 +55,7 @@ class AccessPredictor:
         )
 
         # Key characteristics
-        key_hash = int(hashlib.md5(key.encode()).hexdigest()[:8], 16) % 100
+        key_hash = int(hashlib.sha256(key.encode(), usedforsecurity=False).hexdigest()[:8], 16) % 100
 
         features = np.array(
             [
@@ -227,45 +228,60 @@ class IntelligentCache:
         }
 
     def save(self, filepath: str):
-        """Save cache to disk."""
-        with open(filepath, "wb") as f:
-            pickle.dump(
-                {"cache": self.cache, "stats": self.stats, "predictor": self.predictor},
-                f,
-            )
-        logger.info(f"Cache saved to {filepath}")
+        """Save cache metadata to disk using JSON (safe serialization)."""
+        # Only serializable data (cache values and stats) are persisted.
+        # The ML predictor is re-trained at runtime and is not saved.
+        try:
+            # Store each entry as a two-element list [value, timestamp]
+            serializable_cache = {
+                k: [v, ts] for k, (v, ts) in self.cache.items()
+            }
+            payload = {"cache": serializable_cache, "stats": self.stats}
+            with open(filepath, "w", encoding="utf-8") as f:
+                json.dump(payload, f)
+            logger.info(f"Cache saved to {filepath}")
+        except (TypeError, ValueError) as e:
+            logger.error(f"Failed to serialize cache to JSON: {e}")
 
     def load(self, filepath: str):
-        """Load cache from disk."""
+        """Load cache metadata from disk using JSON (safe deserialization)."""
         try:
-            with open(filepath, "rb") as f:
-                data = pickle.load(f)
-                self.cache = data["cache"]
-                self.stats = data["stats"]
-                self.predictor = data["predictor"]
+            with open(filepath, encoding="utf-8") as f:
+                data = json.load(f)
+            # JSON arrays deserialize as lists; unpack explicitly for clarity
+            self.cache = {k: (entry[0], entry[1]) for k, entry in data["cache"].items()}
+            self.stats = data["stats"]
             logger.info(f"Cache loaded from {filepath}")
         except FileNotFoundError:
             logger.warning(f"Cache file not found: {filepath}")
 
 
 # Global cache instance
-_global_cache = None
+_global_cache: IntelligentCache | None = None
+_global_cache_lock = threading.Lock()
 
 
 def get_cache() -> IntelligentCache:
-    """Get global cache instance."""
+    """Get global cache instance (thread-safe)."""
     global _global_cache
     if _global_cache is None:
-        _global_cache = IntelligentCache()
+        with _global_cache_lock:
+            if _global_cache is None:
+                _global_cache = IntelligentCache()
     return _global_cache
 
 
 if __name__ == "__main__":
+    import logging as _logging
+
+    _logging.basicConfig(level=_logging.INFO)
+    _demo_logger = _logging.getLogger(__name__)
+
     # Example usage
     cache = IntelligentCache()
 
     def expensive_api_call(repo_id: int):
-        print(f"Fetching data for repo {repo_id}...")
+        _demo_logger.info("Fetching data for repo %d...", repo_id)
         time.sleep(0.1)  # Simulate API delay
         return {"id": repo_id, "data": f"repo_data_{repo_id}"}
 
@@ -276,5 +292,5 @@ if __name__ == "__main__":
 
         if i % 20 == 0:
             stats = cache.get_stats()
-            print(f"\nIteration {i}: Hit rate = {stats['hit_rate']:.2%}")
-            print(f"Stats: {stats}")
+            _demo_logger.info("Iteration %d: Hit rate = %.2f%%", i, stats["hit_rate"] * 100)
+            _demo_logger.info("Stats: %s", stats)

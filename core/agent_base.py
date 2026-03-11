@@ -16,7 +16,6 @@ from .github_client import GitHubClient
 from .llm_provider import LLMClient
 from .policy_engine import PolicyEngine
 
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
@@ -147,7 +146,23 @@ class BaseAgent(ABC):
             True if valid, False otherwise
         """
         required_fields = ["action"]
-        return all(field in task for field in required_fields)
+        if not all(field in task for field in required_fields):
+            logger.warning("[%s] Task missing required fields: %s", self.name, required_fields)
+            return False
+
+        action = task.get("action")
+        if not isinstance(action, str) or not action.strip():
+            logger.warning("[%s] Task 'action' must be a non-empty string, got: %r", self.name, action)
+            return False
+
+        supported = self.get_supported_actions()
+        if supported and action not in supported:
+            logger.warning(
+                "[%s] Unsupported action %r. Supported: %s", self.name, action, supported
+            )
+            return False
+
+        return True
 
     @abstractmethod
     async def _execute(self, task: dict[str, Any]) -> dict[str, Any]:
