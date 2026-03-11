@@ -1,0 +1,41 @@
+{
+  "timestamp": "2026-01-28T05:30:38.236105",
+  "benchmarks": [
+    {
+      "timestamp": "2026-01-28T05:30:38.191045",
+      "benchmark_name": "test_suite",
+      "duration_seconds": 0.019082069396972656,
+      "cpu_usage_percent": 0,
+      "memory_mb": 0,
+      "success": false,
+      "metadata": {
+        "test_framework": "pytest"
+      }
+    },
+    {
+      "timestamp": "2026-01-28T05:30:38.192788",
+      "benchmark_name": "linting",
+      "duration_seconds": 0.0017113685607910156,
+      "cpu_usage_percent": 0,
+      "memory_mb": 0,
+      "success": false,
+      "metadata": {
+        "linters": [
+          "flake8",
+          "pylint"
+        ]
+      }
+    },
+    {
+      "timestamp": "2026-01-28T05:30:38.236074",
+      "benchmark_name": "copilot_analysis",
+      "duration_seconds": 0.04315948486328125,
+      "cpu_usage_percent": 0,
+      "memory_mb": 0,
+      "success": true,
+      "metadata": {
+        "analysis_type": "full_repository"
+      }
+    }
+  ]
+}

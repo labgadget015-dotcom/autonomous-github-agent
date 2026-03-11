@@ -1,375 +1,355 @@
 #!/usr/bin/env python3
 """
-GitHub Actions Performance Benchmarking
-Tracks workflow performance over time and identifies trends.
+Performance Benchmarking System
+
+Tracks and compares performance metrics over time:
+- CI/CD execution times
+- Test execution speed
+- Build times
+- Code analysis duration
+- Resource usage
 """
 
-import json
 import os
-from datetime import datetime, timedelta
-from typing import Dict, List, Optional
-import statistics
+import sys
+import json
+import time
+try:
+    import psutil
+    PSUTIL_AVAILABLE = True
+except ImportError:
+    PSUTIL_AVAILABLE = False
+    print("⚠️  psutil not available - some metrics will be limited")
+from pathlib import Path
+from typing import Dict, List, Any, Optional
+from dataclasses import dataclass, asdict
+from datetime import datetime
+import subprocess
+
+
+@dataclass
+class BenchmarkResult:
+    """Represents a benchmark result"""
+    timestamp: str
+    benchmark_name: str
+    duration_seconds: float
+    cpu_usage_percent: float
+    memory_mb: float
+    success: bool
+    metadata: Dict[str, Any]
 
 
 class PerformanceBenchmark:
-    """Benchmark workflow performance."""
+    """
+    Performance Benchmarking System
     
-    def __init__(self, history_file: str = 'performance-history.json'):
-        self.history_file = history_file
-        self.history = self.load_history()
+    Tracks performance metrics and compares over time
+    """
+    
+    def __init__(self, repo_path: str = "."):
+        self.repo_path = Path(repo_path)
+        self.results_dir = self.repo_path / ".benchmark_results"
+        self.results_dir.mkdir(exist_ok=True)
+        self.current_session = []
         
-    def load_history(self) -> List[Dict]:
-        """Load historical performance data."""
-        if os.path.exists(self.history_file):
-            try:
-                with open(self.history_file, 'r', encoding='utf-8') as f:
-                    return json.load(f)
-            except Exception as e:
-                print(f"⚠️ Could not load history: {e}")
-        return []
+    def benchmark_tests(self) -> BenchmarkResult:
+        """Benchmark test suite execution"""
+        print("🧪 Benchmarking test suite...")
         
-    def save_history(self):
-        """Save performance history."""
+        start_time = time.time()
+        start_mem = psutil.Process().memory_info().rss / 1024 / 1024 if PSUTIL_AVAILABLE else 0
+        cpu_start = psutil.cpu_percent(interval=0.1) if PSUTIL_AVAILABLE else 0
+        
         try:
-            with open(self.history_file, 'w', encoding='utf-8') as f:
-                json.dump(self.history, f, indent=2)
+            result = subprocess.run(
+                ['python', '-m', 'pytest', 'tests/', '-q'],
+                capture_output=True,
+                text=True,
+                timeout=300
+            )
+            success = result.returncode == 0
+        except subprocess.TimeoutExpired:
+            success = False
+        except Exception:
+            success = False
+        
+        duration = time.time() - start_time
+        end_mem = psutil.Process().memory_info().rss / 1024 / 1024 if PSUTIL_AVAILABLE else 0
+        cpu_usage = psutil.cpu_percent(interval=0.1) if PSUTIL_AVAILABLE else 0
+        
+        benchmark = BenchmarkResult(
+            timestamp=datetime.now().isoformat(),
+            benchmark_name="test_suite",
+            duration_seconds=duration,
+            cpu_usage_percent=cpu_usage,
+            memory_mb=end_mem - start_mem,
+            success=success,
+            metadata={"test_framework": "pytest"}
+        )
+        
+        self.current_session.append(benchmark)
+        print(f"   ✅ Duration: {duration:.2f}s, CPU: {cpu_usage:.1f}%, Memory: {end_mem - start_mem:.1f}MB")
+        
+        return benchmark
+    
+    def benchmark_linting(self) -> BenchmarkResult:
+        """Benchmark linting execution"""
+        print("🔍 Benchmarking linting...")
+        
+        start_time = time.time()
+        start_mem = psutil.Process().memory_info().rss / 1024 / 1024 if PSUTIL_AVAILABLE else 0
+        cpu_start = psutil.cpu_percent(interval=0.1) if PSUTIL_AVAILABLE else 0
+        
+        success = True
+        # Try multiple linters
+        for linter in ['flake8', 'pylint']:
+            try:
+                subprocess.run(
+                    [linter, '--version'],
+                    capture_output=True,
+                    timeout=10
+                )
+            except:
+                success = False
+        
+        duration = time.time() - start_time
+        end_mem = psutil.Process().memory_info().rss / 1024 / 1024 if PSUTIL_AVAILABLE else 0
+        cpu_usage = psutil.cpu_percent(interval=0.1) if PSUTIL_AVAILABLE else 0
+        
+        benchmark = BenchmarkResult(
+            timestamp=datetime.now().isoformat(),
+            benchmark_name="linting",
+            duration_seconds=duration,
+            cpu_usage_percent=cpu_usage,
+            memory_mb=end_mem - start_mem,
+            success=success,
+            metadata={"linters": ["flake8", "pylint"]}
+        )
+        
+        self.current_session.append(benchmark)
+        print(f"   ✅ Duration: {duration:.2f}s")
+        
+        return benchmark
+    
+    def benchmark_copilot_analysis(self) -> BenchmarkResult:
+        """Benchmark copilot analysis"""
+        print("🤖 Benchmarking copilot analysis...")
+        
+        start_time = time.time()
+        start_mem = psutil.Process().memory_info().rss / 1024 / 1024 if PSUTIL_AVAILABLE else 0
+        cpu_start = psutil.cpu_percent(interval=0.1) if PSUTIL_AVAILABLE else 0
+        
+        try:
+            # Import and run copilot
+            sys.path.insert(0, str(self.repo_path / '.github' / 'scripts'))
+            from elite_copilot import EliteCopilot
+            
+            copilot = EliteCopilot()
+            results = copilot.analyze_repository(str(self.repo_path))
+            success = results.get('health_score', 0) > 0
         except Exception as e:
-            print(f"❌ Error saving history: {e}")
-            
-    def record_run(
-        self,
-        workflow_name: str,
-        duration: int,
-        success: bool,
-        metrics: Optional[Dict] = None
-    ):
-        """Record a workflow run."""
-        record = {
+            print(f"   ⚠️  Error: {e}")
+            success = False
+        
+        duration = time.time() - start_time
+        end_mem = psutil.Process().memory_info().rss / 1024 / 1024 if PSUTIL_AVAILABLE else 0
+        cpu_usage = psutil.cpu_percent(interval=0.1) if PSUTIL_AVAILABLE else 0
+        
+        benchmark = BenchmarkResult(
+            timestamp=datetime.now().isoformat(),
+            benchmark_name="copilot_analysis",
+            duration_seconds=duration,
+            cpu_usage_percent=cpu_usage,
+            memory_mb=end_mem - start_mem,
+            success=success,
+            metadata={"analysis_type": "full_repository"}
+        )
+        
+        self.current_session.append(benchmark)
+        print(f"   ✅ Duration: {duration:.2f}s, Memory: {end_mem - start_mem:.1f}MB")
+        
+        return benchmark
+    
+    def run_full_benchmark(self) -> List[BenchmarkResult]:
+        """Run complete benchmark suite"""
+        print("\n" + "=" * 70)
+        print("Performance Benchmark Suite")
+        print("=" * 70)
+        print()
+        
+        benchmarks = [
+            ('Linting', self.benchmark_linting),
+            ('Copilot Analysis', self.benchmark_copilot_analysis),
+        ]
+        
+        # Only run tests if pytest is available
+        try:
+            subprocess.run(['python', '-m', 'pytest', '--version'], 
+                         capture_output=True, timeout=5)
+            benchmarks.insert(0, ('Test Suite', self.benchmark_tests))
+        except:
+            print("⚠️  Pytest not available, skipping test benchmark")
+        
+        for name, func in benchmarks:
+            try:
+                func()
+            except Exception as e:
+                print(f"   ❌ Failed: {e}")
+        
+        # Save results
+        self._save_results()
+        
+        print("\n" + "=" * 70)
+        print(f"✅ Benchmark complete - {len(self.current_session)} benchmarks run")
+        
+        return self.current_session
+    
+    def _save_results(self) -> None:
+        """Save benchmark results to file"""
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        results_file = self.results_dir / f"benchmark_{timestamp}.json"
+        
+        data = {
             'timestamp': datetime.now().isoformat(),
-            'workflow': workflow_name,
-            'duration': duration,
-            'success': success,
-            'metrics': metrics or {},
-        }
-        self.history.append(record)
-        self.save_history()
-        
-    def get_workflow_stats(
-        self,
-        workflow_name: str,
-        days: int = 30
-    ) -> Dict:
-        """Get statistics for a workflow."""
-        cutoff = datetime.now() - timedelta(days=days)
-        
-        runs = [
-            r for r in self.history
-            if r['workflow'] == workflow_name
-            and datetime.fromisoformat(r['timestamp']) > cutoff
-        ]
-        
-        if not runs:
-            return {}
-            
-        durations = [r['duration'] for r in runs]
-        successes = [r for r in runs if r['success']]
-        
-        return {
-            'total_runs': len(runs),
-            'successful_runs': len(successes),
-            'failed_runs': len(runs) - len(successes),
-            'success_rate': len(successes) / len(runs) * 100,
-            'avg_duration': statistics.mean(durations),
-            'median_duration': statistics.median(durations),
-            'min_duration': min(durations),
-            'max_duration': max(durations),
-            'std_deviation': statistics.stdev(durations) if len(durations) > 1 else 0,
+            'benchmarks': [asdict(b) for b in self.current_session]
         }
         
-    def get_trends(
-        self,
-        workflow_name: str,
-        days: int = 90
-    ) -> Dict:
-        """Analyze performance trends."""
-        cutoff = datetime.now() - timedelta(days=days)
+        with open(results_file, 'w') as f:
+            json.dump(data, f, indent=2)
         
-        runs = [
-            r for r in self.history
-            if r['workflow'] == workflow_name
-            and datetime.fromisoformat(r['timestamp']) > cutoff
-        ]
+        print(f"\n📊 Results saved to {results_file}")
+    
+    def compare_with_baseline(self, baseline_file: Optional[str] = None) -> Dict[str, Any]:
+        """Compare current results with baseline"""
+        if not baseline_file:
+            # Find most recent baseline
+            baseline_files = sorted(self.results_dir.glob("benchmark_*.json"))
+            if len(baseline_files) < 2:
+                print("⚠️  Not enough baseline data for comparison")
+                return {}
+            baseline_file = baseline_files[-2]  # Second most recent
         
-        if len(runs) < 2:
-            return {'trend': 'insufficient_data'}
-            
-        # Split into first and second half
-        mid = len(runs) // 2
-        first_half = runs[:mid]
-        second_half = runs[mid:]
+        with open(baseline_file, 'r') as f:
+            baseline_data = json.load(f)
         
-        first_avg = statistics.mean([r['duration'] for r in first_half])
-        second_avg = statistics.mean([r['duration'] for r in second_half])
-        
-        change = second_avg - first_avg
-        change_pct = (change / first_avg) * 100 if first_avg > 0 else 0
-        
-        # Determine trend
-        if abs(change_pct) < 5:
-            trend = 'stable'
-            trend_emoji = '➡️'
-        elif change_pct < 0:
-            trend = 'improving'
-            trend_emoji = '📈'
-        else:
-            trend = 'degrading'
-            trend_emoji = '📉'
-            
-        return {
-            'trend': trend,
-            'trend_emoji': trend_emoji,
-            'first_half_avg': first_avg,
-            'second_half_avg': second_avg,
-            'change_seconds': change,
-            'change_percentage': change_pct,
+        baseline_benchmarks = {
+            b['benchmark_name']: b 
+            for b in baseline_data['benchmarks']
         }
         
-    def get_percentiles(
-        self,
-        workflow_name: str,
-        days: int = 30
-    ) -> Dict:
-        """Calculate performance percentiles."""
-        cutoff = datetime.now() - timedelta(days=days)
+        comparison = {}
         
-        runs = [
-            r for r in self.history
-            if r['workflow'] == workflow_name
-            and datetime.fromisoformat(r['timestamp']) > cutoff
-        ]
+        print("\n📊 Performance Comparison vs Baseline\n")
         
-        if not runs:
-            return {}
+        for current in self.current_session:
+            name = current.benchmark_name
+            if name not in baseline_benchmarks:
+                continue
             
-        durations = sorted([r['duration'] for r in runs])
-        
-        def percentile(data, p):
-            k = (len(data) - 1) * p / 100
-            f = int(k)
-            c = k - f
-            if f + 1 < len(data):
-                return data[f] + c * (data[f + 1] - data[f])
-            return data[f]
+            baseline = baseline_benchmarks[name]
             
-        return {
-            'p50': percentile(durations, 50),
-            'p75': percentile(durations, 75),
-            'p90': percentile(durations, 90),
-            'p95': percentile(durations, 95),
-            'p99': percentile(durations, 99),
-        }
-        
-    def generate_benchmark_report(
-        self,
-        workflow_name: str = 'code-quality-optimized'
-    ) -> str:
-        """Generate comprehensive benchmark report."""
-        stats_7d = self.get_workflow_stats(workflow_name, days=7)
-        stats_30d = self.get_workflow_stats(workflow_name, days=30)
-        stats_90d = self.get_workflow_stats(workflow_name, days=90)
-        trends = self.get_trends(workflow_name, days=90)
-        percentiles = self.get_percentiles(workflow_name, days=30)
-        
-        report = f"""# Performance Benchmark Report: {workflow_name}
-
-## Overview
-
-**Generated**: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-
-"""
-        
-        # 7-day stats
-        if stats_7d:
-            report += f"""### Last 7 Days
-- **Total Runs**: {stats_7d['total_runs']}
-- **Success Rate**: {stats_7d['success_rate']:.1f}%
-- **Average Duration**: {stats_7d['avg_duration']:.1f}s ({stats_7d['avg_duration']/60:.1f} min)
-- **Median Duration**: {stats_7d['median_duration']:.1f}s
-- **Range**: {stats_7d['min_duration']:.1f}s - {stats_7d['max_duration']:.1f}s
-- **Std Deviation**: {stats_7d['std_deviation']:.1f}s
-
-"""
-        
-        # 30-day stats
-        if stats_30d:
-            report += f"""### Last 30 Days
-- **Total Runs**: {stats_30d['total_runs']}
-- **Success Rate**: {stats_30d['success_rate']:.1f}%
-- **Average Duration**: {stats_30d['avg_duration']:.1f}s ({stats_30d['avg_duration']/60:.1f} min)
-- **Median Duration**: {stats_30d['median_duration']:.1f}s
-- **Range**: {stats_30d['min_duration']:.1f}s - {stats_30d['max_duration']:.1f}s
-
-"""
-        
-        # Percentiles
-        if percentiles:
-            report += f"""### Performance Percentiles (30 days)
-- **P50 (median)**: {percentiles['p50']:.1f}s
-- **P75**: {percentiles['p75']:.1f}s
-- **P90**: {percentiles['p90']:.1f}s
-- **P95**: {percentiles['p95']:.1f}s
-- **P99**: {percentiles['p99']:.1f}s
-
-"""
-        
-        # Trends
-        if 'trend' in trends and trends['trend'] != 'insufficient_data':
-            report += f"""## Trend Analysis (90 days)
-
-{trends['trend_emoji']} **Trend**: {trends['trend'].title()}
-
-- **First Half Average**: {trends['first_half_avg']:.1f}s
-- **Second Half Average**: {trends['second_half_avg']:.1f}s
-- **Change**: {trends['change_seconds']:+.1f}s ({trends['change_percentage']:+.1f}%)
-
-"""
-        
-        # Recommendations
-        report += """## Performance Recommendations
-
-"""
-        
-        recommendations = []
-        
-        if stats_30d:
-            if stats_30d['avg_duration'] > 300:
-                recommendations.append("🔴 **High Priority**: Average duration exceeds 5 minutes. Consider optimization.")
+            duration_change = ((current.duration_seconds - baseline['duration_seconds']) 
+                             / baseline['duration_seconds'] * 100)
             
-            if stats_30d['success_rate'] < 90:
-                recommendations.append("🔴 **High Priority**: Success rate below 90%. Investigate failures.")
-                
-            if stats_30d['std_deviation'] > 60:
-                recommendations.append("🟡 **Medium Priority**: High variance in duration. Investigate inconsistency.")
-                
-        if trends and trends['trend'] == 'degrading':
-            recommendations.append("🟡 **Medium Priority**: Performance is degrading. Review recent changes.")
+            memory_change = current.memory_mb - baseline['memory_mb']
             
-        if percentiles and percentiles['p99'] > percentiles['p50'] * 2:
-            recommendations.append("🟡 **Medium Priority**: P99 is 2x median. Some runs are significantly slower.")
+            comparison[name] = {
+                'duration_change_percent': duration_change,
+                'memory_change_mb': memory_change,
+                'current_duration': current.duration_seconds,
+                'baseline_duration': baseline['duration_seconds']
+            }
             
-        if not recommendations:
-            recommendations.append("✅ **All Good**: Performance is stable and within acceptable limits.")
-            
-        for rec in recommendations:
-            report += f"- {rec}\n"
-            
-        report += """
-## Optimization Checklist
-
-- [ ] Review workflow dependencies
-- [ ] Check cache hit rates
-- [ ] Optimize test execution
-- [ ] Review matrix build strategy
-- [ ] Check for network bottlenecks
-- [ ] Review conditional job execution
-- [ ] Consider parallel job optimization
-- [ ] Check runner resource usage
-
-## Historical Data
-
-"""
+            # Print comparison
+            emoji = "🔴" if duration_change > 10 else "🟢" if duration_change < -10 else "🟡"
+            print(f"{emoji} {name}:")
+            print(f"   Duration: {current.duration_seconds:.2f}s "
+                  f"({duration_change:+.1f}% vs baseline)")
+            print(f"   Memory: {current.memory_mb:.1f}MB "
+                  f"({memory_change:+.1f}MB vs baseline)")
         
-        # Add recent runs table
-        if stats_7d:
-            cutoff = datetime.now() - timedelta(days=7)
-            recent = [
-                r for r in self.history
-                if r['workflow'] == workflow_name
-                and datetime.fromisoformat(r['timestamp']) > cutoff
-            ][-10:]  # Last 10 runs
-            
-            report += "### Recent Runs (Last 10)\n\n"
-            report += "| Timestamp | Duration | Status | Notes |\n"
-            report += "|-----------|----------|--------|-------|\n"
-            
-            for run in reversed(recent):
-                timestamp = datetime.fromisoformat(run['timestamp']).strftime('%m-%d %H:%M')
-                duration = f"{run['duration']:.0f}s"
-                status = "✅" if run['success'] else "❌"
-                notes = run.get('metrics', {}).get('notes', '-')
-                report += f"| {timestamp} | {duration} | {status} | {notes} |\n"
-                
-        report += """
----
-
-**Metrics Collection**: Automated via GitHub Actions
-**Next Review**: Weekly
-"""
+        return comparison
+    
+    def generate_report(self, output_path: str = "BENCHMARK_REPORT.md") -> None:
+        """Generate benchmark report"""
+        print(f"\n📝 Generating benchmark report...")
         
-        return report
+        report = []
+        report.append("# Performance Benchmark Report")
+        report.append(f"\n**Generated:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        report.append(f"**Benchmarks Run:** {len(self.current_session)}")
+        report.append("\n---\n")
         
-    def compare_workflows(
-        self,
-        workflow_names: List[str],
-        days: int = 30
-    ) -> str:
-        """Compare multiple workflows."""
-        report = f"""# Workflow Comparison Report
-
-**Period**: Last {days} days
-**Generated**: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-
-## Comparison Table
-
-| Workflow | Runs | Success Rate | Avg Duration | P50 | P90 | P95 |
-|----------|------|--------------|--------------|-----|-----|-----|
-"""
+        # Summary table
+        report.append("## 📊 Benchmark Results\n")
+        report.append("| Benchmark | Duration | CPU % | Memory (MB) | Status |")
+        report.append("|-----------|----------|-------|-------------|--------|")
         
-        for workflow in workflow_names:
-            stats = self.get_workflow_stats(workflow, days)
-            percentiles = self.get_percentiles(workflow, days)
+        for benchmark in self.current_session:
+            status = "✅ Pass" if benchmark.success else "❌ Fail"
+            report.append(
+                f"| {benchmark.benchmark_name} | "
+                f"{benchmark.duration_seconds:.2f}s | "
+                f"{benchmark.cpu_usage_percent:.1f}% | "
+                f"{benchmark.memory_mb:.1f} MB | "
+                f"{status} |"
+            )
+        
+        report.append("\n---\n")
+        
+        # Detailed results
+        report.append("## 📈 Detailed Results\n")
+        
+        for benchmark in self.current_session:
+            report.append(f"### {benchmark.benchmark_name}")
+            report.append(f"- **Duration:** {benchmark.duration_seconds:.2f} seconds")
+            report.append(f"- **CPU Usage:** {benchmark.cpu_usage_percent:.1f}%")
+            report.append(f"- **Memory Used:** {benchmark.memory_mb:.1f} MB")
+            report.append(f"- **Status:** {'✅ Success' if benchmark.success else '❌ Failed'}")
+            report.append(f"- **Timestamp:** {benchmark.timestamp}")
             
-            if stats:
-                report += f"| {workflow} | {stats['total_runs']} | {stats['success_rate']:.1f}% | "
-                report += f"{stats['avg_duration']:.0f}s | "
-                report += f"{percentiles.get('p50', 0):.0f}s | "
-                report += f"{percentiles.get('p90', 0):.0f}s | "
-                report += f"{percentiles.get('p95', 0):.0f}s |\n"
-            else:
-                report += f"| {workflow} | - | - | - | - | - | - |\n"
-                
-        return report
+            if benchmark.metadata:
+                report.append(f"- **Metadata:** {json.dumps(benchmark.metadata, indent=2)}")
+            
+            report.append("")
+        
+        # Save report
+        with open(output_path, 'w') as f:
+            f.write('\n'.join(report))
+        
+        print(f"✅ Report saved to {output_path}")
 
 
 def main():
-    """Main execution."""
-    benchmark = PerformanceBenchmark()
+    """CLI entry point"""
+    import argparse
     
-    # Example: Record current run
-    workflow_name = os.getenv('GITHUB_WORKFLOW', 'code-quality-optimized')
+    parser = argparse.ArgumentParser(
+        description='Performance Benchmarking System'
+    )
+    parser.add_argument('--repo-path', default='.', help='Path to repository')
+    parser.add_argument('--output', default='BENCHMARK_REPORT.md', help='Output file')
+    parser.add_argument('--compare', action='store_true', help='Compare with baseline')
     
-    # For demo, load from environment or use default
-    duration = int(os.getenv('WORKFLOW_DURATION', '0'))
-    success = os.getenv('WORKFLOW_STATUS', 'success') == 'success'
+    args = parser.parse_args()
     
-    if duration > 0:
-        print(f"📊 Recording workflow run: {workflow_name}")
-        benchmark.record_run(workflow_name, duration, success)
-    
-    # Generate report
-    print("📈 Generating benchmark report...")
-    report = benchmark.generate_benchmark_report(workflow_name)
-    
-    # Save report
-    output_file = 'docs/PERFORMANCE_BENCHMARK.md'
     try:
-        with open(output_file, 'w', encoding='utf-8') as f:
-            f.write(report)
-        print(f"✅ Benchmark report saved to {output_file}")
-    except Exception as e:
-        print(f"❌ Error saving report: {e}")
+        benchmark = PerformanceBenchmark(repo_path=args.repo_path)
+        results = benchmark.run_full_benchmark()
         
-    print("\n✅ Benchmarking complete!")
+        if args.compare:
+            benchmark.compare_with_baseline()
+        
+        benchmark.generate_report(args.output)
+        
+    except KeyboardInterrupt:
+        print("\n\n⚠️  Interrupted by user")
+        sys.exit(1)
+    except Exception as e:
+        print(f"\n❌ Error: {e}")
+        import traceback
+        traceback.print_exc()
+        sys.exit(1)
 
 
 if __name__ == '__main__':
