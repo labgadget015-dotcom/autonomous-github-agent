@@ -1,0 +1,357 @@
+name: Optimized Code Quality & Security
+
+on:
+  pull_request:
+    types: [opened, synchronize, ready_for_review]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - 'LICENSE'
+      - '.gitignore'
+      - '*.txt'
+  push:
+    branches: [main, develop]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - 'LICENSE'
+      - '.gitignore'
+  schedule:
+    - cron: '0 2 * * *'  # Daily at 2 AM UTC
+  workflow_dispatch:
+
+env:
+  PYTHON_VERSION: '3.11'
+  CACHE_VERSION: v2
+
+jobs:
+  # Parallel code analysis with async execution
+  parallel-analysis:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1  # Shallow clone for speed
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+      
+      - name: Cache pip dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/pip
+            ~/.local/share/virtualenvs
+            .mypy_cache
+            .pytest_cache
+            .ruff_cache
+          key: ${{ runner.os }}-pip-${{ env.CACHE_VERSION }}-${{ hashFiles('requirements.txt', '**/*.py') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-${{ env.CACHE_VERSION }}-
+            ${{ runner.os }}-pip-
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip wheel
+          pip install -r requirements.txt
+      
+      - name: Run ruff lint (fast, zero-config)
+        run: |
+          ruff check core/ agents/ autopilot/ .github/scripts \
+            --output-format=github \
+            --exit-zero
+        continue-on-error: true
+
+      - name: Run parallel code analysis
+        id: analysis
+        run: |
+          python .github/scripts/parallel_code_analyzer.py
+        continue-on-error: true
+      
+      - name: Upload analysis results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: analysis-results
+          path: |
+            analysis-results.json
+            *.html
+          retention-days: 30
+      
+      - name: Comment PR with results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const results = JSON.parse(fs.readFileSync('analysis-results.json', 'utf8'));
+            
+            const status = results.passed ? '✅ PASSED' : '❌ FAILED';
+            const body = `## Code Quality Analysis ${status}
+            
+            **Duration:** ${results.elapsed_seconds}s
+            **Total Issues:** ${results.summary.total_issues}
+            
+            ### Tool Results
+            ${Object.entries(results.tools).map(([tool, data]) => 
+              `- **${tool}**: ${data.status === 'passed' ? '✅' : '❌'}`
+            ).join('\n')}
+            
+            <details>
+            <summary>View detailed results</summary>
+            
+            \`\`\`json
+            ${JSON.stringify(results, null, 2)}
+            \`\`\`
+            </details>`;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
+      
+      - name: Check thresholds and fail if needed
+        run: |
+          if [ -f analysis-results.json ]; then
+            python -c "
+            import json, sys
+            with open('analysis-results.json') as f:
+              results = json.load(f)
+            if not results['passed']:
+              print('❌ Code quality checks failed!')
+              sys.exit(1)
+            print('✅ All quality checks passed!')
+            "
+          fi
+
+  # Optimized pytest with targeted coverage
+  test-coverage:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.10', '3.11', '3.12']
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+      
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+      
+      - name: Run optimized pytest
+        run: |
+          pytest \
+            --cov=core \
+            --cov=agents \
+            --cov=autopilot \
+            --cov=.github/scripts \
+            --cov-report=xml \
+            --cov-report=term-missing \
+            --cov-report=html \
+            --cov-fail-under=80 \
+            -v \
+            --tb=short \
+            --strict-markers \
+            --disable-warnings \
+            -n auto
+      
+      - name: Generate coverage badge
+        if: matrix.python-version == '3.11' && github.event_name == 'push'
+        run: |
+          pip install coverage-badge
+          coverage-badge -o coverage.svg -f
+      
+      - name: Upload coverage reports
+        if: matrix.python-version == '3.11'
+        uses: codecov/codecov-action@v4
+        with:
+          file: ./coverage.xml
+          flags: unittests
+          name: codecov-umbrella
+          fail_ci_if_error: false
+      
+      - name: Upload HTML coverage report
+        if: matrix.python-version == '3.11'
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: htmlcov/
+
+  # Enhanced security scanning
+  security-scan:
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      contents: read
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+      
+      - name: Install Bandit
+        run: pip install bandit[toml]
+      
+      - name: Run Bandit security scan
+        run: |
+          bandit -r core/ agents/ autopilot/ .github/scripts \
+            -f json \
+            -o bandit-report.json \
+            --severity-level medium \
+            --confidence-level medium \
+            --exit-zero
+      
+      - name: Check critical vulnerabilities
+        id: check_critical
+        run: |
+          python -c "
+          import json, sys
+          with open('bandit-report.json') as f:
+            report = json.load(f)
+          critical = [r for r in report.get('results', []) if r['issue_severity'] == 'HIGH']
+          if critical:
+            print(f'❌ Found {len(critical)} critical security issues!')
+            for issue in critical:
+              print(f'  - {issue[\"issue_text\"]} in {issue[\"filename\"]}:{issue[\"line_number\"]}')
+            sys.exit(1)
+          print('✅ No critical security issues found')
+          "
+      
+      - name: Upload Bandit results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: bandit-security-report
+          path: bandit-report.json
+      
+      - name: Create security issue if critical vulnerabilities found
+        if: failure() && steps.check_critical.outcome == 'failure'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const report = JSON.parse(fs.readFileSync('bandit-report.json', 'utf8'));
+            const critical = report.results.filter(r => r.issue_severity === 'HIGH');
+            
+            const body = `## 🚨 Critical Security Vulnerabilities Detected
+            
+            Found **${critical.length}** critical security issues:
+            
+            ${critical.map(issue => `
+            ### ${issue.issue_text}
+            - **File:** \`${issue.filename}\`
+            - **Line:** ${issue.line_number}
+            - **Severity:** ${issue.issue_severity}
+            - **Confidence:** ${issue.issue_confidence}
+            
+            \`\`\`python
+            ${issue.code}
+            \`\`\`
+            `).join('\n')}
+            
+            **Action Required:** Fix these issues immediately before merging.
+            `;
+            
+            github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: '🚨 Critical Security Vulnerabilities Detected',
+              body: body,
+              labels: ['security', 'priority: critical']
+            });
+
+  # Code complexity monitoring with Radon
+  complexity-check:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+      
+      - name: Install Radon
+        run: pip install radon
+      
+      - name: Run complexity analysis
+        run: |
+          radon cc core/ agents/ autopilot/ .github/scripts -a -j > complexity.json
+          radon mi core/ agents/ autopilot/ .github/scripts -j > maintainability.json
+      
+      - name: Generate complexity report
+        id: complexity_report
+        run: |
+          python .github/scripts/complexity_reporter.py
+        continue-on-error: true
+      
+      - name: Comment on PR with complexity changes
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            if (fs.existsSync('complexity-report.md')) {
+              const report = fs.readFileSync('complexity-report.md', 'utf8');
+              
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: report
+              });
+            }
+      
+      - name: Upload complexity reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: complexity-reports
+          path: |
+            complexity.json
+            maintainability.json
+            complexity-report.md
+
+  # Health dashboard update
+  update-dashboard:
+    needs: [parallel-analysis, test-coverage, security-scan, complexity-check]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+      
+      - name: Generate health dashboard
+        run: |
+          python .github/scripts/health_dashboard_generator.py
+      
+      - name: Commit dashboard updates
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add docs/HEALTH_DASHBOARD.md coverage.svg || true
+          git diff-index --quiet HEAD || git commit -m "📊 Update health dashboard [skip ci]"
+          git push

@@ -1,0 +1,115 @@
+{
+  "code_analysis": {
+    "enabled": true,
+    "detect_refactoring": true,
+    "detect_architecture": true,
+    "detect_performance": true,
+    "complexity_threshold": 10,
+    "min_test_coverage": 80,
+    "max_function_length": 50,
+    "max_class_length": 300,
+    "detect_code_smells": true,
+    "frameworks": ["python", "javascript", "typescript"]
+  },
+  "documentation": {
+    "enabled": true,
+    "auto_generate_readme": true,
+    "auto_generate_contributing": true,
+    "generate_api_docs": true,
+    "generate_changelog": true,
+    "update_existing": true,
+    "include_badges": true,
+    "include_examples": true
+  },
+  "dependency_management": {
+    "enabled": true,
+    "check_vulnerabilities": true,
+    "auto_suggest_upgrades": true,
+    "scan_frequency": "daily",
+    "ecosystems": ["pip", "npm", "yarn"],
+    "severity_threshold": "medium",
+    "auto_fix_vulnerabilities": false,
+    "create_prs": false
+  },
+  "cicd": {
+    "enabled": true,
+    "optimize_workflows": true,
+    "suggest_tests": true,
+    "suggest_linting": true,
+    "suggest_deployment": true,
+    "suggest_caching": true,
+    "suggest_matrix_testing": true,
+    "detect_slow_jobs": true,
+    "max_job_duration": 600
+  },
+  "issue_triaging": {
+    "enabled": true,
+    "auto_label": true,
+    "auto_prioritize": true,
+    "pattern_detection": true,
+    "detect_duplicates": true,
+    "suggest_assignments": true,
+    "labels": {
+      "bug": ["bug", "error", "exception", "crash"],
+      "enhancement": ["feature", "enhancement", "improvement"],
+      "documentation": ["docs", "documentation", "readme"],
+      "security": ["security", "vulnerability", "cve"],
+      "performance": ["performance", "slow", "optimization"],
+      "testing": ["test", "testing", "coverage"]
+    }
+  },
+  "automation": {
+    "enabled": true,
+    "code_formatting": true,
+    "release_tagging": true,
+    "environment_setup": true,
+    "generate_hooks": true,
+    "generate_scripts": true,
+    "platforms": ["linux", "macos", "windows"]
+  },
+  "monitoring": {
+    "enabled": true,
+    "continuous": true,
+    "alert_on_issues": true,
+    "performance_tracking": true,
+    "track_metrics": [
+      "code_quality",
+      "test_coverage",
+      "build_time",
+      "dependencies",
+      "security_score"
+    ],
+    "alert_thresholds": {
+      "quality_score": 70,
+      "test_coverage": 80,
+      "vulnerabilities": 0,
+      "build_time_increase": 20
+    }
+  },
+  "notifications": {
+    "enabled": true,
+    "channels": ["github_issues", "github_discussions"],
+    "critical_only": false,
+    "digest_frequency": "weekly"
+  },
+  "exclusions": {
+    "paths": [
+      ".git",
+      ".github/agents",
+      "__pycache__",
+      "*.pyc",
+      "node_modules",
+      ".venv",
+      "venv",
+      "dist",
+      "build",
+      ".tox",
+      "*.egg-info"
+    ],
+    "files": [
+      "*.min.js",
+      "*.bundle.js",
+      "*.map"
+    ]
+  }
+}

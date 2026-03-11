@@ -1,0 +1,39 @@
+{
+  "timestamp": "2026-01-24 07:07:12",
+  "elapsed_seconds": 0.04,
+  "summary": {
+    "total_issues": 10,
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "low": 0
+  },
+  "tools": {
+    "pylint": {
+      "status": "failed",
+      "output": "",
+      "errors": "Pylint error: [WinError 2] The system cannot find the file specified"
+    },
+    "flake8": {
+      "status": "failed",
+      "output": "",
+      "errors": "Flake8 error: [WinError 2] The system cannot find the file specified"
+    },
+    "bandit": {
+      "status": "failed",
+      "output": "",
+      "errors": "Bandit error: [WinError 2] The system cannot find the file specified"
+    },
+    "radon_cc": {
+      "status": "failed",
+      "output": "",
+      "errors": "Radon error: [WinError 2] The system cannot find the file specified"
+    },
+    "radon_mi": {
+      "status": "failed",
+      "output": "",
+      "errors": "Radon MI error: [WinError 2] The system cannot find the file specified"
+    }
+  },
+  "passed": false
+}

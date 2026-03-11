@@ -2,6 +2,11 @@
 openai>=1.0.0
 anthropic>=0.8.0
 
+# Machine Learning & AI Optimization
+scikit-learn>=1.3.0  # ML algorithms for priority scoring and caching
+numpy>=1.24.0  # Numerical computing
+scipy>=1.11.0  # Scientific computing
+
 # Data Processing
 PyYAML>=6.0
 json5>=0.9.0
@@ -13,6 +18,7 @@ pytest-xdist>=3.3.0  # Parallel test execution
 pytest-asyncio>=0.21.0  # Async test support
 
 # Code Quality
+ruff>=0.1.0  # Fast linter (replaces flake8, isort, some pylint)
 flake8>=6.1.0
 black>=23.0.0
 mypy>=1.5.0
@@ -20,12 +26,31 @@ pylint>=3.0.0  # Additional static analysis
 bandit>=1.7.5  # Security vulnerability scanning
 radon>=6.0.1  # Code complexity metrics
 isort>=5.12.0  # Import sorting
+orjson>=3.9.0  # Fast JSON parser (3-5x faster than json)
 
 # Workflow Orchestration
-prefect>=2.13.0
+# Pinned floor at 2.16.5 to fix CVE-2023-6022 (CSRF -> RCE, CVSS 8.8)
+# and CVE-2024-8183 (CORS misconfiguration)
+prefect>=2.16.5
 
 # GitHub API
 PyGithub>=2.1.0
+requests>=2.31.0  # HTTP requests library
+# Explicit pin to fix CVE-2023-45803 and CVE-2023-43804 (request body/cookie leak on redirect)
+urllib3>=2.0.7
+
+# Environment configuration
+# Required for load_dotenv() used throughout codebase
+python-dotenv>=1.0.0
+
+# Inter-agent messaging
+redis>=5.0.0  # Redis client for message queue
+
+# Database
+psycopg2-binary>=2.9.0  # PostgreSQL adapter
+
+# Cloud storage
+boto3>=1.28.0  # AWS SDK for S3 archival
 
 # Documentation
 mkdocs>=1.5.0
@@ -42,7 +67,11 @@ coverage-badge>=1.1.0
 psutil>=5.9.0  # System metrics
 prometheus-client>=0.18.0  # Prometheus exporter
 
+# Security auditing
+pip-audit>=2.7.0  # Scans installed packages for known CVEs (complement to bandit)
+
 # Utilities
 colorama>=0.4.6  # Colored terminal output
 click>=8.1.0  # CLI tool support
 rich>=13.0.0  # Rich terminal output
+

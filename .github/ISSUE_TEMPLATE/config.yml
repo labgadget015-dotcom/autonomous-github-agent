@@ -1,0 +1,20 @@
+---
+blank_issues_enabled: false
+contact_links:
+  - name: 📖 Documentation
+    url: >-
+      https://github.com/labgadget015-dotcom/autonomous-github-agent/blob/main/README.md
+    about: >-
+      Read the comprehensive documentation to learn more about this project
+  - name: 💬 Discussions
+    url: >-
+      https://github.com/labgadget015-dotcom/autonomous-github-agent/discussions
+    about: Ask questions and discuss ideas with the community
+  - name: 🚀 Quick Start Guide
+    url: >-
+      https://github.com/labgadget015-dotcom/autonomous-github-agent/blob/main/QUICKSTART.md
+    about: Get started quickly with this step-by-step guide
+  - name: 🤝 Contributing Guide
+    url: >-
+      https://github.com/labgadget015-dotcom/autonomous-github-agent/blob/main/CONTRIBUTING.md
+    about: Learn how to contribute to this project

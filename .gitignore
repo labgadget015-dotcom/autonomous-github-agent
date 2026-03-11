@@ -210,3 +210,9 @@ COPILOT_DEMO_REPORT.md
 COPILOT_INTEGRATION_REPORT.md
 copilot_integration_results.json
 VERIFICATION_REPORT.md
+
+# Overseer generated files
+overseer-results.json
+README_ENHANCED.md
+CONTRIBUTING_ENHANCED.md
+coverage.json

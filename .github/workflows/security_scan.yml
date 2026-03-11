@@ -54,9 +54,9 @@ jobs:
         id: bandit
         run: |
           mkdir -p reports
-          bandit -r .github/scripts -f json -o reports/bandit-report.json --exit-zero
-          bandit -r .github/scripts -f sarif -o reports/bandit-report.sarif --exit-zero
-          bandit -r .github/scripts -ll
+          bandit -r core/ agents/ autopilot/ .github/scripts -f json -o reports/bandit-report.json --exit-zero
+          bandit -r core/ agents/ autopilot/ .github/scripts -f sarif -o reports/bandit-report.sarif --exit-zero
+          bandit -r core/ agents/ autopilot/ .github/scripts -ll
         continue-on-error: true
       
       - name: Upload Bandit SARIF results
@@ -144,12 +144,13 @@ jobs:
       
       - name: Install pip-audit
         run: pip install pip-audit
-      
+
       - name: Run pip-audit check
         run: |
           mkdir -p reports
-          pip-audit --format json --output reports/pip-audit-report.json || true
-          pip-audit --desc || true
+          # Scan requirements.txt directly (no install needed, faster)
+          pip-audit -r requirements.txt --format json --output reports/pip-audit-report.json || true
+          pip-audit -r requirements.txt --desc || true
         continue-on-error: true
       
       - name: Upload pip-audit reports
@@ -330,3 +331,79 @@ jobs:
             } catch (e) {
               console.log('Error creating issue:', e);
             }
+
+  # Job: Rollback Manifest — appends entry to docs/ROLLBACK.md on every push to main
+  generate-rollback-manifest:
+    name: Generate Rollback Manifest
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Append rollback entry to docs/ROLLBACK.md
+        run: |
+          python3 - <<'PYEOF'
+          import subprocess, os
+          from datetime import datetime
+
+          # Get the merge commit info
+          sha = subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip()
+          short = sha[:8]
+          msg = subprocess.check_output(
+              ["git", "log", "-1", "--pretty=%s"], text=True
+          ).strip()
+          author = subprocess.check_output(
+              ["git", "log", "-1", "--pretty=%an <%ae>"], text=True
+          ).strip()
+          files = subprocess.check_output(
+              ["git", "diff", "--name-only", "HEAD~1", "HEAD"], text=True
+          ).strip().splitlines()
+
+          os.makedirs("docs", exist_ok=True)
+          path = "docs/ROLLBACK.md"
+          if not os.path.exists(path):
+              with open(path, "w") as f:
+                  f.write("# 🔄 Rollback Manifest\n\nAuto-generated rollback instructions for every push to main.\n\n")
+
+          entry = f"""
+## {datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')} — `{short}` {msg}
+
+**Author:** {author}
+**Rollback command:**
+```bash
+git revert {sha} --no-edit
+git push origin main
+```
+**Files changed:** {len(files)}
+<details><summary>File list</summary>
+
+{chr(10).join(f'- `{f}`' for f in files[:50])}
+{'- *(and more)*' if len(files) > 50 else ''}
+</details>
+
+---
+"""
+          with open(path, "a") as f:
+              f.write(entry)
+
+          print(f"Appended rollback entry for {short}")
+          PYEOF
+
+      - name: Commit rollback manifest
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/ROLLBACK.md
+          if git diff --cached --quiet; then
+            echo "No changes."
+          else
+            git commit -m "chore: rollback manifest entry [skip ci]
+
+Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>"
+            git push
+          fi

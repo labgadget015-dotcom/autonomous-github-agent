@@ -1,0 +1,51 @@
+{
+  "passed": 5,
+  "failed": 6,
+  "success_rate": 45.45454545454545,
+  "results": [
+    {
+      "test": "Parallel Code Analyzer",
+      "status": "FAILED"
+    },
+    {
+      "test": "Complexity Reporter",
+      "status": "FAILED"
+    },
+    {
+      "test": "Health Dashboard Generator",
+      "status": "FAILED"
+    },
+    {
+      "test": "Badge Generator",
+      "status": "PASSED"
+    },
+    {
+      "test": "Workflow Optimizer",
+      "status": "FAILED"
+    },
+    {
+      "test": "Cost Calculator",
+      "status": "FAILED"
+    },
+    {
+      "test": "Performance Benchmark",
+      "status": "FAILED"
+    },
+    {
+      "test": "Configuration Files",
+      "status": "PASSED"
+    },
+    {
+      "test": "Documentation",
+      "status": "PASSED"
+    },
+    {
+      "test": "Makefile Targets",
+      "status": "PASSED"
+    },
+    {
+      "test": "VS Code Tasks",
+      "status": "PASSED"
+    }
+  ]
+}

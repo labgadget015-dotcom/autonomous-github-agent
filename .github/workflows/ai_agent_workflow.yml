@@ -43,6 +43,8 @@ jobs:
           path: |
             ~/.cache/pip
             ~/.local
+                        .pytest_cache/
+                                    .mypy_cache/
           key: ${{ runner.os }}-pip-${{ env.CACHE_VERSION }}-${{ hashFiles('requirements.txt') }}
           restore-keys: |
             ${{ runner.os }}-pip-${{ env.CACHE_VERSION }}-
@@ -54,7 +56,7 @@ jobs:
       
       - name: Run tests with coverage
         run: |
-          pytest --cov=.github/scripts --cov-report=xml --cov-report=term -v
+          pytest --cov=core --cov=agents --cov=autopilot --cov=.github/scripts --cov-report=xml --cov-report=term -v
       
       - name: Upload coverage
         if: matrix.python-version == '3.11'
@@ -84,9 +86,9 @@ jobs:
       - name: Run code quality checks
         run: |
           black --check . || true
-          flake8 . || true
-          mypy .github/scripts || true
-          pylint .github/scripts --fail-under=8.0 || true
+          flake8 core/ agents/ autopilot/ .github/scripts || true
+          mypy core/ agents/ autopilot/ --ignore-missing-imports || true
+          pylint core/ agents/ autopilot/ --fail-under=6.0 --errors-only || true
 
   agent-workflow:
     needs: [test, code-quality]

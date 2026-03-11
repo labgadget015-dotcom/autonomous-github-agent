@@ -1,0 +1,85 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.backends.legacy:build"
+
+[project]
+name = "autonomous-github-agent"
+version = "0.1.0"
+description = "Universal AI agent workflow with chain-of-thought prompting, CI/CD integration, and autonomous GitHub automation"
+requires-python = ">=3.10"
+readme = "README.md"
+license = { text = "MIT" }
+
+[tool.ruff]
+line-length = 88
+target-version = "py310"
+
+[tool.ruff.lint]
+# Rules: E/W (pycodestyle), F (pyflakes), I (isort), B (flake8-bugbear), UP (pyupgrade)
+select = ["E", "W", "F", "I", "B", "UP"]
+ignore = [
+    "E402",  # module-import-not-at-top — intentional in path-manipulation files
+    "B008",  # function-call-in-default-argument
+]
+# Auto-fixable rules to apply with ruff --fix
+fixable = ["F401", "F541", "I", "UP"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101", "E501"]  # allow assert + long lines in tests
+
+[tool.black]
+line-length = 88
+target-version = ["py310", "py311", "py312"]
+skip-string-normalization = false
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = false
+warn_unused_configs = true
+ignore_missing_imports = true
+exclude = ["tests/", "docs/"]
+
+[tool.coverage.run]
+source = ["core", "agents", "autopilot"]
+omit = ["*/tests/*", "*/__pycache__/*", "*/venv/*"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+    "@abstractmethod",
+]
+fail_under = 70
+
+[tool.bandit]
+targets = ["core", "agents", "autopilot", ".github/scripts"]
+severity = "medium"
+confidence = "medium"
+
+[tool.autonomous-agent]
+# Safety gates (defaults: safe)
+dry_run = true
+require_approval = true
+
+# Automation toggles
+auto_merge = false
+auto_close_issues = true
+auto_delete_branches = true
+auto_label = true
+
+# Thresholds
+risk_score_threshold = 4.0
+flaky_test_fail_rate = 0.30
+max_auto_fix_files = 50
+
+# LLM cost controls (USD)
+llm_max_cost_usd = 1.0
+
+# Output paths
+metrics_file = "docs/METRICS.md"
+rollback_file = "docs/ROLLBACK.md"
+audit_log_file = ".audit_log.jsonl"
+llm_costs_file = ".llm_costs.jsonl"

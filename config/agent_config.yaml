@@ -1,0 +1,223 @@
+# Agent Configuration
+# Configuration for all agents in the system
+
+# Global Settings
+global:
+  # Maximum concurrent tasks
+  max_concurrent_tasks: 5
+  
+  # Task timeout in seconds
+  task_timeout: 300
+  
+  # Retry configuration
+  max_retries: 3
+  retry_delay: 5
+  
+  # Logging level
+  log_level: INFO
+
+# LLM Configuration
+llm:
+  # Default provider (openai or anthropic)
+  default_provider: openai
+  
+  # Model selection
+  models:
+    openai: gpt-4
+    anthropic: claude-3-opus-20240229
+  
+  # Temperature for different tasks
+  temperature:
+    code_review: 0.3
+    documentation: 0.7
+    issue_triage: 0.5
+    default: 0.7
+  
+  # Max tokens
+  max_tokens: 2000
+
+# GitHub Configuration
+github:
+  # Rate limiting
+  requests_per_minute: 60
+  
+  # Repository settings
+  default_branch: main
+  protected_branches:
+    - main
+    - production
+  
+  # Label configuration
+  labels:
+    bug: "bug"
+    enhancement: "enhancement"
+    documentation: "documentation"
+    security: "security"
+    dependencies: "dependencies"
+
+# Orchestrator Agent
+orchestrator:
+  enabled: true
+  
+  # Task routing configuration
+  routing:
+    # Use round-robin or priority-based routing
+    strategy: priority
+    
+    # Load balancing
+    enable_load_balancing: true
+  
+  # Parallel execution
+  parallel_execution:
+    enabled: true
+    max_parallel_tasks: 3
+  
+  # Escalation
+  escalation:
+    enabled: true
+    create_github_issues: true
+
+# PR Review Agent
+pr_review:
+  enabled: true
+  
+  # Review criteria
+  check_tests: true
+  check_coverage: true
+  check_linting: true
+  check_security: true
+  
+  # Auto-approve conditions
+  auto_approve:
+    enabled: false
+    min_coverage: 80
+    all_tests_pass: true
+    no_security_issues: true
+
+# Issue Triager Agent
+issue_triager:
+  enabled: true
+  
+  # Auto-label
+  auto_label: true
+  
+  # Auto-assign
+  auto_assign: false
+  
+  # Priority detection
+  detect_priority: true
+
+# Security Scanner Agent
+security_scanner:
+  enabled: true
+  
+  # Scan frequency
+  scan_on_pr: true
+  scheduled_scan: daily
+  
+  # Tools
+  tools:
+    - bandit  # Python
+    - npm audit  # JavaScript
+    - dependabot  # Dependencies
+
+# Documentation Agent
+documentation:
+  enabled: true
+  
+  # Auto-generate docs
+  auto_generate: true
+  
+  # Documentation types
+  generate:
+    - readme
+    - api_docs
+    - changelog
+  
+  # Update frequency
+  update_on_release: true
+
+# Dependency Manager Agent
+dependency_manager:
+  enabled: true
+  
+  # Auto-update
+  auto_update: false
+  
+  # Update strategy
+  update_strategy: minor  # major, minor, patch
+  
+  # Security updates
+  auto_security_updates: true
+
+# Test Runner Agent
+test_runner:
+  enabled: true
+  
+  # Run tests on
+  run_on_pr: true
+  run_on_push: true
+  
+  # Parallel testing
+  parallel_tests: true
+
+# Deployment Agent
+deployment:
+  enabled: false  # Requires additional configuration
+  
+  # Deployment environments
+  environments:
+    - staging
+    - production
+  
+  # Approval required
+  require_approval: true
+
+# Monitoring Agent
+monitoring:
+  enabled: true
+  
+  # Metrics collection
+  collect_metrics: true
+  
+  # Alert thresholds
+  alerts:
+    high_error_rate: 0.05
+    slow_response_time: 1000  # ms
+    low_coverage: 80  # percentage
+
+# Audit Configuration
+audit:
+  # Enable audit logging
+  enabled: true
+  
+  # Audit log path
+  log_path: logs/audit.jsonl
+  
+  # PostgreSQL (optional)
+  postgres:
+    enabled: false
+    host: localhost
+    port: 5432
+    database: audit_logs
+  
+  # S3 archival (optional)
+  s3:
+    enabled: false
+    bucket: agent-audit-logs
+    region: us-east-1
+    retention_days: 90
+
+# Message Queue Configuration
+message_queue:
+  # Redis configuration
+  redis:
+    host: localhost
+    port: 6379
+    db: 0
+  
+  # Queue names
+  queues:
+    high_priority: agent_queue_high
+    normal_priority: agent_queue_normal
+    low_priority: agent_queue_low

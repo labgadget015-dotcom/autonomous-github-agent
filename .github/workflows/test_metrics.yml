@@ -1,0 +1,217 @@
+name: Test Metrics & Flaky Detection
+
+# Runs tests multiple times to detect flaky tests.
+# Appends run stats to docs/METRICS.md and emits JSON artifact.
+
+on:
+  schedule:
+    - cron: "0 6 * * 1"  # Monday 06:00 UTC
+  workflow_dispatch:
+    inputs:
+      runs:
+        description: "Number of test repetitions (default: 3)"
+        required: false
+        default: "3"
+  push:
+    branches: [main]
+    paths:
+      - "tests/**"
+      - "core/**"
+      - "agents/**"
+      - "autopilot/**"
+
+concurrency:
+  group: test-metrics-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+  pull-requests: read
+
+jobs:
+  flaky-detection:
+    name: Flaky Test Detection (${{ matrix.run }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        run: [1, 2, 3]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -q -r requirements.txt pytest pytest-cov pytest-json-report
+
+      - name: Run tests with JSON report
+        run: |
+          pytest tests/ \
+            --json-report \
+            --json-report-file=test-results-${{ matrix.run }}.json \
+            --no-cov \
+            -q \
+            --tb=no \
+            --ignore=tests/unit \
+          || true  # don't fail matrix run — we collect results
+
+      - name: Run unit tests
+        run: |
+          pytest tests/unit/ \
+            --json-report \
+            --json-report-file=test-results-unit-${{ matrix.run }}.json \
+            --no-cov \
+            -q \
+            --tb=no \
+          || true
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: test-results-run-${{ matrix.run }}
+          path: test-results*.json
+          retention-days: 14
+
+  analyze-flaky:
+    name: Analyze & Report
+    runs-on: ubuntu-latest
+    needs: flaky-detection
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: test-results-run-*
+          merge-multiple: true
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Analyze flakiness and update METRICS.md
+        id: analyze
+        run: |
+          python3 - <<'PYEOF'
+          import json, os, glob
+          from collections import defaultdict
+          from datetime import datetime
+
+          FLAKY_THRESHOLD = 0.30  # flag tests failing <30% of runs
+
+          test_results = defaultdict(list)  # nodeid -> [passed, failed, ...]
+          total_runs = 0
+
+          for f in sorted(glob.glob("test-results*.json")):
+              try:
+                  data = json.loads(open(f).read())
+                  total_runs += 1
+                  for test in data.get("tests", []):
+                      nodeid = test["nodeid"]
+                      outcome = test["outcome"]
+                      test_results[nodeid].append(outcome)
+              except Exception as e:
+                  print(f"Warning: could not parse {f}: {e}")
+
+          if not test_results:
+              print("No test results found.")
+              exit(0)
+
+          # Classify tests
+          flaky = []
+          consistently_failing = []
+          consistently_passing = []
+
+          for nodeid, outcomes in test_results.items():
+              fail_rate = outcomes.count("failed") / len(outcomes)
+              if fail_rate == 0:
+                  consistently_passing.append(nodeid)
+              elif fail_rate == 1.0:
+                  consistently_failing.append(nodeid)
+              elif fail_rate < FLAKY_THRESHOLD:
+                  flaky.append((nodeid, fail_rate, outcomes))
+              else:
+                  # Failing most of the time — consistently failing
+                  consistently_failing.append(nodeid)
+
+          # Emit summary
+          print(f"Total test nodes: {len(test_results)}")
+          print(f"Consistently passing: {len(consistently_passing)}")
+          print(f"Consistently failing: {len(consistently_failing)}")
+          print(f"Flaky (fail_rate < {FLAKY_THRESHOLD*100:.0f}%): {len(flaky)}")
+
+          # Build metrics record
+          summary = {
+              "date": datetime.utcnow().strftime("%Y-%m-%d"),
+              "total_runs": total_runs,
+              "total_tests": len(test_results),
+              "passing": len(consistently_passing),
+              "failing": len(consistently_failing),
+              "flaky": len(flaky),
+              "flaky_tests": [
+                  {"nodeid": n, "fail_rate": round(r, 3), "outcomes": o}
+                  for n, r, o in flaky
+              ],
+          }
+          with open("metrics_run.json", "w") as f:
+              json.dump(summary, f, indent=2)
+
+          # GitHub Step Summary
+          with open(os.environ.get("GITHUB_STEP_SUMMARY", "/dev/null"), "a") as f:
+              f.write("## 🧪 Test Metrics Report\n\n")
+              f.write(f"| Metric | Count |\n|--------|-------|\n")
+              f.write(f"| Total tests | {len(test_results)} |\n")
+              f.write(f"| Passing | {len(consistently_passing)} |\n")
+              f.write(f"| Failing | {len(consistently_failing)} |\n")
+              f.write(f"| Flaky | {len(flaky)} |\n\n")
+              if flaky:
+                  f.write("### ⚠️ Flaky Tests\n\n")
+                  f.write("| Test | Fail Rate |\n|------|----------|\n")
+                  for nodeid, rate, _ in flaky:
+                      f.write(f"| `{nodeid}` | {rate*100:.1f}% |\n")
+
+          # Update docs/METRICS.md
+          metrics_path = "docs/METRICS.md"
+          os.makedirs("docs", exist_ok=True)
+          if not os.path.exists(metrics_path):
+              header = "# 📊 Test Metrics History\n\nAutomatically updated by CI.\n\n"
+              header += "| Date | Total | Passing | Failing | Flaky |\n"
+              header += "|------|-------|---------|---------|-------|\n"
+              open(metrics_path, "w").write(header)
+
+          row = (
+              f"| {summary['date']} | {summary['total_tests']} | "
+              f"{summary['passing']} | {summary['failing']} | {summary['flaky']} |\n"
+          )
+          with open(metrics_path, "a") as f:
+              f.write(row)
+
+          print(f"Updated {metrics_path}")
+
+          if flaky:
+              print("::warning::Flaky tests detected — see step summary for details.")
+          PYEOF
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: metrics-summary
+          path: metrics_run.json
+          retention-days: 30
+
+      - name: Commit updated METRICS.md
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/METRICS.md
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "chore: update test metrics [skip ci]
+
+Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>"
+            git push
+          fi
