@@ -45,7 +45,6 @@ github:
   default_branch: main
   protected_branches:
     - main
-    - master
     - production
   
   # Label configuration
