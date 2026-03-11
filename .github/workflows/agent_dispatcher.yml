@@ -89,7 +89,7 @@ jobs:
           cache: pip
 
       - name: Install dependencies
-        run: pip install -q PyGithub
+        run: pip install -q PyGithub pyyaml
 
       - name: Compute risk score and post comment
         env:
