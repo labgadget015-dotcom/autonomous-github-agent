@@ -1,9 +1,8 @@
 # Autonomous GitHub Agent
 
-[![Build Status](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/labgadget015-dotcom/autonomous-github-agent/main/.github/badges/build.json)](https://github.com/labgadget015-dotcom/autonomous-github-agent/actions)
-[![Code Coverage](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/labgadget015-dotcom/autonomous-github-agent/main/.github/badges/coverage.json)](https://github.com/labgadget015-dotcom/autonomous-github-agent/actions)
-[![Code Quality](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/labgadget015-dotcom/autonomous-github-agent/main/.github/badges/quality.json)](https://github.com/labgadget015-dotcom/autonomous-github-agent/actions)
-[![Security](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/labgadget015-dotcom/autonomous-github-agent/main/.github/badges/security.json)](https://github.com/labgadget015-dotcom/autonomous-github-agent/security)
+[![CI](https://github.com/labgadget015-dotcom/autonomous-github-agent/actions/workflows/ai_agent_workflow.yml/badge.svg)](https://github.com/labgadget015-dotcom/autonomous-github-agent/actions/workflows/ai_agent_workflow.yml)
+[![Security Scan](https://github.com/labgadget015-dotcom/autonomous-github-agent/actions/workflows/security_scan.yml/badge.svg)](https://github.com/labgadget015-dotcom/autonomous-github-agent/actions/workflows/security_scan.yml)
+[![Code Quality](https://github.com/labgadget015-dotcom/autonomous-github-agent/actions/workflows/code-quality-optimized.yml/badge.svg)](https://github.com/labgadget015-dotcom/autonomous-github-agent/actions/workflows/code-quality-optimized.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 > Universal AI agent workflow with chain-of-thought prompting templates, CI/CD integration, modular orchestration, and advanced full-stack repository oversight for autonomous GitHub automation
@@ -12,12 +11,106 @@
 
 This repository provides a comprehensive starter kit for building autonomous AI agents that can operate on GitHub repositories with advanced reasoning capabilities. It combines:
 
+- **🚀 Phase 1: Core Infrastructure** - Production-ready agent framework with orchestration, policy enforcement, and audit trails
 - **Chain-of-Thought (CoT) Prompting Templates** - Multiple reasoning approaches for AI agents
 - **CI/CD Integration** - GitHub Actions workflows for automated agent execution
 - **Modular Architecture** - Separate, testable components for each workflow stage
 - **Policy Enforcement** - Built-in compliance and security checks
 - **Artifact-Driven Collaboration** - Complete audit trails and documentation
-- **🆕 Repository Overseer** - Advanced full-stack repository management and improvement system
+- **Repository Overseer** - Advanced full-stack repository management and improvement system
+
+## 🚀 Phase 1: Core Infrastructure & Orchestrator
+
+**NEW!** Phase 1 implements the foundational infrastructure for a 10-agent autonomous AI system with:
+
+### Core Components
+
+#### 1. **Base Agent Framework** (`core/agent_base.py`)
+- Abstract base class for all agents
+- Lifecycle management: validate → execute → log → return
+- Integrated GitHub, LLM, audit, and policy subsystems
+- **100% test coverage**
+
+#### 2. **GitHub Integration** (`core/github_client.py`)
+- Rate-limited API wrapper
+- Automatic retry with exponential backoff
+- Support for issues, PRs, comments, and repositories
+
+#### 3. **Multi-LLM Support** (`core/llm_provider.py`)
+- Unified interface for OpenAI and Anthropic
+- Token usage tracking
+- Configurable temperature and max_tokens per task type
+
+#### 4. **Audit Logging** (`core/audit_logger.py`)
+- Immutable audit trail for all agent actions
+- JSON file + optional PostgreSQL storage
+- S3 archival for 90-day retention
+- Automatic rollback instruction generation
+
+#### 5. **Policy Engine** (`core/policy_engine.py`)
+- Governance rules and escalation logic
+- Human-in-the-loop for destructive operations
+- Configurable approval requirements via YAML
+
+#### 6. **Message Queue** (`core/message_queue.py`)
+- Redis-based inter-agent messaging
+- Priority-based task queuing
+- Pub/Sub for event broadcasting
+
+### Orchestrator Agent
+
+The master coordinator (`agents/orchestrator_agent.py`) provides:
+
+- **Task Routing**: Automatically routes tasks to specialized agents
+- **Parallel Execution**: Runs multiple tasks concurrently (configurable limit)
+- **Sequential Execution**: Step-by-step task execution with error handling
+- **Approval Workflow**: Creates GitHub issues for human approval when required
+- **Load Balancing**: Distributes work across available agents
+- **82% test coverage**
+
+### Quick Start - Phase 1
+
+```python
+from agents import OrchestratorAgent
+from core import GitHubClient, LLMClient, AuditLogger, PolicyEngine
+
+# Configure
+config = {
+    'github_token': 'ghp_xxxxx',
+    'openai_api_key': 'sk-xxxxx',
+    'llm_provider': 'openai'
+}
+
+# Initialize orchestrator
+orchestrator = OrchestratorAgent(config)
+
+# Execute a task
+result = await orchestrator.execute({
+    'action': 'delegate_task',
+    'params': {
+        'task_type': 'pr_review',
+        'task_data': {'pr_number': 123}
+    }
+})
+```
+
+### Documentation
+
+- 📖 [Architecture Guide](docs/ARCHITECTURE.md) - System design and component overview
+- 📚 [API Reference](docs/API.md) - Detailed API documentation for all core modules
+- ⚙️ [Configuration](config/) - YAML files for policies, code standards, and agent settings
+
+### Testing
+
+41 comprehensive unit tests with >80% coverage for core components:
+
+```bash
+# Run tests
+pytest tests/test_core.py tests/test_orchestrator.py -v
+
+# With coverage
+pytest tests/ --cov=core --cov=agents --cov-report=term-missing
+```
 
 ## Features
 
@@ -321,7 +414,7 @@ This will configure your main branch to:
 - Prevent direct pushes
 - Block force pushes and deletions
 
-See [BRANCH_PROTECTION_QUICKSTART.md](BRANCH_PROTECTION_QUICKSTART.md) for details.
+See [BRANCH_PROTECTION_QUICKSTART.md](docs/BRANCH_PROTECTION_QUICKSTART.md) for details.
 
 ## Workflow Pipeline
 

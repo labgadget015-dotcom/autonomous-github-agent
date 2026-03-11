@@ -2,231 +2,187 @@
 import pytest
 import sys
 import os
-from pathlib import Path
 import tempfile
 import json
-from unittest.mock import Mock, MagicMock
+from pathlib import Path
+from unittest.mock import Mock, MagicMock, AsyncMock, patch
 
 # Add project root to path
 project_root = Path(__file__).parent.parent
-sys.path.insert(0, str(project_root / '.github' / 'scripts'))
+sys.path.insert(0, str(project_root))
 
+
+# ---------------------------------------------------------------------------
+# Generic fixtures
+# ---------------------------------------------------------------------------
 
 @pytest.fixture
-def temp_directory():
+def temp_directory(tmp_path):
     """Provide a temporary directory for tests."""
-    with tempfile.TemporaryDirectory() as tmpdir:
-        yield tmpdir
+    return tmp_path
 
 
 @pytest.fixture
-def temp_file():
-    """Provide a temporary file for tests."""
-    with tempfile.NamedTemporaryFile(mode='w', delete=False) as f:
-        yield f.name
-    try:
-        os.unlink(f.name)
-    except FileNotFoundError:
-        pass
+def temp_file(tmp_path):
+    """Provide a temporary file path for tests."""
+    p = tmp_path / "test_file.txt"
+    p.write_text("")
+    return str(p)
 
 
 @pytest.fixture
 def sample_config():
-    """Provide sample configuration for tests."""
+    """Minimal working configuration for core components."""
     return {
-        'api_key': 'test_api_key',
-        'model': 'test_model',
-        'max_retries': 3,
-        'timeout': 30,
-        'debug': True
+        "github_token": "ghp_test_token",
+        "openai_api_key": "sk-test-key",
+        "llm_provider": "openai",
+        "model": "gpt-4",
+        "max_retries": 3,
+        "timeout": 30,
+        "debug": True,
     }
 
 
+# ---------------------------------------------------------------------------
+# Mock GitHub fixtures
+# ---------------------------------------------------------------------------
+
 @pytest.fixture
 def mock_github_api():
-    """Provide a mock GitHub API client."""
+    """Provide a mock GitHub API client (PyGithub style)."""
     mock_api = MagicMock()
-    mock_api.get_repo.return_value = Mock()
-    mock_api.create_issue.return_value = {'number': 1}
+    mock_repo = MagicMock()
+    mock_issue = MagicMock()
+    mock_issue.number = 1
+    mock_issue.state = "open"
+    mock_repo.create_issue.return_value = mock_issue
+    mock_repo.get_issue.return_value = mock_issue
+    mock_api.get_repo.return_value = mock_repo
     return mock_api
 
 
 @pytest.fixture
-def sample_json_file(temp_directory):
+def mock_github_client(sample_config):
+    """Provide a GitHubClient with mocked PyGithub."""
+    from core.github_client import GitHubClient
+    with patch("core.github_client.Github") as mock_gh:
+        mock_repo = MagicMock()
+        mock_gh.return_value.get_repo.return_value = mock_repo
+        client = GitHubClient(sample_config)
+        client._mock_repo = mock_repo
+        yield client
+
+
+# ---------------------------------------------------------------------------
+# Core component fixtures
+# ---------------------------------------------------------------------------
+
+@pytest.fixture
+def audit_logger(tmp_path, sample_config):
+    """Provide a real AuditLogger writing to a temp file."""
+    from core.audit_logger import AuditLogger
+    cfg = dict(sample_config)
+    cfg["audit_log_path"] = str(tmp_path / "audit.jsonl")
+    return AuditLogger(cfg)
+
+
+@pytest.fixture
+def policy_engine():
+    """Provide a PolicyEngine using default (no file) policies."""
+    from core.policy_engine import PolicyEngine
+    return PolicyEngine({"policy_file": "/nonexistent/policies.yaml"})
+
+
+@pytest.fixture
+def message_queue(sample_config):
+    """Provide a MessageQueue in in-memory mode (no Redis)."""
+    from core.message_queue import MessageQueue
+    with patch("core.message_queue.MessageQueue._init_redis", return_value=False):
+        return MessageQueue(sample_config)
+
+
+# ---------------------------------------------------------------------------
+# Agent fixtures
+# ---------------------------------------------------------------------------
+
+@pytest.fixture
+def base_agent_class():
+    """Return a concrete BaseAgent subclass for testing."""
+    from core.agent_base import BaseAgent
+
+    class ConcreteAgent(BaseAgent):
+        def get_supported_actions(self):
+            return ["test_action", "noop"]
+
+        async def _execute(self, task):
+            return {"status": "success", "output": f"executed {task.get('action')}"}
+
+        def validate(self, task):
+            return "action" in task
+
+    return ConcreteAgent
+
+
+@pytest.fixture
+def base_agent(base_agent_class, sample_config):
+    """Provide a fully patched BaseAgent instance."""
+    with (
+        patch("core.agent_base.GitHubClient"),
+        patch("core.agent_base.LLMClient"),
+        patch("core.agent_base.AuditLogger"),
+        patch("core.agent_base.PolicyEngine"),
+    ):
+        agent = base_agent_class("test_agent", sample_config)
+        agent.policy.check_action = AsyncMock(return_value={"requires_approval": False})
+        agent.audit.log_action = AsyncMock()
+        return agent
+
+
+@pytest.fixture
+def orchestrator(sample_config):
+    """Provide a fully patched OrchestratorAgent instance."""
+    from agents.orchestrator_agent import OrchestratorAgent
+    with (
+        patch("core.agent_base.GitHubClient"),
+        patch("core.agent_base.LLMClient"),
+        patch("core.agent_base.AuditLogger"),
+        patch("core.agent_base.PolicyEngine"),
+        patch("core.message_queue.MessageQueue._init_redis", return_value=False),
+    ):
+        return OrchestratorAgent(sample_config)
+
+
+# ---------------------------------------------------------------------------
+# Sample data fixtures
+# ---------------------------------------------------------------------------
+
+@pytest.fixture
+def sample_task():
+    """A valid task dict."""
+    return {"id": "task-001", "action": "test_action", "params": {"repo": "owner/repo"}}
+
+
+@pytest.fixture
+def sample_json_file(tmp_path):
     """Create a sample JSON file for testing."""
-    file_path = os.path.join(temp_directory, 'test_config.json')
-    test_data = {'key': 'value', 'number': 42}
-    with open(file_path, 'w') as f:
-        json.dump(test_data, f)
-    return file_path
+    file_path = tmp_path / "test_config.json"
+    test_data = {"key": "value", "number": 42, "nested": {"a": 1}}
+    file_path.write_text(json.dumps(test_data))
+    return str(file_path)
 
 
 @pytest.fixture
-def mock_logger():
-    """Provide a mock logger for tests."""
-    logger = MagicMock()
-    logger.info = MagicMock()
-    logger.error = MagicMock()
-    logger.warning = MagicMock()
-    logger.debug = MagicMock()
-    return logger
-
-
-@pytest.fixture
-def error_scenarios():
-    """Provide common error scenarios for testing."""
-    return {
-        'network_error': Exception('Network connection failed'),
-        'api_error': Exception('API rate limit exceeded'),
-        'validation_error': ValueError('Invalid input data'),
-        'file_not_found': FileNotFoundError('File does not exist'),
-        'permission_error': PermissionError('Access denied')
-    }
-
-
-@pytest.fixture(autouse=True)
-def reset_environment():
-    """Reset environment variables after each test."""
-    original_env = os.environ.copy()
-    yield
-    os.environ.clear()
-    os.environ.update(original_env)
-
-
-@pytest.fixture
-def mock_error_handler():
-    """Provide a mock error handler."""
-    handler = MagicMock()
-    handler.handle_error = MagicMock(return_value=True)
-    handler.errors = []
-    return handler
-
-
-@pytest.fixture
-def sample_data_sets():
-    """Provide sample data sets for testing."""
-    return {
-        'valid': {
-            'string': 'test string',
-            'number': 123,
-            'list': [1, 2, 3],
-            'dict': {'key': 'value'}
-        },
-        'invalid': {
-            'none': None,
-            'empty_string': '',
-            'empty_list': [],
-            'empty_dict': {}
-        },
-        'edge_cases': {
-            'large_number': 10**10,
-            'negative': -100,
-            'special_chars': '!@#$%^&*()',
-            'unicode': '你好世界🌍'
-        }
-    }
-
-
-@pytest.fixture
-def mock_file_system(temp_directory):
-    """Create a mock file system structure."""
-    structure = {
-        'root': temp_directory,
-        'files': [],
-        'dirs': []
-    }
-    
-    # Create some test files and directories
-    test_dir = os.path.join(temp_directory, 'test_dir')
-    os.makedirs(test_dir, exist_ok=True)
-    structure['dirs'].append(test_dir)
-    
-    test_file = os.path.join(temp_directory, 'test_file.txt')
-    with open(test_file, 'w') as f:
-        f.write('test content')
-    structure['files'].append(test_file)
-    
-    return structure
-
-
-@pytest.fixture
-def performance_metrics():
-    """Provide performance metrics tracking."""
-    return {
-        'start_time': None,
-        'end_time': None,
-        'execution_time': 0,
-        'operations': 0,
-        'errors': 0
-    }
-
-
-# Pytest hooks for better test reporting
-def pytest_configure(config):
-    """Configure pytest."""
-    config.addinivalue_line(
-        "markers",
-        "slow: marks tests as slow (deselect with '-m \"not slow\"')"
+def sample_policy_file(tmp_path):
+    """Create a minimal policy YAML for testing."""
+    content = (
+        "requires_approval:\n"
+        "  - delete_repository\n"
+        "  - force_push_protected\n"
+        "auto_approved:\n"
+        "  - label_issue\n"
+        "  - add_comment\n"
     )
-    config.addinivalue_line(
-        "markers",
-        "integration: marks tests as integration tests"
-    )
-    config.addinivalue_line(
-        "markers",
-        "unit: marks tests as unit tests"
-    )
-
-
-def pytest_collection_modifyitems(config, items):
-    """Modify test collection."""
-    for item in items:
-        # Add markers based on test name
-        if 'integration' in item.nodeid:
-            item.add_marker(pytest.mark.integration)
-        else:
-            item.add_marker(pytest.mark.unit)
-
-
-@pytest.fixture
-def capture_logs():
-    """Capture log messages during tests."""
-    logs = []
-    
-    def log_capture(message):
-        logs.append(message)
-    
-    return {'logs': logs, 'capture': log_capture}
-
-
-@pytest.fixture
-def retry_config():
-    """Provide retry configuration for tests."""
-    return {
-        'max_retries': 3,
-        'retry_delay': 0.1,
-        'backoff_factor': 2,
-        'max_delay': 10
-    }
-
-
-@pytest.fixture
-def security_test_data():
-    """Provide security test data."""
-    return {
-        'sql_injection': ["'; DROP TABLE users; --", "1' OR '1'='1"],
-        'xss': ['<script>alert("xss")</script>', '<img src=x onerror=alert(1)>'],
-        'path_traversal': ['../../../etc/passwd', '..\\..\\..\\windows\\system32'],
-        'command_injection': ['; ls -la', '| cat /etc/passwd']
-    }
-
-
-@pytest.fixture
-def load_test_config():
-    """Provide load testing configuration."""
-    return {
-        'concurrent_users': [1, 10, 50, 100],
-        'request_rate': [1, 10, 100],
-        'duration': 60,
-        'ramp_up': 10
-    }
+    p = tmp_path / "policies.yaml"
+    p.write_text(content)
+    return str(p)
