@@ -6,6 +6,7 @@ rate limiting and maximize throughput using adaptive strategies.
 
 import logging
 import random
+import threading
 import time
 from collections import defaultdict, deque
 from collections.abc import Callable
@@ -94,10 +95,10 @@ class APIOptimizationAgent:
             for strategy in self.strategies:
                 self.q_table[state][strategy] = 0.0
 
-        # Epsilon-greedy strategy selection
-        if not force_exploit and random.random() < self.epsilon:
+        # Epsilon-greedy strategy selection (random used for ML exploration, not security)
+        if not force_exploit and random.random() < self.epsilon:  # noqa: S311
             # Explore: random strategy
-            strategy = random.choice(self.strategies)
+            strategy = random.choice(self.strategies)  # noqa: S311
             logger.debug(f"Exploring strategy: {strategy}")
         else:
             # Exploit: best known strategy
@@ -354,14 +355,17 @@ class APIOptimizationAgent:
 
 
 # Global optimizer instance
-_global_optimizer = None
+_global_optimizer: APIOptimizationAgent | None = None
+_global_optimizer_lock = threading.Lock()
 
 
 def get_optimizer() -> APIOptimizationAgent:
-    """Get global optimizer instance."""
+    """Get global optimizer instance (thread-safe)."""
     global _global_optimizer
     if _global_optimizer is None:
-        _global_optimizer = APIOptimizationAgent()
+        with _global_optimizer_lock:
+            if _global_optimizer is None:
+                _global_optimizer = APIOptimizationAgent()
     return _global_optimizer
 
 

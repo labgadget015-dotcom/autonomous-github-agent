@@ -6,6 +6,7 @@ repository content for relevance and importance.
 
 import logging
 import re
+import threading
 from collections import Counter
 from collections.abc import Callable
 from typing import Any
@@ -533,14 +534,17 @@ class NLPRelevanceFilter:
 
 
 # Global filter instance
-_global_filter = None
+_global_filter: NLPRelevanceFilter | None = None
+_global_filter_lock = threading.Lock()
 
 
 def get_filter() -> NLPRelevanceFilter:
-    """Get global filter instance."""
+    """Get global filter instance (thread-safe)."""
     global _global_filter
     if _global_filter is None:
-        _global_filter = NLPRelevanceFilter()
+        with _global_filter_lock:
+            if _global_filter is None:
+                _global_filter = NLPRelevanceFilter()
     return _global_filter
 
 

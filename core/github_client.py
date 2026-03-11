@@ -15,14 +15,9 @@ from github.Issue import Issue
 from github.PullRequest import PullRequest
 from github.Repository import Repository
 
-logging.basicConfig(level=logging.INFO)
+from .exceptions import RateLimitError  # noqa: F401 – re-exported for callers
+
 logger = logging.getLogger(__name__)
-
-
-class RateLimitError(Exception):
-    """Raised when rate limit is exceeded"""
-
-    pass
 
 
 class GitHubClient:
@@ -45,8 +40,15 @@ class GitHubClient:
                 - github_token: GitHub personal access token or app token
                 - github_base_url: Optional GitHub Enterprise URL
         """
+        import os
+
         self.config = config
-        token = config.get("github_token", config.get("GITHUB_TOKEN"))
+        # Prefer environment variable to keep secrets out of config dicts
+        token = (
+            os.getenv("GITHUB_TOKEN")
+            or config.get("github_token")
+            or config.get("GITHUB_TOKEN")
+        )
         base_url = config.get("github_base_url", "https://api.github.com")
 
         if not token:
@@ -194,6 +196,7 @@ class GitHubClient:
         repo: str,
         state: str = "open",
         labels: list[str] | None = None,
+        limit: int | None = None,
     ) -> list[Issue]:
         """
         List issues in a repository.
@@ -203,6 +206,7 @@ class GitHubClient:
             repo: Repository name
             state: Issue state ('open', 'closed', 'all')
             labels: Optional list of labels to filter by
+            limit: Maximum number of issues to return (None for all)
 
         Returns:
             List of Issue objects
@@ -211,8 +215,11 @@ class GitHubClient:
 
         try:
             repository = self.get_repository(owner, repo)
-            issues = repository.get_issues(state=state, labels=labels or [])
-            return list(issues)
+            paginator = repository.get_issues(state=state, labels=labels or [])
+            if limit is not None:
+                return list(paginator[:limit])
+            # Consume the paginator lazily to avoid extra N+1 API calls
+            return list(paginator)
         except GithubException as e:
             logger.error(f"Error listing issues in {owner}/{repo}: {str(e)}")
             raise

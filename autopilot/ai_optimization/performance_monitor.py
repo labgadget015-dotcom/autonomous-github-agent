@@ -7,6 +7,7 @@ capabilities for the GitHub Autopilot AI optimization system.
 import json
 import logging
 import statistics
+import threading
 import time
 from collections import deque
 from collections.abc import Callable
@@ -294,39 +295,39 @@ class PerformanceMonitor:
         logger.info(f"Performance report saved to {filepath}")
 
     def print_summary(self):
-        """Print performance summary to console."""
+        """Log performance summary."""
         summary = self.get_summary()
 
-        print("\n" + "=" * 70)
-        print("PERFORMANCE SUMMARY")
-        print("=" * 70)
+        logger.info("=" * 70)
+        logger.info("PERFORMANCE SUMMARY")
+        logger.info("=" * 70)
 
-        print("\n📊 Key Metrics:")
+        logger.info("Key Metrics:")
         for metric_name, stats in summary["metrics"].items():
             if stats and stats.get("count", 0) > 0:
-                print(f"  {metric_name}:")
-                print(f"    Mean: {stats['mean']:.3f}")
-                print(f"    Latest: {stats['latest']:.3f}")
+                logger.info("  %s:", metric_name)
+                logger.info("    Mean: %.3f", stats["mean"])
+                logger.info("    Latest: %.3f", stats["latest"])
                 if stats.get("stdev", 0) > 0:
-                    print(f"    StdDev: {stats['stdev']:.3f}")
+                    logger.info("    StdDev: %.3f", stats["stdev"])
 
-        print("\n🎯 Benchmarks:")
+        logger.info("Benchmarks:")
         for bench_name, stats in summary["benchmarks"].items():
-            print(f"  {bench_name}:")
-            print(f"    Runs: {stats['total_runs']}")
-            print(f"    Success Rate: {stats['success_rate']*100:.1f}%")
-            print(f"    Avg Time: {stats['avg_time']:.3f}s")
+            logger.info("  %s:", bench_name)
+            logger.info("    Runs: %s", stats["total_runs"])
+            logger.info("    Success Rate: %.1f%%", stats["success_rate"] * 100)
+            logger.info("    Avg Time: %.3fs", stats["avg_time"])
             if "avg_memory_mb" in stats:
-                print(f"    Avg Memory: {stats['avg_memory_mb']:.1f} MB")
+                logger.info("    Avg Memory: %.1f MB", stats["avg_memory_mb"])
 
         if "baseline_comparison" in summary:
-            print("\n📈 Improvements vs Baseline:")
+            logger.info("Improvements vs Baseline:")
             for metric, comp in summary["baseline_comparison"].items():
                 if abs(comp["improvement_percent"]) > 1:  # Show if >1% change
                     symbol = "✓" if comp["status"] == "improved" else "✗"
-                    print(f"  {symbol} {metric}: {comp['improvement_percent']:+.1f}%")
+                    logger.info("  %s %s: %+.1f%%", symbol, metric, comp["improvement_percent"])
 
-        print("\n" + "=" * 70 + "\n")
+        logger.info("=" * 70)
 
     def check_performance_targets(self, targets: dict[str, float]) -> dict[str, bool]:
         """Check if performance meets target thresholds.
@@ -361,14 +362,17 @@ class PerformanceMonitor:
 
 
 # Global monitor instance
-_global_monitor = None
+_global_monitor: PerformanceMonitor | None = None
+_global_monitor_lock = threading.Lock()
 
 
 def get_monitor() -> PerformanceMonitor:
-    """Get global monitor instance."""
+    """Get global monitor instance (thread-safe)."""
     global _global_monitor
     if _global_monitor is None:
-        _global_monitor = PerformanceMonitor()
+        with _global_monitor_lock:
+            if _global_monitor is None:
+                _global_monitor = PerformanceMonitor()
     return _global_monitor
 
 

@@ -5,6 +5,7 @@ and priority based on various features like age, activity, labels, and more.
 """
 
 import logging
+import threading
 from datetime import datetime, timedelta
 from typing import Any
 
@@ -401,14 +402,17 @@ class MLPriorityScorer:
 
 
 # Global scorer instance
-_global_scorer = None
+_global_scorer: MLPriorityScorer | None = None
+_global_scorer_lock = threading.Lock()
 
 
 def get_scorer() -> MLPriorityScorer:
-    """Get global scorer instance."""
+    """Get global scorer instance (thread-safe)."""
     global _global_scorer
     if _global_scorer is None:
-        _global_scorer = MLPriorityScorer()
+        with _global_scorer_lock:
+            if _global_scorer is None:
+                _global_scorer = MLPriorityScorer()
     return _global_scorer
 
 

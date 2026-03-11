@@ -13,7 +13,6 @@ from enum import Enum
 from pathlib import Path
 from typing import Any
 
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
@@ -81,12 +80,17 @@ class LLMClient:
 
     def _initialize_client(self):
         """Initialize the appropriate LLM client"""
+        import os
+
         try:
             if self.provider == "openai":
                 import openai
 
-                api_key = self.config.get(
-                    "openai_api_key", self.config.get("OPENAI_API_KEY")
+                # Prefer environment variable to keep secrets out of config dicts
+                api_key = (
+                    os.getenv("OPENAI_API_KEY")
+                    or self.config.get("openai_api_key")
+                    or self.config.get("OPENAI_API_KEY")
                 )
                 if not api_key:
                     raise ValueError("OpenAI API key not found in configuration")
@@ -95,8 +99,11 @@ class LLMClient:
             elif self.provider == "anthropic":
                 import anthropic
 
-                api_key = self.config.get(
-                    "anthropic_api_key", self.config.get("ANTHROPIC_API_KEY")
+                # Prefer environment variable to keep secrets out of config dicts
+                api_key = (
+                    os.getenv("ANTHROPIC_API_KEY")
+                    or self.config.get("anthropic_api_key")
+                    or self.config.get("ANTHROPIC_API_KEY")
                 )
                 if not api_key:
                     raise ValueError("Anthropic API key not found in configuration")
