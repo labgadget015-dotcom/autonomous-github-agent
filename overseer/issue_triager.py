@@ -7,6 +7,7 @@ detected code patterns and content analysis.
 """
 
 import re
+import unicodedata
 from pathlib import Path
 from typing import Dict, List, Any, Optional
 import logging
@@ -107,14 +108,23 @@ class IssueTriager:
     def analyze_issue_content(self, title: str, body: str) -> Dict[str, Any]:
         """
         Analyze issue content to suggest labels and priority.
+
+        Handles Unicode text (e.g. Cyrillic, CJK characters) and special
+        characters such as ``@#$%^&*()`` safely.  Input strings are
+        NFC-normalised before analysis so that visually identical Unicode
+        sequences compare equally.
         
         Args:
-            title: Issue title
-            body: Issue body
+            title: Issue title (may contain Unicode or special characters)
+            body: Issue body (may contain Unicode or special characters)
             
         Returns:
             Dictionary with suggested labels and priority
         """
+        # NFC normalisation ensures consistent Unicode representation
+        # (e.g. combining characters are collapsed to their precomposed form).
+        title = unicodedata.normalize('NFC', title)
+        body = unicodedata.normalize('NFC', body)
         content = f"{title} {body}".lower()
         
         suggested_labels = []
@@ -138,14 +148,22 @@ class IssueTriager:
         }
     
     def _matches_patterns(self, text: str, patterns: List[str]) -> bool:
-        """Check if text matches any of the patterns"""
+        """Check if text matches any of the patterns.
+
+        Uses ``re.UNICODE`` (the Python 3 default) explicitly so that ``\\w``
+        and ``\\b`` are Unicode-aware and correctly handle non-ASCII content.
+        """
         for pattern in patterns:
-            if re.search(pattern, text, re.IGNORECASE):
+            if re.search(pattern, text, re.IGNORECASE | re.UNICODE):
                 return True
         return False
     
     def _calculate_confidence(self, content: str, labels: List[str]) -> float:
-        """Calculate confidence score for label suggestions"""
+        """Calculate confidence score for label suggestions.
+
+        Pattern matching uses ``re.UNICODE`` explicitly so that ``\\w`` / ``\\b``
+        behave correctly for non-ASCII content.
+        """
         if not labels:
             return 0.0
         
@@ -157,7 +175,7 @@ class IssueTriager:
             patterns = self.label_patterns.get(label, [])
             total_patterns += len(patterns)
             for pattern in patterns:
-                if re.search(pattern, content, re.IGNORECASE):
+                if re.search(pattern, content, re.IGNORECASE | re.UNICODE):
                     match_count += 1
         
         return min(1.0, match_count / max(1, len(labels)))

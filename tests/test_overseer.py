@@ -390,7 +390,49 @@ class TestIssueTriager(unittest.TestCase):
         self.assertIn('priority', result)
         self.assertIn('bug', result['labels'])
     
-    def test_security_issue_detection(self):
+    def test_unicode_issue_content(self):
+        """Test that Unicode characters in title/body are handled without errors."""
+        config = {'issue_triaging': {'enabled': True}}
+        triager = IssueTriager(self.test_path, config)
+
+        # Russian + Chinese characters in title; English keywords still detected
+        result = triager.analyze_issue_content(
+            "🚀 Request: Добавить поддержку 中文 feature",
+            "Это запрос на добавление новой функции. 请添加对中文的支持。"
+        )
+        self.assertIn('labels', result)
+        self.assertIn('priority', result)
+        self.assertIsInstance(result['confidence'], float)
+        # The English keyword "feature" should still be detected
+        self.assertIn('enhancement', result['labels'])
+
+    def test_special_chars_issue_content(self):
+        """Test that special characters (@#$%^&*()) in title/body don't cause errors."""
+        config = {'issue_triaging': {'enabled': True}}
+        triager = IssueTriager(self.test_path, config)
+
+        result = triager.analyze_issue_content(
+            "[EDGE-CASE-2] @#$%^&*() bug report: crash on input",
+            "Reproduction: pass @#$%^&*() as input → crash/error"
+        )
+        self.assertIn('labels', result)
+        self.assertIn('priority', result)
+        self.assertIsInstance(result['confidence'], float)
+        # "bug" keyword should still be picked up despite surrounding special chars
+        self.assertIn('bug', result['labels'])
+
+    def test_mixed_unicode_and_special_chars(self):
+        """Test issue with both Unicode and special characters is handled safely."""
+        config = {'issue_triaging': {'enabled': True}}
+        triager = IssueTriager(self.test_path, config)
+
+        # Mirrors the actual edge-case issue title from the feature request
+        title = "[EDGE-CASE-2] 🚀 Request: Добавить поддержку 中文 & special chars: @#$%^&*()"
+        body = ""
+        # Must not raise any exception
+        result = triager.analyze_issue_content(title, body)
+        self.assertIn('labels', result)
+        self.assertIn('priority', result)
         """Test security issue detection"""
         config = {'issue_triaging': {'enabled': True}}
         triager = IssueTriager(self.test_path, config)
