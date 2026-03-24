@@ -246,6 +246,77 @@ class GitHubClient:
             )
             raise
 
+    # Adapter methods for test compatibility
+    def get_repo(self, full_name: str) -> Repository:
+        """
+        Adapter method for tests. Delegates to get_repository.
+        Args:
+            full_name: Repository full name in owner/repo format
+        Returns:
+            Repository object
+        """
+        owner, repo = full_name.split('/', 1)
+        return self.get_repository(owner, repo)
+    
+    def close_issue(self, full_name: str, issue_number: int):
+        """
+        Close an issue.
+        Args:
+            full_name: Repository full name in owner/repo format
+            issue_number: Issue number
+        """
+        owner, repo = full_name.split('/', 1)
+        issue = self.get_issue(owner, repo, issue_number)
+        issue.edit(state="closed")
+        logger.info(f"Closed issue #{issue_number} in {full_name}")
+    
+    def list_repos(self, org: str = None, user: str = None) -> list[Repository]:
+        """
+        List repositories for an organization or user.
+        Args:
+            org: Organization name
+            user: User name
+        Returns:
+            List of Repository objects
+        """
+        self._wait_for_rate_limit()
+        try:
+            if org:
+                return list(self.client.get_organization(org).get_repos())
+            elif user:
+                return list(self.client.get_user(user).get_repos())
+            else:
+                return list(self.client.get_user().get_repos())
+        except GithubException as e:
+            logger.error(f"Error listing repos: {str(e)}")
+            raise
+    
+    def add_labels(self, owner: str, repo: str, issue_number: int, labels: list[str]):
+        """
+        Add labels to an issue.
+        Args:
+            owner: Repository owner
+            repo: Repository name
+            issue_number: Issue number
+            labels: List of label names
+        """
+        issue = self.get_issue(owner, repo, issue_number)
+        issue.add_to_labels(*labels)
+        logger.info(f"Added labels {labels} to issue #{issue_number} in {owner}/{repo}")
+    
+    def merge_pull_request(self, owner: str, repo: str, pr_number: int, merge_method: str = "merge"):
+        """
+        Merge a pull request.
+        Args:
+            owner: Repository owner
+            repo: Repository name
+            pr_number: Pull request number
+            merge_method: Merge method (merge, squash, rebase)
+        """
+        pr = self.get_pull_request(owner, repo, pr_number)
+        pr.merge(merge_method=merge_method)
+        logger.info(f"Merged PR #{pr_number} in {owner}/{repo}")
+
     def close(self):
         """Close the GitHub client connection"""
         if hasattr(self.client, "close"):
