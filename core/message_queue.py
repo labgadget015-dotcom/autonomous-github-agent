@@ -98,6 +98,7 @@ class MessageQueue:
         else:
             # In-memory fallback
             logger.debug(f"Published message to in-memory channel '{channel}'")
+                        self._in_memory_queue.append({"channel": channel, "data": message})
 
     async def subscribe(self, channel: str, callback: Callable):
         """
@@ -246,6 +247,19 @@ class MessageQueue:
 
         except Exception as e:
             logger.error(f"Error in message listener: {str(e)}")
+
+    async def get_message(self, channel: str) -> dict[str, Any] | None:
+        """
+        Get a message from a channel (in-memory queue only for now).
+        Args:
+            channel: Channel name
+        Returns:
+            Message dictionary or None if no messages
+        """
+        for i, msg in enumerate(self._in_memory_queue):
+            if msg.get("channel") == channel:
+                return self._in_memory_queue.pop(i).get("data")
+        return None
 
     def close(self):
         """Close Redis connections"""
