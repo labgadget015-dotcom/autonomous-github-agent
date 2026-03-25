@@ -347,52 +347,12 @@ jobs:
 
       - name: Append rollback entry to docs/ROLLBACK.md
         run: |
-          python3 - <<'PYEOF'
-          import subprocess, os
-          from datetime import datetime
-
-          # Get the merge commit info
-          sha = subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip()
-          short = sha[:8]
-          msg = subprocess.check_output(
-              ["git", "log", "-1", "--pretty=%s"], text=True
-          ).strip()
-          author = subprocess.check_output(
-              ["git", "log", "-1", "--pretty=%an <%ae>"], text=True
-          ).strip()
-          files = subprocess.check_output(
-              ["git", "diff", "--name-only", "HEAD~1", "HEAD"], text=True
-          ).strip().splitlines()
-
-          os.makedirs("docs", exist_ok=True)
-          path = "docs/ROLLBACK.md"
-          if not os.path.exists(path):
-              with open(path, "w") as f:
-                  f.write("# 🔄 Rollback Manifest\n\nAuto-generated rollback instructions for every push to main.\n\n")
-
-          entry = f"""
-## {datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')} — `{short}` {msg}
-
-**Author:** {author}
-**Rollback command:**
-```bash
-git revert {sha} --no-edit
-git push origin main
-```
-**Files changed:** {len(files)}
-<details><summary>File list</summary>
-
-{chr(10).join(f'- `{f}`' for f in files[:50])}
-{'- *(and more)*' if len(files) > 50 else ''}
-</details>
-
----
-"""
-          with open(path, "a") as f:
-              f.write(entry)
-
-          print(f"Appended rollback entry for {short}")
-          PYEOF
+          export SHA=$(git rev-parse HEAD)
+        export SHORT_SHA=$(git rev-parse --short HEAD)
+        export MSG=$(git log -1 --pretty=%s)
+        export AUTHOR=$(git log -1 --pretty=%an)
+        export FILES_CHANGED=$(git diff-tree --no-commit-id -r --name-only HEAD)
+        python3 .github/scripts/generate_rollback_manifest.py
 
       - name: Commit rollback manifest
         run: |
