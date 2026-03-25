@@ -22,12 +22,14 @@ logger = logging.getLogger(__name__)
 class PerformanceMonitor:
     """Track and analyze performance metrics for AI optimization."""
 
-    def __init__(self, history_size: int = 1000):
+    def __init__(self, config=None, history_size: int = 1000):
         """Initialize performance monitor.
 
         Args:
+            config: Optional configuration dict
             history_size: Maximum number of historical records to keep
         """
+        self.config = config or {}
         self.metrics: dict[str, Any] = {
             # Speed metrics
             "execution_time": deque(maxlen=history_size),
