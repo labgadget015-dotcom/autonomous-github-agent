@@ -42,6 +42,19 @@ class AnomalyDetector:
             "documentation_ratio",
         ]
 
+    def analyze(self, metrics: list) -> list:
+        """Analyze metrics for anomalies.
+
+        Args:
+            metrics: List of metric dicts to analyze
+
+        Returns:
+            List of detected anomalies
+        """
+        if not metrics:
+            return []
+        return self.analyze_commit_batch(metrics) if metrics and isinstance(metrics[0], dict) and 'sha' in metrics[0] else []
+
     def establish_baseline(self, commits: list[Any]):
         """Establish baseline metrics from historical commits.
 
