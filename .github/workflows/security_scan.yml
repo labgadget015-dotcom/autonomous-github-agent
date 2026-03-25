@@ -402,8 +402,7 @@ git push origin main
           if git diff --cached --quiet; then
             echo "No changes."
           else
-            git commit -m "chore: rollback manifest entry [skip ci]
+            git commit -m "chore: rollback manifest entry [skip ci]"
 
-Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>"
             git push
           fi
