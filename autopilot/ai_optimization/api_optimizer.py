@@ -18,13 +18,15 @@ logger = logging.getLogger(__name__)
 class APIOptimizationAgent:
     """Intelligent agent for optimizing API request strategies."""
 
-    def __init__(self, learning_rate: float = 0.1, discount_factor: float = 0.95):
+    def __init__(self, config=None, learning_rate: float = 0.1, discount_factor: float = 0.95):
         """Initialize the API optimization agent.
 
         Args:
+            config: Optional configuration dict
             learning_rate: Learning rate for Q-learning
             discount_factor: Discount factor for future rewards
         """
+        self.config = config or {}
         # Q-learning parameters
         self.q_table: Any = defaultdict(lambda: defaultdict(float))
         self.learning_rate = learning_rate
@@ -420,3 +422,7 @@ if __name__ == "__main__":
     for key, value in stats.items():
         if key != "current_rate_limit":
             print(f"  {key}: {value}")
+
+
+# Alias for test compatibility
+APIOptimizer = APIOptimizationAgent
