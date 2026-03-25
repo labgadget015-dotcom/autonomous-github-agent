@@ -16,8 +16,9 @@ logger = logging.getLogger(__name__)
 class CommitSummarizer:
     """Generate intelligent summaries of commits and changes."""
 
-    def __init__(self):
+    def __init__(self, config=None):
         """Initialize the commit summarizer."""
+        self.config = config or {}
         # Action verbs for categorization
         self.action_verbs = {
             "add": "additions",
