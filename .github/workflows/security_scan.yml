@@ -348,11 +348,11 @@ jobs:
       - name: Append rollback entry to docs/ROLLBACK.md
         run: |
           export SHA=$(git rev-parse HEAD)
-        export SHORT_SHA=$(git rev-parse --short HEAD)
-        export MSG=$(git log -1 --pretty=%s)
-        export AUTHOR=$(git log -1 --pretty=%an)
-        export FILES_CHANGED=$(git diff-tree --no-commit-id -r --name-only HEAD)
-        python3 .github/scripts/generate_rollback_manifest.py
+          export SHORT_SHA=$(git rev-parse --short HEAD)
+          export MSG=$(git log -1 --pretty=%s)
+          export AUTHOR=$(git log -1 --pretty=%an)
+          export FILES_CHANGED=$(git diff-tree --no-commit-id -r --name-only HEAD)
+          python3 .github/scripts/generate_rollback_manifest.py
 
       - name: Commit rollback manifest
         run: |
