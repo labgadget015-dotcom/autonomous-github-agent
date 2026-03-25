@@ -172,6 +172,12 @@ class IntelligentCache:
 
         return value
 
+    def set(self, key: str, value: Any) -> None:
+        """Public setter for test compatibility."""
+        hashed_key = self._hash_key(key)
+        timestamp = time.time()
+        self._set(hashed_key, value, timestamp)
+
     def _set(self, hashed_key: str, value: Any, timestamp: float):
         """Store value in cache."""
         # Evict if cache is full
