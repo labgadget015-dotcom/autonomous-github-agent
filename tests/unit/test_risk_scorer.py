@@ -128,3 +128,234 @@ class TestRiskReport:
         report = RiskReport(total_score=2.5, band=RiskBand.LOW)
         assert report.total_score == 2.5
         assert not report.blocks_auto_merge
+
+
+class TestPRMetadata:
+    def test_draft_pr_adds_penalty(self):
+        base = score_pull_request(files_changed=2, additions=10, deletions=3)
+        draft = score_pull_request(
+            files_changed=2,
+            additions=10,
+            deletions=3,
+            pr_metadata={"is_draft": True},
+        )
+        assert draft.total_score > base.total_score
+        draft_factor = next((f for f in draft.factors if "Draft" in f.name), None)
+        assert draft_factor is not None
+        assert draft_factor.score == 0.5
+
+    def test_non_draft_pr_has_no_draft_penalty(self):
+        report = score_pull_request(
+            files_changed=2,
+            additions=10,
+            deletions=3,
+            pr_metadata={"is_draft": False},
+        )
+        draft_factor = next((f for f in report.factors if "Draft" in f.name), None)
+        assert draft_factor is None
+
+    def test_non_default_base_adds_penalty(self):
+        default_base = score_pull_request(
+            files_changed=2,
+            additions=10,
+            deletions=3,
+            pr_metadata={"base_branch": "main"},
+        )
+        non_default = score_pull_request(
+            files_changed=2,
+            additions=10,
+            deletions=3,
+            pr_metadata={"base_branch": "release/1.0"},
+        )
+        assert non_default.total_score > default_base.total_score
+        base_factor = next(
+            (f for f in non_default.factors if "Non-default" in f.name), None
+        )
+        assert base_factor is not None
+        assert base_factor.score == 0.5
+
+    def test_master_and_develop_are_default_bases(self):
+        for branch in ("master", "develop"):
+            report = score_pull_request(
+                files_changed=1,
+                additions=5,
+                deletions=2,
+                pr_metadata={"base_branch": branch},
+            )
+            base_factor = next(
+                (f for f in report.factors if "Non-default" in f.name), None
+            )
+            assert base_factor is None, f"'{branch}' should be a default base"
+
+    def test_combined_draft_and_non_default_base(self):
+        report = score_pull_request(
+            files_changed=1,
+            additions=5,
+            deletions=2,
+            pr_metadata={"is_draft": True, "base_branch": "hotfix/urgent"},
+        )
+        factor_names = [f.name for f in report.factors]
+        assert any("Draft" in n for n in factor_names)
+        assert any("Non-default" in n for n in factor_names)
+
+
+class TestRiskyExtensions:
+    def test_sql_file_raises_score(self):
+        no_sql = score_pull_request(
+            files_changed=1,
+            additions=20,
+            deletions=5,
+        )
+        with_sql = score_pull_request(
+            files_changed=1,
+            additions=20,
+            deletions=5,
+            changed_paths=["migrations/add_users.sql"],
+        )
+        assert with_sql.total_score > no_sql.total_score
+
+    def test_shell_script_raises_score(self):
+        report = score_pull_request(
+            files_changed=1,
+            additions=10,
+            deletions=0,
+            changed_paths=["scripts/deploy.sh"],
+        )
+        risky_factor = next(
+            (f for f in report.factors if "Risky" in f.name), None
+        )
+        assert risky_factor is not None
+
+    def test_yaml_file_raises_score(self):
+        report = score_pull_request(
+            files_changed=1,
+            additions=5,
+            deletions=2,
+            changed_paths=["config/app.yaml"],
+        )
+        risky_factor = next(
+            (f for f in report.factors if "Risky" in f.name), None
+        )
+        assert risky_factor is not None
+
+    def test_risky_ext_in_test_path_not_counted(self):
+        # A path that matches _TEST_PATH (contains "test_") is excluded
+        report = score_pull_request(
+            files_changed=1,
+            additions=10,
+            deletions=0,
+            changed_paths=["tests/test_migrate.sql"],
+        )
+        risky_factor = next(
+            (f for f in report.factors if "Risky" in f.name), None
+        )
+        assert risky_factor is None
+
+    def test_multiple_risky_ext_score_capped_at_1_5(self):
+        many_sql = ["migrations/step_{}.sql".format(i) for i in range(10)]
+        report = score_pull_request(
+            files_changed=10,
+            additions=100,
+            deletions=10,
+            changed_paths=many_sql,
+        )
+        risky_factor = next(
+            (f for f in report.factors if "Risky" in f.name), None
+        )
+        assert risky_factor is not None
+        assert risky_factor.score <= 1.5
+
+
+class TestRiskBands:
+    def test_medium_band_score_range(self):
+        # A PR with moderate changes should land in MEDIUM band (3.0–5.9)
+        report = score_pull_request(
+            files_changed=3,
+            additions=350,
+            deletions=50,
+            changed_paths=["src/api.py"],
+        )
+        assert report.band == RiskBand.MEDIUM
+        assert 3.0 <= report.total_score < 6.0
+
+    def test_high_band_score_range(self):
+        report = score_pull_request(
+            files_changed=20,
+            additions=1200,
+            deletions=300,
+            changed_paths=["core/auth.py"],
+            test_coverage_delta=-5.0,
+        )
+        assert report.band in (RiskBand.HIGH, RiskBand.CRITICAL)
+        assert report.total_score >= 6.0
+
+    def test_all_bands_represented_in_enum(self):
+        assert set(RiskBand) == {
+            RiskBand.LOW,
+            RiskBand.MEDIUM,
+            RiskBand.HIGH,
+            RiskBand.CRITICAL,
+        }
+
+    def test_blocks_auto_merge_property_medium(self):
+        report = score_pull_request(
+            files_changed=3,
+            additions=350,
+            deletions=50,
+            changed_paths=["src/api.py"],
+        )
+        if report.band == RiskBand.MEDIUM:
+            assert not report.blocks_auto_merge
+
+
+class TestScoreSummary:
+    def test_summary_mentions_files_and_lines(self):
+        report = score_pull_request(files_changed=4, additions=100, deletions=30)
+        assert "4" in report.summary
+        assert "100" in report.summary
+
+    def test_summary_mentions_security_when_sensitive_paths(self):
+        report = score_pull_request(
+            files_changed=1,
+            additions=10,
+            deletions=2,
+            changed_paths=["core/auth.py"],
+        )
+        assert "Security" in report.summary or "security" in report.summary
+
+    def test_summary_coverage_improved_note(self):
+        report = score_pull_request(
+            files_changed=2, additions=20, deletions=5, test_coverage_delta=5.0
+        )
+        assert "improved" in report.summary or "unchanged" in report.summary or "coverage" in report.summary.lower()
+
+    def test_as_markdown_contains_breakdown_table(self):
+        report = score_pull_request(
+            files_changed=5,
+            additions=500,
+            deletions=100,
+            changed_paths=["core/auth.py"],
+        )
+        md = report.as_markdown()
+        assert "| Factor" in md
+        assert "|--------|" in md
+
+    def test_sensitive_paths_appear_in_markdown(self):
+        report = score_pull_request(
+            files_changed=1,
+            additions=5,
+            deletions=0,
+            changed_paths=[".github/workflows/deploy.yml"],
+        )
+        md = report.as_markdown()
+        assert ".github/workflows/deploy.yml" in md
+
+    def test_medium_band_markdown_no_block_message(self):
+        report = score_pull_request(
+            files_changed=3,
+            additions=350,
+            deletions=50,
+        )
+        md = report.as_markdown()
+        if report.band == RiskBand.MEDIUM:
+            assert "Auto-merge blocked" not in md
