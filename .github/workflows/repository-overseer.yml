@@ -229,15 +229,32 @@ jobs:
                 state: 'open'
               });
               
-              if (issues.data.length > 0) {
-                // Update existing issue
-                await github.rest.issues.createComment({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  issue_number: issues.data[0].number,
-                  body: `## 🔄 Updated Findings\n\n${body}`
-                });
-              } else {
+                if (issues.data.length > 0) {
+                  // Find existing bot comment to update instead of creating a new one
+                  const existingIssue = issues.data[0];
+                  const comments = await github.rest.issues.listComments({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    issue_number: existingIssue.number,
+                  });
+                  const botComment = comments.data
+                    .filter(c => c.user && c.user.type === 'Bot')
+                    .pop();
+                  if (botComment) {
+                    await github.rest.issues.updateComment({
+                      owner: context.repo.owner,
+                      repo: context.repo.repo,
+                      comment_id: botComment.id,
+                      body: `## 🔄 Updated Findings\n${body}`
+                    });
+                  } else {
+                    await github.rest.issues.createComment({
+                      owner: context.repo.owner,
+                      repo: context.repo.repo,
+                      issue_number: existingIssue.number,
+                      body: `## 🔄 Updated Findings\n${body}`
+                    });
+                  }              } else {
                 // Create new issue
                 await github.rest.issues.create({
                   owner: context.repo.owner,
