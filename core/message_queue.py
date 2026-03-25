@@ -98,7 +98,7 @@ class MessageQueue:
         else:
             # In-memory fallback
             logger.debug(f"Published message to in-memory channel '{channel}'")
-                        self._in_memory_queue.append({"channel": channel, "data": message})
+            self._in_memory_queue.append({"channel": channel, "data": message})
 
     async def subscribe(self, channel: str, callback: Callable):
         """

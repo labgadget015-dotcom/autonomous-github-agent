@@ -582,3 +582,390 @@ class TestAIOptimizationModules:
         with patch("core.llm_provider.LLMClient"):
             summarizer = CommitSummarizer({})
         assert summarizer is not None
+
+
+# ===========================================================================
+# LLMClient cost-tracking tests
+# ===========================================================================
+
+class TestLLMClientCostTracking:
+    """Tests for LLMClient._record_cost, get_session_cost, cost_limit_exceeded."""
+
+    def _make_client(self, model="gpt-4o"):
+        from core.llm_provider import LLMClient
+        mock_openai = MagicMock()
+        with patch.dict("sys.modules", {"openai": mock_openai}):
+            client = LLMClient(
+                {"llm_provider": "openai", "openai_api_key": "sk-test", "model": model}
+            )
+        return client
+
+    def test_record_cost_accumulates_session_tokens(self):
+        client = self._make_client()
+        with patch("builtins.open", mock_open()):
+            client._record_cost(100, 50)
+            client._record_cost(200, 100)
+        assert client._session_input_tokens == 300
+        assert client._session_output_tokens == 150
+
+    def test_record_cost_uses_pricing_for_known_model(self):
+        client = self._make_client(model="gpt-4o")
+        price_in, price_out = client._PRICING["gpt-4o"]
+        expected = (100 / 1000 * price_in) + (50 / 1000 * price_out)
+        with patch("builtins.open", mock_open()):
+            client._record_cost(100, 50)
+        assert abs(client._session_cost_usd - expected) < 1e-9
+
+    def test_record_cost_uses_fallback_pricing_for_unknown_model(self):
+        client = self._make_client(model="gpt-unknown")
+        # Should not raise; fall back to default (0.01, 0.03) pricing
+        with patch("builtins.open", mock_open()):
+            client._record_cost(100, 50)
+        assert client._session_cost_usd > 0
+
+    def test_get_session_cost_returns_dict_with_expected_keys(self):
+        client = self._make_client()
+        with patch("builtins.open", mock_open()):
+            client._record_cost(100, 50)
+        summary = client.get_session_cost()
+        assert "model" in summary
+        assert "input_tokens" in summary
+        assert "output_tokens" in summary
+        assert "total_tokens" in summary
+        assert "cost_usd" in summary
+
+    def test_get_session_cost_total_tokens_is_sum(self):
+        client = self._make_client()
+        with patch("builtins.open", mock_open()):
+            client._record_cost(100, 50)
+        summary = client.get_session_cost()
+        assert summary["total_tokens"] == 150
+
+    def test_cost_limit_not_exceeded_when_under(self):
+        client = self._make_client()
+        with patch("builtins.open", mock_open()):
+            client._record_cost(10, 5)  # tiny call
+        assert client.cost_limit_exceeded(1.0) is False
+
+    def test_cost_limit_exceeded_when_over(self):
+        client = self._make_client(model="claude-3-opus-20240229")
+        # claude-3-opus: (0.015, 0.075) per 1k tokens — big call exceeds $1
+        with patch("builtins.open", mock_open()):
+            client._record_cost(50_000, 10_000)
+        assert client.cost_limit_exceeded(1.0) is True
+
+    def test_reset_token_usage_clears_total_tokens(self):
+        client = self._make_client()
+        client.total_tokens = 500
+        client.reset_token_usage()
+        assert client.total_tokens == 0
+
+    def test_get_default_model_anthropic(self):
+        from core.llm_provider import LLMClient
+        mock_anthropic = MagicMock()
+        with patch.dict("sys.modules", {"anthropic": mock_anthropic}):
+            client = LLMClient(
+                {"llm_provider": "anthropic", "anthropic_api_key": "sk-ant-test"}
+            )
+        assert "claude" in client.model.lower()
+
+    def test_cost_file_write_failure_does_not_raise(self):
+        """A write error when saving cost records should be silently logged."""
+        client = self._make_client()
+        with patch("builtins.open", side_effect=OSError("disk full")):
+            client._record_cost(100, 50)  # must not raise
+        assert client._session_cost_usd > 0
+
+
+# ===========================================================================
+# MessageQueue additional tests (in-memory mode)
+# ===========================================================================
+
+class TestMessageQueueOperations:
+    """Additional tests for core.message_queue.MessageQueue in-memory operations."""
+
+    def _make_queue(self):
+        from core.message_queue import MessageQueue
+        with patch("core.message_queue.MessageQueue._init_redis", return_value=False):
+            return MessageQueue({"redis_host": "localhost"})
+
+    @pytest.mark.asyncio
+    async def test_enqueue_and_dequeue_basic(self):
+        q = self._make_queue()
+        task = {"action": "do_work", "payload": 42}
+        await q.enqueue("tasks", task, priority=5)
+        result = await q.dequeue("tasks")
+        assert result == task
+
+    @pytest.mark.asyncio
+    async def test_dequeue_returns_none_when_empty(self):
+        q = self._make_queue()
+        result = await q.dequeue("empty_queue")
+        assert result is None
+
+    @pytest.mark.asyncio
+    async def test_get_queue_size_empty(self):
+        q = self._make_queue()
+        size = await q.get_queue_size("tasks")
+        assert size == 0
+
+    @pytest.mark.asyncio
+    async def test_get_queue_size_after_enqueue(self):
+        q = self._make_queue()
+        await q.enqueue("tasks", {"x": 1})
+        await q.enqueue("tasks", {"x": 2})
+        size = await q.get_queue_size("tasks")
+        assert size == 2
+
+    @pytest.mark.asyncio
+    async def test_subscribe_registers_callback(self):
+        q = self._make_queue()
+        callback = AsyncMock()
+        await q.subscribe("events", callback)
+        assert "events" in q._subscriptions
+        assert q._subscriptions["events"] is callback
+
+    @pytest.mark.asyncio
+    async def test_unsubscribe_removes_callback(self):
+        q = self._make_queue()
+        callback = AsyncMock()
+        await q.subscribe("events", callback)
+        await q.unsubscribe("events")
+        assert "events" not in q._subscriptions
+
+    @pytest.mark.asyncio
+    async def test_unsubscribe_nonexistent_channel_no_error(self):
+        q = self._make_queue()
+        await q.unsubscribe("no_such_channel")  # should not raise
+
+    @pytest.mark.asyncio
+    async def test_get_message_returns_message_for_channel(self):
+        q = self._make_queue()
+        await q.publish("ch", {"value": 99})
+        msg = await q.get_message("ch")
+        assert msg is not None
+        assert msg.get("value") == 99
+
+    @pytest.mark.asyncio
+    async def test_get_message_returns_none_for_wrong_channel(self):
+        q = self._make_queue()
+        await q.publish("ch_a", {"value": 1})
+        msg = await q.get_message("ch_b")
+        assert msg is None
+
+    def test_close_when_no_redis_does_not_raise(self):
+        q = self._make_queue()
+        q.close()  # must not raise
+
+    @pytest.mark.asyncio
+    async def test_enqueue_priority_ordering(self):
+        """Higher-priority tasks should be returned first."""
+        q = self._make_queue()
+        await q.enqueue("tasks", {"p": "low"}, priority=1)
+        await q.enqueue("tasks", {"p": "high"}, priority=10)
+        first = await q.dequeue("tasks")
+        assert first is not None
+        assert first.get("p") == "high"
+
+
+# ===========================================================================
+# BaseAgent additional tests
+# ===========================================================================
+
+class TestBaseAgentExtended:
+    """Additional lifecycle and validation tests for core.agent_base.BaseAgent."""
+
+    def _make_agent(self, supported_actions=None):
+        from core.agent_base import BaseAgent
+
+        actions = supported_actions if supported_actions is not None else ["do_work"]
+
+        class ConcreteAgent(BaseAgent):
+            def get_supported_actions(self):
+                return actions
+
+            async def _execute(self, task):
+                return {"output": "done"}
+
+        with (
+            patch("core.agent_base.GitHubClient"),
+            patch("core.agent_base.LLMClient"),
+            patch("core.agent_base.AuditLogger"),
+            patch("core.agent_base.PolicyEngine"),
+        ):
+            return ConcreteAgent("test_agent", {"github_token": "tok", "openai_api_key": "sk"})
+
+    def test_get_capabilities_returns_agent_name(self):
+        agent = self._make_agent()
+        caps = agent.get_capabilities()
+        assert caps["name"] == "test_agent"
+
+    def test_get_capabilities_contains_actions(self):
+        agent = self._make_agent(supported_actions=["action_a", "action_b"])
+        caps = agent.get_capabilities()
+        assert "action_a" in caps["actions"]
+        assert "action_b" in caps["actions"]
+
+    def test_get_capabilities_contains_version(self):
+        agent = self._make_agent()
+        caps = agent.get_capabilities()
+        assert "version" in caps
+
+    def test_validate_returns_false_for_unsupported_action(self):
+        agent = self._make_agent(supported_actions=["do_work"])
+        assert agent.validate({"action": "unsupported_action"}) is False
+
+    def test_validate_returns_false_for_empty_action_string(self):
+        agent = self._make_agent()
+        assert agent.validate({"action": ""}) is False
+
+    def test_validate_returns_false_for_non_string_action(self):
+        agent = self._make_agent()
+        assert agent.validate({"action": 123}) is False
+
+    def test_validate_returns_true_when_no_supported_actions_constraint(self):
+        """If get_supported_actions() returns [], any non-empty action is valid."""
+        agent = self._make_agent(supported_actions=[])
+        assert agent.validate({"action": "anything"}) is True
+
+    @pytest.mark.asyncio
+    async def test_execute_returns_error_dict_on_exception_in_execute(self):
+        from core.agent_base import BaseAgent
+
+        class BrokenAgent(BaseAgent):
+            def get_supported_actions(self):
+                return ["fail"]
+
+            async def _execute(self, task):
+                raise RuntimeError("intentional failure")
+
+        with (
+            patch("core.agent_base.GitHubClient"),
+            patch("core.agent_base.LLMClient"),
+            patch("core.agent_base.AuditLogger") as mock_audit_cls,
+            patch("core.agent_base.PolicyEngine") as mock_policy_cls,
+        ):
+            mock_policy = AsyncMock()
+            mock_policy.check_action.return_value = {"requires_approval": False}
+            mock_policy_cls.return_value = mock_policy
+
+            mock_audit = AsyncMock()
+            mock_audit_cls.return_value = mock_audit
+
+            agent = BrokenAgent(
+                "broken_agent", {"github_token": "tok", "openai_api_key": "sk"}
+            )
+
+        result = await agent.execute({"action": "fail"})
+        assert result["status"] == "error"
+        assert "intentional failure" in result["error"]
+
+    @pytest.mark.asyncio
+    async def test_execute_uses_task_id_from_task(self):
+        from core.agent_base import BaseAgent
+
+        class SimpleAgent(BaseAgent):
+            def get_supported_actions(self):
+                return ["do_work"]
+
+            async def _execute(self, task):
+                return {}
+
+        with (
+            patch("core.agent_base.GitHubClient"),
+            patch("core.agent_base.LLMClient"),
+            patch("core.agent_base.AuditLogger") as mock_audit_cls,
+            patch("core.agent_base.PolicyEngine") as mock_policy_cls,
+        ):
+            mock_policy = AsyncMock()
+            mock_policy.check_action.return_value = {"requires_approval": False}
+            mock_policy_cls.return_value = mock_policy
+
+            mock_audit = AsyncMock()
+            mock_audit_cls.return_value = mock_audit
+
+            agent = SimpleAgent(
+                "simple_agent", {"github_token": "tok", "openai_api_key": "sk"}
+            )
+
+        result = await agent.execute({"action": "do_work", "id": "custom-task-id"})
+        assert result["task_id"] == "custom-task-id"
+
+
+# ===========================================================================
+# AuditLogger additional tests
+# ===========================================================================
+
+class TestAuditLoggerExtended:
+    """Additional tests for AuditLogger.get_logs, rollback instructions, archive."""
+
+    def _make_logger(self, tmp_path):
+        from core.audit_logger import AuditLogger
+        return AuditLogger({"audit_log_path": str(tmp_path / "audit.jsonl")})
+
+    @pytest.mark.asyncio
+    async def test_get_logs_returns_all_entries(self, tmp_path):
+        from core.audit_logger import AuditLogger
+        al = self._make_logger(tmp_path)
+        for i in range(4):
+            await al.log_action("agent_a", f"action_{i}", {}, {}, f"t{i}")
+        logs = al.get_logs()
+        assert len(logs) == 4
+
+    @pytest.mark.asyncio
+    async def test_get_logs_filter_by_agent(self, tmp_path):
+        from core.audit_logger import AuditLogger
+        al = self._make_logger(tmp_path)
+        await al.log_action("agent_a", "act", {}, {}, "t1")
+        await al.log_action("agent_b", "act", {}, {}, "t2")
+        await al.log_action("agent_a", "act2", {}, {}, "t3")
+        logs = al.get_logs(agent="agent_a")
+        assert all(entry["agent"] == "agent_a" for entry in logs)
+        assert len(logs) == 2
+
+    @pytest.mark.asyncio
+    async def test_get_logs_filter_by_action(self, tmp_path):
+        from core.audit_logger import AuditLogger
+        al = self._make_logger(tmp_path)
+        await al.log_action("a", "create_issue", {}, {}, "t1")
+        await al.log_action("a", "merge_pr", {}, {}, "t2")
+        await al.log_action("a", "create_issue", {}, {}, "t3")
+        logs = al.get_logs(action="create_issue")
+        assert all(entry["action"] == "create_issue" for entry in logs)
+        assert len(logs) == 2
+
+    @pytest.mark.asyncio
+    async def test_get_logs_empty_file_returns_empty_list(self, tmp_path):
+        from core.audit_logger import AuditLogger
+        al = self._make_logger(tmp_path)
+        logs = al.get_logs()
+        assert logs == []
+
+    def test_generate_rollback_create_issue(self, tmp_path):
+        al = self._make_logger(tmp_path)
+        instr = al._generate_rollback_instructions("create_issue", {}, {})
+        assert "Close" in instr or "issue" in instr.lower()
+
+    def test_generate_rollback_create_branch(self, tmp_path):
+        al = self._make_logger(tmp_path)
+        instr = al._generate_rollback_instructions(
+            "create_branch", {"branch_name": "feat/my-branch"}, {}
+        )
+        assert "feat/my-branch" in instr
+
+    def test_generate_rollback_unknown_action(self, tmp_path):
+        al = self._make_logger(tmp_path)
+        instr = al._generate_rollback_instructions("unknown_action", {}, {})
+        assert "Manual" in instr or "N/A" in instr
+
+    @pytest.mark.asyncio
+    async def test_archive_logs_no_s3_logs_warning(self, tmp_path):
+        from core.audit_logger import AuditLogger
+        al = self._make_logger(tmp_path)
+        # No S3 configured → should not raise
+        await al.archive_logs(older_than_days=30)
+
+    def test_close_does_not_raise_without_backends(self, tmp_path):
+        from core.audit_logger import AuditLogger
+        al = self._make_logger(tmp_path)
+        al.close()  # must not raise
