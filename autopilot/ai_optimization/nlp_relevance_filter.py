@@ -17,8 +17,9 @@ logger = logging.getLogger(__name__)
 class NLPRelevanceFilter:
     """NLP-based content analysis for relevance filtering."""
 
-    def __init__(self):
+    def __init__(self, config=None):
         """Initialize the NLP relevance filter."""
+        self.config = config or {}
         # Urgency indicators
         self.urgency_keywords = {
             "critical",
