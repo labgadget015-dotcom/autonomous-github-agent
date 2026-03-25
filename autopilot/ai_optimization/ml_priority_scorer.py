@@ -19,8 +19,9 @@ logger = logging.getLogger(__name__)
 class MLPriorityScorer:
     """Machine learning model to predict issue/PR importance and priority."""
 
-    def __init__(self):
+    def __init__(self, config=None):
         """Initialize the ML priority scorer."""
+        self.config = config or {}
         self.classifier = RandomForestClassifier(
             n_estimators=100, max_depth=15, random_state=42, min_samples_split=5
         )
