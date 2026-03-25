@@ -239,7 +239,8 @@ class TestRiskyExtensions:
         assert risky_factor is not None
 
     def test_risky_ext_in_test_path_not_counted(self):
-        # A path that matches _TEST_PATH (contains "test_") is excluded
+        # The risk scorer excludes paths matching _TEST_PATH (test_|_test.|/tests?/)
+        # from risky-extension scoring. "tests/test_migrate.sql" matches via "test_".
         report = score_pull_request(
             files_changed=1,
             additions=10,
@@ -327,7 +328,7 @@ class TestScoreSummary:
         report = score_pull_request(
             files_changed=2, additions=20, deletions=5, test_coverage_delta=5.0
         )
-        assert "improved" in report.summary or "unchanged" in report.summary or "coverage" in report.summary.lower()
+        assert "Test coverage unchanged or improved." in report.summary
 
     def test_as_markdown_contains_breakdown_table(self):
         report = score_pull_request(
