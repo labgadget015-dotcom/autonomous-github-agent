@@ -1,0 +1,48 @@
+name: AI Agent Workflow with Error Handling
+
+on:
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch: # Allows manual triggering
+
+jobs:
+  process-and-evaluate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Run AI Agent Task
+        run: |
+          # Placeholder: This represents the step that generates results.json
+          echo '{"status": "success", "message": "Task completed"}' > results.json
+          echo "AI Agent task completed."
+
+      - name: Run Error Handler
+        id: error_handler
+        run: |
+          python error_handler.py
+        # The script's sys.exit(1) will naturally stop the workflow here if errors exist.
+
+      - name: Deploy or Continue Workflow
+        # This step only runs if the error handler passed (status: success)
+        if: success()
+        run: |
+          echo "Branch decision was 'continue'. Proceeding with deployment..."
+          # Add your deployment commands here
+
+      - name: Upload Error Report
+        # This runs even if the previous steps failed, so you can inspect the JSON
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: workflow-reports
+          path: |
+            error_report.json
+            results.json
