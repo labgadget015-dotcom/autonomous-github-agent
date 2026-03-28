@@ -263,12 +263,12 @@ class TestErrorHandler:
         assert report['status'] == 'success'
         assert report['branch_decision'] == 'continue'
 
-    def test_no_input_files_no_errors(self, tmp_path, monkeypatch):
+    def test_no_input_files_adds_warning(self, tmp_path, monkeypatch):
         from error_handler import handle_errors
         monkeypatch.chdir(tmp_path)
         report = handle_errors()
         assert report['errors'] == []
-        assert report['warnings'] == []
+        assert any('results.json not found' in w for w in report['warnings'])
 
     def test_failed_results_json_adds_error(self, tmp_path, monkeypatch):
         from error_handler import handle_errors
@@ -286,6 +286,21 @@ class TestErrorHandler:
         report = handle_errors()
         assert report['status'] == 'success'
         assert report['errors'] == []
+
+    def test_results_json_deleted_after_processing(self, tmp_path, monkeypatch):
+        from error_handler import handle_errors
+        monkeypatch.chdir(tmp_path)
+        (tmp_path / 'results.json').write_text(json.dumps({'status': 'success'}))
+        handle_errors()
+        assert not (tmp_path / 'results.json').exists()
+
+    def test_invalid_json_adds_error(self, tmp_path, monkeypatch):
+        from error_handler import handle_errors
+        monkeypatch.chdir(tmp_path)
+        (tmp_path / 'results.json').write_text('not valid json{{{')
+        report = handle_errors()
+        assert report['status'] == 'failed'
+        assert any('Failed to process results file' in e for e in report['errors'])
 
     def test_saves_error_report_json(self, tmp_path, monkeypatch):
         from error_handler import handle_errors

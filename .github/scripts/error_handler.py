@@ -1,55 +1,65 @@
-#!/usr/bin/env python3
-"""Error handling and branching logic for workflow."""
+"""Error handling, branching logic, and cleanup for workflow."""
 
 import json
 import sys
+import logging
 from pathlib import Path
 
+# Configure logging for better traceability
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
+
 def handle_errors():
-    """Handle errors and determine branching logic."""
-    print("=== Error Handler ===")
-    
+    """Handle errors, determine branching logic, and clean up input files."""
+    logger.info("Starting error handler execution.")
+
     errors = []
     warnings = []
-    
-    # Check for error files
-    audit_file = Path("audit.log")
-    if audit_file.exists():
-        with open(audit_file, 'r') as f:
-            audit = json.load(f)
-            violations = audit.get("violations", [])
-            audit_warnings = audit.get("warnings", [])
-            
-            if violations:
-                errors.extend(violations)
-            if audit_warnings:
-                warnings.extend(audit_warnings)
-    
-    # Check results
     results_file = Path("results.json")
+
+    # 1. Process Results
     if results_file.exists():
-        with open(results_file, 'r') as f:
-            results = json.load(f)
+        try:
+            with open(results_file, 'r') as f:
+                results = json.load(f)
+
             if results.get("status") != "success":
                 errors.append("AI agent reported non-success status")
-    
-    # Generate error report
+
+            # 2. Cleanup: Remove the file after successful processing
+            results_file.unlink()
+            logger.info(f"Successfully processed and removed {results_file}")
+
+        except (json.JSONDecodeError, IOError) as e:
+            errors.append(f"Failed to process results file: {e}")
+            logger.error(f"File processing error: {e}")
+    else:
+        warnings.append("results.json not found; skipping result validation.")
+        logger.warning("results.json not found.")
+
+    # 3. Generate Report
     error_report = {
         "errors": errors,
         "warnings": warnings,
         "status": "failed" if errors else "success",
         "branch_decision": "continue" if not errors else "stop"
     }
-    
-    # Log error report
-    with open("error_report.json", "w") as f:
+
+    # 4. Save and Log Status
+    report_path = Path("error_report.json")
+    with open(report_path, "w") as f:
         json.dump(error_report, f, indent=2)
-    
-    print(f"Status: {error_report['status']}")
-    print(f"Errors: {len(errors)}")
-    print(f"Warnings: {len(warnings)}")
-    print(f"Branch decision: {error_report['branch_decision']}")
-    
+
+    logger.info(f"Report generated: Status={error_report['status']}, "
+                f"Decision={error_report['branch_decision']}")
+
+    if errors:
+        for err in errors:
+            logger.error(f"Error encountered: {err}")
+
     return error_report
 
 if __name__ == "__main__":
@@ -57,5 +67,5 @@ if __name__ == "__main__":
         report = handle_errors()
         sys.exit(0 if report["status"] == "success" else 1)
     except Exception as e:
-        print(f"Error in error handler: {e}")
+        logger.critical(f"Unhandled exception in error handler: {e}")
         sys.exit(1)
