@@ -123,11 +123,12 @@ class LLMRouter:
             cache_write = getattr(message.usage, "cache_creation_input_tokens", 0) or 0
             self.stats["cache_read_tokens"] += cache_read
             self.stats["cache_write_tokens"] += cache_write
-            cost = (
+            cost = max(
                 message.usage.input_tokens / 1_000_000 * pricing["input"]
                 + message.usage.output_tokens / 1_000_000 * pricing["output"]
                 + cache_write / 1_000_000 * pricing["input"] * 0.25   # cache write premium
-                - cache_read / 1_000_000 * pricing["input"] * 0.90    # cache read discount
+                - cache_read / 1_000_000 * pricing["input"] * 0.90,   # cache read discount
+                0.0,
             )
             return LLMResponse(
                 content=text,
