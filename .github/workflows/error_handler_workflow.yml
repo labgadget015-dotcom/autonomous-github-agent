@@ -27,7 +27,7 @@ jobs:
       - name: Run Error Handler
         id: error_handler
         run: |
-          python error_handler.py
+          python .github/scripts/error_handler.py
         # The script's sys.exit(1) will naturally stop the workflow here if errors exist.
 
       - name: Deploy or Continue Workflow
