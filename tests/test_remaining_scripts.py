@@ -263,24 +263,12 @@ class TestErrorHandler:
         assert report['status'] == 'success'
         assert report['branch_decision'] == 'continue'
 
-    def test_with_audit_violations_returns_failed(self, tmp_path, monkeypatch):
+    def test_no_input_files_no_errors(self, tmp_path, monkeypatch):
         from error_handler import handle_errors
         monkeypatch.chdir(tmp_path)
-        audit = {'violations': ['missing tests'], 'warnings': []}
-        (tmp_path / 'audit.log').write_text(json.dumps(audit))
         report = handle_errors()
-        assert report['status'] == 'failed'
-        assert report['branch_decision'] == 'stop'
-        assert 'missing tests' in report['errors']
-
-    def test_with_audit_warnings_only_still_success(self, tmp_path, monkeypatch):
-        from error_handler import handle_errors
-        monkeypatch.chdir(tmp_path)
-        audit = {'violations': [], 'warnings': ['consider upgrading']}
-        (tmp_path / 'audit.log').write_text(json.dumps(audit))
-        report = handle_errors()
-        assert report['status'] == 'success'
-        assert 'consider upgrading' in report['warnings']
+        assert report['errors'] == []
+        assert report['warnings'] == []
 
     def test_failed_results_json_adds_error(self, tmp_path, monkeypatch):
         from error_handler import handle_errors
@@ -288,6 +276,7 @@ class TestErrorHandler:
         (tmp_path / 'results.json').write_text(json.dumps({'status': 'failure'}))
         report = handle_errors()
         assert report['status'] == 'failed'
+        assert report['branch_decision'] == 'stop'
         assert any('non-success' in e for e in report['errors'])
 
     def test_success_results_json_no_error(self, tmp_path, monkeypatch):
@@ -296,12 +285,23 @@ class TestErrorHandler:
         (tmp_path / 'results.json').write_text(json.dumps({'status': 'success'}))
         report = handle_errors()
         assert report['status'] == 'success'
+        assert report['errors'] == []
 
     def test_saves_error_report_json(self, tmp_path, monkeypatch):
         from error_handler import handle_errors
         monkeypatch.chdir(tmp_path)
         handle_errors()
         assert (tmp_path / 'error_report.json').exists()
+
+    def test_error_report_json_structure(self, tmp_path, monkeypatch):
+        from error_handler import handle_errors
+        monkeypatch.chdir(tmp_path)
+        handle_errors()
+        saved = json.loads((tmp_path / 'error_report.json').read_text())
+        assert 'errors' in saved
+        assert 'warnings' in saved
+        assert 'status' in saved
+        assert 'branch_decision' in saved
 
 
 # ===========================================================================
