@@ -7,6 +7,7 @@ Routes tasks to local or cloud LLMs based on complexity, saving 90% on token cos
 import os
 import json
 import requests
+import anthropic
 from typing import Dict
 from dataclasses import dataclass
 from enum import Enum
@@ -33,12 +34,12 @@ class LLMResponse:
 class LLMRouter:
     """
     Intelligent LLM routing: 70-80% tasks → Local (FREE), 20-30% → Cloud
-    
+
     Decision Matrix:
     - Formatting, simple lint → Local (Llama-70B)
     - Security LOW/MED → Local
-    - Security HIGH/CRITICAL → Cloud (GPT-4)
-    - Complex refactoring → Cloud
+    - Complex refactoring → Claude Opus 4.6
+    - Security HIGH/CRITICAL → Claude Opus 4.6 + adaptive thinking
     """
     
     def __init__(self):
@@ -48,14 +49,13 @@ class LLMRouter:
         
         self.cost_matrix = {
             'local': 0.0,
-            'gpt-4': 0.03,
-            'gpt-4-turbo': 0.01,
-            'claude-3-sonnet': 0.003
+            'claude-opus-4-6': {'input': 5.0, 'output': 25.0},  # per 1M tokens
         }
         
         self.stats = {
             'total': 0, 'local': 0, 'cloud': 0,
-            'cost': 0.0, 'tokens': 0
+            'cost': 0.0, 'tokens': 0,
+            'cache_read_tokens': 0, 'cache_write_tokens': 0,
         }
     
     def classify(self, task_type: str, context: Dict) -> TaskComplexity:
@@ -92,27 +92,54 @@ class LLMRouter:
         except:
             return LLMResponse("", "local", 0, 0.0, 0, False)
     
-    def call_cloud(self, prompt: str, model="gpt-4-turbo") -> LLMResponse:
+    _SYSTEM_PROMPT = (
+        "You are an expert software engineer and security researcher embedded in a GitHub CI/CD pipeline. "
+        "Your job is to analyze code changes, identify issues, and provide specific, actionable feedback. "
+        "For security findings: describe the vulnerability class, exploitability, and a concrete fix. "
+        "For complexity findings: identify the problematic function, explain the cognitive burden, and suggest a refactor. "
+        "For bugs: explain the failure condition and provide corrected code. "
+        "Be direct and precise. Avoid generic advice."
+    )
+
+    def call_claude(self, prompt: str, complexity: TaskComplexity) -> LLMResponse:
         start = time.time()
         try:
-            r = requests.post(
-                "https://api.openai.com/v1/chat/completions",
-                headers={"Authorization": f"Bearer {self.openai_key}"},
-                json={"model": model, "messages": [{"role": "user", "content": prompt}]},
-                timeout=60
+            client = anthropic.Anthropic(api_key=self.anthropic_key)
+            params = {
+                "model": "claude-opus-4-6",
+                "max_tokens": 16000,
+                "system": [{"type": "text", "text": self._SYSTEM_PROMPT, "cache_control": {"type": "ephemeral"}}],
+                "messages": [{"role": "user", "content": prompt}],
+            }
+            if complexity == TaskComplexity.CRITICAL:
+                params["thinking"] = {"type": "adaptive"}
+
+            with client.messages.stream(**params) as stream:
+                message = stream.get_final_message()
+
+            text = next((b.text for b in message.content if b.type == "text"), "")
+            pricing = self.cost_matrix["claude-opus-4-6"]
+            cache_read = getattr(message.usage, "cache_read_input_tokens", 0) or 0
+            cache_write = getattr(message.usage, "cache_creation_input_tokens", 0) or 0
+            self.stats["cache_read_tokens"] += cache_read
+            self.stats["cache_write_tokens"] += cache_write
+            cost = (
+                message.usage.input_tokens / 1_000_000 * pricing["input"]
+                + message.usage.output_tokens / 1_000_000 * pricing["output"]
+                + cache_write / 1_000_000 * pricing["input"] * 0.25   # cache write premium
+                - cache_read / 1_000_000 * pricing["input"] * 0.90    # cache read discount
             )
-            data = r.json()
-            tokens = data['usage']['total_tokens']
             return LLMResponse(
-                content=data['choices'][0]['message']['content'],
-                model=model,
-                tokens_used=tokens,
-                cost=(tokens/1000)*self.cost_matrix[model],
-                latency_ms=(time.time()-start)*1000,
-                success=True
+                content=text,
+                model="claude-opus-4-6",
+                tokens_used=message.usage.input_tokens + message.usage.output_tokens,
+                cost=cost,
+                latency_ms=(time.time() - start) * 1000,
+                success=True,
             )
-        except:
-            return LLMResponse("", model, 0, 0.0, 0, False)
+        except Exception as e:
+            print(f"⚠️  Claude call failed: {e}")
+            return LLMResponse("", "claude-opus-4-6", 0, 0.0, 0, False)
     
     def route(self, prompt: str, task_type: str, context: Dict = None) -> LLMResponse:
         context = context or {}
@@ -128,10 +155,10 @@ class LLMRouter:
                 print(f"✅ {resp.latency_ms:.0f}ms $0")
                 return resp
         
-        # Fallback to cloud
-        print(f"☁️  CLOUD ({complexity.value})...")
-        model = "gpt-4" if complexity == TaskComplexity.CRITICAL else "gpt-4-turbo"
-        resp = self.call_cloud(prompt, model)
+        # Escalate to Claude — adaptive thinking enabled for CRITICAL
+        thinking = " + thinking" if complexity == TaskComplexity.CRITICAL else ""
+        print(f"☁️  CLAUDE ({complexity.value}{thinking})...")
+        resp = self.call_claude(prompt, complexity)
         if resp.success:
             self.stats['cloud'] += 1
             self.stats['cost'] += resp.cost
@@ -142,7 +169,8 @@ class LLMRouter:
     def report(self):
         t = self.stats['total']
         l_pct = (self.stats['local']/t*100) if t > 0 else 0
-        cloud_cost = (self.stats['tokens']/1000)*0.01
+        # Baseline: all tokens at Claude Opus 4.6 blended rate (~$0.015/1K)
+        cloud_cost = (self.stats['tokens'] / 1_000_000) * 15.0
         savings = cloud_cost - self.stats['cost']
         
         print("\n" + "="*60)
@@ -150,9 +178,12 @@ class LLMRouter:
         print("="*60)
         print(f"Requests: {t} ({self.stats['local']} local, {self.stats['cloud']} cloud)")
         print(f"Local: {l_pct:.1f}% (FREE)")
+        print(f"Cache writes: {self.stats['cache_write_tokens']:,} tokens")
+        print(f"Cache reads:  {self.stats['cache_read_tokens']:,} tokens")
         print(f"Actual: ${self.stats['cost']:.2f}")
         print(f"Would be: ${cloud_cost:.2f}")
-        print(f"SAVINGS: ${savings:.2f} ({(savings/cloud_cost*100):.1f}%)")
+        pct = (savings / cloud_cost * 100) if cloud_cost > 0 else 0.0
+        print(f"SAVINGS: ${savings:.2f} ({pct:.1f}% if > 0)")
         print("="*60)
 
 

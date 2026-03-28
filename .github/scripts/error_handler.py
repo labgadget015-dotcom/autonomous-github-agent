@@ -1,4 +1,4 @@
-error_handler.py#!/usr/bin/env python3
+#!/usr/bin/env python3
 """Error handling and branching logic for workflow."""
 
 import json
