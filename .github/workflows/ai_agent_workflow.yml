@@ -113,7 +113,22 @@ jobs:
       
       - name: Run AI agent
         run: python .github/scripts/ai_agent_main.py --context context.json
-      
+
+      - name: Run Error Handler
+        id: error_handler
+        run: python .github/scripts/error_handler.py
+        # sys.exit(1) on failure stops the workflow here
+
+      - name: Post inline PR comments
+        if: github.event_name == 'pull_request'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          COMMIT_SHA: ${{ github.event.pull_request.head.sha }}
+          REPORTS_DIR: reports
+        run: python .github/scripts/pr_inline_commenter.py
+
       - name: Enforce policy
         run: python .github/scripts/check_policy.py
       
@@ -126,7 +141,7 @@ jobs:
         with:
           name: agent-outputs
           path: |
-            results.json
+            error_report.json
             audit.log
             diagrams/
           retention-days: 30
