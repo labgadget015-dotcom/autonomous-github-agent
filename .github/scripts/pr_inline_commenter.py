@@ -8,8 +8,24 @@ import json
 import os
 import sys
 from pathlib import Path
-from typing import Dict, List, Any
+from typing import Dict, List, Any, Literal
+
+import anthropic
 import requests
+from pydantic import BaseModel
+
+
+class CodeFinding(BaseModel):
+    path: str
+    line: int
+    severity: Literal["HIGH", "MEDIUM", "LOW"]
+    category: Literal["security", "bug", "complexity", "performance", "style"]
+    message: str
+    suggestion: str
+
+
+class PRAnalysis(BaseModel):
+    findings: List[CodeFinding]
 
 
 class PRInlineCommenter:
@@ -51,6 +67,71 @@ class PRInlineCommenter:
             print(f"⚠️  API request failed: {e}")
             return None
     
+    def _fetch_pr_diff(self) -> str:
+        """Fetch the PR unified diff from GitHub API."""
+        url = f"{self.api_base}/repos/{self.repo}/pulls/{self.pr_number}"
+        try:
+            response = requests.get(
+                url,
+                headers={**self._get_headers(), "Accept": "application/vnd.github.diff"},
+            )
+            response.raise_for_status()
+            return response.text[:60000]  # cap to avoid exceeding context window
+        except requests.exceptions.RequestException as e:
+            print(f"⚠️  Could not fetch PR diff: {e}")
+            return ""
+
+    def analyze_diff_with_claude(self, diff: str) -> List[Dict]:
+        """Use Claude to analyze the PR diff and return structured findings."""
+        api_key = os.getenv("ANTHROPIC_API_KEY")
+        if not api_key or not diff:
+            return []
+
+        client = anthropic.Anthropic(api_key=api_key)
+        try:
+            response = client.messages.parse(
+                model="claude-opus-4-6",
+                max_tokens=4096,
+                system=[{
+                    "type": "text",
+                    "text": (
+                        "You are an expert code reviewer. Analyze the provided PR diff and identify "
+                        "concrete issues: security vulnerabilities, bugs, logic errors, performance "
+                        "problems, and significant violations. Only report issues with specific line "
+                        "numbers from the diff. Skip cosmetic nits. Limit to the 15 most important findings."
+                    ),
+                    "cache_control": {"type": "ephemeral"},
+                }],
+                messages=[{
+                    "role": "user",
+                    "content": f"Review this PR diff and report findings:\n\n```diff\n{diff}\n```",
+                }],
+                output_format=PRAnalysis,
+            )
+
+            if response.parsed_output is None:
+                print("⚠️  Claude returned unparseable output")
+                return []
+
+            findings = []
+            for f in response.parsed_output.findings:
+                icon = {"HIGH": "🔴", "MEDIUM": "🟡", "LOW": "🟢"}.get(f.severity, "⚪")
+                findings.append({
+                    "path": f.path,
+                    "line": f.line,
+                    "body": (
+                        f"{icon} **Claude Review** [{f.category}]: {f.message}\n\n"
+                        f"💡 **Suggestion**: {f.suggestion}"
+                    ),
+                    "severity": f.severity,
+                })
+            print(f"🤖 Claude found {len(findings)} issues")
+            return findings
+
+        except Exception as e:
+            print(f"⚠️  Claude analysis failed: {e}")
+            return []
+
     def parse_pylint_report(self, report_path: Path) -> List[Dict]:
         """Parse Pylint JSON report and extract actionable issues."""
         comments = []
@@ -176,10 +257,15 @@ class PRInlineCommenter:
     def run(self, reports_dir: Path) -> None:
         """Main execution: parse all reports and post comments."""
         all_comments = []
-        
+
+        # Claude analysis of the live PR diff
+        print("🤖 Running Claude code review...")
+        diff = self._fetch_pr_diff()
+        all_comments.extend(self.analyze_diff_with_claude(diff))
+
         print(f"🔍 Scanning reports in {reports_dir}")
-        
-        # Parse all available reports
+
+        # Parse all available static analysis reports
         for report_file in reports_dir.rglob('*.json'):
             if 'pylint' in report_file.name:
                 all_comments.extend(self.parse_pylint_report(report_file))
@@ -187,7 +273,7 @@ class PRInlineCommenter:
                 all_comments.extend(self.parse_bandit_report(report_file))
             elif 'radon-cc' in report_file.name:
                 all_comments.extend(self.parse_radon_report(report_file))
-        
+
         print(f"📊 Found {len(all_comments)} potential issues")
         
         # Post comments to PR

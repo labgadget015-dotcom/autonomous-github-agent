@@ -4,13 +4,17 @@ LLM Router - Intelligent Triage System
 Routes tasks to local or cloud LLMs based on complexity, saving 90% on token costs.
 """
 
+import logging
 import os
-import requests
-import anthropic
-from typing import Dict
+import time
 from dataclasses import dataclass
 from enum import Enum
-import time
+from typing import Dict
+
+import anthropic
+import requests
+
+logger = logging.getLogger(__name__)
 
 
 class TaskComplexity(Enum):
@@ -88,7 +92,8 @@ class LLMRouter:
                 latency_ms=(time.time()-start)*1000,
                 success=True
             )
-        except:
+        except Exception:
+            logger.exception("Local LLM call failed (url=%s)", self.local_url)
             return LLMResponse("", "local", 0, 0.0, 0, False)
     
     _SYSTEM_PROMPT = (
@@ -137,8 +142,8 @@ class LLMRouter:
                 latency_ms=(time.time() - start) * 1000,
                 success=True,
             )
-        except Exception as e:
-            print(f"⚠️  Claude call failed: {e}")
+        except Exception:
+            logger.exception("Claude API call failed")
             return LLMResponse("", "claude-opus-4-6", 0, 0.0, 0, False)
     
     def route(self, prompt: str, task_type: str, context: Dict = None) -> LLMResponse:
