@@ -1,5 +1,14 @@
 # Rollback Manifest
 
+## 10e12c6 — 2026-04-15 22:00 UTC
+
+- **SHA**: `10e12c6b5b0d46ea58952dc64b862cfa160a002f`
+- **Author**: Gadget Lab
+- **Message**: Merge pull request #103 from labgadget015-dotcom/copilot/analyze-test-coverage-again
+- **Files changed**: 0 file(s)
+
+---
+
 ## ac2efbd — 2026-03-25 12:17 UTC
 
 - **SHA**: `ac2efbd4e17c09b217fa94bc9f559fc63524b497`
