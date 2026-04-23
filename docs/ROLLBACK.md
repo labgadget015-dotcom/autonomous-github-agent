@@ -1,5 +1,17 @@
 # Rollback Manifest
 
+## e1b0554 — 2026-04-23 08:50 UTC
+
+- **SHA**: `e1b055474dcaabb9f39f5286d65c75e515b69945`
+- **Author**: Gadget Lab
+- **Message**: fix(ci): upgrade actions, fix daily summary failure, add pip cache & dedup issues
+- **Files changed**: 1 file(s)
+
+**Changed files:**
+- `.github/workflows/elite_copilot.yml`
+
+---
+
 ## 10e12c6 — 2026-04-15 22:00 UTC
 
 - **SHA**: `10e12c6b5b0d46ea58952dc64b862cfa160a002f`
