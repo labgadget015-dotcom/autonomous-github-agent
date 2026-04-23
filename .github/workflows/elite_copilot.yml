@@ -25,34 +25,36 @@ on:
 
 env:
   PYTHON_VERSION: '3.11'
+  # Opt into Node.js 24 early before the June 2, 2026 forced migration
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
 
 jobs:
   copilot-analysis:
-    name: 🚀 Elite Copilot Analysis
+    name: "🚀 Elite Copilot Analysis"
     runs-on: ubuntu-latest
     permissions:
       contents: write
       issues: write
       pull-requests: write
-      
+
     steps:
-      - name: 📥 Checkout Repository
+      - name: "📥 Checkout Repository"
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Full history for better analysis
-      
-      - name: 🐍 Setup Python
-        uses: actions/setup-python@v4
+          fetch-depth: 0 # Full history for better analysis
+
+      - name: "🐍 Setup Python"
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: 'pip'
-      
-      - name: 📦 Install Dependencies
+
+      - name: "📦 Install Dependencies"
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-      
-      - name: 🔧 Configure Copilot
+
+      - name: "🔧 Configure Copilot"
         run: |
           cat > copilot_config.yaml << EOF
           mode: ${{ github.event.inputs.mode || 'assistant' }}
@@ -73,8 +75,8 @@ jobs:
             - dependency_management
             - refactoring_suggestions
           EOF
-      
-      - name: 🤖 Run Elite Copilot Analysis
+
+      - name: "🤖 Run Elite Copilot Analysis"
         id: copilot
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -88,8 +90,8 @@ jobs:
             --config copilot_config.yaml \
             --output COPILOT_REPORT.md
           echo "::endgroup::"
-      
-      - name: 📊 Upload Analysis Report
+
+      - name: "📊 Upload Analysis Report"
         uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -98,8 +100,8 @@ jobs:
             COPILOT_REPORT.md
             copilot_*.json
           retention-days: 30
-      
-      - name: 💬 Post PR Comment
+
+      - name: "💬 Post PR Comment"
         if: github.event_name == 'pull_request' && always()
         uses: actions/github-script@v7
         with:
@@ -107,7 +109,7 @@ jobs:
           script: |
             const fs = require('fs');
             let reportContent = '## 🤖 Elite AI Copilot Analysis\n\n';
-            
+
             try {
               if (fs.existsSync('COPILOT_REPORT.md')) {
                 reportContent += fs.readFileSync('COPILOT_REPORT.md', 'utf8');
@@ -117,17 +119,17 @@ jobs:
             } catch (error) {
               reportContent += '⚠️ Report generation in progress...';
             }
-            
+
             reportContent += '\n\n---\n*Powered by Elite AI Copilot v1.0*';
-            
+
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
               body: reportContent
             });
-      
-      - name: 🏷️ Auto-label Issues
+
+      - name: "🏷️ Auto-label Issues"
         if: github.event_name == 'issues' && github.event.action == 'opened'
         uses: actions/github-script@v7
         with:
@@ -136,9 +138,9 @@ jobs:
             const issue = context.payload.issue;
             const title = issue.title.toLowerCase();
             const body = (issue.body || '').toLowerCase();
-            
+
             const labels = [];
-            
+
             // Intelligent auto-labeling
             if (title.includes('bug') || body.includes('error')) labels.push('bug');
             if (title.includes('feature') || title.includes('enhancement')) labels.push('enhancement');
@@ -146,7 +148,7 @@ jobs:
             if (title.includes('security') || body.includes('vulnerability')) labels.push('security');
             if (title.includes('performance') || body.includes('slow')) labels.push('performance');
             if (title.includes('urgent') || title.includes('critical')) labels.push('priority: high');
-            
+
             if (labels.length > 0) {
               github.rest.issues.addLabels({
                 owner: context.repo.owner,
@@ -155,8 +157,8 @@ jobs:
                 labels: labels
               });
             }
-      
-      - name: 📈 Generate Metrics
+
+      - name: "📈 Generate Metrics"
         if: always()
         run: |
           echo "## Copilot Metrics" > COPILOT_METRICS.md
@@ -166,33 +168,34 @@ jobs:
           echo "- **Mode:** ${{ github.event.inputs.mode || 'assistant' }}" >> COPILOT_METRICS.md
 
   copilot-security-guardian:
-    name: 🔒 Security Guardian Mode
+    name: "🔒 Security Guardian Mode"
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request' || github.event_name == 'push'
     permissions:
       contents: read
       security-events: write
-    
+
     steps:
-      - name: 📥 Checkout Code
+      - name: "📥 Checkout Code"
         uses: actions/checkout@v4
-      
-      - name: 🐍 Setup Python
-        uses: actions/setup-python@v4
+
+      - name: "🐍 Setup Python"
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
-      
-      - name: 📦 Install Security Tools
+          cache: 'pip'
+
+      - name: "📦 Install Security Tools"
         run: |
           pip install bandit safety
-      
-      - name: 🔍 Security Scan
+
+      - name: "🔍 Security Scan"
         run: |
           echo "🔒 Running security guardian checks..."
           bandit -r . -f json -o bandit-report.json || true
           safety check --json > safety-report.json || true
-      
-      - name: 📊 Upload Security Reports
+
+      - name: "📊 Upload Security Reports"
         uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -202,33 +205,34 @@ jobs:
             safety-report.json
 
   copilot-performance-monitor:
-    name: ⚡ Performance Monitor
+    name: "⚡ Performance Monitor"
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
+    if: github.event_name == 'pull_request' || github.event_name == 'schedule'
     permissions:
       contents: read
       pull-requests: read
-    
+
     steps:
-      - name: 📥 Checkout Code
+      - name: "📥 Checkout Code"
         uses: actions/checkout@v4
-      
-      - name: 🐍 Setup Python
-        uses: actions/setup-python@v4
+
+      - name: "🐍 Setup Python"
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
-      
-      - name: 📦 Install Dependencies
+          cache: 'pip'
+
+      - name: "📦 Install Dependencies"
         run: |
           pip install radon pytest pytest-benchmark
-      
-      - name: 📊 Complexity Analysis
+
+      - name: "📊 Complexity Analysis"
         run: |
           echo "⚡ Analyzing code complexity..."
           radon cc . -a -s -j > complexity-report.json || true
           radon mi . -s -j > maintainability-report.json || true
-      
-      - name: 📈 Upload Performance Reports
+
+      - name: "📈 Upload Performance Reports"
         uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -238,54 +242,96 @@ jobs:
             maintainability-report.json
 
   copilot-daily-summary:
-    name: 📅 Daily Repository Summary
+    name: "📅 Daily Repository Summary"
     runs-on: ubuntu-latest
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     permissions:
       contents: read
       issues: write
-    
+
     steps:
-      - name: 📥 Checkout Code
+      - name: "📥 Checkout Code"
         uses: actions/checkout@v4
-      
-      - name: 🐍 Setup Python
-        uses: actions/setup-python@v4
+
+      - name: "🐍 Setup Python"
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
-      
-      - name: 📦 Install Dependencies
+          cache: 'pip'
+
+      - name: "📦 Install Dependencies"
         run: |
           pip install -r requirements.txt
-      
-      - name: 🤖 Generate Daily Summary
+
+      - name: "🤖 Generate Daily Summary"
+        id: generate_summary
+        continue-on-error: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           echo "📅 Generating daily repository summary..."
           cd autopilot
           python autopilot.py --config config.yaml --output ../DAILY_SUMMARY.md
-      
-      - name: 📤 Upload Daily Summary
+
+      - name: "📤 Upload Daily Summary"
         uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: daily-summary
           path: DAILY_SUMMARY.md
-      
-      - name: 💬 Create Summary Issue
+          if-no-files-found: warn
+
+      - name: "💬 Create or Update Summary Issue"
         uses: actions/github-script@v7
+        if: always()
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const fs = require('fs');
-            const summary = fs.readFileSync('DAILY_SUMMARY.md', 'utf8');
-            
-            const title = `📅 Daily Repository Summary - ${new Date().toISOString().split('T')[0]}`;
-            
-            github.rest.issues.create({
+            const today = new Date().toISOString().split('T')[0];
+            const title = `📅 Daily Repository Summary - ${today}`;
+
+            let summary;
+            try {
+              summary = fs.readFileSync('DAILY_SUMMARY.md', 'utf8');
+            } catch (e) {
+              summary = `⚠️ Daily summary generation failed on ${today}. Check workflow logs for details.`;
+            }
+
+            const { data: existingIssues } = await github.rest.issues.listForRepo({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              title: title,
-              body: summary,
-              labels: ['daily-summary', 'automated']
+              labels: 'daily-summary',
+              state: 'open',
+              per_page: 10
             });
+
+            const existing = existingIssues.find(i => i.title === title);
+            if (existing) {
+              await github.rest.issues.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: existing.number,
+                body: summary
+              });
+              console.log(`Updated existing issue #${existing.number}`);
+            } else {
+              for (const issue of existingIssues) {
+                if (issue.title !== title) {
+                  await github.rest.issues.update({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    issue_number: issue.number,
+                    state: 'closed'
+                  });
+                }
+              }
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: title,
+                body: summary,
+                labels: ['daily-summary', 'automated']
+              });
+              console.log('Created new daily summary issue');
+            }
