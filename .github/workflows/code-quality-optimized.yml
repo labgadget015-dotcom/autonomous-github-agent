@@ -126,17 +126,17 @@ jobs:
         run: |
           if [ -f analysis-results.json ]; then
             python -c "
-            import json, sys
-            with open('analysis-results.json') as f:
-              results = json.load(f)
-            if not results['passed']:
-              print('❌ Code quality checks failed!')
-              sys.exit(1)
-            print('✅ All quality checks passed!')
-            "
+import json, sys
+with open('analysis-results.json') as f:
+  results = json.load(f)
+if not results['passed']:
+  print('Code quality checks failed!')
+  sys.exit(1)
+print('All quality checks passed!')
+"
           fi
 
-  # Optimized pytest with targeted coverage
+  # Optimized pytest with targeted coverageh
   test-coverage:
     runs-on: ubuntu-latest
     strategy:
