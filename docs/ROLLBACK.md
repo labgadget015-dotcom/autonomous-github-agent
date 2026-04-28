@@ -1,5 +1,17 @@
 # Rollback Manifest
 
+## b26aff2 — 2026-04-28 21:59 UTC
+
+- **SHA**: `b26aff241c6415db69eed57c661a2ae636bdeea5`
+- **Author**: Gadget Lab
+- **Message**: fix: upgrade upload-sarif to v4 and add continue-on-error for private repo
+- **Files changed**: 1 file(s)
+
+**Changed files:**
+- `.github/workflows/security_scan.yml`
+
+---
+
 ## c69e09f — 2026-04-28 19:40 UTC
 
 - **SHA**: `c69e09fb03682e52d0c9164c964822f153a41aab`
