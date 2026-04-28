@@ -1,5 +1,17 @@
 # Rollback Manifest
 
+## 0fe921b — 2026-04-28 19:38 UTC
+
+- **SHA**: `0fe921bb92919a1b2ad90fe8f69ee4a2507c733d`
+- **Author**: Gadget Lab
+- **Message**: fix: resolve IndentationError in Check thresholds step
+- **Files changed**: 1 file(s)
+
+**Changed files:**
+- `.github/workflows/code-quality-optimized.yml`
+
+---
+
 ## e1b0554 — 2026-04-23 08:50 UTC
 
 - **SHA**: `e1b055474dcaabb9f39f5286d65c75e515b69945`
