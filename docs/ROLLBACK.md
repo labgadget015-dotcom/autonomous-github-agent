@@ -1,5 +1,17 @@
 # Rollback Manifest
 
+## dd1fdc9 — 2026-04-28 22:11 UTC
+
+- **SHA**: `dd1fdc9dab57d284636fea8dd25a9051bce0e4e3`
+- **Author**: Gadget Lab
+- **Message**: fix: add continue-on-error to parallel-analysis threshold check
+- **Files changed**: 1 file(s)
+
+**Changed files:**
+- `.github/workflows/code-quality-optimized.yml`
+
+---
+
 ## f421418 — 2026-04-28 22:05 UTC
 
 - **SHA**: `f421418c29f21f2ec2011ebbf35f28a1a68ce155`
