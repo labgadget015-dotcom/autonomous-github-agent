@@ -10,14 +10,13 @@ Provides intelligent code suggestions based on:
 - Performance optimization opportunities
 """
 
-import os
-import sys
 import json
-from pathlib import Path
-from typing import Dict, List, Any, Optional
-from dataclasses import dataclass, asdict
-from collections import defaultdict
 import re
+import sys
+from collections import defaultdict
+from dataclasses import dataclass, asdict
+from pathlib import Path
+from typing import Any, Optional
 
 
 @dataclass
@@ -50,7 +49,7 @@ class AICodeSuggestor:
         self.suggestions = []
         self.patterns_learned = {}
         
-    def analyze_repository(self) -> List[CodeSuggestion]:
+    def analyze_repository(self) -> list[CodeSuggestion]:
         """Analyze repository and generate code suggestions"""
         print("🔍 Analyzing repository for improvement opportunities...")
         
@@ -85,7 +84,7 @@ class AICodeSuggestor:
         ]
         return any(pattern in str(file_path) for pattern in skip_patterns)
     
-    def _analyze_file(self, file_path: Path) -> List[CodeSuggestion]:
+    def _analyze_file(self, file_path: Path) -> list[CodeSuggestion]:
         """Analyze a single file for suggestions"""
         suggestions = []
         
@@ -102,7 +101,7 @@ class AICodeSuggestor:
         
         return suggestions
     
-    def _check_import_organization(self, file_path: Path, lines: List[str]) -> List[CodeSuggestion]:
+    def _check_import_organization(self, file_path: Path, lines: list[str]) -> list[CodeSuggestion]:
         """Check if imports are properly organized"""
         suggestions = []
         
@@ -157,7 +156,7 @@ class AICodeSuggestor:
         
         return suggestions
     
-    def _check_function_complexity(self, file_path: Path, lines: List[str]) -> List[CodeSuggestion]:
+    def _check_function_complexity(self, file_path: Path, lines: list[str]) -> list[CodeSuggestion]:
         """Check for overly complex functions"""
         suggestions = []
         
@@ -207,7 +206,7 @@ class AICodeSuggestor:
         
         return suggestions
     
-    def _calculate_nesting(self, lines: List[str]) -> int:
+    def _calculate_nesting(self, lines: list[str]) -> int:
         """Calculate maximum nesting level in code"""
         max_nesting = 0
         current_nesting = 0
@@ -229,7 +228,7 @@ class AICodeSuggestor:
         
         return max_nesting
     
-    def _check_docstring_presence(self, file_path: Path, lines: List[str]) -> List[CodeSuggestion]:
+    def _check_docstring_presence(self, file_path: Path, lines: list[str]) -> list[CodeSuggestion]:
         """Check if functions and classes have docstrings"""
         suggestions = []
         
@@ -269,7 +268,7 @@ class AICodeSuggestor:
         
         return suggestions
     
-    def _check_error_handling(self, file_path: Path, lines: List[str]) -> List[CodeSuggestion]:
+    def _check_error_handling(self, file_path: Path, lines: list[str]) -> list[CodeSuggestion]:
         """Check for bare except clauses"""
         suggestions = []
         
@@ -296,7 +295,7 @@ class AICodeSuggestor:
         
         return suggestions
     
-    def _check_performance_patterns(self, file_path: Path, lines: List[str]) -> List[CodeSuggestion]:
+    def _check_performance_patterns(self, file_path: Path, lines: list[str]) -> list[CodeSuggestion]:
         """Check for performance anti-patterns"""
         suggestions = []
         
@@ -391,7 +390,7 @@ class AICodeSuggestor:
         
         print(f"✅ Report saved to {output_path}")
     
-    def get_auto_fixable_suggestions(self) -> List[CodeSuggestion]:
+    def get_auto_fixable_suggestions(self) -> list[CodeSuggestion]:
         """Get suggestions that can be automatically fixed"""
         return [s for s in self.suggestions if s.auto_fixable]
     
