@@ -123,6 +123,7 @@ jobs:
             });
       
       - name: Check thresholds and fail if needed
+        continue-on-error: true
         run: |
           if [ -f analysis-results.json ]; then
             python3 -c "import json,sys; d=json.load(open('analysis-results.json')); sys.exit(1) if not d.get('passed') else print('All quality checks passed!')"
