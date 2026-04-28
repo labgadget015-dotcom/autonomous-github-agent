@@ -1,5 +1,17 @@
 # Rollback Manifest
 
+## c69e09f — 2026-04-28 19:40 UTC
+
+- **SHA**: `c69e09fb03682e52d0c9164c964822f153a41aab`
+- **Author**: Gadget Lab
+- **Message**: fix: rewrite threshold check as single-line python3 command
+- **Files changed**: 1 file(s)
+
+**Changed files:**
+- `.github/workflows/code-quality-optimized.yml`
+
+---
+
 ## 0fe921b — 2026-04-28 19:38 UTC
 
 - **SHA**: `0fe921bb92919a1b2ad90fe8f69ee4a2507c733d`
