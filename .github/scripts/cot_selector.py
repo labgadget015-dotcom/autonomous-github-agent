@@ -223,8 +223,7 @@ if __name__ == "__main__":
         }
     ]
     
-    print("
-🎯 CoT Template Selection Examples:\n")
+    print("\n🎯 CoT Template Selection Examples:\n")
     for test in test_contexts:
         print(f"\n--- {test['name']} ---")
         template = selector.select_template(test)
