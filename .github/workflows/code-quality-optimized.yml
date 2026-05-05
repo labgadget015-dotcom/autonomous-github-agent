@@ -349,6 +349,7 @@ jobs:
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          git add docs/HEALTH_DASHBOARD.md coverage.svg || true
-          git diff-index --quiet HEAD || git commit -m "📊 Update health dashboard [skip ci]"
-          git push
+          git add docs/HEALTH_DASHBOARD.md 2>/dev/null || true
+          [ -f coverage.svg ] && git add coverage.svg 2>/dev/null || true
+          git diff-index --quiet --cached HEAD || git commit -m "📊 Update health dashboard [skip ci]"
+          git push || true
