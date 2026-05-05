@@ -119,7 +119,12 @@ class AccessPredictor:
 class IntelligentCache:
     """AI-powered cache with predictive invalidation and prefetching."""
 
-    def __init__(self, max_size: int = 1000, ttl: int = 3600):
+    def __init__(self, config=None, max_size: int = 1000, ttl: int = 3600):
+        if isinstance(config, int):
+            max_size = config
+        elif isinstance(config, dict):
+            max_size = config.get("max_size", max_size)
+            ttl = config.get("ttl", ttl)
         self.cache: dict[str, tuple[Any, float]] = {}
         self.max_size = max_size
         self.default_ttl = ttl
@@ -137,8 +142,8 @@ class IntelligentCache:
         """Generate consistent hash for cache key."""
         return hashlib.sha256(key.encode()).hexdigest()
 
-    def get(self, key: str, fetch_func: Callable[..., Any]) -> Any:
-        """Get value from cache or fetch if needed."""
+    def get(self, key: str, fetch_func: Callable[..., Any] | None = None) -> Any:
+        """Get value from cache, or fetch via fetch_func if provided (returns None on miss otherwise)."""
         hashed_key = self._hash_key(key)
         current_time = time.time()
 
@@ -162,9 +167,13 @@ class IntelligentCache:
             else:
                 self.stats["stale_hits"] += 1
                 logger.debug(f"Cache STALE for {key} (staleness: {staleness_prob:.2f})")
+                if fetch_func is None:
+                    return value
         else:
             self.stats["misses"] += 1
             logger.debug(f"Cache MISS for {key}")
+            if fetch_func is None:
+                return None
 
         # Fetch fresh data
         value = fetch_func()

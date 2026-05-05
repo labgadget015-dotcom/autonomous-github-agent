@@ -534,8 +534,8 @@ class TestAIOptimizationModules:
     def test_ml_priority_scorer_score_returns_float(self):
         from autopilot.ai_optimization.ml_priority_scorer import MLPriorityScorer
         scorer = MLPriorityScorer({})
-        score = scorer.score({"title": "Fix critical bug", "labels": ["bug"]})
-        assert isinstance(score, (int, float))
+        result = scorer.score({"title": "Fix critical bug", "labels": ["bug"]})
+        assert isinstance(result["score"], (int, float))
 
     def test_anomaly_detector_init(self):
         from autopilot.ai_optimization.anomaly_detector import AnomalyDetector

@@ -484,6 +484,10 @@ class NLPRelevanceFilter:
         else:
             return "neutral"
 
+    def score(self, text: str) -> float:
+        """Return relevance score (0.0-1.0) for text."""
+        return self.analyze_relevance(text).get("relevance_score", 0.0)
+
     def _default_analysis(self) -> dict[str, Any]:
         """Return default analysis for empty/invalid input."""
         return {

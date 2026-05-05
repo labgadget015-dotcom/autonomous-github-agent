@@ -69,18 +69,18 @@ class TestCreateIssue:
 
     def test_create_issue_returns_issue(self):
         client, _, mock_issue = self._setup()
-        result = client.create_issue("owner", "repo", "Bug", "body")
+        result = client.create_issue("owner/repo", "Bug", "body")
         assert result is mock_issue
 
     def test_create_issue_passes_labels(self):
         client, mock_repo, _ = self._setup()
-        client.create_issue("owner", "repo", "T", "B", labels=["bug"])
+        client.create_issue("owner/repo", "T", "B", labels=["bug"])
         call_kwargs = mock_repo.create_issue.call_args[1]
         assert "bug" in call_kwargs["labels"]
 
     def test_create_issue_passes_assignees(self):
         client, mock_repo, _ = self._setup()
-        client.create_issue("owner", "repo", "T", "B", assignees=["alice"])
+        client.create_issue("owner/repo", "T", "B", assignees=["alice"])
         call_kwargs = mock_repo.create_issue.call_args[1]
         assert "alice" in call_kwargs["assignees"]
 
@@ -91,7 +91,7 @@ class TestCreateIssue:
             422, "Validation Failed"
         )
         with pytest.raises(GithubException):
-            client.create_issue("owner", "repo", "T", "B")
+            client.create_issue("owner/repo", "T", "B")
 
 
 class TestGetIssue:
@@ -122,7 +122,7 @@ class TestGetPullRequest:
         mock_pr.number = 3
         mock_repo.get_pull.return_value = mock_pr
         client.client.get_repo.return_value = mock_repo
-        result = client.get_pull_request("owner", "repo", 3)
+        result = client.get_pull_request("owner/repo", 3)
         assert result is mock_pr
 
 
@@ -154,7 +154,7 @@ class TestAddComment:
         mock_repo.get_issue.return_value = mock_issue
         mock_repo.get_issues.return_value = []
         client.client.get_repo.return_value = mock_repo
-        client.add_comment("owner", "repo", 1, "Hello!")
+        client.add_comment("owner/repo", 1, "Hello!")
         mock_issue.create_comment.assert_called_once_with("Hello!")
 
 
@@ -181,7 +181,7 @@ class TestAdapterMethods:
         mock_pr = MagicMock()
         mock_repo.get_pull.return_value = mock_pr
         client.client.get_repo.return_value = mock_repo
-        client.merge_pull_request("owner", "repo", 10, merge_method="squash")
+        client.merge_pull_request("owner/repo", 10, merge_method="squash")
         mock_pr.merge.assert_called_once_with(merge_method="squash")
 
     def test_add_labels_calls_add_to_labels(self):
@@ -190,7 +190,7 @@ class TestAdapterMethods:
         mock_issue = MagicMock()
         mock_repo.get_issue.return_value = mock_issue
         client.client.get_repo.return_value = mock_repo
-        client.add_labels("owner", "repo", 1, ["bug", "urgent"])
+        client.add_labels("owner/repo", 1, ["bug", "urgent"])
         mock_issue.add_to_labels.assert_called_once_with("bug", "urgent")
 
 

@@ -112,8 +112,7 @@ class GitHubClient:
 
     def create_issue(
         self,
-        owner: str,
-        repo: str,
+        full_name: str,
         title: str,
         body: str,
         labels: list[str] | None = None,
@@ -123,8 +122,7 @@ class GitHubClient:
         Create a new issue in a repository.
 
         Args:
-            owner: Repository owner
-            repo: Repository name
+            full_name: Repository full name (owner/repo)
             title: Issue title
             body: Issue body
             labels: Optional list of labels
@@ -133,6 +131,7 @@ class GitHubClient:
         Returns:
             Created Issue object
         """
+        owner, repo = full_name.split("/", 1)
         self._wait_for_rate_limit()
 
         try:
@@ -140,10 +139,10 @@ class GitHubClient:
             issue = repository.create_issue(
                 title=title, body=body, labels=labels or [], assignees=assignees or []
             )
-            logger.info(f"Created issue #{issue.number} in {owner}/{repo}")
+            logger.info(f"Created issue #{issue.number} in {full_name}")
             return issue
         except GithubException as e:
-            logger.error(f"Error creating issue in {owner}/{repo}: {str(e)}")
+            logger.error(f"Error creating issue in {full_name}: {str(e)}")
             raise
 
     def get_issue(self, owner: str, repo: str, issue_number: int) -> Issue:
@@ -169,25 +168,25 @@ class GitHubClient:
             )
             raise
 
-    def get_pull_request(self, owner: str, repo: str, pr_number: int) -> PullRequest:
+    def get_pull_request(self, full_name: str, pr_number: int) -> PullRequest:
         """
         Get a pull request by number.
 
         Args:
-            owner: Repository owner
-            repo: Repository name
+            full_name: Repository full name (owner/repo)
             pr_number: Pull request number
 
         Returns:
             PullRequest object
         """
+        owner, repo = full_name.split("/", 1)
         self._wait_for_rate_limit()
 
         try:
             repository = self.get_repository(owner, repo)
             return repository.get_pull(pr_number)
         except GithubException as e:
-            logger.error(f"Error getting PR #{pr_number} in {owner}/{repo}: {str(e)}")
+            logger.error(f"Error getting PR #{pr_number} in {full_name}: {str(e)}")
             raise
 
     def list_issues(
@@ -224,25 +223,25 @@ class GitHubClient:
             logger.error(f"Error listing issues in {owner}/{repo}: {str(e)}")
             raise
 
-    def add_comment(self, owner: str, repo: str, issue_number: int, body: str):
+    def add_comment(self, full_name: str, issue_number: int, body: str):
         """
         Add a comment to an issue or pull request.
 
         Args:
-            owner: Repository owner
-            repo: Repository name
+            full_name: Repository full name (owner/repo)
             issue_number: Issue or PR number
             body: Comment body
         """
+        owner, repo = full_name.split("/", 1)
         self._wait_for_rate_limit()
 
         try:
             issue = self.get_issue(owner, repo, issue_number)
             issue.create_comment(body)
-            logger.info(f"Added comment to #{issue_number} in {owner}/{repo}")
+            logger.info(f"Added comment to #{issue_number} in {full_name}")
         except GithubException as e:
             logger.error(
-                f"Error adding comment to #{issue_number} in {owner}/{repo}: {str(e)}"
+                f"Error adding comment to #{issue_number} in {full_name}: {str(e)}"
             )
             raise
 
@@ -291,31 +290,30 @@ class GitHubClient:
             logger.error(f"Error listing repos: {str(e)}")
             raise
     
-    def add_labels(self, owner: str, repo: str, issue_number: int, labels: list[str]):
+    def add_labels(self, full_name: str, issue_number: int, labels: list[str]):
         """
         Add labels to an issue.
         Args:
-            owner: Repository owner
-            repo: Repository name
+            full_name: Repository full name (owner/repo)
             issue_number: Issue number
             labels: List of label names
         """
+        owner, repo = full_name.split("/", 1)
         issue = self.get_issue(owner, repo, issue_number)
         issue.add_to_labels(*labels)
-        logger.info(f"Added labels {labels} to issue #{issue_number} in {owner}/{repo}")
+        logger.info(f"Added labels {labels} to issue #{issue_number} in {full_name}")
     
-    def merge_pull_request(self, owner: str, repo: str, pr_number: int, merge_method: str = "merge"):
+    def merge_pull_request(self, full_name: str, pr_number: int, merge_method: str = "merge"):
         """
         Merge a pull request.
         Args:
-            owner: Repository owner
-            repo: Repository name
+            full_name: Repository full name (owner/repo)
             pr_number: Pull request number
             merge_method: Merge method (merge, squash, rebase)
         """
-        pr = self.get_pull_request(owner, repo, pr_number)
+        pr = self.get_pull_request(full_name, pr_number)
         pr.merge(merge_method=merge_method)
-        logger.info(f"Merged PR #{pr_number} in {owner}/{repo}")
+        logger.info(f"Merged PR #{pr_number} in {full_name}")
 
     def close(self):
         """Close the GitHub client connection"""

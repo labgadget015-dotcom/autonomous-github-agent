@@ -85,7 +85,7 @@ def demo_ml_priority_scorer():
     print("\nScoring test issues:\n")
     
     for issue in test_issues:
-        result = scorer.score(issue)
+        result = scorer.analyze(issue)
         print(f"Issue: {issue.title[:50]}")
         print(f"  Priority: {result['priority_level'].upper()}")
         print(f"  Score: {result['score']}/100")

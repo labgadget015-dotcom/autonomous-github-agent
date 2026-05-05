@@ -63,7 +63,18 @@ class PerformanceMonitor:
             self.metrics[metric_name].append({"timestamp": time.time(), "value": value})
             logger.debug(f"Recorded {metric_name}: {value}")
         else:
-            logger.warning(f"Unknown metric: {metric_name}")
+            # Allow arbitrary metric names by creating a new deque
+            self.metrics[metric_name] = deque(maxlen=1000)
+            self.metrics[metric_name].append({"timestamp": time.time(), "value": value})
+            logger.debug(f"Recorded new metric {metric_name}: {value}")
+
+    def record(self, metric_name: str, value: float):
+        """Alias for record_metric."""
+        self.record_metric(metric_name, value)
+
+    def get_metrics(self) -> dict[str, Any]:
+        """Return current metrics summary."""
+        return self.get_summary()
 
     def benchmark(
         self,

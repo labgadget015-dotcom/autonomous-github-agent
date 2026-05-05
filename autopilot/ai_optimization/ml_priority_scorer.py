@@ -192,7 +192,7 @@ class MLPriorityScorer:
         except Exception:
             return 0.0
 
-    def score(self, item: Any) -> dict[str, Any]:
+    def analyze(self, item: Any) -> dict[str, Any]:
         """Score an issue or PR for priority.
 
         Args:
@@ -232,6 +232,10 @@ class MLPriorityScorer:
             "factors": explanation,
             "priority_level": self._score_to_priority(final_score),
         }
+
+    def score(self, item: Any) -> dict[str, Any]:
+        """Score an issue or PR for priority (alias for analyze)."""
+        return self.analyze(item)
 
     def _calculate_base_score(self, features: np.ndarray) -> float:
         """Calculate base score using rule-based system.
@@ -440,7 +444,7 @@ if __name__ == "__main__":
     scorer = get_scorer()
     issue = MockIssue()
 
-    result = scorer.score(issue)
+    result = scorer.analyze(issue)
     print(f"\nPriority Score: {result['score']}")
     print(f"Priority Level: {result['priority_level']}")
     print(f"Confidence: {result['confidence']}")

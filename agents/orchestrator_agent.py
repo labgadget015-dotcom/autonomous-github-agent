@@ -357,10 +357,9 @@ To reject this action, comment with: `/reject`
 
         try:
             issue = self.github.create_issue(
-                owner=repo_owner,
-                repo=repo_name,
-                title=title,
-                body=body,
+                f"{repo_owner}/{repo_name}",
+                title,
+                body,
                 labels=["approval-required", "orchestrator"],
             )
 
