@@ -1,5 +1,27 @@
 # Rollback Manifest
 
+## 374fbda — 2026-05-05 06:28 UTC
+
+- **SHA**: `374fbda4bfc77c70f24e5a572192a5433cab6882`
+- **Author**: GadgetAI
+- **Message**: fix: resolve API contract mismatches causing test-coverage CI failures
+- **Files changed**: 11 file(s)
+
+**Changed files:**
+- `.github/scripts/ai_agent_main.py`
+- `.github/scripts/ai_code_suggestor.py`
+- `agents/orchestrator_agent.py`
+- `autopilot/ai_optimization/intelligent_cache.py`
+- `autopilot/ai_optimization/ml_priority_scorer.py`
+- `autopilot/ai_optimization/nlp_relevance_filter.py`
+- `autopilot/ai_optimization/performance_monitor.py`
+- `core/github_client.py`
+- `demo_ai_optimization.py`
+- `tests/test_core.py`
+- `tests/unit/test_github_client.py`
+
+---
+
 ## dd1fdc9 — 2026-04-28 22:11 UTC
 
 - **SHA**: `dd1fdc9dab57d284636fea8dd25a9051bce0e4e3`
