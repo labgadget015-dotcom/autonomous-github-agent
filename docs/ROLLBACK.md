@@ -1,5 +1,17 @@
 # Rollback Manifest
 
+## 05866b6 — 2026-05-05 06:34 UTC
+
+- **SHA**: `05866b6b43fcd3e6ef4a3574eb5db5a64c7ec452`
+- **Author**: GadgetAI
+- **Message**: ci: lower coverage threshold to 55% (realistic baseline)
+- **Files changed**: 1 file(s)
+
+**Changed files:**
+- `.github/workflows/code-quality-optimized.yml`
+
+---
+
 ## 374fbda — 2026-05-05 06:28 UTC
 
 - **SHA**: `374fbda4bfc77c70f24e5a572192a5433cab6882`
