@@ -1,5 +1,17 @@
 # Rollback Manifest
 
+## 2a7dd51 — 2026-05-05 06:38 UTC
+
+- **SHA**: `2a7dd51659cb6371e0dfffc89d4f8294ab7be6c8`
+- **Author**: GadgetAI
+- **Message**: fix: repair syntax error in cot_selector.py (unterminated string literal)
+- **Files changed**: 1 file(s)
+
+**Changed files:**
+- `.github/scripts/cot_selector.py`
+
+---
+
 ## 05866b6 — 2026-05-05 06:34 UTC
 
 - **SHA**: `05866b6b43fcd3e6ef4a3574eb5db5a64c7ec452`
