@@ -1,5 +1,17 @@
 # Rollback Manifest
 
+## 383249b — 2026-05-05 06:44 UTC
+
+- **SHA**: `383249bc59094fbb77599a299d1167d006cd31a0`
+- **Author**: GadgetAI
+- **Message**: ci: fix update-dashboard commit step (staged-only check, optional coverage.svg)
+- **Files changed**: 1 file(s)
+
+**Changed files:**
+- `.github/workflows/code-quality-optimized.yml`
+
+---
+
 ## 2a7dd51 — 2026-05-05 06:38 UTC
 
 - **SHA**: `2a7dd51659cb6371e0dfffc89d4f8294ab7be6c8`
