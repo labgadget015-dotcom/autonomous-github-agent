@@ -1,5 +1,18 @@
 # Rollback Manifest
 
+## 03bbcc4 — 2026-05-06 04:52 UTC
+
+- **SHA**: `03bbcc4c800f7af418523bff357cea7da335a75b`
+- **Author**: GadgetAI
+- **Message**: fix: lower coverage threshold to 55% and fix pre-commit config
+- **Files changed**: 2 file(s)
+
+**Changed files:**
+- `.pre-commit-config.yaml`
+- `pytest.ini`
+
+---
+
 ## 383249b — 2026-05-05 06:44 UTC
 
 - **SHA**: `383249bc59094fbb77599a299d1167d006cd31a0`
