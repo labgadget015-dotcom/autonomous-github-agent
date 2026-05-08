@@ -1,5 +1,36 @@
 # Rollback Manifest
 
+## 5f5eee1 — 2026-05-08 08:04 UTC
+
+- **SHA**: `5f5eee1eda940c9b92a3c07ccfd19746c04696c8`
+- **Author**: GadgetAI
+- **Message**: style: apply black formatting to tests/
+- **Files changed**: 50 file(s)
+
+**Changed files:**
+- `tests/__init__.py`
+- `tests/conftest.py`
+- `tests/test_ai_agent.py`
+- `tests/test_ai_optimization.py`
+- `tests/test_branch_protection.py`
+- `tests/test_core.py`
+- `tests/test_elite_copilot.py`
+- `tests/test_error_handler.py`
+- `tests/test_error_recovery.py`
+- `tests/test_github_operations.py`
+- `tests/test_orchestrator.py`
+- `tests/test_overseer.py`
+- `tests/test_utils.py`
+- `tests/unit/test_agent_base.py`
+- `tests/unit/test_agent_config.py`
+- `tests/unit/test_ai_code_suggestor.py`
+- `tests/unit/test_anomaly_detector.py`
+- `tests/unit/test_audit_chain.py`
+- `tests/unit/test_audit_logger_extra.py`
+- `tests/unit/test_automation_engine.py`
+
+---
+
 ## afdfdd4 — 2026-05-08 08:01 UTC
 
 - **SHA**: `afdfdd44afb0c7dfac7abe561919d2184a2b958d`
