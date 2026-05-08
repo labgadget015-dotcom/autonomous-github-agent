@@ -1,5 +1,18 @@
 # Rollback Manifest
 
+## 002bad8 — 2026-05-08 11:09 UTC
+
+- **SHA**: `002bad8f1154f5a8db6a1d1954d7c0b8d96d2478`
+- **Author**: GadgetAI
+- **Message**: fix: narrow markdownlint rules to prevent CI auto-fix failures
+- **Files changed**: 2 file(s)
+
+**Changed files:**
+- `.markdownlint.json`
+- `.pre-commit-config.yaml`
+
+---
+
 ## e203d4d — 2026-05-08 10:14 UTC
 
 - **SHA**: `e203d4db9f9b63f6e67b9c691566aad0e3a5ea54`
