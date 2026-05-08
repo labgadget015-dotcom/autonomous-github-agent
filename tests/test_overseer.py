@@ -39,11 +39,13 @@ class TestRepositoryOverseer(unittest.TestCase):
 
         # Create a simple Python file
         with open(self.test_path / "src" / "example.py", "w") as f:
-            f.write("""
+            f.write(
+                """
 def hello_world():
     \"\"\"Print hello world\"\"\"
     print("Hello, World!")
-""")
+"""
+            )
 
     def tearDown(self):
         """Clean up test fixtures"""
@@ -115,17 +117,23 @@ class TestCodeAnalyzer(unittest.TestCase):
 
         # File with long function
         with open(self.test_path / "src" / "long_function.py", "w") as f:
-            f.write("""
+            f.write(
+                """
 def very_long_function():
     \"\"\"This function is too long\"\"\"
-""" + "    x = 1\n" * 60)
+"""
+                + "    x = 1\n" * 60
+            )
 
         # File with god class
         with open(self.test_path / "src" / "god_class.py", "w") as f:
-            f.write("""
+            f.write(
+                """
 class GodClass:
     \"\"\"A class with too many methods\"\"\"
-""" + "\n".join([f"    def method_{i}(self): pass" for i in range(25)]))
+"""
+                + "\n".join([f"    def method_{i}(self): pass" for i in range(25)])
+            )
 
     def tearDown(self):
         """Clean up test fixtures"""
@@ -190,13 +198,15 @@ class TestDocumentationGenerator(unittest.TestCase):
         # Create test Python file
         (self.test_path / "src").mkdir()
         with open(self.test_path / "src" / "example.py", "w") as f:
-            f.write("""
+            f.write(
+                """
 \"\"\"Example module\"\"\"
 
 def example_function():
     \"\"\"Example function\"\"\"
     pass
-""")
+"""
+            )
 
         # Create requirements.txt
         with open(self.test_path / "requirements.txt", "w") as f:
@@ -262,11 +272,13 @@ class TestDependencyManager(unittest.TestCase):
 
         # Create requirements.txt with some packages
         with open(self.test_path / "requirements.txt", "w") as f:
-            f.write("""
+            f.write(
+                """
 pytest>=7.0.0
 requests>=2.25.0
 urllib3<1.26.5
-""")
+"""
+            )
 
     def tearDown(self):
         """Clean up test fixtures"""
@@ -316,7 +328,8 @@ class TestCICDOptimizer(unittest.TestCase):
 
         # Create a basic workflow file
         with open(workflows_dir / "test.yml", "w") as f:
-            f.write("""
+            f.write(
+                """
 name: Test
 on: [push]
 jobs:
@@ -326,7 +339,8 @@ jobs:
       - uses: actions/checkout@v2
       - name: Run tests
         run: pytest
-""")
+"""
+            )
 
     def tearDown(self):
         """Clean up test fixtures"""

@@ -240,11 +240,13 @@ class TestEliteCopilot:
 
         # Test with custom config
         config_file = tmp_path / "test_config.yaml"
-        config_file.write_text("""
+        config_file.write_text(
+            """
 mode: autopilot
 enable_proactive_analysis: true
 max_parallel_tasks: 10
-""")
+"""
+        )
 
         copilot = EliteCopilot(config_path=str(config_file))
         assert copilot.config["mode"] == "autopilot"
