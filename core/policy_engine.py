@@ -217,7 +217,7 @@ class PolicyEngine:
                 (uses config default if not provided)
         """
         if not policy_file:
-            policy_file = self.config.get("policy_file", "config/policies.yaml")
+            policy_file = str(self.config.get("policy_file", "config/policies.yaml"))
 
         try:
             path = Path(policy_file)

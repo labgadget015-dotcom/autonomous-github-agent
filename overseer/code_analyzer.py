@@ -24,7 +24,7 @@ class CodeAnalyzer:
     def __init__(self, repo_path: Path, config: dict):
         self.repo_path = repo_path
         self.config = config
-        self.results = {
+        self.results: dict[str, Any] = {
             "refactoring": [],
             "architecture": [],
             "performance": [],
@@ -111,7 +111,11 @@ class CodeAnalyzer:
         for node in ast.walk(tree):
             if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
                 # Count lines in function
-                if hasattr(node, "end_lineno") and hasattr(node, "lineno"):
+                if (
+                    hasattr(node, "end_lineno")
+                    and node.end_lineno is not None
+                    and hasattr(node, "lineno")
+                ):
                     line_count = node.end_lineno - node.lineno
 
                     if line_count > 50:  # Threshold for long functions
@@ -133,7 +137,7 @@ class CodeAnalyzer:
 
         # Simple duplication detection - look for repeated code blocks
         block_size = 5
-        blocks = {}
+        blocks: dict[str, list[int]] = {}
 
         for i in range(len(lines) - block_size):
             block = "\n".join(lines[i : i + block_size]).strip()

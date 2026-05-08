@@ -125,7 +125,12 @@ class IssueTriager:
         """
         logger.info("Processing issue triage...")
 
-        results = {"processed": 0, "labeled": 0, "prioritized": 0, "patterns": []}
+        results: dict[str, Any] = {
+            "processed": 0,
+            "labeled": 0,
+            "prioritized": 0,
+            "patterns": [],
+        }
 
         # In a real implementation, this would fetch issues from GitHub API
         # For now, we'll create recommendations for the triaging system

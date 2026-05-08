@@ -33,7 +33,7 @@ class AutomationEngine:
         """
         logger.info("Generating automation scripts...")
 
-        results = {"formatting": [], "release": [], "setup": []}
+        results: dict[str, Any] = {"formatting": [], "release": [], "setup": []}
 
         # Ensure scripts directory exists
         self.scripts_dir.mkdir(parents=True, exist_ok=True)

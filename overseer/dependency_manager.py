@@ -34,7 +34,7 @@ class DependencyManager:
         """
         logger.info("Analyzing dependencies...")
 
-        results = {
+        results: dict[str, Any] = {
             "outdated": [],
             "vulnerabilities": [],
             "patches": [],
@@ -65,7 +65,11 @@ class DependencyManager:
 
     def _analyze_python_dependencies(self, requirements_file: Path) -> dict[str, list]:
         """Analyze Python dependencies from requirements.txt"""
-        results = {"outdated": [], "vulnerabilities": [], "recommendations": []}
+        results: dict[str, list] = {
+            "outdated": [],
+            "vulnerabilities": [],
+            "recommendations": [],
+        }
 
         # Parse requirements
         dependencies = self._parse_requirements(requirements_file)
@@ -104,7 +108,11 @@ class DependencyManager:
 
     def _analyze_javascript_dependencies(self, package_json: Path) -> dict[str, list]:
         """Analyze JavaScript dependencies from package.json"""
-        results = {"outdated": [], "vulnerabilities": [], "recommendations": []}
+        results: dict[str, list] = {
+            "outdated": [],
+            "vulnerabilities": [],
+            "recommendations": [],
+        }
 
         try:
             with open(package_json) as f:

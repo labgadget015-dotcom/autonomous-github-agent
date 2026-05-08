@@ -27,7 +27,7 @@ class DocumentationGenerator:
 
     def generate(self) -> dict[str, Any]:
         """Generate all documentation"""
-        results = {"readme": None, "contributing": None, "api_docs": []}
+        results: dict[str, Any] = {"readme": None, "contributing": None, "api_docs": []}
 
         return results
 
@@ -321,6 +321,9 @@ class DocumentationGenerator:
     def _extract_module_docs(self, tree: ast.AST, file_path: Path) -> str:
         """Extract documentation from AST"""
         sections = []
+
+        if not isinstance(tree, ast.Module):
+            return ""
 
         # Module docstring
         module_doc = ast.get_docstring(tree)

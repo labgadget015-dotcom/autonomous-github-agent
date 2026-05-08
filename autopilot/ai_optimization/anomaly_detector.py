@@ -42,7 +42,7 @@ class AnomalyDetector:
             "documentation_ratio",
         ]
 
-    def analyze(self, metrics: list) -> list:
+    def analyze(self, metrics: list) -> list | dict:
         """Analyze metrics for anomalies.
 
         Args:

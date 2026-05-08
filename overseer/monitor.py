@@ -134,7 +134,7 @@ class RepositoryMonitor:
                         data.get("devDependencies", {})
                     )
                     performance["dependency_count"] = (
-                        int(performance["dependency_count"]) + npm_deps
+                        int(performance.get("dependency_count", 0)) + npm_deps
                     )
             except Exception:
                 pass

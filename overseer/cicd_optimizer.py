@@ -35,7 +35,12 @@ class CICDOptimizer:
         """
         logger.info("Analyzing CI/CD workflows...")
 
-        results = {"optimizations": [], "testing": [], "linting": [], "deployment": []}
+        results: dict[str, Any] = {
+            "optimizations": [],
+            "testing": [],
+            "linting": [],
+            "deployment": [],
+        }
 
         if not self.workflows_dir.exists():
             results["optimizations"].append(
