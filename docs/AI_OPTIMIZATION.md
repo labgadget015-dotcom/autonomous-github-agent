@@ -390,23 +390,23 @@ def process_repository(repo):
         f"{repo.full_name}/issues",
         lambda: list(repo.get_issues(state='open'))
     )
-    
+
     # Score and filter issues
     scored_issues = []
     for issue in issues:
         score = scorer.score(issue)
         relevance = filter_obj.analyze_relevance(issue.title + " " + issue.body)
-        
+
         if relevance['relevance_score'] > 0.3:
             scored_issues.append((issue, score, relevance))
-    
+
     # Sort by priority
     scored_issues.sort(key=lambda x: x[1]['score'], reverse=True)
-    
+
     # Analyze recent commits
     commits = list(repo.get_commits()[:50])
     summary = summarizer.generate_summary(commits)
-    
+
     return {
         'top_issues': scored_issues[:10],
         'commit_summary': summary
@@ -522,7 +522,7 @@ for run in production_runs:
     state = optimizer.get_state(...)
     strategy = optimizer.choose_strategy(state)
     result = execute_with_strategy(strategy, ...)
-    
+
     # Learn from results
     reward = optimizer.calculate_reward(...)
     optimizer.update_q_value(state, strategy, reward, next_state)
@@ -645,6 +645,6 @@ Same as parent project (see LICENSE file)
 
 ---
 
-**Status:** ✅ Production Ready  
-**Version:** 0.1.0  
+**Status:** ✅ Production Ready
+**Version:** 0.1.0
 **Last Updated:** 2026-02-17

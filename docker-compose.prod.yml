@@ -12,7 +12,7 @@ services:
         - BUILDKIT_INLINE_CACHE=1
     image: autonomous-github-agent:${VERSION:-latest}
     container_name: autonomous-agent-prod
-    
+
     # Environment configuration
     env_file:
       - .env.production
@@ -27,7 +27,7 @@ services:
       - AGENT_MODEL=${AGENT_MODEL:-gpt-4}
       - MAX_TOKENS=${MAX_TOKENS:-4000}
       - AGENT_TEMPERATURE=${AGENT_TEMPERATURE:-0.7}
-    
+
     # Volume mounts (read-only where possible)
     volumes:
       # Persistent data volumes
@@ -36,11 +36,11 @@ services:
       # Context and results
       - ${CONTEXT_PATH:-./context.json}:/app/context.json:ro
       - ./results:/app/results:rw
-    
+
     # Networking
     networks:
       - agent-network
-    
+
     # Production resource limits
     deploy:
       mode: replicated
@@ -65,7 +65,7 @@ services:
       rollback_config:
         parallelism: 1
         delay: 5s
-    
+
     # Health check
     healthcheck:
       test: ["CMD", "python", "-c", "import sys; sys.exit(0)"]
@@ -73,10 +73,10 @@ services:
       timeout: 5s
       retries: 3
       start_period: 30s
-    
+
     # Restart policy
     restart: always
-    
+
     # Logging configuration (production)
     logging:
       driver: "json-file"
@@ -85,20 +85,20 @@ services:
         max-file: "10"
         compress: "true"
         labels: "service,environment"
-    
+
     # Security options
     security_opt:
       - no-new-privileges:true
     read_only: true
     tmpfs:
       - /tmp:noexec,nosuid,size=100m
-    
+
     # Labels for monitoring and management
     labels:
       - "com.autonomous-agent.environment=production"
       - "com.autonomous-agent.version=${VERSION:-latest}"
       - "com.autonomous-agent.service=agent"
-  
+
   # Prometheus for production metrics
   prometheus:
     image: prom/prometheus:v2.48.0
@@ -138,7 +138,7 @@ services:
     labels:
       - "com.autonomous-agent.environment=production"
       - "com.autonomous-agent.service=prometheus"
-  
+
   # Grafana for production dashboards
   grafana:
     image: grafana/grafana:10.2.2
@@ -182,7 +182,7 @@ services:
     labels:
       - "com.autonomous-agent.environment=production"
       - "com.autonomous-agent.service=grafana"
-  
+
   # Optional: Nginx reverse proxy (production)
   nginx:
     image: nginx:1.25-alpine

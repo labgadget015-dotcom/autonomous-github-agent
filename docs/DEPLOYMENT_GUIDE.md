@@ -23,7 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - uses: labgadget015-dotcom/autonomous-github-agent@v1.0.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}

@@ -190,11 +190,11 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps: [...]  # Runs immediately
-  
+
   test:
     runs-on: ubuntu-latest
     steps: [...]  # Runs immediately (parallel with lint)
-  
+
   security:
     runs-on: ubuntu-latest
     steps: [...]  # Runs immediately (parallel with lint and test)
@@ -406,7 +406,7 @@ jobs:
     uses: ./.github/workflows/reusable-test.yml
     with:
       python-version: '3.9'
-  
+
   test-3-11:
     uses: ./.github/workflows/reusable-test.yml
     with:

@@ -26,7 +26,7 @@ This guide helps you diagnose and fix common issues with the Autonomous GitHub A
    ```bash
    # Validate YAML syntax
    yamllint .github/workflows/your-workflow.yml
-   
+
    # Or use online validator
    # https://www.yamllint.com/
    ```
@@ -154,7 +154,7 @@ This guide helps you diagnose and fix common issues with the Autonomous GitHub A
    ```
 
 2. **Refactoring strategies:**
-   
+
    **a) Extract Method**
    ```python
    # Before (complexity: 15)
@@ -164,7 +164,7 @@ This guide helps you diagnose and fix common issues with the Autonomous GitHub A
                if save(data):
                    return True
        return False
-   
+
    # After (complexity: 4)
    def process_data(data):
        if not validate(data):
@@ -173,7 +173,7 @@ This guide helps you diagnose and fix common issues with the Autonomous GitHub A
            return False
        return save(data)
    ```
-   
+
    **b) Use Guard Clauses**
    ```python
    # Before
@@ -182,35 +182,35 @@ This guide helps you diagnose and fix common issues with the Autonomous GitHub A
            if x < 100:
                return x * 2
        return None
-   
+
    # After
    def func(x):
        if x <= 0 or x >= 100:
            return None
        return x * 2
    ```
-   
+
    **c) Extract to Separate Functions**
    ```python
    # Before (complexity: 12)
    def big_function(data):
        # 50 lines of logic
        pass
-   
+
    # After (complexity: 3 each)
    def big_function(data):
        validated = _validate(data)
        processed = _process(validated)
        return _save(processed)
-   
+
    def _validate(data):
        # validation logic
        pass
-   
+
    def _process(data):
        # processing logic
        pass
-   
+
    def _save(data):
        # saving logic
        pass
@@ -230,7 +230,7 @@ This guide helps you diagnose and fix common issues with the Autonomous GitHub A
    ```python
    # Bad
    query = f"SELECT * FROM users WHERE id = {user_id}"
-   
+
    # Good
    query = "SELECT * FROM users WHERE id = ?"
    cursor.execute(query, (user_id,))
@@ -280,7 +280,7 @@ This guide helps you diagnose and fix common issues with the Autonomous GitHub A
    # For recent commits
    git reset --soft HEAD~1
    git commit -m "Remove secret"
-   
+
    # For old commits, use git-filter-repo
    git filter-repo --path path/to/file --invert-paths
    ```
@@ -318,7 +318,7 @@ This guide helps you diagnose and fix common issues with the Autonomous GitHub A
    def test_edge_case():
        result = my_function(edge_case_input)
        assert result == expected_output
-   
+
    # Test error handling
    def test_error_handling():
        with pytest.raises(ValueError):
@@ -429,7 +429,7 @@ This guide helps you diagnose and fix common issues with the Autonomous GitHub A
    ```bash
    # Linux/Mac
    source venv/bin/activate
-   
+
    # Windows
    venv\Scripts\activate
    ```

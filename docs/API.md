@@ -624,18 +624,18 @@ from core.agent_base import BaseAgent
 class MyAgent(BaseAgent):
     def get_supported_actions(self):
         return ['my_action', 'another_action']
-    
+
     async def _execute(self, task):
         action = task['action']
         params = task['params']
-        
+
         if action == 'my_action':
             # Use self.github, self.llm, etc.
             result = await self.do_something(params)
             return {'status': 'completed', 'result': result}
-        
+
         raise ValueError(f"Unknown action: {action}")
-    
+
     async def do_something(self, params):
         # Your logic here
         return {'data': 'result'}

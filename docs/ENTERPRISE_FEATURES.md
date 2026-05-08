@@ -189,12 +189,12 @@ Teams:
     members: 25
     repositories: 15
     analysis_budget: 100,000 analyses/month
-    
+
   - name: Frontend
     members: 15
     repositories: 20
     analysis_budget: 50,000 analyses/month
-    
+
   - name: Security
     members: 5
     repositories: all

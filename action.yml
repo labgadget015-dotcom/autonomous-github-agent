@@ -57,13 +57,13 @@ runs:
       uses: actions/setup-python@v4
       with:
         python-version: '3.11'
-    
+
     - name: Install Dependencies
       shell: bash
       run: |
         pip install --upgrade pip
         pip install aiohttp anthropic openai requests pyyaml pylint flake8 bandit pytest
-    
+
     - name: Run LLM Router Analysis
       shell: bash
       env:
@@ -76,21 +76,21 @@ runs:
           --local-llm ${{ inputs.local_llm_enabled }} \
           --endpoint ${{ inputs.local_llm_endpoint }} \
           --threshold ${{ inputs.complexity_threshold }}
-    
+
     - name: Run Async Parallel Analysis
       shell: bash
       env:
         GITHUB_TOKEN: ${{ inputs.github_token }}
       run: |
         python .github/scripts/async_parallel_analyzer.py
-    
+
     - name: Generate PR Inline Comments
       shell: bash
       env:
         GITHUB_TOKEN: ${{ inputs.github_token }}
       run: |
         python .github/scripts/pr_inline_commenter.py
-    
+
     - name: Create Issues for Critical Findings
       if: inputs.issue_creation_enabled == 'true'
       shell: bash

@@ -25,7 +25,7 @@ tiers:
       - "No SLA guarantee"
     target_audience: "Individual developers, open-source projects"
     conversion_path: "GitHub Marketplace installation → Self-hosted → Upgrade to Growth"
-  
+
   growth:
     name: "Growth"
     price: 199
@@ -51,7 +51,7 @@ tiers:
     target_audience: "Startups, growing engineering teams (5-25 developers)"
     conversion_path: "Free trial → Paid Growth → Upgrade to Enterprise"
     trial_period_days: 14
-  
+
   enterprise:
     name: "Enterprise"
     price: 2499
@@ -92,7 +92,7 @@ addons:
         price: 99
       - amount: 1000
         price: 399
-  
+
   professional_services:
     name: "Professional Services"
     description: "Custom implementation and consulting"
@@ -116,7 +116,7 @@ revenue_model:
     enterprise_users: 5  # 0.1% conversion to enterprise
     monthly_recurring_revenue: 42350  # (150 * $199) + (5 * $2499)
     annual_recurring_revenue: 508200
-  
+
   year_2:
     free_users: 25000
     growth_users: 1000  # 4% conversion (improved funnel)
@@ -129,7 +129,7 @@ cost_structure:
   per_free_user_monthly: 0  # Self-hosted, zero cost to us
   per_growth_user_monthly: 25  # Cloud hosting + LLM costs (optimized with local routing)
   per_enterprise_user_monthly: 150  # Dedicated infrastructure + support
-  
+
   gross_margin:
     growth_tier: 87.4  # ($199 - $25) / $199
     enterprise_tier: 94.0  # ($2499 - $150) / $2499
@@ -142,7 +142,7 @@ conversion_strategy:
     - "14-day free trial with no credit card required"
     - "Email nurture campaign highlighting time savings"
     - "Case studies from similar-sized teams"
-  
+
   growth_to_enterprise:
     - "Account manager outreach at 80% of limits"
     - "Custom ROI analysis"
@@ -158,7 +158,7 @@ competitive_pricing:
     - name: "SonarCloud"
       price: 120
       note: "We add AI-powered analysis they lack"
-  
+
   manual_code_review_cost:
     engineer_hourly_rate: 100
     hours_per_week_reviewing: 10
@@ -186,13 +186,13 @@ launch_phases:
     pricing: "Free for all (Growth tier features)"
     goal: "Build testimonials and case studies"
     target_users: 100
-  
+
   phase_2_soft_launch:
     duration: "3 months"
     pricing: "50% discount on Growth tier"
     goal: "Refine product-market fit"
     target_users: 500
-  
+
   phase_3_full_launch:
     duration: "ongoing"
     pricing: "Full pricing as defined above"

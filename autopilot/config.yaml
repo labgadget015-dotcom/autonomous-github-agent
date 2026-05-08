@@ -46,7 +46,7 @@ output:
   file: DAILY_SUMMARY.md
   console: true  # Also print to stdout
   include_timestamp: true
-  
+
 # Analysis settings for priority calculation
 analysis:
   # Weights for priority scoring (higher = more important)
@@ -57,12 +57,12 @@ analysis:
     issue_count: 1        # Points per open issue
     recent_activity: 3    # Bonus for activity in last 24h
     critical_repo: 5      # Bonus for critical priority repos
-  
+
   # Time windows
   lookback:
     commits: 24  # hours
     activity: 7  # days for "recent activity"
-  
+
   # Top N priorities to show
   top_priorities: 3
 

@@ -82,11 +82,11 @@ autopilot:
     - owner: "labgadget015-dotcom"
       name: "autonomous-github-agent"
       priority: "high"
-  
+
   schedule:
     daily_summary_time: "23:00"  # UTC
     check_interval_hours: 1
-  
+
   output:
     summary_format: "markdown"
     include_metrics: true

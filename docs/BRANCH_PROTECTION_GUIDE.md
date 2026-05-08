@@ -73,7 +73,7 @@ The script configures the following protection rules:
 - ✅ **Require pull request reviews before merging**
   - Minimum of 1 approving review required
   - Stale reviews are dismissed when new commits are pushed
-  
+
 ### Status Checks
 - ✅ **Require status checks to pass**
   - Branches must be up to date before merging
@@ -165,7 +165,7 @@ gh api repos/{owner}/{repo}/branches/main/protection
 
 ### Error: "Branch 'main' not found"
 
-**Solution:** 
+**Solution:**
 - Check if your default branch is named `main` or `master`
 - Specify the correct branch name:
   ```bash

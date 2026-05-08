@@ -96,7 +96,7 @@ Password: admin
 ```yaml
 - name: Update Badges
   run: python .github/scripts/badge_generator.py
-  
+
 - name: Commit Badges
   run: |
     git config user.name "github-actions[bot]"

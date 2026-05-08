@@ -10,12 +10,12 @@ python:
     - pylint  # Static analysis
     - mypy  # Type checking
     - bandit  # Security linting
-  
+
   # Black configuration
   black:
     line_length: 100
     target_version: py311
-  
+
   # Flake8 configuration
   flake8:
     max_line_length: 100
@@ -24,14 +24,14 @@ python:
       - E501  # Line too long (handled by black)
       - W503  # Line break before binary operator
     max_complexity: 10
-  
+
   # Pylint configuration
   pylint:
     max_line_length: 100
     disable:
       - C0111  # Missing docstring
       - R0903  # Too few public methods
-  
+
   # MyPy configuration
   mypy:
     strict: true
@@ -44,7 +44,7 @@ javascript:
   linters:
     - eslint
     - prettier
-  
+
   eslint:
     extends:
       - eslint:recommended
@@ -60,7 +60,7 @@ go:
     - gofmt
     - golint
     - go vet
-  
+
   gofmt:
     simplify: true
 
@@ -68,13 +68,13 @@ go:
 review:
   # Minimum required approvals
   min_approvals: 1
-  
+
   # Require review from code owners
   require_code_owners: true
-  
+
   # Dismiss stale reviews on new commits
   dismiss_stale_reviews: true
-  
+
   # Block merge if changes requested
   block_on_changes_requested: true
 
@@ -82,10 +82,10 @@ review:
 testing:
   # Minimum code coverage percentage
   min_coverage: 80
-  
+
   # Require tests for new code
   require_tests: true
-  
+
   # Test file patterns
   test_patterns:
     python: test_*.py
@@ -96,13 +96,13 @@ testing:
 documentation:
   # Require docstrings
   require_docstrings: true
-  
+
   # Docstring style
   docstring_style: google  # or numpy, sphinx
-  
+
   # Require README updates for new features
   require_readme_updates: true
-  
+
   # API documentation format
   api_doc_format: markdown
 
@@ -110,7 +110,7 @@ documentation:
 commit:
   # Conventional commits
   use_conventional_commits: true
-  
+
   # Commit types
   allowed_types:
     - feat
@@ -121,10 +121,10 @@ commit:
     - test
     - chore
     - perf
-  
+
   # Maximum subject line length
   max_subject_length: 72
-  
+
   # Require body for certain types
   require_body_for:
     - feat

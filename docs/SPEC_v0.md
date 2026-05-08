@@ -1,9 +1,9 @@
 # GitHub Autopilot v0 Specification
 
-**Project:** Autonomous GitHub Agent → GitHub Autopilot  
-**Version:** v0  
-**Status:** Build Sprint (Jan 4-11, 2026)  
-**Owner:** labgadget015-dotcom  
+**Project:** Autonomous GitHub Agent → GitHub Autopilot
+**Version:** v0
+**Status:** Build Sprint (Jan 4-11, 2026)
+**Owner:** labgadget015-dotcom
 **Issue:** [#42](https://github.com/labgadget015-dotcom/autonomous-github-agent/issues/42)
 
 ---
@@ -76,8 +76,8 @@ repositories:
 
 ```markdown
 # GitHub Autopilot Daily Summary
-**Date:** 2026-01-04  
-**Repos Scanned:** 7  
+**Date:** 2026-01-04
+**Repos Scanned:** 7
 **Runtime:** 23s
 
 ---
@@ -140,7 +140,7 @@ class GitHubAutopilot:
     def __init__(self, config_path="config.yaml"):
         self.repos = load_target_repos(config_path)
         self.github_client = GitHubClient(token=os.getenv("GITHUB_TOKEN"))
-        
+
     def fetch_repo_data(self, repo):
         """Fetch issues, PRs, recent commits for one repo"""
         return {
@@ -148,16 +148,16 @@ class GitHubAutopilot:
             "prs": self.github_client.get_pulls(repo, state="open"),
             "commits": self.github_client.get_commits(repo, since="24h")
         }
-    
+
     def analyze_priorities(self, all_data):
         """Generate top 3 priorities across all repos"""
         # Score by: urgency labels, PR age, issue count, recent activity
         pass
-    
+
     def generate_summary(self, all_data, priorities):
         """Output markdown summary"""
         pass
-    
+
     def run(self):
         """Main execution flow"""
         all_data = {repo: self.fetch_repo_data(repo) for repo in self.repos}
@@ -193,7 +193,7 @@ repos:
 output:
   format: markdown
   file: DAILY_SUMMARY.md
-  
+
 analysis:
   priority_weights:
     urgent_label: 10
@@ -265,5 +265,5 @@ analysis:
 
 ---
 
-**Last Updated:** 2026-01-04  
+**Last Updated:** 2026-01-04
 **Next Review:** 2026-01-11 (v0 ship date)

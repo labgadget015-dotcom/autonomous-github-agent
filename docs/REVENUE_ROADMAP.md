@@ -38,7 +38,7 @@ This document outlines the concrete, executable path to generate significant rec
 - Dev.to crosspost
 - Reddit r/github, r/devops, r/programming
 
-**Financial Impact**: 
+**Financial Impact**:
 - Free tier: 500+ users by Day 14
 - No direct revenue
 - Builds social proof (stars, testimonials, case studies)
@@ -198,7 +198,7 @@ Target State (Day 90):
 
 ### Must-Have by Day 30
 1. ✅ GitHub Marketplace published
-2. ✅ PyPI package live  
+2. ✅ PyPI package live
 3. ✅ Landing page deployed
 4. ✅ Stripe billing integrated
 5. ✅ AWS/GCP SaaS infrastructure
@@ -233,7 +233,7 @@ Months 1-3:
 - Burn rate: -$50K (infra costs)
 
 Months 4-6:
-- Free users: 2,000 → 10,000  
+- Free users: 2,000 → 10,000
 - Paying: 50 → 150
 - MRR: $10K → $30K
 - Burn rate: -$5K (approaching break-even)
@@ -248,7 +248,7 @@ Months 7-12:
 ### Aggressive Scenario
 ```
 Months 1-3:
-- Free users: 1,000 → 10,000  
+- Free users: 1,000 → 10,000
 - Paying: 0 → 100
 - MRR: $0 → $20,000
 - Burn rate: -$30K

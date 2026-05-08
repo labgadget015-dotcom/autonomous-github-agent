@@ -277,19 +277,19 @@ EXIT_CODE=0
 # Python linting
 if ls *.py 2>/dev/null || [ -d "scripts" ] || [ -d "src" ]; then
     echo "Linting Python code..."
-    
+
     # flake8
     if command -v flake8 &> /dev/null; then
         echo "Running flake8..."
         flake8 . --max-line-length=100 --exclude=.git,__pycache__,.venv,venv || EXIT_CODE=1
     fi
-    
+
     # pylint
     if command -v pylint &> /dev/null; then
         echo "Running pylint..."
         find . -name "*.py" -not -path "./.venv/*" -not -path "./venv/*" | xargs pylint || EXIT_CODE=1
     fi
-    
+
     # mypy
     if command -v mypy &> /dev/null; then
         echo "Running mypy..."

@@ -75,14 +75,14 @@ python scripts/test-local.py -v
    # Auto-fix formatting
    black .
    isort .
-   
+
    # Run linters
    flake8 .
    pylint .github/scripts
-   
+
    # Run security scan
    bandit -r .github/scripts
-   
+
    # Run tests with coverage
    pytest --cov=.github/scripts --cov-report=html
    ```
@@ -92,7 +92,7 @@ python scripts/test-local.py -v
    git add .
    git commit -m "feat: add awesome new feature"
    ```
-   
+
    **Commit Message Format:**
    - `feat:` New feature
    - `fix:` Bug fix
@@ -125,20 +125,20 @@ python scripts/test-local.py -v
 def process_data(input_data: List[Dict], threshold: float = 0.8) -> Dict[str, Any]:
     """
     Process input data and return aggregated results.
-    
+
     Args:
         input_data: List of data dictionaries to process
         threshold: Minimum confidence threshold (default: 0.8)
-    
+
     Returns:
         Dictionary containing processed results
-    
+
     Raises:
         ValueError: If input_data is empty
     """
     if not input_data:
         raise ValueError("Input data cannot be empty")
-    
+
     results = {}
     # ... processing logic ...
     return results
@@ -156,17 +156,17 @@ from my_module import my_function
 
 class TestMyFunction:
     """Test suite for my_function"""
-    
+
     def test_basic_functionality(self):
         """Test basic use case"""
         result = my_function(input_data="test")
         assert result == "expected_output"
-    
+
     def test_edge_case(self):
         """Test edge case handling"""
         result = my_function(input_data="")
         assert result is None
-    
+
     def test_error_handling(self):
         """Test error conditions"""
         with pytest.raises(ValueError):
@@ -202,21 +202,21 @@ We use Google-style docstrings:
 def example_function(param1: str, param2: int) -> bool:
     """
     Short description of function.
-    
+
     Longer description with more details about what the function does,
     its behavior, and any important notes.
-    
+
     Args:
         param1: Description of first parameter
         param2: Description of second parameter
-    
+
     Returns:
         Description of return value
-    
+
     Raises:
         ValueError: When param1 is empty
         TypeError: When param2 is negative
-    
+
     Example:
         >>> example_function("test", 42)
         True

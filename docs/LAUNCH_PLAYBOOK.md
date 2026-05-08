@@ -99,7 +99,7 @@
 
 ### Month 2 (Week 5-8)
 - Free users: 2,500
-- Pro users: 75  
+- Pro users: 75
 - Enterprise pipeline: 5 conversations
 - MRR: $9,000
 - Source: Product Hunt, GitHub Marketplace, word-of-mouth, paid ads
@@ -189,11 +189,11 @@ Body: Enterprise features list, free trial offer, calendar link
 
 ### Daily
 - Free signups: [target] /day
-- Free→Pro conversions: [target] /day  
+- Free→Pro conversions: [target] /day
 - Enterprise pipeline: # conversations
 - Churn: # cancellations
 
-### Weekly  
+### Weekly
 - MRR: $[target]
 - Churn rate: %[target]
 - Customer count: [target] total
@@ -232,5 +232,5 @@ Body: Enterprise features list, free trial offer, calendar link
 
 ---
 
-**STATUS**: Ready for launch  
+**STATUS**: Ready for launch
 **Files Created**: Landing page, Stripe integration, Product Hunt materials, this playbook

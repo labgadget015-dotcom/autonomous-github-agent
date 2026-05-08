@@ -223,13 +223,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      
+
       - name: Build Docker image
         run: docker build -t autonomous-github-agent:latest .
-      
+
       - name: Run tests
         run: docker run --rm autonomous-github-agent:latest pytest tests/
-      
+
       - name: Push to registry
         run: |
           echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin

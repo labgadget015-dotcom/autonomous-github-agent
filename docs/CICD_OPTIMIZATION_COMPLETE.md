@@ -263,9 +263,9 @@ echo \"✅ Setup complete! Run: pytest\"
 from prometheus_client import CollectorRegistry, Gauge, push_to_gateway
 
 registry = CollectorRegistry()
-workflow_duration = Gauge('workflow_duration_seconds', 
+workflow_duration = Gauge('workflow_duration_seconds',
                          'Duration of workflow execution',
-                         ['workflow_name'], 
+                         ['workflow_name'],
                          registry=registry)
 
 workflow_duration.labels('code_quality').set(duration)

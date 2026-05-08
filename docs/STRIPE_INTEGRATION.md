@@ -33,7 +33,7 @@ def create_subscription():
         payment_method=data['payment_method_id'],
         invoice_settings={'default_payment_method': data['payment_method_id']}
     )
-    
+
     subscription = stripe.Subscription.create(
         customer=customer.id,
         items=[{
@@ -41,7 +41,7 @@ def create_subscription():
         }],
         expand=['latest_invoice.payment_intent']
     )
-    
+
     return jsonify({
         'subscriptionId': subscription.id,
         'clientSecret': subscription.latest_invoice.payment_intent.client_secret
@@ -60,21 +60,21 @@ def webhook():
         return 'Invalid payload', 400
     except stripe.error.SignatureVerificationError:
         return 'Invalid signature', 400
-    
+
     # Handle events
     if event['type'] == 'customer.subscription.updated':
         subscription = event['data']['object']
         # Update user subscription status in DB
         update_user_subscription(subscription['customer'], subscription)
-    
+
     elif event['type'] == 'invoice.payment_succeeded':
         # Send receipt email
         pass
-    
+
     elif event['type'] == 'customer.subscription.deleted':
         # Handle cancellation
         pass
-    
+
     return 'Success', 200
 
 def update_user_subscription(customer_id, subscription):
@@ -102,13 +102,13 @@ cardElement.mount('#card-element');
 
 document.getElementById('payment-form').addEventListener('submit', async (e) => {
   e.preventDefault();
-  
+
   const {paymentMethod} = await stripe.createPaymentMethod({
     type: 'card',
     card: cardElement,
     billing_details: { email: 'user@example.com' }
   });
-  
+
   const response = await fetch('/create-subscription', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -118,7 +118,7 @@ document.getElementById('payment-form').addEventListener('submit', async (e) => 
       price_id: 'price_professional'
     })
   });
-  
+
   const {subscriptionId} = await response.json();
   // Handle success/redirect
 });

@@ -17,12 +17,12 @@ The code analyzer performs comprehensive AST-based analysis to detect:
   - Code duplication (5+ line blocks)
   - Complex conditionals (>3 boolean operations)
   - Magic numbers that should be constants
-  
+
 - **Architectural Issues**
   - God classes (>20 methods)
   - Missing docstrings
   - SOLID principle violations
-  
+
 - **Performance Problems**
   - List comprehension opportunities
   - Inefficient string concatenation in loops

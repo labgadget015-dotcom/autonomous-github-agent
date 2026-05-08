@@ -60,13 +60,13 @@ jobs:
 
 ## What It Does Automatically
 
-✅ **Issue Triage**: Labels, assigns, and responds to issues  
-✅ **PR Review**: Analyzes code, suggests improvements  
-✅ **Test Generation**: Creates unit tests for new code  
-✅ **Documentation**: Generates and updates docs  
-✅ **CI/CD Optimization**: Speeds up pipelines by 90%  
-✅ **Security Checks**: Identifies vulnerabilities  
-✅ **Performance Monitoring**: Tracks metrics & alerts  
+✅ **Issue Triage**: Labels, assigns, and responds to issues
+✅ **PR Review**: Analyzes code, suggests improvements
+✅ **Test Generation**: Creates unit tests for new code
+✅ **Documentation**: Generates and updates docs
+✅ **CI/CD Optimization**: Speeds up pipelines by 90%
+✅ **Security Checks**: Identifies vulnerabilities
+✅ **Performance Monitoring**: Tracks metrics & alerts
 
 ## Configuration Examples
 

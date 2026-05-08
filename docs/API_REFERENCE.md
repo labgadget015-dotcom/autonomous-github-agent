@@ -285,7 +285,7 @@ Analyze issue content to suggest labels and priority.
 Args:
     title: Issue title
     body: Issue body
-    
+
 Returns:
     Dictionary with suggested labels and priority
 
@@ -303,7 +303,7 @@ Analyze issue content to suggest labels and priority.
 Args:
     title: Issue title
     body: Issue body
-    
+
 Returns:
     Dictionary with suggested labels and priority
 

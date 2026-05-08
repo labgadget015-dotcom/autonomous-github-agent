@@ -13,7 +13,7 @@ services:
         BUILDKIT_INLINE_CACHE: "1"
     image: autonomous-github-agent:latest
     container_name: autonomous-agent-dev
-    
+
     # Environment configuration
     env_file:
       - .env
@@ -25,7 +25,7 @@ services:
       - GITHUB_TOKEN=${GITHUB_TOKEN}
       - OPENAI_API_KEY=${OPENAI_API_KEY:-}
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
-    
+
     # Volume mounts for development
     volumes:
       # Mount source code for hot reload
@@ -37,11 +37,11 @@ services:
       # Context and results
       - ./context.json:/app/context.json:ro
       - ./results:/app/results
-    
+
     # Networking
     networks:
       - agent-network
-    
+
     # Resource limits (development)
     deploy:
       resources:
@@ -51,7 +51,7 @@ services:
         reservations:
           cpus: '0.5'
           memory: 512M
-    
+
     # Health check
     healthcheck:
       test: ["CMD", "python", "-c", "import sys; sys.exit(0)"]
@@ -59,13 +59,13 @@ services:
       timeout: 5s
       retries: 3
       start_period: 10s
-    
+
     # Restart policy
     restart: unless-stopped
-    
+
     # Command override for development
     # command: ["python", ".github/scripts/ai_agent_main.py", "--context", "context.json"]
-  
+
   # Optional: Prometheus for metrics collection
   prometheus:
     image: prom/prometheus:v2.48.0
@@ -85,7 +85,7 @@ services:
     networks:
       - agent-network
     restart: unless-stopped
-  
+
   # Optional: Grafana for visualization
   grafana:
     image: grafana/grafana:10.2.2
@@ -107,7 +107,7 @@ services:
     depends_on:
       - prometheus
     restart: unless-stopped
-  
+
   # Optional: Local LLM service (Ollama)
   ollama:
     image: ollama/ollama:latest

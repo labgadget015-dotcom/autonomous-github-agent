@@ -28,7 +28,7 @@ This PR successfully implements branch protection setup for the main branch with
   - Troubleshooting section
   - Security best practices
   - Customization instructions
-  
+
 - **`BRANCH_PROTECTION_QUICKSTART.md`** (1.3KB)
   - 2-minute quick start guide
   - Essential information only

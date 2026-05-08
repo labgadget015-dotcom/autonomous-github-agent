@@ -178,17 +178,17 @@ def handle_webhook():
         payload,
         hashlib.sha256
     ).hexdigest()
-    
+
     if not hmac.compare_digest(signature, expected):
         return {'error': 'Invalid signature'}, 401
-    
+
     data = request.json
     event_type = data['event']
-    
+
     if event_type == 'issue.opened':
         # Auto-triage new issue
         agent.triage_issue(data['issue'])
-    
+
     return {'status': 'ok'}, 200
 ```
 

@@ -258,7 +258,7 @@ Create `code_suggestions_config.yaml`:
 skip_patterns:
   - tests/
   - docs/
-  
+
 rules:
   check_imports: true
   check_complexity: true

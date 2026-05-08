@@ -20,7 +20,7 @@ scrape_configs:
       - targets: ['localhost:9090']
         labels:
           service: 'prometheus'
-  
+
   # Agent application metrics (if implemented)
   - job_name: 'agent'
     static_configs:
@@ -28,7 +28,7 @@ scrape_configs:
         labels:
           service: 'agent'
           app: 'autonomous-github-agent'
-  
+
   # Docker daemon metrics
   - job_name: 'docker'
     static_configs:

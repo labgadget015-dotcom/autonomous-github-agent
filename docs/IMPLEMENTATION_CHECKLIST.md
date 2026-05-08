@@ -259,6 +259,6 @@
 
 ---
 
-**Status**: Ready for launch  
-**Last Updated**: December 1, 2025  
+**Status**: Ready for launch
+**Last Updated**: December 1, 2025
 **Owner**: Product & Marketing teams

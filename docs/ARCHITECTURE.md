@@ -296,14 +296,14 @@ from core.agent_base import BaseAgent
 class MyAgent(BaseAgent):
     def get_supported_actions(self):
         return ['my_action']
-    
+
     async def _execute(self, task):
         action = task['action']
         params = task['params']
-        
+
         # Perform action
         result = await self.perform_action(params)
-        
+
         return {'status': 'success', 'result': result}
 ```
 

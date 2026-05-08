@@ -4,7 +4,7 @@
 
 This document outlines a comprehensive optimization strategy for the Autonomous GitHub Agent repository to:
 - Reduce CI/CD execution time by 70%+
-- Minimize LLM token usage by 60%+  
+- Minimize LLM token usage by 60%+
 - Decrease GitHub Actions minutes consumption by 65%+
 - Improve agent response latency by 80%+
 
@@ -105,18 +105,18 @@ jobs:
   fast-checks:
     runs-on: ubuntu-latest
     steps: [lint, format-check]
-  
+
   tests:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         python: ['3.10', '3.11', '3.12']
         group: [1, 2, 3, 4]  # Split tests
-  
+
   security:
     runs-on: ubuntu-latest
     # Parallel with tests
-  
+
   agent:
     needs: [fast-checks]
     # Only if tests pass
@@ -139,7 +139,7 @@ jobs:
 def gather_smart_context():
     # Get changed files only
     changed_files = get_pr_diff_files()
-    
+
     # Limit context based on change size
     if len(changed_files) <= 3:
         context_mode = "minimal"  # Changed files + imports
@@ -147,12 +147,12 @@ def gather_smart_context():
         context_mode = "standard"  # + related files
     else:
         context_mode = "comprehensive"  # + full context
-    
+
     # Cache context per commit SHA
     cache_key = f"{repo}:{sha}:{context_mode}"
     if cached := load_cache(cache_key):
         return cached
-    
+
     context = build_context(changed_files, mode=context_mode)
     save_cache(cache_key, context)
     return context
@@ -170,31 +170,31 @@ def select_optimal_cot(context):
     # Calculate complexity metrics
     metrics = {
         'files_changed': len(context['files']),
-        'lines_changed': sum(f['additions'] + f['deletions'] 
+        'lines_changed': sum(f['additions'] + f['deletions']
                             for f in context['files']),
         'has_tests': any('test' in f for f in context['files']),
-        'touches_security': any(f in SECURITY_PATHS 
+        'touches_security': any(f in SECURITY_PATHS
                                for f in context['files']),
         'pr_labels': context.get('labels', [])
     }
-    
+
     # Trivial changes (<20 lines, docs only)
-    if metrics['lines_changed'] < 20 and all(is_docs(f) 
+    if metrics['lines_changed'] < 20 and all(is_docs(f)
                                              for f in context['files']):
         return 'SKIP'  # No CoT needed
-    
+
     # Simple changes (<100 lines, single concern)
     if metrics['lines_changed'] < 100 and metrics['files_changed'] <= 3:
         return 'ZERO_SHOT'  # Fast, minimal tokens
-    
+
     # Standard changes
     if metrics['lines_changed'] < 500:
         return 'FEW_SHOT'  # Balanced
-    
+
     # Complex/security changes
     if metrics['touches_security'] or 'security' in metrics['pr_labels']:
         return 'STEP_BACK'  # Thorough analysis
-    
+
     # Large refactors
     return 'COMPOSITIONAL'  # Break down complexity
 ```
@@ -214,12 +214,12 @@ def deduplicate_agent_request(context):
         'diff_hash': sha256(context['diff']),
         'event': context['event_name']
     })
-    
+
     # Check if we've processed this exact change
     if result := cache.get(f"agent_result:{fingerprint}"):
         logger.info("Using cached agent result")
         return result
-    
+
     # Run agent
     result = run_agent(context)
     cache.set(f"agent_result:{fingerprint}", result, ttl=86400)
@@ -246,14 +246,14 @@ def compress_prompt(context, max_tokens=2000):
         'metadata': 100,      # Labels, reviewers
         'history': 400        # Recent commits
     }
-    
+
     compressed = {}
     for section, budget in sections.items():
         compressed[section] = truncate_intelligently(
-            context[section], 
+            context[section],
             max_tokens=budget
         )
-    
+
     return compressed
 ```
 
@@ -280,14 +280,14 @@ def compress_prompt(context, max_tokens=2000):
 def run_agent_with_metrics(context):
     start = time.time()
     template = select_optimal_cot(context)
-    
+
     with metrics.labels(template=template.value):
         result = execute_agent(context, template)
-        
+
         metrics.histogram('agent.tokens', result['tokens_used'])
         metrics.histogram('agent.latency', time.time() - start)
         metrics.gauge('agent.context_size', len(context['files']))
-    
+
     return result
 ```
 
@@ -382,7 +382,7 @@ if metrics['agent.effectiveness'] < 0.7:
 **Risk:** Overly aggressive caching causes stale results
 **Mitigation:** Cache invalidation on policy changes, SHA-based keys
 
-**Risk:** Skipped checks miss important issues  
+**Risk:** Skipped checks miss important issues
 **Mitigation:** Label-based override, required checks on main
 
 **Risk:** Context reduction loses critical information
@@ -411,6 +411,6 @@ if metrics['agent.effectiveness'] < 0.7:
 
 ---
 
-**Document Owner:** DevOps Team  
-**Last Updated:** December 27, 2025  
+**Document Owner:** DevOps Team
+**Last Updated:** December 27, 2025
 **Status:** Approved for Implementation

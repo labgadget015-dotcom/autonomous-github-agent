@@ -18,7 +18,7 @@ Instead of hiring another developer, imagine having an AI teammate that:
 ✅ **Triages issues automatically** - Labels, categorizes, responds using AI context
 ✅ **Reviews pull requests** - Analyzes code, suggests improvements, checks tests
 ✅ **Generates tests** - Creates comprehensive unit tests for new code
-✅ **Updates documentation** - Generates and maintains docs automatically  
+✅ **Updates documentation** - Generates and maintains docs automatically
 ✅ **Costs 90% less** - Optimized LLM usage vs competitors
 ✅ **Enterprise-ready** - SSO, audit logs, on-premises options
 
@@ -53,7 +53,7 @@ Instead of hiring another developer, imagine having an AI teammate that:
 ### Numbers
 
 - 90% LLM cost reduction vs alternatives
-- 80% reduction in issue processing time  
+- 80% reduction in issue processing time
 - 2,500+ lines of production code
 - 10+ automation capabilities
 - 99.9% uptime target
@@ -99,7 +99,7 @@ Free for 5 repos. Start now:
 
 We spent 6 months building an AI agent that automates the repetitive developer tasks:
 ✓ Issue triage
-✓ PR reviews  
+✓ PR reviews
 ✓ Test generation
 ✓ Documentation
 
@@ -125,7 +125,7 @@ Hi [Name],
 We built something you might love. Autonomous GitHub Agent automates the tedious parts of development workflow:
 
 ✅ Auto-triage issues
-✅ Review pull requests  
+✅ Review pull requests
 ✅ Generate tests
 ✅ Update documentation
 
