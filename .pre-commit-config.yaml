@@ -88,7 +88,6 @@ repos:
     rev: v0.40.0
     hooks:
       - id: markdownlint
-        args: [--fix]
 
   # Shell script linting
   - repo: https://github.com/shellcheck-py/shellcheck-py
