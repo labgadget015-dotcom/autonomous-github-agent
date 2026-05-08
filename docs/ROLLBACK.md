@@ -1,5 +1,18 @@
 # Rollback Manifest
 
+## 22527de — 2026-05-08 08:06 UTC
+
+- **SHA**: `22527dedc0668e7c4fd854848dd6c259158cd0be`
+- **Author**: GadgetAI
+- **Message**: style: reformat 2 test files to match black 24.4.2 (pre-commit version)
+- **Files changed**: 2 file(s)
+
+**Changed files:**
+- `tests/test_elite_copilot.py`
+- `tests/test_overseer.py`
+
+---
+
 ## 5f5eee1 — 2026-05-08 08:04 UTC
 
 - **SHA**: `5f5eee1eda940c9b92a3c07ccfd19746c04696c8`
