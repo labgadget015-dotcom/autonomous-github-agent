@@ -91,9 +91,7 @@ class TestAnalyzeJavascriptDependencies:
 
     def test_dev_dependencies_also_checked(self, tmp_path):
         pkg_json = tmp_path / "package.json"
-        pkg_json.write_text(
-            json.dumps({"devDependencies": {"jest": "^27.0.0"}})
-        )
+        pkg_json.write_text(json.dumps({"devDependencies": {"jest": "^27.0.0"}}))
         mgr = _make_manager(tmp_path)
         result = mgr._analyze_javascript_dependencies(pkg_json)
         assert any("version_range" == r["type"] for r in result["recommendations"])
@@ -124,7 +122,9 @@ class TestAnalyze:
 
     def test_analyze_with_both_dep_files(self, tmp_path):
         (tmp_path / "requirements.txt").write_text("requests\n")
-        (tmp_path / "package.json").write_text(json.dumps({"dependencies": {"lodash": "^4.0.0"}}))
+        (tmp_path / "package.json").write_text(
+            json.dumps({"dependencies": {"lodash": "^4.0.0"}})
+        )
         mgr = _make_manager(tmp_path)
         result = mgr.analyze()
         assert isinstance(result["recommendations"], list)

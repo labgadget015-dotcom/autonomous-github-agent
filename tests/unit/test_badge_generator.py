@@ -162,7 +162,9 @@ class TestUpdateReadmeBadges:
 
     def test_readme_updated_with_badges(self, tmp_path):
         readme = tmp_path / "README.md"
-        readme.write_text("# My Project\n\n<!-- BADGES START -->\nold\n<!-- BADGES END -->\n")
+        readme.write_text(
+            "# My Project\n\n<!-- BADGES START -->\nold\n<!-- BADGES END -->\n"
+        )
         gen = BadgeGenerator()
         gen.update_readme_badges(str(readme))
         content = readme.read_text()

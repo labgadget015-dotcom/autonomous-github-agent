@@ -112,7 +112,11 @@ class TestMarkdownOutput:
             files_changed=60,
             additions=3000,
             deletions=1000,
-            changed_paths=["core/auth.py", ".github/workflows/ci.yml", "requirements.txt"],
+            changed_paths=[
+                "core/auth.py",
+                ".github/workflows/ci.yml",
+                "requirements.txt",
+            ],
             test_coverage_delta=-25.0,
         )
         if report.band in (RiskBand.HIGH, RiskBand.CRITICAL):
@@ -221,9 +225,7 @@ class TestRiskyExtensions:
             deletions=0,
             changed_paths=["scripts/deploy.sh"],
         )
-        risky_factor = next(
-            (f for f in report.factors if "Risky" in f.name), None
-        )
+        risky_factor = next((f for f in report.factors if "Risky" in f.name), None)
         assert risky_factor is not None
 
     def test_yaml_file_raises_score(self):
@@ -233,9 +235,7 @@ class TestRiskyExtensions:
             deletions=2,
             changed_paths=["config/app.yaml"],
         )
-        risky_factor = next(
-            (f for f in report.factors if "Risky" in f.name), None
-        )
+        risky_factor = next((f for f in report.factors if "Risky" in f.name), None)
         assert risky_factor is not None
 
     def test_risky_ext_in_test_path_not_counted(self):
@@ -247,9 +247,7 @@ class TestRiskyExtensions:
             deletions=0,
             changed_paths=["tests/test_migrate.sql"],
         )
-        risky_factor = next(
-            (f for f in report.factors if "Risky" in f.name), None
-        )
+        risky_factor = next((f for f in report.factors if "Risky" in f.name), None)
         assert risky_factor is None
 
     def test_multiple_risky_ext_score_capped_at_1_5(self):
@@ -260,9 +258,7 @@ class TestRiskyExtensions:
             deletions=10,
             changed_paths=many_sql,
         )
-        risky_factor = next(
-            (f for f in report.factors if "Risky" in f.name), None
-        )
+        risky_factor = next((f for f in report.factors if "Risky" in f.name), None)
         assert risky_factor is not None
         assert risky_factor.score <= 1.5
 

@@ -1,4 +1,5 @@
 """Pytest configuration and fixtures for test suite."""
+
 import pytest
 import sys
 import os
@@ -15,6 +16,7 @@ sys.path.insert(0, str(project_root))
 # ---------------------------------------------------------------------------
 # Generic fixtures
 # ---------------------------------------------------------------------------
+
 
 @pytest.fixture
 def temp_directory(tmp_path):
@@ -48,6 +50,7 @@ def sample_config():
 # Mock GitHub fixtures
 # ---------------------------------------------------------------------------
 
+
 @pytest.fixture
 def mock_github_api():
     """Provide a mock GitHub API client (PyGithub style)."""
@@ -66,6 +69,7 @@ def mock_github_api():
 def mock_github_client(sample_config):
     """Provide a GitHubClient with mocked PyGithub."""
     from core.github_client import GitHubClient
+
     with patch("core.github_client.Github") as mock_gh:
         mock_repo = MagicMock()
         mock_gh.return_value.get_repo.return_value = mock_repo
@@ -78,10 +82,12 @@ def mock_github_client(sample_config):
 # Core component fixtures
 # ---------------------------------------------------------------------------
 
+
 @pytest.fixture
 def audit_logger(tmp_path, sample_config):
     """Provide a real AuditLogger writing to a temp file."""
     from core.audit_logger import AuditLogger
+
     cfg = dict(sample_config)
     cfg["audit_log_path"] = str(tmp_path / "audit.jsonl")
     return AuditLogger(cfg)
@@ -91,6 +97,7 @@ def audit_logger(tmp_path, sample_config):
 def policy_engine():
     """Provide a PolicyEngine using default (no file) policies."""
     from core.policy_engine import PolicyEngine
+
     return PolicyEngine({"policy_file": "/nonexistent/policies.yaml"})
 
 
@@ -98,6 +105,7 @@ def policy_engine():
 def message_queue(sample_config):
     """Provide a MessageQueue in in-memory mode (no Redis)."""
     from core.message_queue import MessageQueue
+
     with patch("core.message_queue.MessageQueue._init_redis", return_value=False):
         return MessageQueue(sample_config)
 
@@ -105,6 +113,7 @@ def message_queue(sample_config):
 # ---------------------------------------------------------------------------
 # Agent fixtures
 # ---------------------------------------------------------------------------
+
 
 @pytest.fixture
 def base_agent_class():
@@ -143,6 +152,7 @@ def base_agent(base_agent_class, sample_config):
 def orchestrator(sample_config):
     """Provide a fully patched OrchestratorAgent instance."""
     from agents.orchestrator_agent import OrchestratorAgent
+
     with (
         patch("core.agent_base.GitHubClient"),
         patch("core.agent_base.LLMClient"),
@@ -156,6 +166,7 @@ def orchestrator(sample_config):
 # ---------------------------------------------------------------------------
 # Sample data fixtures
 # ---------------------------------------------------------------------------
+
 
 @pytest.fixture
 def sample_task():

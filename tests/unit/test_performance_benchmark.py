@@ -98,9 +98,11 @@ class TestCompareWithBaseline:
         # Create a baseline file
         baseline_data = {
             "timestamp": "2024-01-01T00:00:00",
-            "benchmarks": [asdict(_make_result("test_suite", duration=5.0))]
+            "benchmarks": [asdict(_make_result("test_suite", duration=5.0))],
         }
-        baseline_file = tmp_path / ".benchmark_results" / "benchmark_20240101_000000.json"
+        baseline_file = (
+            tmp_path / ".benchmark_results" / "benchmark_20240101_000000.json"
+        )
         baseline_file.write_text(json.dumps(baseline_data))
 
         # Current session has faster results

@@ -9,6 +9,7 @@ from unittest.mock import patch
 class TestAgentConfigDefaults:
     def test_dry_run_defaults_true(self):
         from core.agent_config import AgentConfig
+
         cfg = AgentConfig.__new__(AgentConfig)
         object.__setattr__(cfg, "_raw", {})
         object.__setattr__(cfg, "dry_run", True)
@@ -16,11 +17,13 @@ class TestAgentConfigDefaults:
 
     def test_auto_merge_defaults_false(self):
         from core.agent_config import AgentConfig
+
         cfg = AgentConfig()
         assert cfg.auto_merge is False
 
     def test_require_approval_defaults_true(self):
         from core.agent_config import AgentConfig
+
         cfg = AgentConfig()
         assert cfg.require_approval is True
 
@@ -28,6 +31,7 @@ class TestAgentConfigDefaults:
 class TestIsActionAllowed:
     def _cfg(self, **kwargs):
         from core.agent_config import AgentConfig
+
         cfg = AgentConfig()
         for k, v in kwargs.items():
             object.__setattr__(cfg, k, v)
@@ -58,6 +62,7 @@ class TestEnvOverrides:
             from importlib import reload
 
             import core.agent_config as mod
+
             reload(mod)
             assert mod.cfg.dry_run is False
         # Reload again to restore defaults
@@ -69,5 +74,6 @@ class TestEnvOverrides:
             from importlib import reload
 
             import core.agent_config as mod
+
             reload(mod)
             assert mod.cfg.risk_score_threshold == 7.5

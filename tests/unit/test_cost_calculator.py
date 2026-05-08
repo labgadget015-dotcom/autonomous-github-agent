@@ -177,6 +177,7 @@ class TestLoadWorkflowData:
 
     def test_load_valid_file(self, tmp_path):
         import json
+
         data_file = tmp_path / "runs.json"
         data_file.write_text(json.dumps([{"id": 1}, {"id": 2}]))
         calc = CostCalculator()

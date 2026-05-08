@@ -15,8 +15,11 @@ if _scripts_path not in sys.path:
     sys.path.insert(0, _scripts_path)
 
 from self_healing_system import (
-    CircuitState, CircuitBreaker, FailureRecord,
-    RetryStrategy, SelfHealingSystem
+    CircuitState,
+    CircuitBreaker,
+    FailureRecord,
+    RetryStrategy,
+    SelfHealingSystem,
 )
 
 
@@ -33,7 +36,9 @@ class TestCircuitStateEnum:
 
 class TestCircuitBreaker:
     def _breaker(self, threshold=3, timeout=60):
-        return CircuitBreaker(name="test", failure_threshold=threshold, timeout_seconds=timeout)
+        return CircuitBreaker(
+            name="test", failure_threshold=threshold, timeout_seconds=timeout
+        )
 
     def test_initial_state_is_closed(self):
         breaker = self._breaker()
@@ -105,7 +110,9 @@ class TestRetryStrategy:
         assert rs.get_delay(3) == 2.0
 
     def test_get_delay_capped_at_max(self):
-        rs = RetryStrategy(base_delay=1.0, max_delay=5.0, exponential=True, jitter=False)
+        rs = RetryStrategy(
+            base_delay=1.0, max_delay=5.0, exponential=True, jitter=False
+        )
         delay = rs.get_delay(10)  # Would be 1024 without cap
         assert delay <= 5.0
 

@@ -37,10 +37,19 @@ class TestCodeSuggestionDataclass:
 
     def test_asdict_works(self):
         s = CodeSuggestion(
-            id="s2", category="perf", title="Cache result", description="",
-            file_path="module.py", line_number=10, current_code="for x in y: compute()",
-            suggested_code="result = [compute(x) for x in y]", reasoning="",
-            confidence=0.8, impact="medium", effort="low", auto_fixable=True
+            id="s2",
+            category="perf",
+            title="Cache result",
+            description="",
+            file_path="module.py",
+            line_number=10,
+            current_code="for x in y: compute()",
+            suggested_code="result = [compute(x) for x in y]",
+            reasoning="",
+            confidence=0.8,
+            impact="medium",
+            effort="low",
+            auto_fixable=True,
         )
         d = asdict(s)
         assert isinstance(d, dict)
@@ -134,9 +143,9 @@ class TestCheckDocstringPresence:
     def test_function_with_docstring_not_flagged(self, tmp_path):
         suggestor = AICodeSuggestor(str(tmp_path))
         lines = [
-            'def my_function():',
+            "def my_function():",
             '    """Do the thing."""',
-            '    return 1',
+            "    return 1",
         ]
         result = suggestor._check_docstring_presence(tmp_path / "mod.py", lines)
         assert result == []
@@ -176,10 +185,19 @@ class TestGenerateReport:
         suggestor = AICodeSuggestor(str(tmp_path))
         suggestor.suggestions = [
             CodeSuggestion(
-                id="s1", category="style", title="Organize imports",
-                description="PEP 8 violation", file_path="mod.py", line_number=5,
-                current_code="import sys, os", suggested_code="import os\nimport sys",
-                reasoning="PEP 8", confidence=0.9, impact="low", effort="low", auto_fixable=True
+                id="s1",
+                category="style",
+                title="Organize imports",
+                description="PEP 8 violation",
+                file_path="mod.py",
+                line_number=5,
+                current_code="import sys, os",
+                suggested_code="import os\nimport sys",
+                reasoning="PEP 8",
+                confidence=0.9,
+                impact="low",
+                effort="low",
+                auto_fixable=True,
             )
         ]
         output = str(tmp_path / "suggestions.md")

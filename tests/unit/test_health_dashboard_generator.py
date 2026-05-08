@@ -34,72 +34,86 @@ class TestHealthDashboardGeneratorInit:
 
 class TestCalculateHealthScore:
     def test_perfect_score_with_no_issues(self):
-        gen = _make_gen({
-            "analysis": {"passed": True},
-            "coverage": {"totals": {"percent_covered": 95}},
-            "security": {"results": []},
-            "violations": {"violations": []},
-        })
+        gen = _make_gen(
+            {
+                "analysis": {"passed": True},
+                "coverage": {"totals": {"percent_covered": 95}},
+                "security": {"results": []},
+                "violations": {"violations": []},
+            }
+        )
         score = gen.calculate_health_score()
         assert score == 100
 
     def test_penalty_for_failed_analysis(self):
-        gen = _make_gen({
-            "analysis": {"passed": False},
-            "coverage": {"totals": {"percent_covered": 95}},
-            "security": {"results": []},
-            "violations": {"violations": []},
-        })
+        gen = _make_gen(
+            {
+                "analysis": {"passed": False},
+                "coverage": {"totals": {"percent_covered": 95}},
+                "security": {"results": []},
+                "violations": {"violations": []},
+            }
+        )
         score = gen.calculate_health_score()
         assert score == 80  # 100 - 20
 
     def test_penalty_for_low_coverage(self):
-        gen = _make_gen({
-            "analysis": {"passed": True},
-            "coverage": {"totals": {"percent_covered": 50}},
-            "security": {"results": []},
-            "violations": {"violations": []},
-        })
+        gen = _make_gen(
+            {
+                "analysis": {"passed": True},
+                "coverage": {"totals": {"percent_covered": 50}},
+                "security": {"results": []},
+                "violations": {"violations": []},
+            }
+        )
         score = gen.calculate_health_score()
         assert score < 100
 
     def test_penalty_for_security_issues(self):
-        gen = _make_gen({
-            "analysis": {"passed": True},
-            "coverage": {"totals": {"percent_covered": 95}},
-            "security": {"results": [{"issue_severity": "HIGH"}]},
-            "violations": {"violations": []},
-        })
+        gen = _make_gen(
+            {
+                "analysis": {"passed": True},
+                "coverage": {"totals": {"percent_covered": 95}},
+                "security": {"results": [{"issue_severity": "HIGH"}]},
+                "violations": {"violations": []},
+            }
+        )
         score = gen.calculate_health_score()
         assert score == 90  # 100 - 10
 
     def test_penalty_for_medium_security(self):
-        gen = _make_gen({
-            "analysis": {"passed": True},
-            "coverage": {"totals": {"percent_covered": 95}},
-            "security": {"results": [{"issue_severity": "MEDIUM"}]},
-            "violations": {"violations": []},
-        })
+        gen = _make_gen(
+            {
+                "analysis": {"passed": True},
+                "coverage": {"totals": {"percent_covered": 95}},
+                "security": {"results": [{"issue_severity": "MEDIUM"}]},
+                "violations": {"violations": []},
+            }
+        )
         score = gen.calculate_health_score()
         assert score == 95  # 100 - 5
 
     def test_penalty_for_critical_violations(self):
-        gen = _make_gen({
-            "analysis": {"passed": True},
-            "coverage": {"totals": {"percent_covered": 95}},
-            "security": {"results": []},
-            "violations": {"violations": [{"severity": "critical"}]},
-        })
+        gen = _make_gen(
+            {
+                "analysis": {"passed": True},
+                "coverage": {"totals": {"percent_covered": 95}},
+                "security": {"results": []},
+                "violations": {"violations": [{"severity": "critical"}]},
+            }
+        )
         score = gen.calculate_health_score()
         assert score == 95  # 100 - 5
 
     def test_score_clamped_to_zero(self):
-        gen = _make_gen({
-            "analysis": {"passed": False},
-            "coverage": {"totals": {"percent_covered": 0}},
-            "security": {"results": [{"issue_severity": "HIGH"}] * 10},
-            "violations": {"violations": [{"severity": "critical"}] * 10},
-        })
+        gen = _make_gen(
+            {
+                "analysis": {"passed": False},
+                "coverage": {"totals": {"percent_covered": 0}},
+                "security": {"results": [{"issue_severity": "HIGH"}] * 10},
+                "violations": {"violations": [{"severity": "critical"}] * 10},
+            }
+        )
         score = gen.calculate_health_score()
         assert score == 0
 
@@ -138,34 +152,45 @@ class TestGetHealthStatus:
 
 class TestGenerateQuickStats:
     def test_generates_stats_table(self):
-        gen = _make_gen({
-            "coverage": {"totals": {"percent_covered": 85}},
-            "analysis": {"passed": True},
-            "security": {"results": []},
-            "violations": {"violations": []},
-        })
+        gen = _make_gen(
+            {
+                "coverage": {"totals": {"percent_covered": 85}},
+                "analysis": {"passed": True},
+                "security": {"results": []},
+                "violations": {"violations": []},
+            }
+        )
         stats = gen._generate_quick_stats()
         assert "Metric" in stats
         assert "Coverage" in stats
         assert "85.0%" in stats
 
     def test_failed_analysis_shows_failed(self):
-        gen = _make_gen({
-            "coverage": {},
-            "analysis": {"passed": False},
-            "security": {},
-            "violations": {},
-        })
+        gen = _make_gen(
+            {
+                "coverage": {},
+                "analysis": {"passed": False},
+                "security": {},
+                "violations": {},
+            }
+        )
         stats = gen._generate_quick_stats()
         assert "Failed" in stats
 
     def test_security_issues_count_shown(self):
-        gen = _make_gen({
-            "coverage": {},
-            "analysis": {},
-            "security": {"results": [{"issue_severity": "HIGH"}, {"issue_severity": "MEDIUM"}]},
-            "violations": {},
-        })
+        gen = _make_gen(
+            {
+                "coverage": {},
+                "analysis": {},
+                "security": {
+                    "results": [
+                        {"issue_severity": "HIGH"},
+                        {"issue_severity": "MEDIUM"},
+                    ]
+                },
+                "violations": {},
+            }
+        )
         stats = gen._generate_quick_stats()
         assert "2" in stats
 
@@ -177,19 +202,21 @@ class TestGenerateCoverageSection:
         assert "No coverage data" in section
 
     def test_coverage_section_with_data(self):
-        gen = _make_gen({
-            "coverage": {
-                "totals": {
-                    "percent_covered": 87.5,
-                    "covered_lines": 350,
-                    "num_statements": 400,
-                    "covered_branches": 100,
-                    "num_branches": 120,
-                    "covered_functions": 50,
-                    "num_functions": 55,
+        gen = _make_gen(
+            {
+                "coverage": {
+                    "totals": {
+                        "percent_covered": 87.5,
+                        "covered_lines": 350,
+                        "num_statements": 400,
+                        "covered_branches": 100,
+                        "num_branches": 120,
+                        "covered_functions": 50,
+                        "num_functions": 55,
+                    }
                 }
             }
-        })
+        )
         section = gen._generate_coverage_section()
         assert "87.50%" in section
         assert "Test Coverage" in section
@@ -202,16 +229,18 @@ class TestGenerateQualitySection:
         assert "No analysis data" in section
 
     def test_quality_section_with_data(self):
-        gen = _make_gen({
-            "analysis": {
-                "passed": True,
-                "elapsed_seconds": 5.5,
-                "tools": {
-                    "pylint": {"status": "passed"},
-                    "flake8": {"status": "failed"},
+        gen = _make_gen(
+            {
+                "analysis": {
+                    "passed": True,
+                    "elapsed_seconds": 5.5,
+                    "tools": {
+                        "pylint": {"status": "passed"},
+                        "flake8": {"status": "failed"},
+                    },
                 }
             }
-        })
+        )
         section = gen._generate_quality_section()
         assert "Passed" in section
         assert "pylint" in section.lower() or "PYLINT" in section

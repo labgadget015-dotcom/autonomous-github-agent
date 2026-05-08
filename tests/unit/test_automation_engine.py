@@ -79,7 +79,10 @@ class TestGenerateFormattingScripts:
         engine = _make_engine(tmp_path)
         scripts = engine._generate_formatting_scripts()
         if scripts:
-            assert any("format" in s.lower() or "black" in s.lower() or "py" in s.lower() for s in scripts)
+            assert any(
+                "format" in s.lower() or "black" in s.lower() or "py" in s.lower()
+                for s in scripts
+            )
 
 
 class TestGenerateReleaseScripts:

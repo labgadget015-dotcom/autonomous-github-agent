@@ -9,6 +9,7 @@ from unittest.mock import MagicMock, patch
 
 def _make_overseer(tmp_path: Path, config=None):
     from overseer.orchestrator import RepositoryOverseer
+
     return RepositoryOverseer(str(tmp_path), config)
 
 
@@ -48,8 +49,13 @@ class TestLoadDefaultConfig:
         overseer = _make_overseer(tmp_path)
         config = overseer._load_default_config()
         expected_keys = [
-            "code_analysis", "documentation", "dependency_management",
-            "cicd", "issue_triaging", "automation", "monitoring"
+            "code_analysis",
+            "documentation",
+            "dependency_management",
+            "cicd",
+            "issue_triaging",
+            "automation",
+            "monitoring",
         ]
         for key in expected_keys:
             assert key in config
@@ -159,6 +165,7 @@ class TestSaveResults:
         output_file = str(tmp_path / "results.json")
         overseer.save_results(output_file)
         import json
+
         data = json.loads(Path(output_file).read_text())
         assert "timestamp" in data
         assert "repo_path" in data

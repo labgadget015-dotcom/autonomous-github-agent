@@ -33,42 +33,58 @@ class TestIssueTriagerInit:
 class TestAnalyzeIssueContent:
     def test_bug_issue_detected(self, tmp_path):
         triager = _make_triager(tmp_path)
-        result = triager.analyze_issue_content("App crashes on startup", "Error in main module")
+        result = triager.analyze_issue_content(
+            "App crashes on startup", "Error in main module"
+        )
         assert "bug" in result["labels"]
 
     def test_security_issue_detected(self, tmp_path):
         triager = _make_triager(tmp_path)
-        result = triager.analyze_issue_content("Security vulnerability in auth", "XSS exploit found")
+        result = triager.analyze_issue_content(
+            "Security vulnerability in auth", "XSS exploit found"
+        )
         assert "security" in result["labels"]
 
     def test_enhancement_detected(self, tmp_path):
         triager = _make_triager(tmp_path)
-        result = triager.analyze_issue_content("Feature request: add dark mode", "Would be nice to have")
+        result = triager.analyze_issue_content(
+            "Feature request: add dark mode", "Would be nice to have"
+        )
         assert "enhancement" in result["labels"]
 
     def test_documentation_detected(self, tmp_path):
         triager = _make_triager(tmp_path)
-        result = triager.analyze_issue_content("Update README", "The documentation is outdated")
+        result = triager.analyze_issue_content(
+            "Update README", "The documentation is outdated"
+        )
         assert "documentation" in result["labels"]
 
     def test_performance_detected(self, tmp_path):
         triager = _make_triager(tmp_path)
-        result = triager.analyze_issue_content("Performance slow", "Need to optimize speed")
+        result = triager.analyze_issue_content(
+            "Performance slow", "Need to optimize speed"
+        )
         assert "performance" in result["labels"]
 
     def test_critical_priority_detected(self, tmp_path):
         triager = _make_triager(tmp_path)
-        result = triager.analyze_issue_content("Critical production outage", "System is down")
+        result = triager.analyze_issue_content(
+            "Critical production outage", "System is down"
+        )
         assert result["priority"] == "critical"
 
     def test_high_priority_detected(self, tmp_path):
         triager = _make_triager(tmp_path)
-        result = triager.analyze_issue_content("Urgent: major breaking change", "Need ASAP fix")
+        result = triager.analyze_issue_content(
+            "Urgent: major breaking change", "Need ASAP fix"
+        )
         assert result["priority"] == "high"
 
     def test_default_priority_is_medium(self, tmp_path):
         triager = _make_triager(tmp_path)
-        result = triager.analyze_issue_content("Rename variable", "Minor code style change")
+        result = triager.analyze_issue_content(
+            "Rename variable", "Minor code style change"
+        )
         assert "priority" in result
 
     def test_result_has_confidence(self, tmp_path):
@@ -84,7 +100,9 @@ class TestAnalyzeIssueContent:
 
     def test_unicode_content_handled(self, tmp_path):
         triager = _make_triager(tmp_path)
-        result = triager.analyze_issue_content("Ошибка при запуске", "システムがクラッシュします")
+        result = triager.analyze_issue_content(
+            "Ошибка при запуске", "システムがクラッシュします"
+        )
         assert isinstance(result["labels"], list)
 
     def test_special_chars_handled(self, tmp_path):

@@ -2,6 +2,7 @@
 Tests for error handling and recovery in agents and core modules.
 Covers: API rate limiting, network failures, invalid inputs, timeouts, exception propagation.
 """
+
 import pytest
 import asyncio
 from unittest.mock import MagicMock, patch, AsyncMock
@@ -19,6 +20,7 @@ class TestErrorHandlerModule:
         sys.path.insert(0, str(project_root / ".github" / "scripts"))
         try:
             import error_handler
+
             return error_handler
         except ImportError:
             return None
@@ -68,7 +70,9 @@ class TestAgentErrorRecovery:
             patch("core.agent_base.PolicyEngine"),
         ):
             agent = FailingAgent("error_agent", {"github_token": "tok"})
-            agent.policy.check_action = AsyncMock(return_value={"requires_approval": False})
+            agent.policy.check_action = AsyncMock(
+                return_value={"requires_approval": False}
+            )
             agent.audit.log_action = AsyncMock()
             return agent
 
@@ -86,7 +90,9 @@ class TestAgentErrorRecovery:
             result = await agent.execute({"action": "fail_action", "id": "t2"})
             assert isinstance(result, dict)
         except RuntimeError:
-            pytest.fail("RuntimeError propagated to caller — should be caught internally")
+            pytest.fail(
+                "RuntimeError propagated to caller — should be caught internally"
+            )
 
 
 class TestAuditLoggerErrorHandling:
@@ -109,6 +115,7 @@ class TestAuditLoggerErrorHandling:
     @pytest.mark.asyncio
     async def test_get_audit_trail_on_empty_log(self, tmp_path):
         from core.audit_logger import AuditLogger
+
         al = AuditLogger({"audit_log_path": str(tmp_path / "audit.jsonl")})
         trail = await al.get_audit_trail()
         assert isinstance(trail, list)
@@ -117,6 +124,7 @@ class TestAuditLoggerErrorHandling:
     @pytest.mark.asyncio
     async def test_get_audit_trail_on_corrupted_log(self, tmp_path):
         from core.audit_logger import AuditLogger
+
         log_file = tmp_path / "audit.jsonl"
         log_file.write_text("not valid json\n{also bad}\n")
         al = AuditLogger({"audit_log_path": str(log_file)})
@@ -134,6 +142,7 @@ class TestPolicyEngineEdgeCases:
     @pytest.mark.asyncio
     async def test_empty_action_name(self):
         from core.policy_engine import PolicyEngine
+
         engine = PolicyEngine({"policy_file": "/nonexistent"})
         result = await engine.check_action("", {})
         assert isinstance(result, dict)
@@ -141,12 +150,14 @@ class TestPolicyEngineEdgeCases:
     @pytest.mark.asyncio
     async def test_none_params_handled(self):
         from core.policy_engine import PolicyEngine
+
         engine = PolicyEngine({"policy_file": "/nonexistent"})
         result = await engine.check_action("label_issue", None)
         assert isinstance(result, dict)
 
     def test_malformed_yaml_falls_back_to_defaults(self, tmp_path):
         from core.policy_engine import PolicyEngine
+
         bad_file = tmp_path / "bad.yaml"
         bad_file.write_text(":::: not valid yaml ::::")
         engine = PolicyEngine({"policy_file": str(bad_file)})

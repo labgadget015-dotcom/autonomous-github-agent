@@ -27,11 +27,13 @@ sys.path.insert(0, str(project_root))
 # AuditLogger tests
 # ===========================================================================
 
+
 class TestAuditLogger:
     """Tests for core.audit_logger.AuditLogger"""
 
     def _make_logger(self, tmp_path, extra_config=None):
         from core.audit_logger import AuditLogger
+
         cfg = {"audit_log_path": str(tmp_path / "audit.jsonl")}
         if extra_config:
             cfg.update(extra_config)
@@ -44,6 +46,7 @@ class TestAuditLogger:
     def test_uses_default_log_path_when_not_specified(self):
         """Should fall back to logs/audit.jsonl"""
         from core.audit_logger import AuditLogger
+
         with patch("pathlib.Path.mkdir"):
             al = AuditLogger({})
         assert "audit.jsonl" in str(al.log_file)
@@ -51,6 +54,7 @@ class TestAuditLogger:
     @pytest.mark.asyncio
     async def test_log_action_writes_jsonl(self, tmp_path):
         from core.audit_logger import AuditLogger
+
         al = self._make_logger(tmp_path)
         await al.log_action(
             agent="test_agent",
@@ -69,6 +73,7 @@ class TestAuditLogger:
     @pytest.mark.asyncio
     async def test_log_action_multiple_entries(self, tmp_path):
         from core.audit_logger import AuditLogger
+
         al = self._make_logger(tmp_path)
         for i in range(5):
             await al.log_action("a", f"action_{i}", {}, {"status": "ok"}, f"t{i}")
@@ -78,25 +83,32 @@ class TestAuditLogger:
     def test_postgres_disabled_gracefully_without_psycopg2(self, tmp_path):
         """Should not crash when postgres config provided but psycopg2 not installed."""
         from core.audit_logger import AuditLogger
+
         with patch.dict("sys.modules", {"psycopg2": None}):
-            al = AuditLogger({
-                "audit_log_path": str(tmp_path / "audit.jsonl"),
-                "postgres_config": {"host": "localhost", "database": "test"},
-            })
+            al = AuditLogger(
+                {
+                    "audit_log_path": str(tmp_path / "audit.jsonl"),
+                    "postgres_config": {"host": "localhost", "database": "test"},
+                }
+            )
         assert al._pg_conn is None
 
     def test_s3_disabled_gracefully_without_boto3(self, tmp_path):
         from core.audit_logger import AuditLogger
+
         with patch.dict("sys.modules", {"boto3": None}):
-            al = AuditLogger({
-                "audit_log_path": str(tmp_path / "audit.jsonl"),
-                "s3_config": {"bucket": "test"},
-            })
+            al = AuditLogger(
+                {
+                    "audit_log_path": str(tmp_path / "audit.jsonl"),
+                    "s3_config": {"bucket": "test"},
+                }
+            )
         assert al._s3_client is None
 
     @pytest.mark.asyncio
     async def test_get_audit_trail_returns_entries(self, tmp_path):
         from core.audit_logger import AuditLogger
+
         al = self._make_logger(tmp_path)
         await al.log_action("agent1", "action_a", {}, {"status": "ok"}, "t1")
         await al.log_action("agent2", "action_b", {}, {"status": "ok"}, "t2")
@@ -106,6 +118,7 @@ class TestAuditLogger:
     @pytest.mark.asyncio
     async def test_get_audit_trail_filter_by_agent(self, tmp_path):
         from core.audit_logger import AuditLogger
+
         al = self._make_logger(tmp_path)
         await al.log_action("agent1", "action_a", {}, {}, "t1")
         await al.log_action("agent2", "action_b", {}, {}, "t2")
@@ -117,11 +130,13 @@ class TestAuditLogger:
 # PolicyEngine tests
 # ===========================================================================
 
+
 class TestPolicyEngine:
     """Tests for core.policy_engine.PolicyEngine"""
 
     def _make_engine(self, extra_config=None):
         from core.policy_engine import PolicyEngine
+
         cfg = {"policy_file": "/nonexistent/policies.yaml"}
         if extra_config:
             cfg.update(extra_config)
@@ -139,39 +154,51 @@ class TestPolicyEngine:
 
     def test_config_overrides_requires_approval(self):
         from core.policy_engine import PolicyEngine
-        engine = PolicyEngine({
-            "policy_file": "/nonexistent/policies.yaml",
-            "requires_approval": ["custom_action"],
-        })
+
+        engine = PolicyEngine(
+            {
+                "policy_file": "/nonexistent/policies.yaml",
+                "requires_approval": ["custom_action"],
+            }
+        )
         assert "custom_action" in engine.policies["requires_approval"]
 
     def test_config_overrides_auto_approved(self):
         from core.policy_engine import PolicyEngine
-        engine = PolicyEngine({
-            "policy_file": "/nonexistent/policies.yaml",
-            "auto_approved": ["label_issue", "add_comment"],
-        })
+
+        engine = PolicyEngine(
+            {
+                "policy_file": "/nonexistent/policies.yaml",
+                "auto_approved": ["label_issue", "add_comment"],
+            }
+        )
         assert "label_issue" in engine.policies["auto_approved"]
 
     @pytest.mark.asyncio
     async def test_check_action_auto_approved(self):
         from core.policy_engine import PolicyEngine
-        engine = PolicyEngine({
-            "policy_file": "/nonexistent/policies.yaml",
-            "auto_approved": ["label_issue"],
-            "requires_approval": [],
-        })
+
+        engine = PolicyEngine(
+            {
+                "policy_file": "/nonexistent/policies.yaml",
+                "auto_approved": ["label_issue"],
+                "requires_approval": [],
+            }
+        )
         result = await engine.check_action("label_issue", {})
         assert result["requires_approval"] is False
 
     @pytest.mark.asyncio
     async def test_check_action_requires_approval(self):
         from core.policy_engine import PolicyEngine
-        engine = PolicyEngine({
-            "policy_file": "/nonexistent/policies.yaml",
-            "requires_approval": ["delete_repository"],
-            "auto_approved": [],
-        })
+
+        engine = PolicyEngine(
+            {
+                "policy_file": "/nonexistent/policies.yaml",
+                "requires_approval": ["delete_repository"],
+                "auto_approved": [],
+            }
+        )
         result = await engine.check_action("delete_repository", {})
         assert result["requires_approval"] is True
 
@@ -185,6 +212,7 @@ class TestPolicyEngine:
 
     def test_loads_from_yaml_file(self, tmp_path):
         from core.policy_engine import PolicyEngine
+
         policy_file = tmp_path / "policies.yaml"
         policy_file.write_text(
             "requires_approval:\n  - custom_delete\nauto_approved:\n  - label_issue\n"
@@ -198,11 +226,13 @@ class TestPolicyEngine:
 # MessageQueue tests
 # ===========================================================================
 
+
 class TestMessageQueue:
     """Tests for core.message_queue.MessageQueue"""
 
     def _make_queue(self, extra_config=None):
         from core.message_queue import MessageQueue
+
         cfg = {"redis_host": "localhost", "redis_port": 6379}
         if extra_config:
             cfg.update(extra_config)
@@ -239,6 +269,7 @@ class TestMessageQueue:
 
     def test_redis_init_failure_does_not_crash(self):
         from core.message_queue import MessageQueue
+
         with patch("core.message_queue.MessageQueue._init_redis", return_value=False):
             q = MessageQueue({"redis_host": "unreachable_host"})
         assert q._redis_client is None
@@ -248,11 +279,13 @@ class TestMessageQueue:
 # LLMClient tests
 # ===========================================================================
 
+
 class TestLLMClient:
     """Tests for core.llm_provider.LLMClient"""
 
     def test_openai_provider_initialization(self):
         from core.llm_provider import LLMClient
+
         mock_openai = MagicMock()
         with patch.dict("sys.modules", {"openai": mock_openai}):
             client = LLMClient({"llm_provider": "openai", "openai_api_key": "sk-test"})
@@ -260,13 +293,17 @@ class TestLLMClient:
 
     def test_anthropic_provider_initialization(self):
         from core.llm_provider import LLMClient
+
         mock_anthropic = MagicMock()
         with patch.dict("sys.modules", {"anthropic": mock_anthropic}):
-            client = LLMClient({"llm_provider": "anthropic", "anthropic_api_key": "sk-ant-test"})
+            client = LLMClient(
+                {"llm_provider": "anthropic", "anthropic_api_key": "sk-ant-test"}
+            )
         assert client.provider == "anthropic"
 
     def test_default_model_openai(self):
         from core.llm_provider import LLMClient
+
         mock_openai = MagicMock()
         with patch.dict("sys.modules", {"openai": mock_openai}):
             client = LLMClient({"llm_provider": "openai", "openai_api_key": "sk-test"})
@@ -274,6 +311,7 @@ class TestLLMClient:
 
     def test_token_tracking_initialized_to_zero(self):
         from core.llm_provider import LLMClient
+
         mock_openai = MagicMock()
         with patch.dict("sys.modules", {"openai": mock_openai}):
             client = LLMClient({"llm_provider": "openai", "openai_api_key": "sk-test"})
@@ -281,17 +319,21 @@ class TestLLMClient:
 
     def test_unsupported_provider_raises(self):
         from core.llm_provider import LLMClient
+
         with pytest.raises(Exception):
             LLMClient({"llm_provider": "unknown_provider", "model": "x"})
 
     @pytest.mark.asyncio
     async def test_generate_returns_dict_with_content(self):
         from core.llm_provider import LLMClient
+
         mock_openai = MagicMock()
         mock_response = MagicMock()
         mock_response.choices = [MagicMock(message=MagicMock(content="Hello world"))]
         mock_response.usage = MagicMock(total_tokens=10)
-        mock_openai.OpenAI.return_value.chat.completions.create.return_value = mock_response
+        mock_openai.OpenAI.return_value.chat.completions.create.return_value = (
+            mock_response
+        )
         with patch.dict("sys.modules", {"openai": mock_openai}):
             client = LLMClient({"llm_provider": "openai", "openai_api_key": "sk-test"})
             result = await client.generate("Say hello")
@@ -303,11 +345,13 @@ class TestLLMClient:
 # GitHubClient tests
 # ===========================================================================
 
+
 class TestGitHubClient:
     """Tests for core.github_client.GitHubClient"""
 
     def _make_client(self, token="test_token"):
         from core.github_client import GitHubClient
+
         with patch("core.github_client.Github"):
             return GitHubClient({"github_token": token})
 
@@ -317,12 +361,14 @@ class TestGitHubClient:
 
     def test_initializes_without_token(self):
         from core.github_client import GitHubClient
+
         with patch("core.github_client.Github"):
             client = GitHubClient({})
         assert client is not None
 
     def test_get_repo_delegates_to_pygithub(self):
         from core.github_client import GitHubClient
+
         mock_gh = MagicMock()
         mock_repo = MagicMock()
         mock_gh.return_value.get_repo.return_value = mock_repo
@@ -334,6 +380,7 @@ class TestGitHubClient:
     def test_rate_limit_wait_enforced(self):
         """_wait_for_rate_limit should sleep when called too quickly."""
         from core.github_client import GitHubClient
+
         with patch("core.github_client.Github"):
             client = GitHubClient({"github_token": "tok"})
         client._last_request_time = float("inf")  # force sleep scenario
@@ -343,6 +390,7 @@ class TestGitHubClient:
 
     def test_create_issue_calls_api(self):
         from core.github_client import GitHubClient
+
         mock_gh = MagicMock()
         mock_repo = MagicMock()
         mock_issue = MagicMock()
@@ -356,6 +404,7 @@ class TestGitHubClient:
 
     def test_close_issue_calls_edit(self):
         from core.github_client import GitHubClient
+
         mock_gh = MagicMock()
         mock_issue = MagicMock()
         mock_gh.return_value.get_repo.return_value.get_issue.return_value = mock_issue
@@ -369,8 +418,10 @@ class TestGitHubClient:
 # BaseAgent lifecycle tests
 # ===========================================================================
 
+
 class ConcreteAgent:
     """Concrete BaseAgent for testing — created without external deps."""
+
     pass
 
 
@@ -453,11 +504,13 @@ class TestBaseAgent:
 # OrchestratorAgent tests
 # ===========================================================================
 
+
 class TestOrchestratorAgent:
     """Tests for agents.orchestrator_agent.OrchestratorAgent"""
 
     def _make_orchestrator(self):
         from agents.orchestrator_agent import OrchestratorAgent
+
         with (
             patch("core.agent_base.GitHubClient"),
             patch("core.agent_base.LLMClient"),
@@ -465,11 +518,13 @@ class TestOrchestratorAgent:
             patch("core.agent_base.PolicyEngine"),
             patch("core.message_queue.MessageQueue._init_redis", return_value=False),
         ):
-            return OrchestratorAgent({
-                "github_token": "tok",
-                "openai_api_key": "sk",
-                "routing_strategy": "priority",
-            })
+            return OrchestratorAgent(
+                {
+                    "github_token": "tok",
+                    "openai_api_key": "sk",
+                    "routing_strategy": "priority",
+                }
+            )
 
     def test_orchestrator_initializes(self):
         orch = self._make_orchestrator()
@@ -506,16 +561,19 @@ class TestOrchestratorAgent:
 # Autopilot module tests
 # ===========================================================================
 
+
 class TestAIOptimizationModules:
     """Tests for autopilot/ai_optimization/* modules"""
 
     def test_intelligent_cache_init(self):
         from autopilot.ai_optimization.intelligent_cache import IntelligentCache
+
         cache = IntelligentCache({})
         assert cache is not None
 
     def test_intelligent_cache_set_and_get(self):
         from autopilot.ai_optimization.intelligent_cache import IntelligentCache
+
         cache = IntelligentCache({})
         cache.set("key1", "value1")
         result = cache.get("key1")
@@ -523,38 +581,45 @@ class TestAIOptimizationModules:
 
     def test_intelligent_cache_miss_returns_none(self):
         from autopilot.ai_optimization.intelligent_cache import IntelligentCache
+
         cache = IntelligentCache({})
         assert cache.get("nonexistent_key") is None
 
     def test_ml_priority_scorer_init(self):
         from autopilot.ai_optimization.ml_priority_scorer import MLPriorityScorer
+
         scorer = MLPriorityScorer({})
         assert scorer is not None
 
     def test_ml_priority_scorer_score_returns_float(self):
         from autopilot.ai_optimization.ml_priority_scorer import MLPriorityScorer
+
         scorer = MLPriorityScorer({})
         result = scorer.score({"title": "Fix critical bug", "labels": ["bug"]})
         assert isinstance(result["score"], (int, float))
 
     def test_anomaly_detector_init(self):
         from autopilot.ai_optimization.anomaly_detector import AnomalyDetector
+
         detector = AnomalyDetector({})
         assert detector is not None
 
     def test_anomaly_detector_analyze_empty_metrics(self):
         from autopilot.ai_optimization.anomaly_detector import AnomalyDetector
+
         detector = AnomalyDetector({})
         result = detector.analyze([])
         assert result is not None
 
     def test_performance_monitor_init(self):
         from autopilot.ai_optimization.performance_monitor import PerformanceMonitor
+
         monitor = PerformanceMonitor({})
         assert monitor is not None
 
     def test_performance_monitor_record_metric(self):
         from autopilot.ai_optimization.performance_monitor import PerformanceMonitor
+
         monitor = PerformanceMonitor({})
         monitor.record("api_latency", 120.5)
         metrics = monitor.get_metrics()
@@ -562,16 +627,19 @@ class TestAIOptimizationModules:
 
     def test_api_optimizer_init(self):
         from autopilot.ai_optimization.api_optimizer import APIOptimizer
+
         optimizer = APIOptimizer({})
         assert optimizer is not None
 
     def test_nlp_relevance_filter_init(self):
         from autopilot.ai_optimization.nlp_relevance_filter import NLPRelevanceFilter
+
         fltr = NLPRelevanceFilter({})
         assert fltr is not None
 
     def test_nlp_relevance_filter_score_is_between_0_and_1(self):
         from autopilot.ai_optimization.nlp_relevance_filter import NLPRelevanceFilter
+
         fltr = NLPRelevanceFilter({})
         score = fltr.score("Fix critical authentication bypass vulnerability")
         if score is not None:
@@ -579,6 +647,7 @@ class TestAIOptimizationModules:
 
     def test_commit_summarizer_init(self):
         from autopilot.ai_optimization.commit_summarizer import CommitSummarizer
+
         with patch("core.llm_provider.LLMClient"):
             summarizer = CommitSummarizer({})
         assert summarizer is not None
@@ -588,11 +657,13 @@ class TestAIOptimizationModules:
 # LLMClient cost-tracking tests
 # ===========================================================================
 
+
 class TestLLMClientCostTracking:
     """Tests for LLMClient._record_cost, get_session_cost, cost_limit_exceeded."""
 
     def _make_client(self, model="gpt-4o"):
         from core.llm_provider import LLMClient
+
         mock_openai = MagicMock()
         with patch.dict("sys.modules", {"openai": mock_openai}):
             client = LLMClient(
@@ -662,6 +733,7 @@ class TestLLMClientCostTracking:
 
     def test_get_default_model_anthropic(self):
         from core.llm_provider import LLMClient
+
         mock_anthropic = MagicMock()
         with patch.dict("sys.modules", {"anthropic": mock_anthropic}):
             client = LLMClient(
@@ -681,11 +753,13 @@ class TestLLMClientCostTracking:
 # MessageQueue additional tests (in-memory mode)
 # ===========================================================================
 
+
 class TestMessageQueueOperations:
     """Additional tests for core.message_queue.MessageQueue in-memory operations."""
 
     def _make_queue(self):
         from core.message_queue import MessageQueue
+
         with patch("core.message_queue.MessageQueue._init_redis", return_value=False):
             return MessageQueue({"redis_host": "localhost"})
 
@@ -772,6 +846,7 @@ class TestMessageQueueOperations:
 # BaseAgent additional tests
 # ===========================================================================
 
+
 class TestBaseAgentExtended:
     """Additional lifecycle and validation tests for core.agent_base.BaseAgent."""
 
@@ -793,7 +868,9 @@ class TestBaseAgentExtended:
             patch("core.agent_base.AuditLogger"),
             patch("core.agent_base.PolicyEngine"),
         ):
-            return ConcreteAgent("test_agent", {"github_token": "tok", "openai_api_key": "sk"})
+            return ConcreteAgent(
+                "test_agent", {"github_token": "tok", "openai_api_key": "sk"}
+            )
 
     def test_get_capabilities_returns_agent_name(self):
         agent = self._make_agent()
@@ -896,16 +973,19 @@ class TestBaseAgentExtended:
 # AuditLogger additional tests
 # ===========================================================================
 
+
 class TestAuditLoggerExtended:
     """Additional tests for AuditLogger.get_logs, rollback instructions, archive."""
 
     def _make_logger(self, tmp_path):
         from core.audit_logger import AuditLogger
+
         return AuditLogger({"audit_log_path": str(tmp_path / "audit.jsonl")})
 
     @pytest.mark.asyncio
     async def test_get_logs_returns_all_entries(self, tmp_path):
         from core.audit_logger import AuditLogger
+
         al = self._make_logger(tmp_path)
         for i in range(4):
             await al.log_action("agent_a", f"action_{i}", {}, {}, f"t{i}")
@@ -915,6 +995,7 @@ class TestAuditLoggerExtended:
     @pytest.mark.asyncio
     async def test_get_logs_filter_by_agent(self, tmp_path):
         from core.audit_logger import AuditLogger
+
         al = self._make_logger(tmp_path)
         await al.log_action("agent_a", "act", {}, {}, "t1")
         await al.log_action("agent_b", "act", {}, {}, "t2")
@@ -926,6 +1007,7 @@ class TestAuditLoggerExtended:
     @pytest.mark.asyncio
     async def test_get_logs_filter_by_action(self, tmp_path):
         from core.audit_logger import AuditLogger
+
         al = self._make_logger(tmp_path)
         await al.log_action("a", "create_issue", {}, {}, "t1")
         await al.log_action("a", "merge_pr", {}, {}, "t2")
@@ -937,6 +1019,7 @@ class TestAuditLoggerExtended:
     @pytest.mark.asyncio
     async def test_get_logs_empty_file_returns_empty_list(self, tmp_path):
         from core.audit_logger import AuditLogger
+
         al = self._make_logger(tmp_path)
         logs = al.get_logs()
         assert logs == []
@@ -961,11 +1044,13 @@ class TestAuditLoggerExtended:
     @pytest.mark.asyncio
     async def test_archive_logs_no_s3_logs_warning(self, tmp_path):
         from core.audit_logger import AuditLogger
+
         al = self._make_logger(tmp_path)
         # No S3 configured → should not raise
         await al.archive_logs(older_than_days=30)
 
     def test_close_does_not_raise_without_backends(self, tmp_path):
         from core.audit_logger import AuditLogger
+
         al = self._make_logger(tmp_path)
         al.close()  # must not raise

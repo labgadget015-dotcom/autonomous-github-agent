@@ -80,7 +80,9 @@ class TestDetectLongFunctions:
         analyzer = _make_analyzer(tmp_path)
         tree = ast.parse(code)
         analyzer._detect_long_functions(tree, py_file)
-        long_func_issues = [r for r in analyzer.results["refactoring"] if r["type"] == "long_function"]
+        long_func_issues = [
+            r for r in analyzer.results["refactoring"] if r["type"] == "long_function"
+        ]
         assert long_func_issues == []
 
     def test_long_function_flagged(self, tmp_path):
@@ -90,7 +92,9 @@ class TestDetectLongFunctions:
         analyzer = _make_analyzer(tmp_path)
         tree = ast.parse(code)
         analyzer._detect_long_functions(tree, py_file)
-        long_func_issues = [r for r in analyzer.results["refactoring"] if r["type"] == "long_function"]
+        long_func_issues = [
+            r for r in analyzer.results["refactoring"] if r["type"] == "long_function"
+        ]
         assert len(long_func_issues) >= 1
 
     def test_very_long_function_has_high_severity(self, tmp_path):
@@ -100,7 +104,9 @@ class TestDetectLongFunctions:
         analyzer = _make_analyzer(tmp_path)
         tree = ast.parse(code)
         analyzer._detect_long_functions(tree, py_file)
-        issues = [r for r in analyzer.results["refactoring"] if r["type"] == "long_function"]
+        issues = [
+            r for r in analyzer.results["refactoring"] if r["type"] == "long_function"
+        ]
         assert any(r["severity"] == "high" for r in issues)
 
 
@@ -111,7 +117,11 @@ class TestDetectCodeDuplication:
         py_file.write_text(code)
         analyzer = _make_analyzer(tmp_path)
         analyzer._detect_code_duplication(code, py_file)
-        dup_issues = [r for r in analyzer.results["refactoring"] if r["type"] == "code_duplication"]
+        dup_issues = [
+            r
+            for r in analyzer.results["refactoring"]
+            if r["type"] == "code_duplication"
+        ]
         assert dup_issues == []
 
     def test_detects_duplicated_block(self, tmp_path):
@@ -122,7 +132,11 @@ class TestDetectCodeDuplication:
         py_file.write_text(code)
         analyzer = _make_analyzer(tmp_path)
         analyzer._detect_code_duplication(code, py_file)
-        dup_issues = [r for r in analyzer.results["refactoring"] if r["type"] == "code_duplication"]
+        dup_issues = [
+            r
+            for r in analyzer.results["refactoring"]
+            if r["type"] == "code_duplication"
+        ]
         assert len(dup_issues) >= 1
 
 
@@ -134,7 +148,11 @@ class TestDetectComplexConditionals:
         analyzer = _make_analyzer(tmp_path)
         tree = ast.parse(code)
         analyzer._detect_complex_conditionals(tree, py_file)
-        issues = [r for r in analyzer.results["refactoring"] if r["type"] == "complex_conditional"]
+        issues = [
+            r
+            for r in analyzer.results["refactoring"]
+            if r["type"] == "complex_conditional"
+        ]
         assert issues == []
 
     def test_complex_conditional_flagged(self, tmp_path):
@@ -145,7 +163,11 @@ class TestDetectComplexConditionals:
         analyzer = _make_analyzer(tmp_path)
         tree = ast.parse(code)
         analyzer._detect_complex_conditionals(tree, py_file)
-        issues = [r for r in analyzer.results["refactoring"] if r["type"] == "complex_conditional"]
+        issues = [
+            r
+            for r in analyzer.results["refactoring"]
+            if r["type"] == "complex_conditional"
+        ]
         assert len(issues) >= 1
 
 
@@ -172,7 +194,9 @@ class TestDetectMagicNumbers:
         analyzer = _make_analyzer(tmp_path)
         tree = ast.parse(code)
         analyzer._detect_magic_numbers(tree, py_file)
-        issues = [r for r in analyzer.results["refactoring"] if r["type"] == "magic_number"]
+        issues = [
+            r for r in analyzer.results["refactoring"] if r["type"] == "magic_number"
+        ]
         assert len(issues) >= 1
 
     def test_zero_and_one_not_flagged(self, tmp_path):
@@ -182,7 +206,9 @@ class TestDetectMagicNumbers:
         analyzer = _make_analyzer(tmp_path)
         tree = ast.parse(code)
         analyzer._detect_magic_numbers(tree, py_file)
-        issues = [r for r in analyzer.results["refactoring"] if r["type"] == "magic_number"]
+        issues = [
+            r for r in analyzer.results["refactoring"] if r["type"] == "magic_number"
+        ]
         assert issues == []
 
 

@@ -95,7 +95,7 @@ class TestUpdateFileVersion:
         init_file = tmp_path / "__init__.py"
         init_file.write_text('__version__ = "1.0.0"\n')
         rm._update_file_version(init_file, "1.0.0", "1.1.0")
-        assert '1.1.0' in init_file.read_text()
+        assert "1.1.0" in init_file.read_text()
 
     def test_updates_version_in_setup_py(self, tmp_path):
         rm = ReleaseManager(dry_run=False)
@@ -103,14 +103,14 @@ class TestUpdateFileVersion:
         setup_file = tmp_path / "setup.py"
         setup_file.write_text('version = "0.5.0"\n')
         rm._update_file_version(setup_file, "0.5.0", "0.6.0")
-        assert '0.6.0' in setup_file.read_text()
+        assert "0.6.0" in setup_file.read_text()
 
     def test_dry_run_doesnt_write(self, tmp_path):
         rm = ReleaseManager(dry_run=True)
         init_file = tmp_path / "__init__.py"
         init_file.write_text('__version__ = "1.0.0"\n')
         rm._update_file_version(init_file, "1.0.0", "2.0.0")
-        assert '1.0.0' in init_file.read_text()
+        assert "1.0.0" in init_file.read_text()
 
     def test_no_version_pattern_doesnt_crash(self, tmp_path):
         rm = ReleaseManager(dry_run=False)
@@ -127,7 +127,7 @@ class TestUpdateVersionFiles:
         init = tmp_path / "__init__.py"
         init.write_text('__version__ = "1.0.0"\n')
         rm.update_version_files("1.0.0", "2.0.0")
-        assert '2.0.0' in init.read_text()
+        assert "2.0.0" in init.read_text()
 
     def test_skips_nonexistent_files(self, tmp_path):
         rm = ReleaseManager(dry_run=False)

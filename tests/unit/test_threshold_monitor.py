@@ -18,7 +18,9 @@ from threshold_monitor import ThresholdMonitor
 
 def _make_monitor(tmp_path=None):
     return ThresholdMonitor(
-        config_path=str(tmp_path / "nonexistent.yaml") if tmp_path else "/nonexistent/path.yaml"
+        config_path=(
+            str(tmp_path / "nonexistent.yaml") if tmp_path else "/nonexistent/path.yaml"
+        )
     )
 
 
@@ -37,7 +39,9 @@ class TestThresholdMonitorInit:
 
     def test_load_custom_config(self, tmp_path):
         config_file = tmp_path / "config.yaml"
-        config_file.write_text(yaml.dump({"thresholds": {"coverage": 90, "complexity": 5}}))
+        config_file.write_text(
+            yaml.dump({"thresholds": {"coverage": 90, "complexity": 5}})
+        )
         monitor = ThresholdMonitor(str(config_file))
         assert monitor.config["thresholds"]["coverage"] == 90
 
@@ -50,11 +54,15 @@ class TestCheckAnalysisResults:
 
     def test_detects_tool_failure(self, tmp_path):
         results_file = tmp_path / "results.json"
-        results_file.write_text(json.dumps({
-            "tools": {
-                "pylint": {"status": "failed", "errors": "E0001: syntax error"},
-            }
-        }))
+        results_file.write_text(
+            json.dumps(
+                {
+                    "tools": {
+                        "pylint": {"status": "failed", "errors": "E0001: syntax error"},
+                    }
+                }
+            )
+        )
         monitor = _make_monitor(tmp_path)
         violations = monitor.check_analysis_results(str(results_file))
         assert len(violations) == 1
@@ -63,12 +71,16 @@ class TestCheckAnalysisResults:
 
     def test_no_violations_when_all_pass(self, tmp_path):
         results_file = tmp_path / "results.json"
-        results_file.write_text(json.dumps({
-            "tools": {
-                "pylint": {"status": "passed"},
-                "flake8": {"status": "passed"},
-            }
-        }))
+        results_file.write_text(
+            json.dumps(
+                {
+                    "tools": {
+                        "pylint": {"status": "passed"},
+                        "flake8": {"status": "passed"},
+                    }
+                }
+            )
+        )
         monitor = _make_monitor(tmp_path)
         violations = monitor.check_analysis_results(str(results_file))
         assert violations == []
@@ -119,11 +131,15 @@ class TestCheckComplexity:
 
     def test_detects_high_complexity_function(self, tmp_path):
         complexity_file = tmp_path / "complexity.json"
-        complexity_file.write_text(json.dumps({
-            "src/module.py": [
-                {"name": "my_func", "complexity": 15, "lineno": 10},
-            ]
-        }))
+        complexity_file.write_text(
+            json.dumps(
+                {
+                    "src/module.py": [
+                        {"name": "my_func", "complexity": 15, "lineno": 10},
+                    ]
+                }
+            )
+        )
         monitor = _make_monitor(tmp_path)
         violations = monitor.check_complexity(str(complexity_file))
         assert len(violations) == 1
@@ -132,11 +148,15 @@ class TestCheckComplexity:
 
     def test_ignores_low_complexity(self, tmp_path):
         complexity_file = tmp_path / "complexity.json"
-        complexity_file.write_text(json.dumps({
-            "src/module.py": [
-                {"name": "simple_func", "complexity": 3, "lineno": 5},
-            ]
-        }))
+        complexity_file.write_text(
+            json.dumps(
+                {
+                    "src/module.py": [
+                        {"name": "simple_func", "complexity": 3, "lineno": 5},
+                    ]
+                }
+            )
+        )
         monitor = _make_monitor(tmp_path)
         violations = monitor.check_complexity(str(complexity_file))
         assert violations == []
@@ -150,18 +170,22 @@ class TestCheckSecurity:
 
     def test_detects_security_issue(self, tmp_path):
         bandit_file = tmp_path / "bandit.json"
-        bandit_file.write_text(json.dumps({
-            "results": [
+        bandit_file.write_text(
+            json.dumps(
                 {
-                    "issue_text": "Use of unsafe function",
-                    "issue_severity": "HIGH",
-                    "filename": "src/app.py",
-                    "line_number": 42,
-                    "issue_confidence": "HIGH",
-                    "issue_cwe": {"id": "CWE-78"},
+                    "results": [
+                        {
+                            "issue_text": "Use of unsafe function",
+                            "issue_severity": "HIGH",
+                            "filename": "src/app.py",
+                            "line_number": 42,
+                            "issue_confidence": "HIGH",
+                            "issue_cwe": {"id": "CWE-78"},
+                        }
+                    ]
                 }
-            ]
-        }))
+            )
+        )
         monitor = _make_monitor(tmp_path)
         violations = monitor.check_security(str(bandit_file))
         assert len(violations) == 1
@@ -170,18 +194,20 @@ class TestCheckSecurity:
 
     def test_medium_severity_maps_to_high(self, tmp_path):
         bandit_file = tmp_path / "bandit.json"
-        bandit_file.write_text(json.dumps({
-            "results": [{"issue_severity": "MEDIUM", "issue_text": "issue"}]
-        }))
+        bandit_file.write_text(
+            json.dumps(
+                {"results": [{"issue_severity": "MEDIUM", "issue_text": "issue"}]}
+            )
+        )
         monitor = _make_monitor(tmp_path)
         violations = monitor.check_security(str(bandit_file))
         assert violations[0]["severity"] == "high"
 
     def test_low_severity_maps_to_medium(self, tmp_path):
         bandit_file = tmp_path / "bandit.json"
-        bandit_file.write_text(json.dumps({
-            "results": [{"issue_severity": "LOW", "issue_text": "issue"}]
-        }))
+        bandit_file.write_text(
+            json.dumps({"results": [{"issue_severity": "LOW", "issue_text": "issue"}]})
+        )
         monitor = _make_monitor(tmp_path)
         violations = monitor.check_security(str(bandit_file))
         assert violations[0]["severity"] == "medium"

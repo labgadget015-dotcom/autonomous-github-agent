@@ -143,8 +143,12 @@ class TestRoute:
     def test_route_simple_task_tries_local_first(self):
         router = LLMRouter()
         mock_resp = LLMResponse(
-            content="Local result", model="local", tokens_used=10,
-            cost=0.0, latency_ms=50.0, success=True
+            content="Local result",
+            model="local",
+            tokens_used=10,
+            cost=0.0,
+            latency_ms=50.0,
+            success=True,
         )
         with patch.object(router, "call_local", return_value=mock_resp) as mock_local:
             result = router.route("Format my code", "format")
@@ -160,15 +164,19 @@ class TestRoute:
             patch.object(router, "call_local", return_value=failed_resp),
             patch.object(router, "call_cloud", return_value=cloud_resp) as mock_cloud,
         ):
-            result = router.route("Security critical fix", "security", {"severity": "HIGH"})
+            result = router.route(
+                "Security critical fix", "security", {"severity": "HIGH"}
+            )
         # Critical tasks should go straight to cloud
         assert result.content == "Cloud response"
 
     def test_route_increments_total_stats(self):
         router = LLMRouter()
         failed_resp = LLMResponse("", "local", 0, 0.0, 0, False)
-        with patch.object(router, "call_local", return_value=failed_resp), \
-             patch.object(router, "call_cloud", return_value=failed_resp):
+        with (
+            patch.object(router, "call_local", return_value=failed_resp),
+            patch.object(router, "call_cloud", return_value=failed_resp),
+        ):
             router.route("test", "format")
         assert router.stats["total"] == 1
 

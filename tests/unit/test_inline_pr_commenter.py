@@ -20,6 +20,7 @@ def _make_bot(monkeypatch):
     monkeypatch.setenv("PR_NUMBER", "42")
     monkeypatch.setenv("COMMIT_SHA", "abc123")
     from inline_pr_commenter import InlinePRCommentBot
+
     return InlinePRCommentBot()
 
 
@@ -48,7 +49,14 @@ class TestLoadAnalysisResults:
     def test_loads_pylint_results(self, monkeypatch, tmp_path):
         monkeypatch.chdir(tmp_path)
         pylint_data = [
-            {"path": "module.py", "line": 10, "type": "error", "symbol": "undefined-variable", "message": "Undefined", "message-id": "E0602"}
+            {
+                "path": "module.py",
+                "line": 10,
+                "type": "error",
+                "symbol": "undefined-variable",
+                "message": "Undefined",
+                "message-id": "E0602",
+            }
         ]
         (tmp_path / "pylint-report.json").write_text(json.dumps(pylint_data))
         bot = _make_bot(monkeypatch)
@@ -60,7 +68,13 @@ class TestLoadAnalysisResults:
         monkeypatch.chdir(tmp_path)
         bandit_data = {
             "results": [
-                {"filename": "module.py", "line_number": 5, "issue_severity": "HIGH", "issue_text": "SQL injection", "issue_confidence": "HIGH"}
+                {
+                    "filename": "module.py",
+                    "line_number": 5,
+                    "issue_severity": "HIGH",
+                    "issue_text": "SQL injection",
+                    "issue_confidence": "HIGH",
+                }
             ]
         }
         (tmp_path / "bandit-report.json").write_text(json.dumps(bandit_data))
@@ -71,9 +85,7 @@ class TestLoadAnalysisResults:
     def test_loads_complexity_results(self, monkeypatch, tmp_path):
         monkeypatch.chdir(tmp_path)
         complexity_data = {
-            "module.py": [
-                {"name": "complex_func", "lineno": 20, "complexity": 15}
-            ]
+            "module.py": [{"name": "complex_func", "lineno": 20, "complexity": 15}]
         }
         (tmp_path / "complexity.json").write_text(json.dumps(complexity_data))
         bot = _make_bot(monkeypatch)
@@ -88,7 +100,7 @@ class TestFormatPylintComment:
             "symbol": "missing-docstring",
             "message": "Missing module docstring",
             "type": "convention",
-            "message-id": "C0114"
+            "message-id": "C0114",
         }
         comment = bot._format_pylint_comment(issue)
         assert "Pylint" in comment
@@ -96,7 +108,12 @@ class TestFormatPylintComment:
 
     def test_format_includes_fix_suggestion(self, monkeypatch):
         bot = _make_bot(monkeypatch)
-        issue = {"symbol": "missing-docstring", "message": "Missing", "type": "convention", "message-id": "C0114"}
+        issue = {
+            "symbol": "missing-docstring",
+            "message": "Missing",
+            "type": "convention",
+            "message-id": "C0114",
+        }
         comment = bot._format_pylint_comment(issue)
         assert "docstring" in comment.lower()
 
@@ -110,7 +127,7 @@ class TestFormatBanditComment:
             "issue_text": "SQL injection",
             "issue_cwe": {"id": "89"},
             "code": "cursor.execute(query)",
-            "test_id": "B601"
+            "test_id": "B601",
         }
         comment = bot._format_bandit_comment(issue)
         assert "HIGH" in comment
@@ -118,13 +135,25 @@ class TestFormatBanditComment:
 
     def test_high_severity_has_alert_emoji(self, monkeypatch):
         bot = _make_bot(monkeypatch)
-        issue = {"issue_severity": "HIGH", "issue_confidence": "HIGH", "issue_text": "Issue", "issue_cwe": {}, "code": ""}
+        issue = {
+            "issue_severity": "HIGH",
+            "issue_confidence": "HIGH",
+            "issue_text": "Issue",
+            "issue_cwe": {},
+            "code": "",
+        }
         comment = bot._format_bandit_comment(issue)
         assert "🚨" in comment
 
     def test_medium_severity_has_warning_emoji(self, monkeypatch):
         bot = _make_bot(monkeypatch)
-        issue = {"issue_severity": "MEDIUM", "issue_confidence": "MEDIUM", "issue_text": "Issue", "issue_cwe": {}, "code": ""}
+        issue = {
+            "issue_severity": "MEDIUM",
+            "issue_confidence": "MEDIUM",
+            "issue_text": "Issue",
+            "issue_cwe": {},
+            "code": "",
+        }
         comment = bot._format_bandit_comment(issue)
         assert "⚠️" in comment
 

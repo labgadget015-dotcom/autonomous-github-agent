@@ -119,7 +119,9 @@ class TestExecuteLifecycle:
 
     def test_task_id_used_from_task_dict(self):
         agent = _make_agent()
-        result = run(agent.execute({"action": "do_work", "id": "my-task-123", "params": {}}))
+        result = run(
+            agent.execute({"action": "do_work", "id": "my-task-123", "params": {}})
+        )
         assert result["task_id"] == "my-task-123"
 
     def test_validation_failure_returns_error(self):
@@ -157,7 +159,9 @@ class TestExecuteLifecycle:
             patch("core.agent_base.PolicyEngine"),
         ):
             agent = BrokenAgent("broken", {})
-            agent.policy.check_action = AsyncMock(return_value={"requires_approval": False})
+            agent.policy.check_action = AsyncMock(
+                return_value={"requires_approval": False}
+            )
             agent.audit.log_action = AsyncMock()
 
         result = run(agent.execute({"action": "do_work"}))
@@ -181,7 +185,9 @@ class TestExecuteLifecycle:
             patch("core.agent_base.PolicyEngine"),
         ):
             agent = BrokenAgent("broken2", {})
-            agent.policy.check_action = AsyncMock(return_value={"requires_approval": False})
+            agent.policy.check_action = AsyncMock(
+                return_value={"requires_approval": False}
+            )
             agent.audit.log_action = AsyncMock()
 
         run(agent.execute({"action": "do_work"}))

@@ -13,7 +13,11 @@ if _scripts_path not in sys.path:
     sys.path.insert(0, _scripts_path)
 
 from elite_copilot import (
-    CopilotMode, TaskPriority, CopilotTask, CopilotInsight, EliteCopilot
+    CopilotMode,
+    TaskPriority,
+    CopilotTask,
+    CopilotInsight,
+    EliteCopilot,
 )
 
 
@@ -87,6 +91,7 @@ class TestEliteCopilotInit:
 
     def test_custom_mode_from_config(self, tmp_path):
         import yaml
+
         config_file = tmp_path / "config.yml"
         config_file.write_text(yaml.dump({"mode": "guardian"}))
         copilot = EliteCopilot(config_path=str(config_file))

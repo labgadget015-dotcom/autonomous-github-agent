@@ -29,6 +29,7 @@ class TestGitHubClientInit:
         with patch("core.github_client.Github") as mock_gh_cls:
             with patch.dict("os.environ", {}, clear=True):
                 from core.github_client import GitHubClient
+
                 client = GitHubClient({})
             mock_gh_cls.assert_called()
 

@@ -23,6 +23,7 @@ def run(coro):
 
 def _make_logger(tmp_path: Path):
     from core.audit_logger import AuditLogger
+
     return AuditLogger({"audit_log_path": str(tmp_path / "audit.jsonl")})
 
 
@@ -88,6 +89,7 @@ class TestGetAuditTrail:
 class TestRollbackInstructions:
     def _rollback(self, action, params=None, result=None):
         from core.audit_logger import AuditLogger
+
         al = AuditLogger.__new__(AuditLogger)
         return al._generate_rollback_instructions(action, params or {}, result or {})
 
@@ -138,7 +140,9 @@ class TestClose:
 
     def test_close_calls_pg_close(self, tmp_path):
         al = _make_logger(tmp_path)
-        mock_conn = al._pg_conn = __import__("unittest.mock", fromlist=["MagicMock"]).MagicMock()
+        mock_conn = al._pg_conn = __import__(
+            "unittest.mock", fromlist=["MagicMock"]
+        ).MagicMock()
         al.close()
         mock_conn.close.assert_called_once()
 
@@ -146,6 +150,7 @@ class TestClose:
 class TestComputeChainHash:
     def test_hash_is_deterministic(self):
         from core.audit_logger import AuditLogger
+
         entry = {"action": "test", "params": {}}
         h1 = AuditLogger._compute_chain_hash("prev", entry)
         h2 = AuditLogger._compute_chain_hash("prev", entry)
@@ -153,6 +158,7 @@ class TestComputeChainHash:
 
     def test_different_prev_hash_produces_different_result(self):
         from core.audit_logger import AuditLogger
+
         entry = {"action": "test"}
         h1 = AuditLogger._compute_chain_hash("aaa", entry)
         h2 = AuditLogger._compute_chain_hash("bbb", entry)
@@ -160,6 +166,7 @@ class TestComputeChainHash:
 
     def test_hash_is_64_hex_chars(self):
         from core.audit_logger import AuditLogger
+
         h = AuditLogger._compute_chain_hash("0" * 64, {"action": "x"})
         assert len(h) == 64
         assert all(c in "0123456789abcdef" for c in h)

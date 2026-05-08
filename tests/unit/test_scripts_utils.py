@@ -30,6 +30,7 @@ class TestLoadJsonFile:
 
 # Use direct import by manipulating sys.path at module level
 import sys as _sys
+
 _scripts_path = str(Path(__file__).parent.parent.parent / ".github" / "scripts")
 if _scripts_path not in _sys.path:
     _sys.path.insert(0, _scripts_path)
@@ -131,7 +132,7 @@ class TestFormatFileSize:
         assert "MB" in result
 
     def test_gigabytes(self):
-        result = format_file_size(1024 ** 3)
+        result = format_file_size(1024**3)
         assert "GB" in result
 
     def test_zero_bytes(self):

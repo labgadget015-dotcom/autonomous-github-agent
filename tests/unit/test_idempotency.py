@@ -35,14 +35,22 @@ class TestIssueGuard:
         assert result is None
 
     def test_finds_exact_title_duplicate(self):
-        existing = [{"number": 42, "title": "Fix: urllib3 CVE", "labels": [{"name": "security"}]}]
+        existing = [
+            {
+                "number": 42,
+                "title": "Fix: urllib3 CVE",
+                "labels": [{"name": "security"}],
+            }
+        ]
         guard = IssueGuard(self._make_client(existing))
         result = guard.find_duplicate("Fix: urllib3 CVE", labels=["security"])
         assert result is not None
         assert result["number"] == 42
 
     def test_no_match_when_labels_differ(self):
-        existing = [{"number": 42, "title": "Fix: urllib3 CVE", "labels": [{"name": "docs"}]}]
+        existing = [
+            {"number": 42, "title": "Fix: urllib3 CVE", "labels": [{"name": "docs"}]}
+        ]
         guard = IssueGuard(self._make_client(existing))
         result = guard.find_duplicate("Fix: urllib3 CVE", labels=["security"])
         assert result is None

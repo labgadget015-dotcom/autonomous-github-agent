@@ -79,6 +79,7 @@ class TestExtractCommitFeatures:
         # Returns either None or a zero array on failure
         if features is not None:
             import numpy as np
+
             assert np.all(features == 0)
 
     def test_test_files_counted_separately(self):
@@ -129,14 +130,18 @@ class TestEstablishBaseline:
 
     def test_baseline_set_with_valid_commits(self):
         detector = AnomalyDetector()
-        commits = [_make_commit(files_changed=i + 1, additions=i * 10) for i in range(5)]
+        commits = [
+            _make_commit(files_changed=i + 1, additions=i * 10) for i in range(5)
+        ]
         detector.establish_baseline(commits)
         assert detector.baseline is not None
         assert "mean" in detector.baseline
 
     def test_sufficient_data_trains_model(self):
         detector = AnomalyDetector()
-        commits = [_make_commit(files_changed=i + 1, additions=i * 20) for i in range(10)]
+        commits = [
+            _make_commit(files_changed=i + 1, additions=i * 20) for i in range(10)
+        ]
         detector.establish_baseline(commits)
         assert detector.baseline is not None
 

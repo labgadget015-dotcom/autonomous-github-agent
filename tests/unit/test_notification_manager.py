@@ -38,14 +38,16 @@ class TestNotificationManagerInit:
         assert "slack" in manager.enabled_channels
 
     def test_discord_enabled_when_env_set(self, monkeypatch):
-        manager = _make_manager(monkeypatch, discord_url="https://discord.com/api/webhooks/test")
+        manager = _make_manager(
+            monkeypatch, discord_url="https://discord.com/api/webhooks/test"
+        )
         assert "discord" in manager.enabled_channels
 
     def test_both_channels_enabled(self, monkeypatch):
         manager = _make_manager(
             monkeypatch,
             slack_url="https://hooks.slack.com/test",
-            discord_url="https://discord.com/api/webhooks/test"
+            discord_url="https://discord.com/api/webhooks/test",
         )
         assert len(manager.enabled_channels) == 2
 
@@ -115,7 +117,9 @@ class TestNotifySecurityIssue:
     def test_security_message_contains_severity(self, monkeypatch):
         manager = _make_manager(monkeypatch)
         with patch.object(manager, "send_all_channels") as mock_send:
-            manager.notify_security_issue({"severity": "HIGH", "file": "app.py", "line": 42})
+            manager.notify_security_issue(
+                {"severity": "HIGH", "file": "app.py", "line": 42}
+            )
         args = mock_send.call_args[0]
         assert "HIGH" in args[0]
         assert "app.py" in args[0]
@@ -135,7 +139,9 @@ class TestNotifyQualityGateFailure:
     def test_quality_gate_message_contains_failures(self, monkeypatch):
         manager = _make_manager(monkeypatch)
         with patch.object(manager, "send_all_channels") as mock_send:
-            manager.notify_quality_gate_failure(["Coverage below 80%", "Security issues found"])
+            manager.notify_quality_gate_failure(
+                ["Coverage below 80%", "Security issues found"]
+            )
         args = mock_send.call_args[0]
         assert "Coverage below 80%" in args[0]
         assert "Security issues found" in args[0]
@@ -149,14 +155,18 @@ class TestSendAllChannels:
 
     def test_sends_to_slack_when_enabled(self, monkeypatch):
         manager = _make_manager(monkeypatch, slack_url="https://hooks.slack.com/test")
-        with patch.object(manager, "send_slack_notification", return_value=True) as mock_slack:
+        with patch.object(
+            manager, "send_slack_notification", return_value=True
+        ) as mock_slack:
             result = manager.send_all_channels("test msg")
         mock_slack.assert_called_once()
         assert "slack" in result
 
     def test_sends_to_discord_when_enabled(self, monkeypatch):
         manager = _make_manager(monkeypatch, discord_url="https://discord.com/api/test")
-        with patch.object(manager, "send_discord_notification", return_value=True) as mock_discord:
+        with patch.object(
+            manager, "send_discord_notification", return_value=True
+        ) as mock_discord:
             result = manager.send_all_channels("test msg")
         mock_discord.assert_called_once()
         assert "discord" in result
@@ -166,13 +176,15 @@ class TestSendDailySummary:
     def test_sends_daily_summary(self, monkeypatch):
         manager = _make_manager(monkeypatch)
         with patch.object(manager, "send_all_channels") as mock_send:
-            manager.send_daily_summary({
-                "total_runs": 50,
-                "success_rate": 0.95,
-                "avg_duration": 120.5,
-                "coverage": 85.0,
-                "security_issues": 2,
-            })
+            manager.send_daily_summary(
+                {
+                    "total_runs": 50,
+                    "success_rate": 0.95,
+                    "avg_duration": 120.5,
+                    "coverage": 85.0,
+                    "security_issues": 2,
+                }
+            )
         mock_send.assert_called_once()
         msg = mock_send.call_args[0][0]
         assert "50" in msg  # total_runs

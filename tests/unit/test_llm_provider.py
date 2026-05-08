@@ -152,11 +152,13 @@ class TestGetDefaultModel:
         from core.llm_provider import LLMClient
 
         with patch("openai.OpenAI"), patch("anthropic.Anthropic"):
-            return LLMClient({
-                "llm_provider": provider,
-                "openai_api_key": "sk-test",
-                "anthropic_api_key": "ant-test",
-            })
+            return LLMClient(
+                {
+                    "llm_provider": provider,
+                    "openai_api_key": "sk-test",
+                    "anthropic_api_key": "ant-test",
+                }
+            )
 
     def test_openai_default_model(self):
         client = self._make_client("openai")

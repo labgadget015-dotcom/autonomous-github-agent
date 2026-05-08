@@ -39,13 +39,7 @@ class TestCheckForCaching:
 
     def test_no_cache_step(self, tmp_path):
         opt = _make_optimizer(tmp_path)
-        workflow = {
-            "jobs": {
-                "build": {
-                    "steps": [{"run": "echo hello"}]
-                }
-            }
-        }
+        workflow = {"jobs": {"build": {"steps": [{"run": "echo hello"}]}}}
         assert opt._check_for_caching(workflow) is False
 
     def test_empty_workflow(self, tmp_path):
@@ -58,22 +52,14 @@ class TestCheckForMatrix:
         opt = _make_optimizer(tmp_path)
         workflow = {
             "jobs": {
-                "test": {
-                    "strategy": {
-                        "matrix": {"python-version": ["3.10", "3.11"]}
-                    }
-                }
+                "test": {"strategy": {"matrix": {"python-version": ["3.10", "3.11"]}}}
             }
         }
         assert opt._check_for_matrix(workflow) is True
 
     def test_no_matrix_strategy(self, tmp_path):
         opt = _make_optimizer(tmp_path)
-        workflow = {
-            "jobs": {
-                "test": {"steps": [{"run": "pytest"}]}
-            }
-        }
+        workflow = {"jobs": {"test": {"steps": [{"run": "pytest"}]}}}
         assert opt._check_for_matrix(workflow) is False
 
 
@@ -93,11 +79,7 @@ class TestCheckForArtifacts:
 
     def test_no_artifact_upload(self, tmp_path):
         opt = _make_optimizer(tmp_path)
-        workflow = {
-            "jobs": {
-                "build": {"steps": [{"run": "make build"}]}
-            }
-        }
+        workflow = {"jobs": {"build": {"steps": [{"run": "make build"}]}}}
         assert opt._check_for_artifacts(workflow) is False
 
 
@@ -139,7 +121,9 @@ class TestAnalyze:
         workflows_dir.mkdir(parents=True)
         workflow = {
             "on": "push",
-            "jobs": {"build": {"runs-on": "ubuntu-latest", "steps": [{"run": "pytest"}]}}
+            "jobs": {
+                "build": {"runs-on": "ubuntu-latest", "steps": [{"run": "pytest"}]}
+            },
         }
         (workflows_dir / "ci.yml").write_text(yaml.dump(workflow))
         opt = _make_optimizer(tmp_path)
@@ -155,27 +139,23 @@ class TestAnalyze:
             "jobs": {
                 "build": {
                     "runs-on": "ubuntu-latest",
-                    "steps": [{"uses": "actions/cache@v3", "with": {"path": "~"}}]
+                    "steps": [{"uses": "actions/cache@v3", "with": {"path": "~"}}],
                 }
-            }
+            },
         }
         (workflows_dir / "ci.yml").write_text(yaml.dump(workflow))
         opt = _make_optimizer(tmp_path)
         result = opt.analyze()
-        cache_warnings = [r for r in result["optimizations"] if r.get("type") == "missing_cache"]
+        cache_warnings = [
+            r for r in result["optimizations"] if r.get("type") == "missing_cache"
+        ]
         assert cache_warnings == []
 
 
 class TestAnalyzeWorkflow:
     def test_workflow_with_no_cache_flagged(self, tmp_path):
         opt = _make_optimizer(tmp_path)
-        workflow = {
-            "jobs": {
-                "build": {
-                    "steps": [{"run": "pytest"}]
-                }
-            }
-        }
+        workflow = {"jobs": {"build": {"steps": [{"run": "pytest"}]}}}
         results = {"optimizations": [], "testing": [], "linting": [], "deployment": []}
         workflow_file = tmp_path / "ci.yml"
         workflow_file.write_text(yaml.dump(workflow))

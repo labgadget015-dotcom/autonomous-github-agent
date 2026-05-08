@@ -14,6 +14,7 @@ def run(coro):
 class TestHashChain:
     def _make_logger(self, tmp_path: Path):
         from core.audit_logger import AuditLogger
+
         cfg = {"audit_log_path": str(tmp_path / "audit.jsonl")}
         return AuditLogger(cfg)
 
@@ -61,6 +62,7 @@ class TestHashChain:
     def test_chain_head_persists_across_instances(self, tmp_path):
         """New AuditLogger instance reading existing file continues chain."""
         from core.audit_logger import AuditLogger
+
         cfg = {"audit_log_path": str(tmp_path / "audit.jsonl")}
         al1 = AuditLogger(cfg)
         run(al1.log_action("a", "op1", {}, {}, "t1"))

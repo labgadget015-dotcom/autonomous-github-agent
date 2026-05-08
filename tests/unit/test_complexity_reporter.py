@@ -63,7 +63,7 @@ class TestAnalyzeComplexity:
                 "src/module.py": [
                     {"name": "complex_func", "complexity": 15, "lineno": 10},
                 ]
-            }
+            },
         )
         issues = reporter.analyze_complexity()
         assert len(issues["high_complexity"]) == 1
@@ -76,7 +76,7 @@ class TestAnalyzeComplexity:
                 "src/module.py": [
                     {"name": "simple_func", "complexity": 3, "lineno": 1},
                 ]
-            }
+            },
         )
         issues = reporter.analyze_complexity()
         assert len(issues["high_complexity"]) == 0
@@ -89,32 +89,25 @@ class TestAnalyzeComplexity:
                     {"name": "func_a", "complexity": 4, "lineno": 1},
                     {"name": "func_b", "complexity": 6, "lineno": 20},
                 ]
-            }
+            },
         )
         issues = reporter.analyze_complexity()
         assert issues["avg_complexity"] == 5.0
         assert issues["total_functions"] == 2
 
     def test_low_maintainability_flagged(self):
-        reporter = _make_reporter(
-            None,
-            maintainability_data={"src/module.py": 40.0}
-        )
+        reporter = _make_reporter(None, maintainability_data={"src/module.py": 40.0})
         issues = reporter.analyze_complexity()
         assert len(issues["low_maintainability"]) == 1
 
     def test_high_maintainability_not_flagged(self):
-        reporter = _make_reporter(
-            None,
-            maintainability_data={"src/module.py": 80.0}
-        )
+        reporter = _make_reporter(None, maintainability_data={"src/module.py": 80.0})
         issues = reporter.analyze_complexity()
         assert len(issues["low_maintainability"]) == 0
 
     def test_maintainability_as_dict_with_mi_key(self):
         reporter = _make_reporter(
-            None,
-            maintainability_data={"src/module.py": {"mi": 50.0}}
+            None, maintainability_data={"src/module.py": {"mi": 50.0}}
         )
         issues = reporter.analyze_complexity()
         assert len(issues["low_maintainability"]) == 1
@@ -138,7 +131,7 @@ class TestGenerateMarkdownReport:
             None,
             complexity_data={
                 "src/app.py": [{"name": "huge_func", "complexity": 25, "lineno": 1}]
-            }
+            },
         )
         issues = reporter.analyze_complexity()
         report = reporter.generate_markdown_report(issues)
@@ -146,10 +139,7 @@ class TestGenerateMarkdownReport:
         assert "huge_func" in report
 
     def test_report_contains_low_maintainability_section(self):
-        reporter = _make_reporter(
-            None,
-            maintainability_data={"src/module.py": 30.0}
-        )
+        reporter = _make_reporter(None, maintainability_data={"src/module.py": 30.0})
         issues = reporter.analyze_complexity()
         report = reporter.generate_markdown_report(issues)
         assert "Maintainability" in report

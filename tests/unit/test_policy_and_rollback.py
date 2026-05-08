@@ -18,6 +18,7 @@ class TestCheckPolicies:
     def test_check_policies_no_results_file(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         import check_policy
+
         audit = check_policy.check_policies()
         assert audit["status"] == "passed"
         assert len(audit["violations"]) == 0
@@ -27,18 +28,21 @@ class TestCheckPolicies:
         monkeypatch.chdir(tmp_path)
         (tmp_path / "results.json").write_text(json.dumps({"status": "success"}))
         import check_policy
+
         audit = check_policy.check_policies()
         assert audit["status"] == "passed"
 
     def test_check_policies_creates_audit_file(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         import check_policy
+
         check_policy.check_policies()
         assert (tmp_path / "audit.log").exists()
 
     def test_audit_file_has_correct_structure(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         import check_policy
+
         check_policy.check_policies()
         data = json.loads((tmp_path / "audit.log").read_text())
         assert "policies" in data
@@ -56,6 +60,7 @@ class TestRollbackManifest:
         monkeypatch.setenv("AUTHOR", "Alice")
         monkeypatch.setenv("FILES_CHANGED", "src/main.py tests/test_main.py")
         import generate_rollback_manifest
+
         generate_rollback_manifest.main()
         assert (tmp_path / "docs").exists()
         assert (tmp_path / "docs" / "ROLLBACK.md").exists()
@@ -68,6 +73,7 @@ class TestRollbackManifest:
         monkeypatch.setenv("AUTHOR", "Bob")
         monkeypatch.setenv("FILES_CHANGED", "core/module.py")
         import generate_rollback_manifest
+
         generate_rollback_manifest.main()
         content = (tmp_path / "docs" / "ROLLBACK.md").read_text()
         assert "abc123d" in content
@@ -86,6 +92,7 @@ class TestRollbackManifest:
         monkeypatch.setenv("AUTHOR", "Charlie")
         monkeypatch.setenv("FILES_CHANGED", "")
         import generate_rollback_manifest
+
         generate_rollback_manifest.main()
         content = (tmp_path / "docs" / "ROLLBACK.md").read_text()
         assert "def456" in content
@@ -100,6 +107,7 @@ class TestRollbackManifest:
         files = " ".join([f"file_{i}.py" for i in range(25)])
         monkeypatch.setenv("FILES_CHANGED", files)
         import generate_rollback_manifest
+
         generate_rollback_manifest.main()
         content = (tmp_path / "docs" / "ROLLBACK.md").read_text()
         # Should show 25 files changed but only list 20
@@ -114,6 +122,7 @@ class TestRollbackManifest:
         monkeypatch.setenv("AUTHOR", "Dev")
         monkeypatch.setenv("FILES_CHANGED", "")
         import generate_rollback_manifest
+
         generate_rollback_manifest.main()
         content = (tmp_path / "docs" / "ROLLBACK.md").read_text()
         assert "0 file(s)" in content

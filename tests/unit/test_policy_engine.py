@@ -146,6 +146,7 @@ class TestSavePolicies:
         engine.save_policies()
         import yaml
         from pathlib import Path
+
         with open(policy_file) as f:
             data = yaml.safe_load(f)
         assert "requires_approval" in data

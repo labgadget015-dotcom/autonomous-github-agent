@@ -109,6 +109,7 @@ class TestGetWorkflowRuns:
     def test_returns_empty_on_request_error(self):
         m = _make_monitor()
         import requests
+
         with patch("requests.get", side_effect=requests.RequestException("Error")):
             result = m.get_workflow_runs()
         assert result == []
@@ -138,6 +139,7 @@ class TestGetRunDetails:
     def test_returns_none_on_error(self):
         m = _make_monitor()
         import requests
+
         with patch("requests.get", side_effect=requests.RequestException("Error")):
             result = m.get_run_details(12345)
         assert result is None
@@ -156,6 +158,7 @@ class TestGetRunJobs:
     def test_returns_empty_on_error(self):
         m = _make_monitor()
         import requests
+
         with patch("requests.get", side_effect=requests.RequestException("Error")):
             result = m.get_run_jobs(12345)
         assert result == []

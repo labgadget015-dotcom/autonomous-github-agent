@@ -69,7 +69,11 @@ class TestOrchestratorInit:
 
     def test_custom_routing_strategy_respected(self):
         orch = _make_orchestrator(
-            config={"routing_strategy": "round-robin", "github_token": "x", "openai_api_key": "x"}
+            config={
+                "routing_strategy": "round-robin",
+                "github_token": "x",
+                "openai_api_key": "x",
+            }
         )
         assert orch.routing_strategy == "round-robin"
 
@@ -115,12 +119,18 @@ class TestDelegateTask:
         orch = _make_orchestrator()
         sub = _make_sub_agent(execute_result={"status": "success", "data": "ok"})
         orch.register_agent("pr_review_agent", sub)
-        result = run(orch._delegate_task({"task_type": "pr_review", "task_data": {"action": "test_action"}}))
+        result = run(
+            orch._delegate_task(
+                {"task_type": "pr_review", "task_data": {"action": "test_action"}}
+            )
+        )
         assert result is not None
 
     def test_delegate_unknown_task_type_returns_error(self):
         orch = _make_orchestrator()
-        result = run(orch._delegate_task({"task_type": "nonexistent_task", "task_data": {}}))
+        result = run(
+            orch._delegate_task({"task_type": "nonexistent_task", "task_data": {}})
+        )
         assert result["status"] == "error"
         assert "No agent" in result["error"]
 
@@ -184,7 +194,9 @@ class TestExecuteParallel:
         orch.max_parallel_tasks = 2
         sub = _make_sub_agent()
         orch.register_agent("pr_review_agent", sub)
-        tasks = [{"type": "pr_review", "data": {"action": "test_action"}} for _ in range(5)]
+        tasks = [
+            {"type": "pr_review", "data": {"action": "test_action"}} for _ in range(5)
+        ]
         result = run(orch._execute_parallel({"tasks": tasks}))
         assert result["total_tasks"] == 5
 
@@ -214,9 +226,7 @@ class TestExecuteSequential:
             {"type": "unknown_task", "data": {}},
             {"type": "pr_review", "data": {"action": "test_action"}},
         ]
-        result = run(
-            orch._execute_sequential({"tasks": tasks, "stop_on_error": True})
-        )
+        result = run(orch._execute_sequential({"tasks": tasks, "stop_on_error": True}))
         # Should stop after first error
         assert result["completed"] == 1
 
@@ -251,9 +261,13 @@ class TestGetAgentStatus:
 class TestCreateApprovalIssue:
     def test_missing_repo_info_returns_error(self):
         orch = _make_orchestrator()
-        result = run(orch._create_approval_issue({"action": "deploy", "agent": "deployer"}))
+        result = run(
+            orch._create_approval_issue({"action": "deploy", "agent": "deployer"})
+        )
         assert result["status"] == "error"
-        assert "Repository" in result["error"] or "repository" in result["error"].lower()
+        assert (
+            "Repository" in result["error"] or "repository" in result["error"].lower()
+        )
 
     def test_creates_issue_when_repo_info_provided(self):
         orch = _make_orchestrator()

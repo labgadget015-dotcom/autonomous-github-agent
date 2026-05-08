@@ -20,6 +20,7 @@ def _make_creator(monkeypatch):
     monkeypatch.setenv("GITHUB_REPOSITORY", "owner/repo")
     monkeypatch.setenv("GITHUB_RUN_ID", "12345")
     from issue_auto_creator import IssueAutoCreator
+
     return IssueAutoCreator()
 
 
@@ -56,18 +57,28 @@ class TestCheckQualityMetrics:
     def test_low_quality_score_creates_issue(self, monkeypatch, tmp_path):
         creator = _make_creator(monkeypatch)
         summary = tmp_path / "summary.json"
-        summary.write_text(json.dumps({"quality_score": 5.0, "security": {}, "high_complexity_functions": []}))
+        summary.write_text(
+            json.dumps(
+                {"quality_score": 5.0, "security": {}, "high_complexity_functions": []}
+            )
+        )
         issues = creator.check_quality_metrics(summary)
-        assert any("quality" in i["title"].lower() or "Quality" in i["title"] for i in issues)
+        assert any(
+            "quality" in i["title"].lower() or "Quality" in i["title"] for i in issues
+        )
 
     def test_high_security_vulnerabilities_creates_issue(self, monkeypatch, tmp_path):
         creator = _make_creator(monkeypatch)
         summary = tmp_path / "summary.json"
-        summary.write_text(json.dumps({
-            "quality_score": 9.0,
-            "security": {"high": 3, "medium": 0, "low": 0},
-            "high_complexity_functions": []
-        }))
+        summary.write_text(
+            json.dumps(
+                {
+                    "quality_score": 9.0,
+                    "security": {"high": 3, "medium": 0, "low": 0},
+                    "high_complexity_functions": [],
+                }
+            )
+        )
         issues = creator.check_quality_metrics(summary)
         assert any("security" in i["labels"] for i in issues)
 
@@ -75,22 +86,32 @@ class TestCheckQualityMetrics:
         creator = _make_creator(monkeypatch)
         summary = tmp_path / "summary.json"
         funcs = [{"name": f"func_{i}", "complexity": 15} for i in range(7)]
-        summary.write_text(json.dumps({
-            "quality_score": 9.0,
-            "security": {},
-            "high_complexity_functions": funcs
-        }))
+        summary.write_text(
+            json.dumps(
+                {
+                    "quality_score": 9.0,
+                    "security": {},
+                    "high_complexity_functions": funcs,
+                }
+            )
+        )
         issues = creator.check_quality_metrics(summary)
-        assert any("complexity" in i["labels"] or "Complexity" in i["title"] for i in issues)
+        assert any(
+            "complexity" in i["labels"] or "Complexity" in i["title"] for i in issues
+        )
 
     def test_good_metrics_no_issues(self, monkeypatch, tmp_path):
         creator = _make_creator(monkeypatch)
         summary = tmp_path / "summary.json"
-        summary.write_text(json.dumps({
-            "quality_score": 9.0,
-            "security": {"high": 0},
-            "high_complexity_functions": []
-        }))
+        summary.write_text(
+            json.dumps(
+                {
+                    "quality_score": 9.0,
+                    "security": {"high": 0},
+                    "high_complexity_functions": [],
+                }
+            )
+        )
         issues = creator.check_quality_metrics(summary)
         assert issues == []
 
@@ -155,6 +176,10 @@ class TestMakeRequest:
     def test_failed_request_returns_none(self, monkeypatch):
         creator = _make_creator(monkeypatch)
         import requests
-        with patch("requests.post", side_effect=requests.exceptions.RequestException("Connection error")):
+
+        with patch(
+            "requests.post",
+            side_effect=requests.exceptions.RequestException("Connection error"),
+        ):
             result = creator._make_request("issues", {"title": "test"})
         assert result is None

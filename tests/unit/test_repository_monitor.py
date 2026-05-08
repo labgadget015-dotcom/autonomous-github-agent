@@ -76,7 +76,12 @@ class TestMonitorPerformance:
 
     def test_counts_js_dependencies(self, tmp_path):
         (tmp_path / "package.json").write_text(
-            json.dumps({"dependencies": {"lodash": "4.17.0"}, "devDependencies": {"jest": "27.0.0"}})
+            json.dumps(
+                {
+                    "dependencies": {"lodash": "4.17.0"},
+                    "devDependencies": {"jest": "27.0.0"},
+                }
+            )
         )
         monitor = _make_monitor(tmp_path)
         perf = monitor._monitor_performance()

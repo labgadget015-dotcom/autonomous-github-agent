@@ -12,7 +12,11 @@ _scripts_path = str(Path(__file__).parent.parent.parent / ".github" / "scripts")
 if _scripts_path not in sys.path:
     sys.path.insert(0, _scripts_path)
 
-from streaming_results import StreamingResultWriter, StreamingResultReader, StreamingAggregator
+from streaming_results import (
+    StreamingResultWriter,
+    StreamingResultReader,
+    StreamingAggregator,
+)
 
 
 class TestStreamingResultWriter:
@@ -28,7 +32,7 @@ class TestStreamingResultWriter:
         output = tmp_path / "results.jsonl"
         async with StreamingResultWriter(output) as writer:
             await writer.write({"id": 1, "status": "ok"})
-        lines = [l for l in output.read_bytes().split(b'\n') if l]
+        lines = [l for l in output.read_bytes().split(b"\n") if l]
         assert len(lines) == 1
 
     @pytest.mark.asyncio
@@ -37,7 +41,7 @@ class TestStreamingResultWriter:
         async with StreamingResultWriter(output) as writer:
             for i in range(5):
                 await writer.write({"id": i, "value": i * 2})
-        lines = [l for l in output.read_bytes().split(b'\n') if l]
+        lines = [l for l in output.read_bytes().split(b"\n") if l]
         assert len(lines) == 5
 
     @pytest.mark.asyncio
@@ -83,6 +87,7 @@ class TestStreamingResultReader:
     @pytest.mark.asyncio
     async def test_reads_written_records(self, tmp_path):
         import json as stdlib_json
+
         output = tmp_path / "results.jsonl"
         # Write via writer
         async with StreamingResultWriter(output) as writer:
@@ -90,7 +95,7 @@ class TestStreamingResultReader:
                 await writer.write({"id": i})
 
         # Count via raw read to verify
-        lines = [l for l in output.read_bytes().split(b'\n') if l]
+        lines = [l for l in output.read_bytes().split(b"\n") if l]
         assert len(lines) == 3
 
     def test_reader_init(self, tmp_path):
@@ -125,21 +130,29 @@ class TestStreamingAggregator:
     @pytest.mark.asyncio
     async def test_process_result_counts_issues(self):
         agg = StreamingAggregator()
-        await agg.process_result({"issues": [
-            {"severity": "high", "tool": "ruff"},
-            {"severity": "low", "tool": "pylint"},
-        ]})
+        await agg.process_result(
+            {
+                "issues": [
+                    {"severity": "high", "tool": "ruff"},
+                    {"severity": "low", "tool": "pylint"},
+                ]
+            }
+        )
         summary = agg.get_summary()
         assert summary["total_issues"] == 2
 
     @pytest.mark.asyncio
     async def test_process_result_groups_by_severity(self):
         agg = StreamingAggregator()
-        await agg.process_result({"issues": [
-            {"severity": "high", "tool": "ruff"},
-            {"severity": "high", "tool": "ruff"},
-            {"severity": "low", "tool": "pylint"},
-        ]})
+        await agg.process_result(
+            {
+                "issues": [
+                    {"severity": "high", "tool": "ruff"},
+                    {"severity": "high", "tool": "ruff"},
+                    {"severity": "low", "tool": "pylint"},
+                ]
+            }
+        )
         summary = agg.get_summary()
         assert summary["issues_by_severity"]["high"] == 2
         assert summary["issues_by_severity"]["low"] == 1
@@ -147,10 +160,14 @@ class TestStreamingAggregator:
     @pytest.mark.asyncio
     async def test_process_result_groups_by_tool(self):
         agg = StreamingAggregator()
-        await agg.process_result({"issues": [
-            {"severity": "high", "tool": "ruff"},
-            {"severity": "medium", "tool": "ruff"},
-        ]})
+        await agg.process_result(
+            {
+                "issues": [
+                    {"severity": "high", "tool": "ruff"},
+                    {"severity": "medium", "tool": "ruff"},
+                ]
+            }
+        )
         summary = agg.get_summary()
         assert summary["issues_by_tool"]["ruff"] == 2
 
