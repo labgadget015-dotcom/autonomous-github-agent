@@ -1,5 +1,17 @@
 # Rollback Manifest
 
+## 10bd1e3 — 2026-05-08 08:46 UTC
+
+- **SHA**: `10bd1e35f9ec628b326a3183b40dd06da37211c6`
+- **Author**: GadgetAI
+- **Message**: fix: add explicit mypy targets when pass_filenames=false
+- **Files changed**: 1 file(s)
+
+**Changed files:**
+- `.pre-commit-config.yaml`
+
+---
+
 ## 0bbe948 — 2026-05-08 08:43 UTC
 
 - **SHA**: `0bbe9489ae2d6cbe9ce347198d4b6a5296807cbf`
