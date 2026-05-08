@@ -1,5 +1,19 @@
 # Rollback Manifest
 
+## 1326dc0 — 2026-05-08 08:33 UTC
+
+- **SHA**: `1326dc0ce900febccbce1ccdac89f8732dd95f13`
+- **Author**: GadgetAI
+- **Message**: style: reformat 3 files missed by black after ruff edits
+- **Files changed**: 3 file(s)
+
+**Changed files:**
+- `.github/scripts/performance_benchmark.py`
+- `overseer/dependency_manager.py`
+- `scripts/escalate_quality_issues.py`
+
+---
+
 ## 2948624 — 2026-05-08 08:29 UTC
 
 - **SHA**: `29486248cdd128ad13ced428bfe48827f3fe3e8c`
