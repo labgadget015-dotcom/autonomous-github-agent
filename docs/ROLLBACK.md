@@ -1,5 +1,17 @@
 # Rollback Manifest
 
+## e203d4d — 2026-05-08 10:14 UTC
+
+- **SHA**: `e203d4db9f9b63f6e67b9c691566aad0e3a5ea54`
+- **Author**: GadgetAI
+- **Message**: fix: add markdownlint config to disable rules that fail on auto-generated docs
+- **Files changed**: 1 file(s)
+
+**Changed files:**
+- `.markdownlint.json`
+
+---
+
 ## c2af2c8 — 2026-05-08 10:11 UTC
 
 - **SHA**: `c2af2c8d622da1c26b22e26cf9a4aefd1a3ba48b`
