@@ -1,5 +1,36 @@
 # Rollback Manifest
 
+## cb01fcd — 2026-05-08 09:25 UTC
+
+- **SHA**: `cb01fcd891be8ee181ac1917ac9fd3ed4b342aa5`
+- **Author**: GadgetAI
+- **Message**: style: strip trailing whitespace from hidden dirs and config files
+- **Files changed**: 32 file(s)
+
+**Changed files:**
+- `.bandit`
+- `.coveragerc`
+- `.devcontainer/devcontainer.json`
+- `.github/CI-CD-IMPLEMENTATION-SUMMARY.md`
+- `.github/ISSUE_TEMPLATE/bug_report.md`
+- `.github/ISSUE_TEMPLATE/feature_request.md`
+- `.github/ISSUE_TEMPLATE/uaip-config.yml`
+- `.github/QUICK-START-GUIDE.md`
+- `.github/config/analysis-config.yml`
+- `.github/config/grafana-dashboard.json`
+- `.github/config/policy.yml`
+- `.github/config/prometheus.yml`
+- `.github/scripts/cost_calculator.py`
+- `.github/scripts/deployment-automation.sh`
+- `.github/scripts/health_dashboard_generator.py`
+- `.github/scripts/inline_pr_commenter.py`
+- `.github/scripts/issue_auto_creator.py`
+- `.github/scripts/parallel_code_analyzer.py`
+- `.github/scripts/threshold_monitor.py`
+- `.github/workflows/ai_agent_workflow.yml`
+
+---
+
 ## 59847a4 — 2026-05-08 09:19 UTC
 
 - **SHA**: `59847a4c14eb6ae073f89d3153aeb44d04c7d1df`
