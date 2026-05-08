@@ -1,5 +1,17 @@
 # Rollback Manifest
 
+## 237059c — 2026-05-08 09:43 UTC
+
+- **SHA**: `237059cd1885795f080126490bd1b350880cfb48`
+- **Author**: GadgetAI
+- **Message**: fix: remove duplicate jsonData key in grafana-datasources.yml
+- **Files changed**: 1 file(s)
+
+**Changed files:**
+- `monitoring/grafana-datasources.yml`
+
+---
+
 ## e000cfa — 2026-05-08 09:39 UTC
 
 - **SHA**: `e000cfa6cb9977b5f40f71aefe07c097ef0af309`
