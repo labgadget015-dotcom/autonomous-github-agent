@@ -1,5 +1,35 @@
 # Rollback Manifest
 
+## 95aa060 — 2026-05-08 09:30 UTC
+
+- **SHA**: `95aa0609eaed70d405e43853e5d501cfc7e46dc4`
+- **Author**: GadgetAI
+- **Message**: style: ensure all files end with a newline
+- **Files changed**: 19 file(s)
+
+**Changed files:**
+- `.benchmark_results/benchmark_20260124_065337.json`
+- `.benchmark_results/benchmark_20260124_065410.json`
+- `.benchmark_results/benchmark_20260128_053038.json`
+- `.vscode/extensions.json`
+- `.workflow_history.json`
+- `CONTRIBUTING_GENERATED.md`
+- `COPILOT_INTEGRATION_REPORT.md`
+- `ai-optimization-report.json`
+- `analysis-results.json`
+- `copilot_integration_results.json`
+- `docs/API_REFERENCE.md`
+- `docs/CHANGELOG.md`
+- `docs/CONTRIBUTING_GENERATED.md`
+- `docs/FINAL_DEPLOYMENT_STATUS.md`
+- `docs/ROLLBACK.md`
+- `docs/USER_GUIDE.md`
+- `integration-test-results.json`
+- `requirements.txt`
+- `scripts/automation/README.md`
+
+---
+
 ## cb01fcd — 2026-05-08 09:25 UTC
 
 - **SHA**: `cb01fcd891be8ee181ac1917ac9fd3ed4b342aa5`
