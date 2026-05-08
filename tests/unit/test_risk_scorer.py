@@ -386,3 +386,4 @@ class TestLowOperationalRiskChange:
     def test_false_for_empty_or_missing_paths(self):
         assert not is_low_operational_risk_change([])
         assert not is_low_operational_risk_change(None)
+        assert not is_low_operational_risk_change([""])

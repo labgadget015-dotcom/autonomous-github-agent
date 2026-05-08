@@ -177,7 +177,7 @@ jobs:
           if report.band.value == "CRITICAL" and not low_risk_only:
               print("::error::PR risk score is CRITICAL — requires manual review before merge.")
               sys.exit(1)
-          if report.band.value == "CRITICAL" and low_risk_only:
+          elif report.band.value == "CRITICAL" and low_risk_only:
               print("::warning::PR risk score is CRITICAL, but changes are test/docs-only; not failing workflow.")
           PYEOF
 
