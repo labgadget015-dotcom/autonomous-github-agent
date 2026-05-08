@@ -1,5 +1,20 @@
 # Rollback Manifest
 
+## 3381982 — 2026-05-08 09:11 UTC
+
+- **SHA**: `33819821a48c7b6cf98d68e6e994d549cf731771`
+- **Author**: GadgetAI
+- **Message**: fix: add dict[str, Any] annotations throughout overseer/ to resolve mypy attr-defined errors
+- **Files changed**: 4 file(s)
+
+**Changed files:**
+- `core/github_client.py`
+- `overseer/doc_generator.py`
+- `overseer/monitor.py`
+- `overseer/orchestrator.py`
+
+---
+
 ## e8ee387 — 2026-05-08 08:58 UTC
 
 - **SHA**: `e8ee3875bc278652317e062a28ae95cec3c99c6a`
