@@ -1,5 +1,17 @@
 # Rollback Manifest
 
+## e000cfa — 2026-05-08 09:39 UTC
+
+- **SHA**: `e000cfa6cb9977b5f40f71aefe07c097ef0af309`
+- **Author**: GadgetAI
+- **Message**: fix: add missing .yamllint config required by pre-commit yamllint hook
+- **Files changed**: 1 file(s)
+
+**Changed files:**
+- `.yamllint`
+
+---
+
 ## 78157c2 — 2026-05-08 09:36 UTC
 
 - **SHA**: `78157c2379e3bc4812ec1b6ae666fc4c169eeeed`
