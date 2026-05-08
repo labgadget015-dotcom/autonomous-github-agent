@@ -269,7 +269,9 @@ class GitHubClient:
         issue.edit(state="closed")
         logger.info(f"Closed issue #{issue_number} in {full_name}")
 
-    def list_repos(self, org: str = None, user: str = None) -> list[Repository]:
+    def list_repos(
+        self, org: str | None = None, user: str | None = None
+    ) -> list[Repository]:
         """
         List repositories for an organization or user.
         Args:

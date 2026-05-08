@@ -58,7 +58,7 @@ class RepositoryOverseer:
         self.monitor = RepositoryMonitor(self.repo_path, self.config)
 
         # Store results
-        self.results = {
+        self.results: dict[str, Any] = {
             "timestamp": datetime.now().isoformat(),
             "repo_path": str(self.repo_path),
             "analyses": {},
@@ -127,7 +127,7 @@ class RepositoryOverseer:
         """
         logger.info("Starting code analysis...")
 
-        results = {
+        results: dict[str, Any] = {
             "refactoring_opportunities": [],
             "architectural_improvements": [],
             "performance_optimizations": [],
@@ -166,7 +166,7 @@ class RepositoryOverseer:
         """
         logger.info("Generating documentation...")
 
-        results = {
+        results: dict[str, Any] = {
             "readme_updated": False,
             "contributing_generated": False,
             "api_docs_generated": False,
@@ -209,7 +209,7 @@ class RepositoryOverseer:
         """
         logger.info("Analyzing dependencies...")
 
-        results = {
+        results: dict[str, Any] = {
             "outdated_packages": [],
             "vulnerable_packages": [],
             "upgrade_recommendations": [],
@@ -244,7 +244,7 @@ class RepositoryOverseer:
         """
         logger.info("Optimizing CI/CD workflows...")
 
-        results = {
+        results: dict[str, Any] = {
             "workflow_optimizations": [],
             "test_improvements": [],
             "linting_suggestions": [],
@@ -282,7 +282,7 @@ class RepositoryOverseer:
         """
         logger.info("Triaging issues...")
 
-        results = {
+        results: dict[str, Any] = {
             "issues_processed": 0,
             "labels_applied": 0,
             "priorities_assigned": 0,
@@ -319,7 +319,7 @@ class RepositoryOverseer:
         """
         logger.info("Generating automation scripts...")
 
-        results = {
+        results: dict[str, Any] = {
             "scripts_generated": [],
             "formatting_scripts": [],
             "release_scripts": [],
@@ -360,7 +360,7 @@ class RepositoryOverseer:
         """
         logger.info("Monitoring repository...")
 
-        results = {
+        results: dict[str, Any] = {
             "code_quality": {},
             "performance": {},
             "security": {},
@@ -459,13 +459,14 @@ class RepositoryOverseer:
         Args:
             output_path: Path to save results (default: repo_root/overseer-results.json)
         """
-        if output_path is None:
-            output_path = self.repo_path / "overseer-results.json"
-        else:
-            output_path = Path(output_path)
+        resolved: Path = (
+            self.repo_path / "overseer-results.json"
+            if output_path is None
+            else Path(output_path)
+        )
 
-        with open(output_path, "w") as f:
+        with open(resolved, "w") as f:
             json.dump(self.results, f, indent=2, default=str)
 
-        logger.info(f"Results saved to: {output_path}")
-        return output_path
+        logger.info(f"Results saved to: {resolved}")
+        return resolved

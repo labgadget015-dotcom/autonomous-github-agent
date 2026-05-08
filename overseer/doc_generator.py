@@ -97,7 +97,7 @@ class DocumentationGenerator:
 
     def _detect_repository_info(self) -> dict[str, Any]:
         """Detect repository information"""
-        info = {
+        info: dict[str, Any] = {
             "name": self.repo_path.name,
             "has_python": False,
             "has_javascript": False,

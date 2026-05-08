@@ -105,7 +105,7 @@ class RepositoryMonitor:
 
     def _monitor_performance(self) -> dict[str, Any]:
         """Monitor repository performance metrics"""
-        performance = {
+        performance: dict[str, Any] = {
             "ci_runtime": "unknown",
             "build_size": 0,
             "dependency_count": 0,
