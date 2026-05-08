@@ -1,5 +1,17 @@
 # Rollback Manifest
 
+## ab800b3 — 2026-05-08 08:37 UTC
+
+- **SHA**: `ab800b3ed9a2636fb331914b29b63f489e2506bf`
+- **Author**: GadgetAI
+- **Message**: fix: suppress mypy import-untyped and double-module errors
+- **Files changed**: 1 file(s)
+
+**Changed files:**
+- `pyproject.toml`
+
+---
+
 ## 1326dc0 — 2026-05-08 08:33 UTC
 
 - **SHA**: `1326dc0ce900febccbce1ccdac89f8732dd95f13`
