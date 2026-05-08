@@ -166,9 +166,7 @@ class DependencyManager:
 
         return dependencies
 
-    def _check_vulnerability(
-        self, package: str, version: str | None
-    ) -> dict | None:
+    def _check_vulnerability(self, package: str, version: str | None) -> dict | None:
         """
         Check if a package has known vulnerabilities.
 

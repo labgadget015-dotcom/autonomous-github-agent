@@ -121,9 +121,7 @@ class QualityEscalator:
             }
         return None
 
-    def create_issue(
-        self, violation: dict, pr_number: int | None = None
-    ) -> str | None:
+    def create_issue(self, violation: dict, pr_number: int | None = None) -> str | None:
         """Create a GitHub issue for the violation."""
         if not self.auto_create:
             print(

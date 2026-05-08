@@ -232,9 +232,7 @@ class PerformanceBenchmark:
 
         print(f"\n📊 Results saved to {results_file}")
 
-    def compare_with_baseline(
-        self, baseline_file: str | None = None
-    ) -> dict[str, Any]:
+    def compare_with_baseline(self, baseline_file: str | None = None) -> dict[str, Any]:
         """Compare current results with baseline"""
         if not baseline_file:
             # Find most recent baseline
