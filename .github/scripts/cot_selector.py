@@ -2,9 +2,10 @@
 """Enhanced Chain-of-Thought Template Selector with SKIP logic."""
 
 from enum import Enum
-from typing import Dict, Any, Set
-import yaml
 from pathlib import Path
+from typing import Any
+
+import yaml
 
 
 class CoTTemplate(Enum):
@@ -48,7 +49,7 @@ class OptimizedCoTSelector:
             "step_back_max_lines": 500,
         }
 
-    def _load_config(self) -> Dict:
+    def _load_config(self) -> dict:
         """Load configuration with fallback defaults."""
         try:
             if self.config_path.exists():
@@ -66,7 +67,7 @@ class OptimizedCoTSelector:
             }
         }
 
-    def is_doc_only_change(self, context: Dict) -> bool:
+    def is_doc_only_change(self, context: dict) -> bool:
         """Check if changes are documentation-only."""
         changed_files = context.get("changed_files", context.get("files", []))
 
@@ -89,7 +90,7 @@ class OptimizedCoTSelector:
 
         return True
 
-    def is_security_sensitive(self, context: Dict) -> bool:
+    def is_security_sensitive(self, context: dict) -> bool:
         """Check if changes involve security-sensitive code."""
         changed_files = context.get("changed_files", context.get("files", []))
 
@@ -103,7 +104,7 @@ class OptimizedCoTSelector:
 
         return False
 
-    def select_template(self, context: Dict) -> CoTTemplate:
+    def select_template(self, context: dict) -> CoTTemplate:
         """Select optimal CoT template with SKIP logic."""
         lines_changed = context.get("lines_changed", 0)
         files_changed = context.get("files_changed", 0)
@@ -139,7 +140,7 @@ class OptimizedCoTSelector:
             print(f"🎯 COMPOSITIONAL: Very high complexity ({lines_changed} lines)")
             return CoTTemplate.COMPOSITIONAL
 
-    def _analyze_complexity(self, context: Dict) -> float:
+    def _analyze_complexity(self, context: dict) -> float:
         """Analyze complexity score (0.0 to 1.0)."""
         score = 0.0
 
@@ -170,7 +171,7 @@ class OptimizedCoTSelector:
 
     def estimate_token_savings(
         self, template: CoTTemplate, baseline_tokens: int = 10000
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Estimate token savings for selected template."""
         savings_map = {
             CoTTemplate.SKIP: 0.95,  # 95% reduction
@@ -194,8 +195,6 @@ class OptimizedCoTSelector:
 
 
 if __name__ == "__main__":
-    import json
-    import sys
 
     # Example usage
     selector = OptimizedCoTSelector()

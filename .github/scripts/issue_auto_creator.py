@@ -10,7 +10,7 @@ import os
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional
+
 import requests
 
 
@@ -33,7 +33,7 @@ class IssueAutoCreator:
             print("⚠️  Missing required environment variables")
             sys.exit(0)
 
-    def _make_request(self, endpoint: str, data: Dict) -> Optional[Dict]:
+    def _make_request(self, endpoint: str, data: dict) -> dict | None:
         """Make authenticated POST request to GitHub API."""
         url = f"{self.api_base}/repos/{self.repo}/{endpoint}"
         headers = {
@@ -50,7 +50,7 @@ class IssueAutoCreator:
             print(f"⚠️  API request failed: {e}")
             return None
 
-    def check_quality_metrics(self, summary_path: Path) -> List[Dict]:
+    def check_quality_metrics(self, summary_path: Path) -> list[dict]:
         """Check quality metrics and generate issues."""
         issues_to_create = []
 
@@ -107,7 +107,7 @@ class IssueAutoCreator:
 
         return issues_to_create
 
-    def _generate_quality_issue_body(self, data: Dict, score: float) -> str:
+    def _generate_quality_issue_body(self, data: dict, score: float) -> str:
         """Generate issue body for quality degradation."""
         date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
@@ -150,7 +150,7 @@ Code quality has fallen below the acceptable threshold. This requires immediate 
 
         return body
 
-    def _generate_security_issue_body(self, security_data: Dict) -> str:
+    def _generate_security_issue_body(self, security_data: dict) -> str:
         """Generate issue body for security vulnerabilities."""
         date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
@@ -182,7 +182,7 @@ Code quality has fallen below the acceptable threshold. This requires immediate 
 
         return body
 
-    def _generate_complexity_issue_body(self, functions: List[Dict]) -> str:
+    def _generate_complexity_issue_body(self, functions: list[dict]) -> str:
         """Generate issue body for high complexity."""
         date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
@@ -216,7 +216,7 @@ Code quality has fallen below the acceptable threshold. This requires immediate 
 
         return body
 
-    def create_issues(self, issues: List[Dict]) -> None:
+    def create_issues(self, issues: list[dict]) -> None:
         """Create GitHub issues."""
         if not issues:
             print("✅ No issues to create")

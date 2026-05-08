@@ -4,8 +4,6 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
-from dataclasses import asdict
-import pytest
 
 # Add scripts directory to path
 _scripts_path = str(Path(__file__).parent.parent.parent / ".github" / "scripts")
@@ -13,11 +11,11 @@ if _scripts_path not in sys.path:
     sys.path.insert(0, _scripts_path)
 
 from elite_copilot import (
-    CopilotMode,
-    TaskPriority,
-    CopilotTask,
     CopilotInsight,
+    CopilotMode,
+    CopilotTask,
     EliteCopilot,
+    TaskPriority,
 )
 
 

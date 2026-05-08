@@ -7,7 +7,6 @@ Verifies all components are properly configured and functional
 import json
 import sys
 from pathlib import Path
-from typing import List, Tuple
 
 try:
     import yaml

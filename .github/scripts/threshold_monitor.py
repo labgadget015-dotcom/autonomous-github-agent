@@ -5,11 +5,9 @@ Monitors code quality metrics and automatically creates GitHub issues when thres
 """
 
 import json
-import os
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional
 
 import yaml
 
@@ -21,7 +19,7 @@ class ThresholdMonitor:
         self.config = self._load_config(config_path)
         self.violations = []
 
-    def _load_config(self, path: str) -> Dict:
+    def _load_config(self, path: str) -> dict:
         """Load configuration file"""
         config_file = Path(path)
         if config_file.exists():
@@ -29,7 +27,7 @@ class ThresholdMonitor:
                 return yaml.safe_load(f)
         return self._default_config()
 
-    def _default_config(self) -> Dict:
+    def _default_config(self) -> dict:
         """Default configuration"""
         return {
             "thresholds": {
@@ -53,7 +51,7 @@ class ThresholdMonitor:
 
     def check_analysis_results(
         self, results_path: str = "analysis-results.json"
-    ) -> List[Dict]:
+    ) -> list[dict]:
         """Check analysis results against thresholds"""
         results_file = Path(results_path)
         if not results_file.exists():
@@ -80,7 +78,7 @@ class ThresholdMonitor:
 
         return violations
 
-    def check_coverage(self, coverage_path: str = "coverage.json") -> Optional[Dict]:
+    def check_coverage(self, coverage_path: str = "coverage.json") -> dict | None:
         """Check test coverage against threshold"""
         coverage_file = Path(coverage_path)
         if not coverage_file.exists():
@@ -103,7 +101,7 @@ class ThresholdMonitor:
 
         return None
 
-    def check_complexity(self, complexity_path: str = "complexity.json") -> List[Dict]:
+    def check_complexity(self, complexity_path: str = "complexity.json") -> list[dict]:
         """Check code complexity against threshold"""
         complexity_file = Path(complexity_path)
         if not complexity_file.exists():
@@ -133,7 +131,7 @@ class ThresholdMonitor:
 
         return violations
 
-    def check_security(self, bandit_path: str = "bandit-report.json") -> List[Dict]:
+    def check_security(self, bandit_path: str = "bandit-report.json") -> list[dict]:
         """Check security scan results"""
         bandit_file = Path(bandit_path)
         if not bandit_file.exists():
@@ -163,7 +161,7 @@ class ThresholdMonitor:
 
         return violations
 
-    def create_github_issue(self, violation: Dict) -> Dict:
+    def create_github_issue(self, violation: dict) -> dict:
         """Create GitHub issue data for violation"""
         severity = violation.get("severity", "medium")
         labels = [
@@ -198,7 +196,7 @@ class ThresholdMonitor:
 
         return {"title": title, "body": body, "labels": labels}
 
-    def _generate_issue_body(self, violation: Dict) -> str:
+    def _generate_issue_body(self, violation: dict) -> str:
         """Generate detailed issue body"""
         body = f"""## {violation.get('message', 'Code quality issue detected')}
 
@@ -252,7 +250,7 @@ Add tests to improve coverage to meet the required threshold.
         return body
 
     def save_violations(
-        self, violations: List[Dict], path: str = "threshold-violations.json"
+        self, violations: list[dict], path: str = "threshold-violations.json"
     ):
         """Save violations to file"""
         data = {
@@ -266,7 +264,7 @@ Add tests to improve coverage to meet the required threshold.
 
         print(f"✅ Saved {len(violations)} violations to {path}")
 
-    def generate_summary_report(self, violations: List[Dict]) -> str:
+    def generate_summary_report(self, violations: list[dict]) -> str:
         """Generate summary report of all violations"""
         if not violations:
             return "✅ No threshold violations detected!"

@@ -6,10 +6,8 @@ Generates a visual dashboard showing repository health metrics.
 """
 
 import json
-import os
-from pathlib import Path
 from datetime import datetime
-from typing import Dict, List, Any
+from pathlib import Path
 
 
 class HealthDashboard:
@@ -22,7 +20,7 @@ class HealthDashboard:
         self.results_file = Path(results_file)
         self.results = self._load_results()
 
-    def _load_results(self) -> Dict:
+    def _load_results(self) -> dict:
         """Load overseer results"""
         if not self.results_file.exists():
             return {}
@@ -71,7 +69,7 @@ class HealthDashboard:
         else:
             return "🔴"
 
-    def _get_priority_counts(self) -> Dict[str, int]:
+    def _get_priority_counts(self) -> dict[str, int]:
         """Get counts of issues by priority"""
         counts = {"critical": 0, "high": 0, "medium": 0, "low": 0}
 
@@ -272,7 +270,7 @@ def main():
     print()
 
     dashboard = HealthDashboard(results_file)
-    output = dashboard.save_dashboard()
+    dashboard.save_dashboard()
 
     # Print to console
     print()

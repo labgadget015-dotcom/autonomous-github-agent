@@ -11,8 +11,8 @@ from .agent_base import BaseAgent
 from .audit_logger import AuditLogger
 from .exceptions import (
     AgentError,
-    AuditError,
     ApprovalRequiredError,
+    AuditError,
     CacheError,
     GitHubAPIError,
     LLMConfigError,

@@ -6,13 +6,11 @@ Smart dependency management with vulnerability detection
 and upgrade recommendations.
 """
 
-import os
-import re
 import json
-import subprocess
-from pathlib import Path
-from typing import Dict, List, Any, Optional
 import logging
+import re
+from pathlib import Path
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -23,11 +21,11 @@ class DependencyManager:
     vulnerabilities, and suggests secure upgrades.
     """
 
-    def __init__(self, repo_path: Path, config: Dict):
+    def __init__(self, repo_path: Path, config: dict):
         self.repo_path = repo_path
         self.config = config
 
-    def analyze(self) -> Dict[str, Any]:
+    def analyze(self) -> dict[str, Any]:
         """
         Analyze dependencies for issues and recommendations.
 
@@ -65,7 +63,7 @@ class DependencyManager:
 
         return results
 
-    def _analyze_python_dependencies(self, requirements_file: Path) -> Dict[str, List]:
+    def _analyze_python_dependencies(self, requirements_file: Path) -> dict[str, list]:
         """Analyze Python dependencies from requirements.txt"""
         results = {"outdated": [], "vulnerabilities": [], "recommendations": []}
 
@@ -104,7 +102,7 @@ class DependencyManager:
 
         return results
 
-    def _analyze_javascript_dependencies(self, package_json: Path) -> Dict[str, List]:
+    def _analyze_javascript_dependencies(self, package_json: Path) -> dict[str, list]:
         """Analyze JavaScript dependencies from package.json"""
         results = {"outdated": [], "vulnerabilities": [], "recommendations": []}
 
@@ -134,7 +132,7 @@ class DependencyManager:
 
         return results
 
-    def _parse_requirements(self, requirements_file: Path) -> List[Dict]:
+    def _parse_requirements(self, requirements_file: Path) -> list[dict]:
         """Parse requirements.txt file"""
         dependencies = []
 
@@ -169,8 +167,8 @@ class DependencyManager:
         return dependencies
 
     def _check_vulnerability(
-        self, package: str, version: Optional[str]
-    ) -> Optional[Dict]:
+        self, package: str, version: str | None
+    ) -> dict | None:
         """
         Check if a package has known vulnerabilities.
 

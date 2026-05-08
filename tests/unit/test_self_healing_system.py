@@ -2,11 +2,10 @@
 
 from __future__ import annotations
 
-import asyncio
 import sys
-from pathlib import Path
 from datetime import datetime
-from unittest.mock import AsyncMock
+from pathlib import Path
+
 import pytest
 
 # Add scripts directory to path
@@ -15,8 +14,8 @@ if _scripts_path not in sys.path:
     sys.path.insert(0, _scripts_path)
 
 from self_healing_system import (
-    CircuitState,
     CircuitBreaker,
+    CircuitState,
     FailureRecord,
     RetryStrategy,
     SelfHealingSystem,

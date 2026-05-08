@@ -7,7 +7,6 @@ Estimates costs for workflow runs based on runner usage and execution time.
 import json
 import os
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional
 
 
 class CostCalculator:
@@ -38,7 +37,7 @@ class CostCalculator:
         """Load workflow run data."""
         try:
             if os.path.exists(file_path):
-                with open(file_path, "r", encoding="utf-8") as f:
+                with open(file_path, encoding="utf-8") as f:
                     self.workflow_data = json.load(f)
         except Exception as e:
             print(f"⚠️ Could not load workflow data: {e}")
@@ -51,7 +50,7 @@ class CostCalculator:
         cost_per_minute = self.PRICING.get(runner_type, self.PRICING["ubuntu"])
         return duration_minutes * cost_per_minute * jobs_count
 
-    def calculate_daily_cost(self, runs_per_day: int = 10) -> Dict[str, float]:
+    def calculate_daily_cost(self, runs_per_day: int = 10) -> dict[str, float]:
         """Estimate daily costs."""
         avg_duration = 300  # 5 minutes average
         single_run = self.calculate_run_cost(avg_duration)
@@ -71,7 +70,7 @@ class CostCalculator:
 
     def calculate_optimization_savings(
         self, old_duration: int, new_duration: int, runs_per_day: int = 10
-    ) -> Dict[str, float]:
+    ) -> dict[str, float]:
         """Calculate savings from optimization."""
         old_cost = self.calculate_run_cost(old_duration)
         new_cost = self.calculate_run_cost(new_duration)
@@ -89,7 +88,7 @@ class CostCalculator:
             * 100,
         }
 
-    def check_free_tier_usage(self, monthly_minutes: float) -> Dict[str, any]:
+    def check_free_tier_usage(self, monthly_minutes: float) -> dict[str, any]:
         """Check if usage exceeds free tier."""
         free_minutes = self.FREE_TIER.get(self.account_type, 0)
         overage_minutes = max(0, monthly_minutes - free_minutes)
@@ -277,7 +276,7 @@ jobs:
 
     def calculate_roi(
         self, setup_hours: float, hourly_rate: float, monthly_savings: float
-    ) -> Dict[str, float]:
+    ) -> dict[str, float]:
         """Calculate ROI for CI/CD optimization."""
         setup_cost = setup_hours * hourly_rate
         payback_months = (

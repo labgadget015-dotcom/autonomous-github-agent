@@ -9,14 +9,11 @@ Helps with code refactoring by:
 - Tracking refactoring impact
 """
 
-import os
-import sys
-import re
 import ast
+import sys
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List, Any, Optional, Tuple
-from dataclasses import dataclass, asdict
-import subprocess
+from typing import Any
 
 
 @dataclass
@@ -28,7 +25,7 @@ class RefactoringOpportunity:
     title: str
     description: str
     file_path: str
-    line_range: Tuple[int, int]
+    line_range: tuple[int, int]
     confidence: float
     impact: str
     complexity_before: int
@@ -47,7 +44,7 @@ class RefactoringAssistant:
         self.repo_path = Path(repo_path)
         self.opportunities = []
 
-    def analyze_for_refactoring(self) -> List[RefactoringOpportunity]:
+    def analyze_for_refactoring(self) -> list[RefactoringOpportunity]:
         """Analyze code for refactoring opportunities"""
         print("🔍 Analyzing code for refactoring opportunities...")
 
@@ -90,11 +87,11 @@ class RefactoringAssistant:
         ]
         return any(pattern in str(file_path) for pattern in skip_patterns)
 
-    def _analyze_file(self, file_path: Path) -> List[RefactoringOpportunity]:
+    def _analyze_file(self, file_path: Path) -> list[RefactoringOpportunity]:
         """Analyze a single file"""
         opportunities = []
 
-        with open(file_path, "r", encoding="utf-8") as f:
+        with open(file_path, encoding="utf-8") as f:
             content = f.read()
 
         # Try to parse as AST
@@ -112,7 +109,7 @@ class RefactoringAssistant:
 
     def _find_long_methods(
         self, file_path: Path, tree: ast.AST, content: str
-    ) -> List[RefactoringOpportunity]:
+    ) -> list[RefactoringOpportunity]:
         """Find methods that are too long"""
         opportunities = []
 
@@ -142,7 +139,7 @@ class RefactoringAssistant:
 
     def _find_duplicate_code(
         self, file_path: Path, content: str
-    ) -> List[RefactoringOpportunity]:
+    ) -> list[RefactoringOpportunity]:
         """Find duplicate code blocks"""
         opportunities = []
         lines = content.split("\n")
@@ -180,7 +177,7 @@ class RefactoringAssistant:
 
     def _find_complex_conditionals(
         self, file_path: Path, tree: ast.AST, content: str
-    ) -> List[RefactoringOpportunity]:
+    ) -> list[RefactoringOpportunity]:
         """Find complex conditional statements"""
         opportunities = []
 
@@ -230,7 +227,7 @@ class RefactoringAssistant:
         self, output_path: str = "REFACTORING_OPPORTUNITIES.md"
     ) -> None:
         """Generate refactoring opportunities report"""
-        print(f"\n📝 Generating refactoring report...")
+        print("\n📝 Generating refactoring report...")
 
         report = []
         report.append("# Automated Refactoring Opportunities")
@@ -286,11 +283,11 @@ class RefactoringAssistant:
 
         print(f"✅ Report saved to {output_path}")
 
-    def get_high_impact_opportunities(self) -> List[RefactoringOpportunity]:
+    def get_high_impact_opportunities(self) -> list[RefactoringOpportunity]:
         """Get high-impact refactoring opportunities"""
         return [o for o in self.opportunities if o.impact == "high"]
 
-    def estimate_time_savings(self) -> Dict[str, Any]:
+    def estimate_time_savings(self) -> dict[str, Any]:
         """Estimate time savings from refactoring"""
         total_complexity_reduction = sum(
             o.complexity_before - o.complexity_after for o in self.opportunities
@@ -333,7 +330,7 @@ def main():
 
             # Show time savings estimate
             savings = assistant.estimate_time_savings()
-            print(f"\n💰 Estimated Impact:")
+            print("\n💰 Estimated Impact:")
             print(f"   Total opportunities: {savings['total_opportunities']}")
             print(f"   Complexity reduction: {savings['complexity_reduction']}")
             print(

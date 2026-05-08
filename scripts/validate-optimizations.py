@@ -4,20 +4,18 @@ Optimization Validation Script
 Validates all performance optimizations are working correctly
 """
 
-import asyncio
 import sys
 from pathlib import Path
-from typing import Dict, List, Tuple
 
 try:
-    import orjson
+    import orjson  # noqa: F401
 
     HAS_ORJSON = True
 except ImportError:
     HAS_ORJSON = False
 
 try:
-    import ruff
+    import ruff  # noqa: F401
 
     HAS_RUFF = True
 except ImportError:
@@ -38,7 +36,7 @@ class OptimizationValidator:
 
     def __init__(self, repo_root: Path):
         self.repo_root = repo_root
-        self.results: List[Tuple[str, bool, str]] = []
+        self.results: list[tuple[str, bool, str]] = []
 
     def check_packages(self) -> bool:
         """Check if performance packages are installed"""

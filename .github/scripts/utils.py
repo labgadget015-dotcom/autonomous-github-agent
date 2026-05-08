@@ -8,7 +8,6 @@ import json
 import logging
 import os
 from pathlib import Path
-from typing import Dict, List, Optional, Union
 
 # Configure logging
 logging.basicConfig(
@@ -17,7 +16,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-def load_json_file(file_path: Union[str, Path]) -> Optional[Dict]:
+def load_json_file(file_path: str | Path) -> dict | None:
     """Load and parse a JSON file.
 
     Args:
@@ -35,7 +34,7 @@ def load_json_file(file_path: Union[str, Path]) -> Optional[Dict]:
             logger.warning(f"File not found: {file_path}")
             return None
 
-        with open(path, "r", encoding="utf-8") as file:
+        with open(path, encoding="utf-8") as file:
             return json.load(file)
     except json.JSONDecodeError as error:
         logger.error(f"Invalid JSON in {file_path}: {error}")
@@ -45,7 +44,7 @@ def load_json_file(file_path: Union[str, Path]) -> Optional[Dict]:
         return None
 
 
-def save_json_file(data: Dict, file_path: Union[str, Path]) -> bool:
+def save_json_file(data: dict, file_path: str | Path) -> bool:
     """Save data to a JSON file.
 
     Args:
@@ -67,7 +66,7 @@ def save_json_file(data: Dict, file_path: Union[str, Path]) -> bool:
         return False
 
 
-def get_env_variable(name: str, default: Optional[str] = None) -> Optional[str]:
+def get_env_variable(name: str, default: str | None = None) -> str | None:
     """Get an environment variable with optional default.
 
     Args:
@@ -127,7 +126,7 @@ def format_file_size(size_bytes: int) -> str:
     return f"{size_bytes:.1f} PB"
 
 
-def find_files_by_extension(directory: Union[str, Path], extension: str) -> List[Path]:
+def find_files_by_extension(directory: str | Path, extension: str) -> list[Path]:
     """Find all files with a specific extension in a directory.
 
     Args:

@@ -11,10 +11,7 @@ Supplements tests/unit/test_audit_chain.py with coverage of:
 from __future__ import annotations
 
 import asyncio
-import json
 from pathlib import Path
-
-import pytest
 
 
 def run(coro):

@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import asyncio
-import pytest
 
 from core.policy_engine import PolicyEngine
 
@@ -144,8 +143,8 @@ class TestSavePolicies:
         engine = PolicyEngine({"policy_file": policy_file})
         # Should create parent directory and save
         engine.save_policies()
+
         import yaml
-        from pathlib import Path
 
         with open(policy_file) as f:
             data = yaml.safe_load(f)

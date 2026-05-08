@@ -20,12 +20,16 @@ select = ["E", "W", "F", "I", "B", "UP"]
 ignore = [
     "E402",  # module-import-not-at-top — intentional in path-manipulation files
     "B008",  # function-call-in-default-argument
+    "E501",  # line-too-long — enforced by black
+    "W291",  # trailing-whitespace — handled by pre-commit trailing-whitespace hook
+    "W293",  # whitespace-before-blank-line — handled by pre-commit trailing-whitespace hook
 ]
 # Auto-fixable rules to apply with ruff --fix
 fixable = ["F401", "F541", "I", "UP"]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/**" = ["S101", "E501"]  # allow assert + long lines in tests
+"tests/**" = ["S101", "E501", "F841", "B007", "F401", "E741", "B017", "E712"]  # common test-only patterns
+"scripts/integration-test.py" = ["F841"]  # result vars captured for readability, not consumed
 
 [tool.black]
 line-length = 88

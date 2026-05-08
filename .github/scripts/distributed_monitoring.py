@@ -6,25 +6,17 @@ Real-time performance monitoring and alerting
 """
 
 import asyncio
+import os
+import socket
 import time
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Dict, List, Optional
-import socket
-import os
 
 try:
-    from opentelemetry import trace, metrics
-    from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
-    from opentelemetry.exporter.otlp.proto.grpc.metric_exporter import (
-        OTLPMetricExporter,
-    )
-    from opentelemetry.sdk.trace import TracerProvider
-    from opentelemetry.sdk.trace.export import BatchSpanProcessor
-    from opentelemetry.sdk.metrics import MeterProvider
-    from opentelemetry.sdk.metrics.export import PeriodicExportingMetricReader
+    from opentelemetry import trace
     from opentelemetry.sdk.resources import Resource
+    from opentelemetry.sdk.trace import TracerProvider
 
     HAS_OTEL = True
 except ImportError:
@@ -65,7 +57,7 @@ class PerformanceMonitor:
 
     def __init__(self, service_name: str = "autonomous-github-agent"):
         self.service_name = service_name
-        self.alerts: List[Alert] = []
+        self.alerts: list[Alert] = []
 
         if HAS_OTEL:
             self._setup_telemetry()
@@ -106,7 +98,7 @@ class PerformanceMonitor:
         print(f"✅ OpenTelemetry initialized for {self.service_name}")
 
     @asynccontextmanager
-    async def trace_operation(self, operation_name: str, attributes: Dict = None):
+    async def trace_operation(self, operation_name: str, attributes: dict = None):
         """Trace an operation with OpenTelemetry"""
         if not self.tracer:
             # Fallback to simple timing
@@ -161,7 +153,7 @@ class PerformanceMonitor:
             self.alerts.append(alert)
             print(alert)
 
-    def get_alerts(self, severity: Optional[str] = None) -> List[Alert]:
+    def get_alerts(self, severity: str | None = None) -> list[Alert]:
         """Get alerts, optionally filtered by severity"""
         if severity:
             return [a for a in self.alerts if a.severity == severity]
@@ -175,7 +167,7 @@ class HealthChecker:
     """
 
     def __init__(self):
-        self.checks: Dict[str, bool] = {}
+        self.checks: dict[str, bool] = {}
 
     async def check_disk_space(self) -> bool:
         """Check available disk space"""
@@ -235,7 +227,7 @@ class HealthChecker:
             print(f"❌ GitHub API check failed: {e}")
             return False
 
-    async def run_all_checks(self) -> Dict[str, bool]:
+    async def run_all_checks(self) -> dict[str, bool]:
         """Run all health checks"""
         print("🏥 Running health checks...\n")
 
@@ -262,7 +254,7 @@ class PerformanceBenchmark:
     """
 
     def __init__(self):
-        self.results: Dict[str, List[float]] = {}
+        self.results: dict[str, list[float]] = {}
 
     async def benchmark_json_parsing(self) -> float:
         """Benchmark JSON parsing performance"""
@@ -279,8 +271,8 @@ class PerformanceBenchmark:
 
     async def benchmark_file_io(self) -> float:
         """Benchmark file I/O performance"""
-        from pathlib import Path
         import tempfile
+        from pathlib import Path
 
         test_data = b"x" * 1024 * 1024  # 1MB
 
@@ -309,7 +301,7 @@ class PerformanceBenchmark:
 
         return duration
 
-    async def run_all_benchmarks(self) -> Dict[str, float]:
+    async def run_all_benchmarks(self) -> dict[str, float]:
         """Run all benchmarks"""
         print("⚡ Running performance benchmarks...\n")
 

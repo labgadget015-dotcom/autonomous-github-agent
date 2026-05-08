@@ -3,11 +3,11 @@ Tests for error handling and recovery in agents and core modules.
 Covers: API rate limiting, network failures, invalid inputs, timeouts, exception propagation.
 """
 
-import pytest
-import asyncio
-from unittest.mock import MagicMock, patch, AsyncMock
 import sys
 from pathlib import Path
+from unittest.mock import AsyncMock, patch
+
+import pytest
 
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))

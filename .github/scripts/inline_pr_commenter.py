@@ -6,9 +6,6 @@ Posts inline comments on PRs with specific code quality issues and suggestions
 
 import json
 import os
-import sys
-from pathlib import Path
-from typing import Dict, List, Optional
 
 import requests
 
@@ -32,7 +29,7 @@ class InlinePRCommentBot:
             "Accept": "application/vnd.github.v3+json",
         }
 
-    def load_analysis_results(self) -> List[Dict]:
+    def load_analysis_results(self) -> list[dict]:
         """Load all analysis results and convert to comments"""
         comments = []
 
@@ -50,12 +47,12 @@ class InlinePRCommentBot:
 
         return comments
 
-    def _load_flake8_results(self) -> List[Dict]:
+    def _load_flake8_results(self) -> list[dict]:
         """Parse Flake8 results"""
         # Flake8 JSON output would be parsed here
         return []
 
-    def _load_pylint_results(self) -> List[Dict]:
+    def _load_pylint_results(self) -> list[dict]:
         """Parse Pylint JSON results"""
         comments = []
 
@@ -79,7 +76,7 @@ class InlinePRCommentBot:
 
         return comments
 
-    def _load_bandit_results(self) -> List[Dict]:
+    def _load_bandit_results(self) -> list[dict]:
         """Parse Bandit security results"""
         comments = []
 
@@ -101,7 +98,7 @@ class InlinePRCommentBot:
 
         return comments
 
-    def _load_complexity_results(self) -> List[Dict]:
+    def _load_complexity_results(self) -> list[dict]:
         """Parse complexity results"""
         comments = []
 
@@ -125,7 +122,7 @@ class InlinePRCommentBot:
 
         return comments
 
-    def _format_pylint_comment(self, issue: Dict) -> str:
+    def _format_pylint_comment(self, issue: dict) -> str:
         """Format Pylint issue as PR comment"""
         symbol = issue.get("symbol", "unknown")
         message = issue.get("message", "No message")
@@ -147,7 +144,7 @@ class InlinePRCommentBot:
 """
         return comment
 
-    def _format_bandit_comment(self, issue: Dict) -> str:
+    def _format_bandit_comment(self, issue: dict) -> str:
         """Format Bandit security issue as PR comment"""
         severity = issue.get("issue_severity", "LOW")
         confidence = issue.get("issue_confidence", "LOW")
@@ -179,7 +176,7 @@ class InlinePRCommentBot:
 """
         return comment
 
-    def _format_complexity_comment(self, func: Dict) -> str:
+    def _format_complexity_comment(self, func: dict) -> str:
         """Format complexity warning as PR comment"""
         name = func.get("name", "unknown")
         complexity = func.get("complexity", 0)
@@ -218,7 +215,7 @@ Function `{name}` has a cyclomatic complexity of **{complexity}** (threshold: 10
             symbol, "Check Pylint documentation for details on how to fix this issue."
         )
 
-    def _get_security_recommendation(self, issue: Dict) -> str:
+    def _get_security_recommendation(self, issue: dict) -> str:
         """Get security fix recommendation"""
         test_id = issue.get("test_id", "")
 
@@ -248,7 +245,7 @@ Function `{name}` has a cyclomatic complexity of **{complexity}** (threshold: 10
         }
         return mapping.get(pylint_type.lower(), "low")
 
-    def post_review_comments(self, comments: List[Dict]) -> int:
+    def post_review_comments(self, comments: list[dict]) -> int:
         """Post review comments to PR"""
         if not all([self.github_token, self.repo, self.pr_number]):
             print("⚠️  Cannot post comments: missing configuration")
@@ -280,7 +277,7 @@ Function `{name}` has a cyclomatic complexity of **{complexity}** (threshold: 10
 
         return posted_count
 
-    def _deduplicate_comments(self, comments: List[Dict]) -> List[Dict]:
+    def _deduplicate_comments(self, comments: list[dict]) -> list[dict]:
         """Remove duplicate comments for same file/line"""
         seen = set()
         unique = []
@@ -293,7 +290,7 @@ Function `{name}` has a cyclomatic complexity of **{complexity}** (threshold: 10
 
         return unique
 
-    def _post_single_comment(self, comment: Dict) -> bool:
+    def _post_single_comment(self, comment: dict) -> bool:
         """Post a single review comment"""
         url = f"{self.api_base}/pulls/{self.pr_number}/comments"
 

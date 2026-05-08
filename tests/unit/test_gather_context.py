@@ -2,17 +2,15 @@
 
 from __future__ import annotations
 
-import json
 import sys
 from pathlib import Path
-import pytest
 
 # Add scripts directory to path
 _scripts_path = str(Path(__file__).parent.parent.parent / ".github" / "scripts")
 if _scripts_path not in sys.path:
     sys.path.insert(0, _scripts_path)
 
-from gather_context import SmartContextGatherer, ContextMode
+from gather_context import ContextMode, SmartContextGatherer
 
 
 def _make_gatherer(tmp_path):

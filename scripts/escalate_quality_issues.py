@@ -7,11 +7,10 @@ This script analyzes quality metrics and escalates issues with appropriate label
 and assignees for immediate attention.
 """
 
+import argparse
+import json
 import os
 import sys
-import json
-import argparse
-from typing import Dict, List, Optional
 from datetime import datetime
 
 # Try importing github library
@@ -47,7 +46,7 @@ class QualityEscalator:
         )
         self.auto_create = os.getenv("AUTO_CREATE_ISSUES", "true").lower() == "true"
 
-    def check_complexity_violation(self, complexity_data: Dict) -> Optional[Dict]:
+    def check_complexity_violation(self, complexity_data: dict) -> dict | None:
         """Check if code complexity exceeds threshold."""
         violations = []
 
@@ -72,7 +71,7 @@ class QualityEscalator:
 
     def check_coverage_drop(
         self, current_coverage: float, previous_coverage: float
-    ) -> Optional[Dict]:
+    ) -> dict | None:
         """Check if test coverage has dropped significantly."""
         if previous_coverage == 0:
             return None
@@ -92,7 +91,7 @@ class QualityEscalator:
             }
         return None
 
-    def check_security_violations(self, security_data: Dict) -> Optional[Dict]:
+    def check_security_violations(self, security_data: dict) -> dict | None:
         """Check if security vulnerabilities exceed threshold."""
         critical = security_data.get("critical", 0)
         high = security_data.get("high", 0)
@@ -110,7 +109,7 @@ class QualityEscalator:
             }
         return None
 
-    def check_quality_score(self, quality_score: float) -> Optional[Dict]:
+    def check_quality_score(self, quality_score: float) -> dict | None:
         """Check if overall quality score is below threshold."""
         if quality_score < self.thresholds["quality_score"]:
             return {
@@ -123,8 +122,8 @@ class QualityEscalator:
         return None
 
     def create_issue(
-        self, violation: Dict, pr_number: Optional[int] = None
-    ) -> Optional[str]:
+        self, violation: dict, pr_number: int | None = None
+    ) -> str | None:
         """Create a GitHub issue for the violation."""
         if not self.auto_create:
             print(
@@ -230,10 +229,10 @@ class QualityEscalator:
             print(f"❌ Failed to create issue: {e}")
             return None
 
-    def analyze_and_escalate(self, metrics_file: str, pr_number: Optional[int] = None):
+    def analyze_and_escalate(self, metrics_file: str, pr_number: int | None = None):
         """Analyze metrics and create issues for violations."""
         try:
-            with open(metrics_file, "r") as f:
+            with open(metrics_file) as f:
                 metrics = json.load(f)
         except (FileNotFoundError, json.JSONDecodeError) as e:
             print(f"❌ Failed to load metrics file: {e}")

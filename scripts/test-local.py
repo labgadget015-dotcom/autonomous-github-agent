@@ -5,12 +5,9 @@ Run all code quality checks locally before pushing to GitHub
 """
 
 import argparse
-import asyncio
-import os
 import subprocess
 import sys
 from pathlib import Path
-from typing import List, Tuple
 
 
 class LocalTester:
@@ -21,7 +18,7 @@ class LocalTester:
         self.fast = fast
         self.failures = []
 
-    def run_command(self, cmd: List[str], description: str) -> Tuple[bool, str]:
+    def run_command(self, cmd: list[str], description: str) -> tuple[bool, str]:
         """Run a command and return success status"""
         print(f"\n{'='*60}")
         print(f"🔍 {description}")
@@ -238,7 +235,7 @@ class LocalTester:
 
         return all(success for _, success in results)
 
-    def print_summary(self, results: List[Tuple[str, bool]]):
+    def print_summary(self, results: list[tuple[str, bool]]):
         """Print final summary"""
         print("\n" + "=" * 60)
         print("📊 SUMMARY")

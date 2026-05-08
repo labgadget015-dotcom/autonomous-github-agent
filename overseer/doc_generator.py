@@ -6,12 +6,10 @@ Auto-generates and enhances README files, contributing guidelines,
 and relevant documentation.
 """
 
-import os
 import ast
-import json
-from pathlib import Path
-from typing import Dict, List, Any, Optional
 import logging
+from pathlib import Path
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -22,18 +20,18 @@ class DocumentationGenerator:
     and API documentation from code analysis.
     """
 
-    def __init__(self, repo_path: Path, config: Dict):
+    def __init__(self, repo_path: Path, config: dict):
         self.repo_path = repo_path
         self.config = config
         self.repo_info = self._detect_repository_info()
 
-    def generate(self) -> Dict[str, Any]:
+    def generate(self) -> dict[str, Any]:
         """Generate all documentation"""
         results = {"readme": None, "contributing": None, "api_docs": []}
 
         return results
 
-    def generate_readme(self) -> Optional[Path]:
+    def generate_readme(self) -> Path | None:
         """
         Generate or enhance README.md file.
 
@@ -52,7 +50,7 @@ class DocumentationGenerator:
         logger.info(f"Enhanced README generated at {readme_path}")
         return readme_path
 
-    def generate_contributing(self) -> Optional[Path]:
+    def generate_contributing(self) -> Path | None:
         """
         Generate CONTRIBUTING.md file.
 
@@ -71,7 +69,7 @@ class DocumentationGenerator:
         logger.info(f"CONTRIBUTING guide generated at {contrib_path}")
         return contrib_path
 
-    def generate_api_docs(self) -> List[Path]:
+    def generate_api_docs(self) -> list[Path]:
         """
         Generate API documentation from code.
 
@@ -97,7 +95,7 @@ class DocumentationGenerator:
         logger.info(f"Generated {len(generated_files)} API documentation files")
         return generated_files
 
-    def _detect_repository_info(self) -> Dict[str, Any]:
+    def _detect_repository_info(self) -> dict[str, Any]:
         """Detect repository information"""
         info = {
             "name": self.repo_path.name,
@@ -295,10 +293,10 @@ class DocumentationGenerator:
 
         return True
 
-    def _generate_module_docs(self, py_file: Path, docs_dir: Path) -> Optional[Path]:
+    def _generate_module_docs(self, py_file: Path, docs_dir: Path) -> Path | None:
         """Generate documentation for a Python module"""
         try:
-            with open(py_file, "r", encoding="utf-8") as f:
+            with open(py_file, encoding="utf-8") as f:
                 content = f.read()
 
             tree = ast.parse(content)

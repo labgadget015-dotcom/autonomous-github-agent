@@ -6,8 +6,9 @@ Tests pure utility functions that don't require external services.
 from __future__ import annotations
 
 import json
-import pytest
 from pathlib import Path
+
+import pytest
 
 
 class TestLoadJsonFile:
@@ -36,12 +37,12 @@ if _scripts_path not in _sys.path:
     _sys.path.insert(0, _scripts_path)
 
 from utils import (  # noqa: E402
+    calculate_quality_score,
+    find_files_by_extension,
+    format_file_size,
+    get_env_variable,
     load_json_file,
     save_json_file,
-    get_env_variable,
-    calculate_quality_score,
-    format_file_size,
-    find_files_by_extension,
     validate_threshold,
 )
 

@@ -18,7 +18,7 @@ from pathlib import Path
 repo_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(repo_root / ".github" / "scripts"))
 
-from elite_copilot import EliteCopilot, CopilotMode
+from elite_copilot import CopilotMode, EliteCopilot
 
 
 def main():
@@ -38,7 +38,7 @@ def main():
     print("Step 2: Running repository analysis...")
     repo_path = str(repo_root)
     results = copilot.analyze_repository(repo_path)
-    print(f"✅ Analysis completed")
+    print("✅ Analysis completed")
     print()
 
     # Display key results

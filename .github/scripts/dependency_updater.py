@@ -7,7 +7,6 @@ Checks for outdated dependencies and optionally updates them.
 import json
 import subprocess
 import sys
-from typing import Dict, List, Tuple
 
 
 class DependencyUpdater:
@@ -17,7 +16,7 @@ class DependencyUpdater:
         self.requirements_file = requirements_file
         self.outdated = []
 
-    def check_outdated(self) -> List[Dict]:
+    def check_outdated(self) -> list[dict]:
         """Check for outdated packages."""
         try:
             print("🔍 Checking for outdated packages...")
@@ -37,7 +36,7 @@ class DependencyUpdater:
             print(f"❌ Error parsing pip output: {e}")
             return []
 
-    def get_security_updates(self) -> List[Dict]:
+    def get_security_updates(self) -> list[dict]:
         """Check for security vulnerabilities using pip-audit."""
         try:
             result = subprocess.run(
@@ -60,7 +59,7 @@ class DependencyUpdater:
             print(f"⚠️ Could not check security vulnerabilities: {e}")
             return []
 
-    def categorize_updates(self) -> Dict[str, List[Dict]]:
+    def categorize_updates(self) -> dict[str, list[dict]]:
         """Categorize updates by severity."""
         categories = {
             "major": [],

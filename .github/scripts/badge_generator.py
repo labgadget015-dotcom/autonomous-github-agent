@@ -6,8 +6,6 @@ Automatically generates and updates status badges for README
 
 import json
 import os
-from pathlib import Path
-from typing import Dict
 
 
 class BadgeGenerator:
@@ -94,14 +92,14 @@ class BadgeGenerator:
         """Generate Python version badge"""
         return "![Python](https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12-blue)"
 
-    def generate_all_badges(self) -> Dict[str, str]:
+    def generate_all_badges(self) -> dict[str, str]:
         """Generate all badges from current data"""
         badges = {}
 
         # Load data
         try:
             with open("analysis-results.json") as f:
-                analysis = json.load(f)
+                _analysis = json.load(f)
 
             # Health badge (calculated from analysis)
             health_score = 85  # Default, could calculate from analysis
@@ -168,7 +166,7 @@ class BadgeGenerator:
         badge_section = self.generate_badge_section()
 
         try:
-            with open(readme_path, "r") as f:
+            with open(readme_path) as f:
                 content = f.read()
 
             # Replace badge section if it exists

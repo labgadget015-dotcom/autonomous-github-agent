@@ -4,17 +4,16 @@ from __future__ import annotations
 
 import json
 import sys
-from pathlib import Path
-import pytest
 from dataclasses import asdict
 from datetime import datetime
+from pathlib import Path
 
 # Add scripts directory to path
 _scripts_path = str(Path(__file__).parent.parent.parent / ".github" / "scripts")
 if _scripts_path not in sys.path:
     sys.path.insert(0, _scripts_path)
 
-from performance_benchmark import PerformanceBenchmark, BenchmarkResult
+from performance_benchmark import BenchmarkResult, PerformanceBenchmark
 
 
 def _make_benchmark(tmp_path: Path):

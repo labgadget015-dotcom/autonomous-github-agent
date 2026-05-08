@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
-import asyncio
 import sys
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
+
 import pytest
 
 # Add scripts directory to path
@@ -13,7 +13,7 @@ _scripts_path = str(Path(__file__).parent.parent.parent / ".github" / "scripts")
 if _scripts_path not in sys.path:
     sys.path.insert(0, _scripts_path)
 
-from distributed_monitoring import Alert, PerformanceMonitor, HealthChecker
+from distributed_monitoring import Alert, HealthChecker, PerformanceMonitor
 
 
 class TestAlertDataclass:

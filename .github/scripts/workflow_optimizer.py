@@ -4,11 +4,7 @@ Workflow Optimizer
 Analyzes workflow performance and suggests optimizations
 """
 
-import json
-import os
-from datetime import datetime, timedelta
-from pathlib import Path
-from typing import Dict, List
+from datetime import datetime
 
 
 class WorkflowOptimizer:
@@ -18,7 +14,7 @@ class WorkflowOptimizer:
         self.metrics = {}
         self.recommendations = []
 
-    def analyze_workflow_duration(self, duration: int) -> Dict:
+    def analyze_workflow_duration(self, duration: int) -> dict:
         """Analyze workflow execution time"""
         analysis = {
             "duration_seconds": duration,
@@ -46,7 +42,7 @@ class WorkflowOptimizer:
 
         return analysis
 
-    def analyze_cache_efficiency(self, cache_hit_rate: float) -> Dict:
+    def analyze_cache_efficiency(self, cache_hit_rate: float) -> dict:
         """Analyze cache usage"""
         return {
             "hit_rate": cache_hit_rate,
@@ -64,7 +60,7 @@ class WorkflowOptimizer:
             ),
         }
 
-    def analyze_job_parallelization(self, jobs: List[Dict]) -> Dict:
+    def analyze_job_parallelization(self, jobs: list[dict]) -> dict:
         """Analyze job parallelization opportunities"""
         sequential_jobs = sum(1 for job in jobs if job.get("needs", []))
         parallel_potential = len(jobs) - sequential_jobs
@@ -87,7 +83,7 @@ class WorkflowOptimizer:
             ),
         }
 
-    def analyze_resource_usage(self, runner_type: str = "ubuntu-latest") -> Dict:
+    def analyze_resource_usage(self, runner_type: str = "ubuntu-latest") -> dict:
         """Analyze runner resource usage"""
         recommendations = []
 
@@ -102,7 +98,7 @@ class WorkflowOptimizer:
 
         return {"runner_type": runner_type, "recommendations": recommendations}
 
-    def analyze_dependency_caching(self) -> Dict:
+    def analyze_dependency_caching(self) -> dict:
         """Analyze dependency caching strategies"""
         return {
             "current_strategy": "pip cache",
@@ -174,7 +170,7 @@ class WorkflowOptimizer:
 
     def estimate_cost_savings(
         self, current_duration: int, optimized_duration: int, runs_per_day: int = 50
-    ) -> Dict:
+    ) -> dict:
         """Estimate cost savings from optimization"""
         time_saved_per_run = current_duration - optimized_duration
         time_saved_per_day = time_saved_per_run * runs_per_day

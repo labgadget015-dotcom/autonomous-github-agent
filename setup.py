@@ -4,8 +4,9 @@ Setup configuration for Autonomous GitHub Agent
 PyPI package for direct Python installation and CLI usage
 """
 
-from setuptools import setup, find_packages
 import os
+
+from setuptools import find_packages, setup
 
 # Read version from __init__.py
 version = "1.0.0"
@@ -19,7 +20,7 @@ except Exception:
     pass
 
 # Read long description from README
-with open("README.md", "r", encoding="utf-8") as f:
+with open("README.md", encoding="utf-8") as f:
     long_description = f.read()
 
 setup(

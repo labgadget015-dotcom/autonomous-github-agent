@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import ast
-import pytest
 from pathlib import Path
 
 from overseer.code_analyzer import CodeAnalyzer

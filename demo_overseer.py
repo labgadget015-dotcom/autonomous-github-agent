@@ -6,7 +6,6 @@ This script demonstrates the capabilities of the repository overseer system
 by running a full analysis and showcasing the results.
 """
 
-import json
 import sys
 from pathlib import Path
 
@@ -161,19 +160,19 @@ def demo_monitoring(overseer: RepositoryOverseer):
     print("\n📊 Health Metrics:")
 
     quality = results.get("code_quality", {})
-    print(f"\n   Code Quality:")
+    print("\n   Code Quality:")
     print(f"   • Test Coverage: {quality.get('test_coverage', 0)}%")
     print(f"   • Has Linting: {quality.get('has_linting', False)}")
     print(f"   • Documentation Coverage: {quality.get('documentation_coverage', 0)}%")
 
     security = results.get("security", {})
-    print(f"\n   Security:")
+    print("\n   Security:")
     print(f"   • Security Policy: {security.get('has_security_policy', False)}")
     print(f"   • Dependabot: {security.get('has_dependabot', False)}")
     print(f"   • Security Workflows: {len(security.get('security_workflows', []))}")
 
     collab = results.get("collaboration", {})
-    print(f"\n   Collaboration:")
+    print("\n   Collaboration:")
     print(f"   • Contributing Guide: {collab.get('has_contributing_guide', False)}")
     print(f"   • Code of Conduct: {collab.get('has_code_of_conduct', False)}")
     print(f"   • Issue Templates: {collab.get('has_issue_templates', False)}")

@@ -1,9 +1,10 @@
 """Comprehensive tests for AI agent main module."""
 
-import pytest
-import sys
 import os
-from unittest.mock import Mock, patch, MagicMock, call, mock_open
+import sys
+from unittest.mock import mock_open, patch
+
+import pytest
 
 # Add parent directory to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".github", "scripts"))

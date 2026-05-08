@@ -3,10 +3,11 @@ Tests for GitHubClient — all GitHub API interaction paths.
 Covers: repo ops, issue/PR management, file operations, search, rate limiting.
 """
 
-import pytest
-from unittest.mock import MagicMock, patch, call
 import sys
 from pathlib import Path
+from unittest.mock import MagicMock, patch
+
+import pytest
 
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
@@ -150,8 +151,9 @@ class TestGitHubClientRateLimiting:
         client._wait_for_rate_limit()
 
     def test_github_exception_handled_gracefully(self):
-        from core.github_client import GitHubClient, RateLimitError
         from github import GithubException
+
+        from core.github_client import GitHubClient
 
         mock_gh = MagicMock()
         mock_gh.return_value.get_repo.side_effect = GithubException(

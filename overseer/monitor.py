@@ -6,12 +6,10 @@ Continuous monitoring with real-time recommendations for code quality,
 performance, security, and collaboration improvements.
 """
 
-import os
-import time
-from pathlib import Path
-from typing import Dict, List, Any
-from datetime import datetime, timedelta
 import logging
+from datetime import datetime
+from pathlib import Path
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -22,12 +20,12 @@ class RepositoryMonitor:
     for improvements across quality, performance, security, and collaboration.
     """
 
-    def __init__(self, repo_path: Path, config: Dict):
+    def __init__(self, repo_path: Path, config: dict):
         self.repo_path = repo_path
         self.config = config
         self.monitoring_start = datetime.now()
 
-    def analyze(self) -> Dict[str, Any]:
+    def analyze(self) -> dict[str, Any]:
         """
         Analyze repository health and provide recommendations.
 
@@ -65,7 +63,7 @@ class RepositoryMonitor:
 
         return results
 
-    def _monitor_code_quality(self) -> Dict[str, Any]:
+    def _monitor_code_quality(self) -> dict[str, Any]:
         """Monitor code quality metrics"""
         quality = {
             "test_coverage": 0,
@@ -105,7 +103,7 @@ class RepositoryMonitor:
 
         return quality
 
-    def _monitor_performance(self) -> Dict[str, Any]:
+    def _monitor_performance(self) -> dict[str, Any]:
         """Monitor repository performance metrics"""
         performance = {
             "ci_runtime": "unknown",
@@ -136,12 +134,12 @@ class RepositoryMonitor:
                         data.get("devDependencies", {})
                     )
                     performance["dependency_count"] += deps
-            except:
+            except Exception:
                 pass
 
         return performance
 
-    def _monitor_security(self) -> Dict[str, Any]:
+    def _monitor_security(self) -> dict[str, Any]:
         """Monitor security aspects"""
         security = {
             "has_security_policy": False,
@@ -177,7 +175,7 @@ class RepositoryMonitor:
 
         return security
 
-    def _monitor_collaboration(self) -> Dict[str, Any]:
+    def _monitor_collaboration(self) -> dict[str, Any]:
         """Monitor collaboration aspects"""
         collaboration = {
             "has_contributing_guide": False,
@@ -218,7 +216,7 @@ class RepositoryMonitor:
 
         return collaboration
 
-    def _generate_recommendations(self, results: Dict) -> List[Dict]:
+    def _generate_recommendations(self, results: dict) -> list[dict]:
         """Generate actionable recommendations from monitoring results"""
         recommendations = []
 

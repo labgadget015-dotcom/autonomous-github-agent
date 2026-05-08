@@ -1,22 +1,24 @@
 """Comprehensive tests for error_handler module."""
 
-import pytest
-import sys
 import os
-from unittest.mock import Mock, patch, MagicMock
-from pathlib import Path
+import sys
+from unittest.mock import patch
+
+import pytest
 
 # Add parent directory to path to import the module
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".github", "scripts"))
 
 try:
     from error_handler import (
+        AgentError,
+        ConfigurationError,
+        ErrorCategory,
         ErrorHandler,
         ErrorSeverity,
-        ErrorCategory,
-        AgentError,
         RetryableError,
-        ConfigurationError,
+    )
+    from error_handler import (
         ValidationError as CustomValidationError,
     )
 except ImportError:

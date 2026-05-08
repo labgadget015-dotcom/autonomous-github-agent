@@ -5,12 +5,10 @@ Comprehensive Documentation Generator
 Generates detailed, professional documentation for repositories.
 """
 
-import os
 import ast
-import json
-from pathlib import Path
-from typing import Dict, List, Optional
+import os
 from datetime import datetime
+from pathlib import Path
 
 
 class ComprehensiveDocGenerator:
@@ -20,7 +18,7 @@ class ComprehensiveDocGenerator:
         self.repo_path = Path(repo_path)
         self.project_info = self._analyze_project()
 
-    def _analyze_project(self) -> Dict:
+    def _analyze_project(self) -> dict:
         """Analyze project structure and metadata"""
         info = {
             "name": self.repo_path.name,
@@ -37,7 +35,7 @@ class ComprehensiveDocGenerator:
         }
         return info
 
-    def _find_modules(self) -> List[str]:
+    def _find_modules(self) -> list[str]:
         """Find Python modules in the project"""
         modules = []
         for item in self.repo_path.iterdir():
@@ -45,7 +43,7 @@ class ComprehensiveDocGenerator:
                 modules.append(item.name)
         return modules
 
-    def _find_scripts(self) -> List[str]:
+    def _find_scripts(self) -> list[str]:
         """Find executable scripts"""
         scripts = []
         scripts_dir = self.repo_path / "scripts"
@@ -140,7 +138,7 @@ class ComprehensiveDocGenerator:
             content.append("### Python Setup\n\n")
             content.append("```bash\n")
             content.append("# Clone the repository\n")
-            content.append(f"git clone <repository-url>\n")
+            content.append("git clone <repository-url>\n")
             content.append(f"cd {self.project_info['name']}\n\n")
             content.append("# Create virtual environment\n")
             content.append("python -m venv .venv\n")
@@ -214,7 +212,7 @@ class ComprehensiveDocGenerator:
                     docstring = ast.get_docstring(tree)
                     if docstring:
                         content.append(f"{docstring}\n\n")
-                except:
+                except Exception:
                     pass
 
         # Data Flow
@@ -298,7 +296,7 @@ class ComprehensiveDocGenerator:
 
         return "".join(content)
 
-    def generate_all_docs(self, output_dir: Path = None) -> Dict[str, Path]:
+    def generate_all_docs(self, output_dir: Path = None) -> dict[str, Path]:
         """Generate all documentation"""
         if output_dir is None:
             output_dir = self.repo_path / "docs"

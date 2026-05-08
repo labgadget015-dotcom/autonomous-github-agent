@@ -6,7 +6,6 @@ for maximum CI/CD efficiency.
 """
 
 import asyncio
-import concurrent.futures
 import json
 import os
 import subprocess
@@ -14,7 +13,7 @@ import sys
 import time
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List, Any
+from typing import Any
 
 
 @dataclass
@@ -38,7 +37,7 @@ class AsyncParallelAnalyzer:
         self.reports_dir.mkdir(exist_ok=True)
         self.max_workers = min(8, (os.cpu_count() or 4))
 
-    async def run_tool(self, tool_name: str, command: List[str]) -> AnalysisResult:
+    async def run_tool(self, tool_name: str, command: list[str]) -> AnalysisResult:
         """Run a single analysis tool asynchronously."""
         start_time = time.time()
 
@@ -110,7 +109,7 @@ class AsyncParallelAnalyzer:
                 if line.strip() and not line.startswith("*")
             )
         elif tool == "flake8":
-            return len([l for l in output.split("\\n") if ":" in l])
+            return len([line for line in output.split("\\n") if ":" in line])
         elif tool == "bandit":
             return output.count(">> Issue:")
         elif tool == "mypy":
@@ -118,7 +117,7 @@ class AsyncParallelAnalyzer:
         else:
             return 0
 
-    async def run_all_parallel(self) -> List[AnalysisResult]:
+    async def run_all_parallel(self) -> list[AnalysisResult]:
         """Run all analysis tools in parallel."""
 
         tools = {
@@ -201,7 +200,7 @@ class AsyncParallelAnalyzer:
 
         return valid_results
 
-    def generate_summary(self, results: List[AnalysisResult]) -> Dict[str, Any]:
+    def generate_summary(self, results: list[AnalysisResult]) -> dict[str, Any]:
         """Generate comprehensive summary of all analysis results."""
 
         total_duration = sum(r.duration for r in results)
@@ -230,14 +229,14 @@ class AsyncParallelAnalyzer:
 
         return summary
 
-    def save_summary(self, summary: Dict[str, Any]) -> None:
+    def save_summary(self, summary: dict[str, Any]) -> None:
         """Save summary to JSON file."""
         summary_path = self.reports_dir / "analysis-summary.json"
         with open(summary_path, "w") as f:
             json.dump(summary, f, indent=2)
         print(f"\\n💾 Summary saved to {summary_path}")
 
-    def print_summary(self, summary: Dict[str, Any]) -> None:
+    def print_summary(self, summary: dict[str, Any]) -> None:
         """Print formatted summary to console."""
         print("\\n" + "=" * 60)
         print("📊 ANALYSIS SUMMARY")

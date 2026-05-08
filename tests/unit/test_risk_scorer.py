@@ -251,7 +251,7 @@ class TestRiskyExtensions:
         assert risky_factor is None
 
     def test_multiple_risky_ext_score_capped_at_1_5(self):
-        many_sql = ["migrations/step_{}.sql".format(i) for i in range(10)]
+        many_sql = [f"migrations/step_{i}.sql" for i in range(10)]
         report = score_pull_request(
             files_changed=10,
             additions=100,

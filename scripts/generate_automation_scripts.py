@@ -5,10 +5,8 @@ Automation Scripts Generator
 Generates intelligent automation scripts for common repository tasks.
 """
 
-import os
 import sys
 from pathlib import Path
-from typing import Dict, List
 
 # Script templates
 SCRIPTS = {
@@ -35,7 +33,7 @@ fi
 
 # Format with black
 echo "Running black..."
-black . --line-length 100 --exclude '/(\.git|\.venv|venv|__pycache__|\.tox|dist|build)/'
+black . --line-length 100 --exclude '/(\\.git|\\.venv|venv|__pycache__|\\.tox|dist|build)/'
 
 # Sort imports with isort
 echo "Running isort..."
@@ -327,7 +325,7 @@ exit $EXIT_CODE
 }
 
 
-def generate_scripts(output_dir: Path = None) -> List[Path]:
+def generate_scripts(output_dir: Path = None) -> list[Path]:
     """
     Generate all automation scripts.
 
@@ -346,7 +344,7 @@ def generate_scripts(output_dir: Path = None) -> List[Path]:
     print(f"📁 Generating automation scripts in {output_dir}...")
     print()
 
-    for script_id, script_data in SCRIPTS.items():
+    for _script_id, script_data in SCRIPTS.items():
         script_path = output_dir / script_data["name"]
 
         # Write script
@@ -370,12 +368,12 @@ def generate_scripts(output_dir: Path = None) -> List[Path]:
         f.write("Auto-generated scripts for common repository tasks.\n\n")
         f.write("## Available Scripts\n\n")
 
-        for script_id, script_data in SCRIPTS.items():
+        for _script_id, script_data in SCRIPTS.items():
             f.write(f"### {script_data['name']}\n\n")
             f.write(f"{script_data['description']}\n\n")
-            f.write(f"```bash\n")
+            f.write("```bash\n")
             f.write(f"./{script_data['name']}\n")
-            f.write(f"```\n\n")
+            f.write("```\n\n")
 
     print(f"📝 Generated: {readme_path}")
 
@@ -385,7 +383,7 @@ def generate_scripts(output_dir: Path = None) -> List[Path]:
 def main():
     """Main entry point"""
     output_dir = Path(sys.argv[1]) if len(sys.argv) > 1 else None
-    generated = generate_scripts(output_dir)
+    generate_scripts(output_dir)
 
     print()
     print("💡 Usage:")

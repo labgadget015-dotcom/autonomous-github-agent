@@ -7,9 +7,9 @@ Command-line interface for the repository overseer system.
 
 import argparse
 import json
+import logging
 import sys
 from pathlib import Path
-import logging
 
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent))
@@ -136,7 +136,7 @@ Examples:
             monitor = analyses.get("monitoring", {})
 
             if code:
-                print(f"\n  Code Quality:")
+                print("\n  Code Quality:")
                 print(
                     f"    - Quality Score: {code.get('quality_score', code.get('code_quality_score', 0))}/100"
                 )
@@ -151,7 +151,7 @@ Examples:
                 )
 
             if deps:
-                print(f"\n  Dependencies:")
+                print("\n  Dependencies:")
                 print(
                     f"    - Vulnerable Packages: {len(deps.get('vulnerable_packages', []))}"
                 )
@@ -163,7 +163,7 @@ Examples:
                 )
 
             if cicd:
-                print(f"\n  CI/CD:")
+                print("\n  CI/CD:")
                 print(
                     f"    - Workflow Optimizations: {len(cicd.get('workflow_optimizations', []))}"
                 )
@@ -173,7 +173,7 @@ Examples:
 
             if monitor:
                 recs = monitor.get("recommendations", [])
-                print(f"\n  Monitoring:")
+                print("\n  Monitoring:")
                 print(f"    - Total Recommendations: {len(recs)}")
 
                 # Group by priority

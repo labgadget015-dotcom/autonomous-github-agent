@@ -9,7 +9,7 @@ import asyncio
 import time
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 try:
     import orjson as json
@@ -59,8 +59,8 @@ class GitHubGraphQLClient:
         }
 
     async def execute_query(
-        self, query: str, variables: Optional[Dict[str, Any]] = None
-    ) -> Dict[str, Any]:
+        self, query: str, variables: dict[str, Any] | None = None
+    ) -> dict[str, Any]:
         """
         Execute a GraphQL query
 
@@ -94,14 +94,14 @@ class GitHubGraphQLClient:
 
                         return data.get("data", {})
 
-                except Exception as e:
+                except Exception:
                     if attempt == self.config.max_retries - 1:
                         raise
                     await asyncio.sleep(2**attempt)  # Exponential backoff
 
         return {}
 
-    async def get_repository_info(self, owner: str, name: str) -> Dict[str, Any]:
+    async def get_repository_info(self, owner: str, name: str) -> dict[str, Any]:
         """
         Get comprehensive repository information in a single query
 
@@ -169,8 +169,8 @@ class GitHubGraphQLClient:
         return await self.execute_query(query, variables={"owner": owner, "name": name})
 
     async def get_pull_requests_batch(
-        self, owner: str, name: str, states: List[str] = None, first: int = 100
-    ) -> Dict[str, Any]:
+        self, owner: str, name: str, states: list[str] = None, first: int = 100
+    ) -> dict[str, Any]:
         """
         Get multiple pull requests with all relevant information in one query
 
@@ -243,8 +243,8 @@ class GitHubGraphQLClient:
         )
 
     async def get_issues_batch(
-        self, owner: str, name: str, states: List[str] = None, first: int = 100
-    ) -> Dict[str, Any]:
+        self, owner: str, name: str, states: list[str] = None, first: int = 100
+    ) -> dict[str, Any]:
         """
         Get multiple issues with comments in one query
 
@@ -302,7 +302,7 @@ class GitHubGraphQLClient:
 
     async def get_workflow_runs_batch(
         self, owner: str, name: str, first: int = 50
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Get workflow runs with check suites
 
@@ -350,7 +350,7 @@ class GitHubGraphQLClient:
 
     async def search_repositories(
         self, query_string: str, first: int = 50
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Search repositories with comprehensive data
 
@@ -401,10 +401,10 @@ class BatchRequestPool:
 
     def __init__(self, max_batch_size: int = 100):
         self.max_batch_size = max_batch_size
-        self._pending: List[Dict[str, Any]] = []
+        self._pending: list[dict[str, Any]] = []
         self._lock = asyncio.Lock()
 
-    async def add_request(self, request: Dict[str, Any]):
+    async def add_request(self, request: dict[str, Any]):
         """Add a request to the batch pool"""
         async with self._lock:
             self._pending.append(request)
@@ -414,7 +414,7 @@ class BatchRequestPool:
 
         return None
 
-    async def flush(self) -> List[Any]:
+    async def flush(self) -> list[Any]:
         """Execute all pending requests"""
         async with self._lock:
             if not self._pending:

@@ -27,7 +27,7 @@ def run_tests():
         else:
             tests_skipped += 1
 
-    print(f"\nTest Summary:")
+    print("\nTest Summary:")
     print(f"  Passed: {tests_passed}")
     print(f"  Failed: {tests_failed}")
     print(f"  Skipped: {tests_skipped}")

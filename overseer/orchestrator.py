@@ -5,19 +5,18 @@ Repository Overseer Orchestrator
 Main orchestration engine for repository management and improvement.
 """
 
-import os
 import json
 import logging
-from pathlib import Path
-from typing import Dict, List, Any, Optional
 from datetime import datetime
+from pathlib import Path
+from typing import Any
 
-from .code_analyzer import CodeAnalyzer
-from .doc_generator import DocumentationGenerator
-from .dependency_manager import DependencyManager
-from .cicd_optimizer import CICDOptimizer
-from .issue_triager import IssueTriager
 from .automation_engine import AutomationEngine
+from .cicd_optimizer import CICDOptimizer
+from .code_analyzer import CodeAnalyzer
+from .dependency_manager import DependencyManager
+from .doc_generator import DocumentationGenerator
+from .issue_triager import IssueTriager
 from .monitor import RepositoryMonitor
 
 logging.basicConfig(level=logging.INFO)
@@ -38,7 +37,7 @@ class RepositoryOverseer:
     - Real-time monitoring and recommendations
     """
 
-    def __init__(self, repo_path: str, config: Optional[Dict] = None):
+    def __init__(self, repo_path: str, config: dict | None = None):
         """
         Initialize the repository overseer.
 
@@ -69,7 +68,7 @@ class RepositoryOverseer:
 
         logger.info(f"Repository Overseer initialized for: {self.repo_path}")
 
-    def _load_default_config(self) -> Dict:
+    def _load_default_config(self) -> dict:
         """Load default configuration"""
         return {
             "code_analysis": {
@@ -119,7 +118,7 @@ class RepositoryOverseer:
             },
         }
 
-    def analyze_code(self) -> Dict[str, Any]:
+    def analyze_code(self) -> dict[str, Any]:
         """
         Conduct deep code analysis.
 
@@ -158,7 +157,7 @@ class RepositoryOverseer:
 
         return results
 
-    def generate_documentation(self) -> Dict[str, Any]:
+    def generate_documentation(self) -> dict[str, Any]:
         """
         Auto-generate and enhance documentation.
 
@@ -175,7 +174,7 @@ class RepositoryOverseer:
         }
 
         if self.config["documentation"]["enabled"]:
-            docs = self.doc_generator.generate()
+            self.doc_generator.generate()
 
             if self.config["documentation"]["auto_generate_readme"]:
                 readme_path = self.doc_generator.generate_readme()
@@ -201,7 +200,7 @@ class RepositoryOverseer:
 
         return results
 
-    def manage_dependencies(self) -> Dict[str, Any]:
+    def manage_dependencies(self) -> dict[str, Any]:
         """
         Smart dependency management and security scanning.
 
@@ -236,7 +235,7 @@ class RepositoryOverseer:
 
         return results
 
-    def optimize_cicd(self) -> Dict[str, Any]:
+    def optimize_cicd(self) -> dict[str, Any]:
         """
         Design and refine CI/CD workflows.
 
@@ -274,7 +273,7 @@ class RepositoryOverseer:
 
         return results
 
-    def triage_issues(self) -> Dict[str, Any]:
+    def triage_issues(self) -> dict[str, Any]:
         """
         Automate issue triaging, labeling, and prioritization.
 
@@ -311,7 +310,7 @@ class RepositoryOverseer:
 
         return results
 
-    def generate_automation_scripts(self) -> Dict[str, Any]:
+    def generate_automation_scripts(self) -> dict[str, Any]:
         """
         Suggest intelligent automation scripts for repetitive tasks.
 
@@ -352,7 +351,7 @@ class RepositoryOverseer:
 
         return results
 
-    def monitor_repository(self) -> Dict[str, Any]:
+    def monitor_repository(self) -> dict[str, Any]:
         """
         Monitor repository activity and provide real-time recommendations.
 
@@ -385,7 +384,7 @@ class RepositoryOverseer:
 
         return results
 
-    def run_full_analysis(self) -> Dict[str, Any]:
+    def run_full_analysis(self) -> dict[str, Any]:
         """
         Execute all repository oversight tasks.
 
@@ -453,7 +452,7 @@ class RepositoryOverseer:
 
         self.results["recommendations"] = recommendations
 
-    def save_results(self, output_path: Optional[str] = None):
+    def save_results(self, output_path: str | None = None):
         """
         Save analysis results to file.
 

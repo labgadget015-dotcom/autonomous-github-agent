@@ -6,11 +6,8 @@ Collects and exports metrics to Prometheus, logs workflows duration and failures
 
 import json
 import os
-import sys
-import time
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional
 
 import psutil
 from prometheus_client import (
@@ -25,7 +22,7 @@ from prometheus_client import (
 class MetricsCollector:
     """Collects and exports CI/CD pipeline metrics."""
 
-    def __init__(self, pushgateway_url: Optional[str] = None):
+    def __init__(self, pushgateway_url: str | None = None):
         self.registry = CollectorRegistry()
         self.pushgateway_url = pushgateway_url or os.getenv(
             "PROMETHEUS_PUSHGATEWAY_URL", "localhost:9091"
@@ -101,7 +98,7 @@ class MetricsCollector:
         self.system_cpu_usage.set(cpu_percent)
         self.system_memory_usage.set(memory.percent)
 
-        print(f"📊 System Metrics:")
+        print("📊 System Metrics:")
         print(f"  CPU Usage: {cpu_percent:.2f}%")
         print(f"  Memory Usage: {memory.percent:.2f}%")
 
@@ -137,7 +134,7 @@ class MetricsCollector:
         self.test_coverage.labels(project=project).set(coverage)
         print(f"🧪 Test Coverage ({project}): {coverage:.2f}%")
 
-    def update_security_vulnerabilities(self, vulnerabilities: Dict[str, int]):
+    def update_security_vulnerabilities(self, vulnerabilities: dict[str, int]):
         """Update security vulnerability counts by severity."""
         for severity, count in vulnerabilities.items():
             self.security_vulnerabilities.labels(severity=severity).set(count)
@@ -173,7 +170,7 @@ class MetricsCollector:
             with open(radon_cc) as f:
                 data = json.load(f)
                 complexities = []
-                for filepath, metrics in data.items():
+                for _filepath, metrics in data.items():
                     for metric in metrics:
                         complexities.append(metric.get("complexity", 0))
 

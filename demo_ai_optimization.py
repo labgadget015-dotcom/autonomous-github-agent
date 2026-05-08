@@ -31,17 +31,15 @@ def demo_intelligent_cache():
     print("\nAccessing 10 repositories 3 times each...")
     start = time.time()
 
-    for iteration in range(3):
+    for _iteration in range(3):
         for repo_id in range(10):
-            result = cache.get(
-                f"repo_{repo_id}", lambda id=repo_id: expensive_api_call(id)
-            )
+            cache.get(f"repo_{repo_id}", lambda id=repo_id: expensive_api_call(id))
 
     elapsed = time.time() - start
     stats = cache.get_stats()
 
     print(f"\n✅ Completed in {elapsed:.2f}s")
-    print(f"📊 Cache Statistics:")
+    print("📊 Cache Statistics:")
     print(f"   - Total requests: {stats['total_requests']}")
     print(f"   - Cache hits: {stats['hits']}")
     print(f"   - Cache misses: {stats['misses']}")
@@ -68,7 +66,7 @@ def demo_ml_priority_scorer():
             self.updated_at = datetime.now() - timedelta(days=1)
             self.comments = comments
             self.reactions = type("R", (), {"total_count": comments // 2})
-            self.labels = [type("L", (), {"name": l}) for l in labels]
+            self.labels = [type("L", (), {"name": lbl}) for lbl in labels]
             self.milestone = None
             self.assignees = []
             self.body = title
@@ -264,7 +262,7 @@ def demo_commit_summarizer():
 
     summary = summarizer.generate_summary(commits)
 
-    print(f"\n📝 Summary:")
+    print("\n📝 Summary:")
     print(f"   {summary['summary']}\n")
 
     print("📊 Statistics:")

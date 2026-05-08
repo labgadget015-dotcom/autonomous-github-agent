@@ -8,7 +8,8 @@ import json
 import os
 import sys
 from pathlib import Path
-from typing import Dict, List, Any
+from typing import Any
+
 import requests
 
 
@@ -26,7 +27,7 @@ class PRInlineCommenter:
             print("⚠️  Missing required environment variables")
             sys.exit(0)  # Don't fail the workflow
 
-    def _get_headers(self) -> Dict[str, str]:
+    def _get_headers(self) -> dict[str, str]:
         """Get headers for GitHub API requests."""
         return {
             "Authorization": f"token {self.github_token}",
@@ -34,7 +35,7 @@ class PRInlineCommenter:
             "Content-Type": "application/json",
         }
 
-    def _make_request(self, method: str, endpoint: str, data: Dict = None) -> Any:
+    def _make_request(self, method: str, endpoint: str, data: dict = None) -> Any:
         """Make authenticated request to GitHub API."""
         url = f"{self.api_base}/repos/{self.repo}/{endpoint}"
         try:
@@ -51,7 +52,7 @@ class PRInlineCommenter:
             print(f"⚠️  API request failed: {e}")
             return None
 
-    def parse_pylint_report(self, report_path: Path) -> List[Dict]:
+    def parse_pylint_report(self, report_path: Path) -> list[dict]:
         """Parse Pylint JSON report and extract actionable issues."""
         comments = []
         try:
@@ -75,7 +76,7 @@ class PRInlineCommenter:
 
         return comments
 
-    def parse_bandit_report(self, report_path: Path) -> List[Dict]:
+    def parse_bandit_report(self, report_path: Path) -> list[dict]:
         """Parse Bandit JSON report and extract security issues."""
         comments = []
         try:
@@ -103,7 +104,7 @@ class PRInlineCommenter:
 
         return comments
 
-    def parse_radon_report(self, report_path: Path) -> List[Dict]:
+    def parse_radon_report(self, report_path: Path) -> list[dict]:
         """Parse Radon complexity report and highlight high complexity."""
         comments = []
         try:
@@ -136,7 +137,7 @@ class PRInlineCommenter:
 
         return comments
 
-    def post_review_comments(self, comments: List[Dict]) -> None:
+    def post_review_comments(self, comments: list[dict]) -> None:
         """Post inline comments as a PR review."""
         if not comments:
             print("✅ No issues to comment on")

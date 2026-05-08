@@ -6,10 +6,10 @@ Generates intelligent automation scripts for repetitive tasks like
 code formatting, release tagging, and environment setup.
 """
 
+import logging
 import os
 from pathlib import Path
-from typing import Dict, List, Any
-import logging
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -19,12 +19,12 @@ class AutomationEngine:
     Intelligent automation script generator for common development tasks.
     """
 
-    def __init__(self, repo_path: Path, config: Dict):
+    def __init__(self, repo_path: Path, config: dict):
         self.repo_path = repo_path
         self.config = config
         self.scripts_dir = repo_path / "scripts" / "automation"
 
-    def generate(self) -> Dict[str, Any]:
+    def generate(self) -> dict[str, Any]:
         """
         Generate automation scripts.
 
@@ -59,7 +59,7 @@ class AutomationEngine:
 
         return results
 
-    def _generate_formatting_scripts(self) -> List[str]:
+    def _generate_formatting_scripts(self) -> list[str]:
         """Generate code formatting automation scripts"""
         scripts = []
 
@@ -148,7 +148,7 @@ echo "All formatting checks complete!"
 
         return scripts
 
-    def _generate_release_scripts(self) -> List[str]:
+    def _generate_release_scripts(self) -> list[str]:
         """Generate release automation scripts"""
         scripts = []
 
@@ -200,7 +200,7 @@ echo "GitHub will automatically create a release from the tag."
 
         return scripts
 
-    def _generate_setup_scripts(self) -> List[str]:
+    def _generate_setup_scripts(self) -> list[str]:
         """Generate environment setup scripts"""
         scripts = []
 

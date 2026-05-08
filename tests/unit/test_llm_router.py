@@ -4,15 +4,14 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
-import pytest
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 # Add scripts directory to path
 _scripts_path = str(Path(__file__).parent.parent.parent / ".github" / "scripts")
 if _scripts_path not in sys.path:
     sys.path.insert(0, _scripts_path)
 
-from llm_router import LLMRouter, TaskComplexity, LLMResponse
+from llm_router import LLMResponse, LLMRouter, TaskComplexity
 
 
 class TestTaskComplexityEnum:

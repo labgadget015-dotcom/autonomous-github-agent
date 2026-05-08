@@ -3,23 +3,25 @@
 This module contains comprehensive tests for all AI optimization components.
 """
 
-import pytest
 import time
 from datetime import datetime, timedelta
+
+import pytest
+
 from autopilot.ai_optimization import (
-    IntelligentCache,
-    get_cache,
-    MLPriorityScorer,
-    get_scorer,
-    NLPRelevanceFilter,
-    get_filter,
-    APIOptimizationAgent,
-    get_optimizer,
-    PerformanceMonitor,
-    get_monitor,
     AnomalyDetector,
-    get_detector,
+    APIOptimizationAgent,
     CommitSummarizer,
+    IntelligentCache,
+    MLPriorityScorer,
+    NLPRelevanceFilter,
+    PerformanceMonitor,
+    get_cache,
+    get_detector,
+    get_filter,
+    get_monitor,
+    get_optimizer,
+    get_scorer,
     get_summarizer,
 )
 

@@ -6,12 +6,11 @@ Generates comprehensive daily/weekly reports and dashboards from CI/CD metrics.
 Provides automated recommendations based on quality trends and patterns.
 """
 
+import argparse
+import json
 import os
 import sys
-import json
-import argparse
-from typing import Dict, List, Optional
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
 
 
@@ -31,7 +30,7 @@ class MetricsSummaryAgent:
         )
         self.slack_channel = os.getenv("REPORT_SLACK_CHANNEL", "#ci-reports")
 
-    def load_metrics(self, metrics_dir: str) -> List[Dict]:
+    def load_metrics(self, metrics_dir: str) -> list[dict]:
         """Load all metrics files from directory."""
         metrics = []
         metrics_path = Path(metrics_dir)
@@ -42,17 +41,17 @@ class MetricsSummaryAgent:
 
         for file in sorted(metrics_path.glob("*.json")):
             try:
-                with open(file, "r") as f:
+                with open(file) as f:
                     data = json.load(f)
                     data["_filename"] = file.name
                     data["_timestamp"] = file.stat().st_mtime
                     metrics.append(data)
-            except (json.JSONDecodeError, IOError) as e:
+            except (OSError, json.JSONDecodeError) as e:
                 print(f"Failed to load {file}: {e}")
 
         return metrics
 
-    def calculate_trends(self, metrics: List[Dict], metric_key: str) -> Dict:
+    def calculate_trends(self, metrics: list[dict], metric_key: str) -> dict:
         """Calculate trends for a specific metric."""
         values = [m.get(metric_key, 0) for m in metrics if metric_key in m]
 
@@ -82,7 +81,7 @@ class MetricsSummaryAgent:
             "max": round(max(values), 2),
         }
 
-    def generate_recommendations(self, summary: Dict) -> List[str]:
+    def generate_recommendations(self, summary: dict) -> list[str]:
         """Generate actionable recommendations based on metrics."""
         recommendations = []
 
@@ -155,7 +154,7 @@ class MetricsSummaryAgent:
         return recommendations
 
     def generate_markdown_report(
-        self, metrics: List[Dict], report_type: str = "daily"
+        self, metrics: list[dict], report_type: str = "daily"
     ) -> str:
         """Generate a markdown-formatted report."""
         lines = [
@@ -245,14 +244,14 @@ class MetricsSummaryAgent:
             [
                 "",
                 "---",
-                f"*Report generated automatically by Metrics Summary Agent*",
+                "*Report generated automatically by Metrics Summary Agent*",
                 f"*Slack Channel: {self.slack_channel}*",
             ]
         )
 
         return "\n".join(lines)
 
-    def generate_json_summary(self, metrics: List[Dict]) -> Dict:
+    def generate_json_summary(self, metrics: list[dict]) -> dict:
         """Generate a JSON-formatted summary."""
         summary = {
             "generated_at": self.timestamp.isoformat(),
@@ -288,10 +287,10 @@ class MetricsSummaryAgent:
                 f.write(content)
 
             print(f"✅ Report saved to: {output_file}")
-        except IOError as e:
+        except OSError as e:
             print(f"❌ Failed to save report: {e}")
 
-    def generate_dashboard_data(self, metrics: List[Dict]) -> Dict:
+    def generate_dashboard_data(self, metrics: list[dict]) -> dict:
         """Generate data for dashboard visualization."""
         dashboard = {"timestamp": self.timestamp.isoformat(), "charts": {}}
 

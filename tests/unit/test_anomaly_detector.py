@@ -5,7 +5,6 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 from unittest.mock import MagicMock
-import pytest
 
 # Add autopilot directory to path
 _autopilot_path = str(Path(__file__).parent.parent.parent / "autopilot")

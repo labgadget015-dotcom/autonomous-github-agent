@@ -1,12 +1,11 @@
 """Comprehensive tests for utils module."""
 
-import pytest
-import sys
-import os
 import json
-from unittest.mock import Mock, patch, mock_open, MagicMock
-from pathlib import Path
+import os
+import sys
 import tempfile
+
+import pytest
 
 # Add parent directory to path to import the module
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".github", "scripts"))

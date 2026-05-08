@@ -5,12 +5,11 @@ Routes tasks to local or cloud LLMs based on complexity, saving 90% on token cos
 """
 
 import os
-import json
-import requests
-from typing import Dict
+import time
 from dataclasses import dataclass
 from enum import Enum
-import time
+
+import requests
 
 
 class TaskComplexity(Enum):
@@ -55,7 +54,7 @@ class LLMRouter:
 
         self.stats = {"total": 0, "local": 0, "cloud": 0, "cost": 0.0, "tokens": 0}
 
-    def classify(self, task_type: str, context: Dict) -> TaskComplexity:
+    def classify(self, task_type: str, context: dict) -> TaskComplexity:
         if task_type in ["format", "lint_simple", "doc"]:
             return TaskComplexity.SIMPLE
 
@@ -93,7 +92,7 @@ class LLMRouter:
                 latency_ms=(time.time() - start) * 1000,
                 success=True,
             )
-        except:
+        except Exception:
             return LLMResponse("", "local", 0, 0.0, 0, False)
 
     def call_cloud(self, prompt: str, model="gpt-4-turbo") -> LLMResponse:
@@ -118,10 +117,10 @@ class LLMRouter:
                 latency_ms=(time.time() - start) * 1000,
                 success=True,
             )
-        except:
+        except Exception:
             return LLMResponse("", model, 0, 0.0, 0, False)
 
-    def route(self, prompt: str, task_type: str, context: Dict = None) -> LLMResponse:
+    def route(self, prompt: str, task_type: str, context: dict = None) -> LLMResponse:
         context = context or {}
         complexity = self.classify(task_type, context)
         self.stats["total"] += 1

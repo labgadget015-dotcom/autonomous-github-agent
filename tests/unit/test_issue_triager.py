@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import pytest
 from pathlib import Path
 
 from overseer.issue_triager import IssueTriager

@@ -6,8 +6,6 @@ Integrates with Radon to track cyclomatic complexity and maintainability
 
 import json
 import sys
-from pathlib import Path
-from typing import Dict, List
 
 
 class ComplexityReporter:
@@ -18,7 +16,7 @@ class ComplexityReporter:
         self.maintainability_data = self._load_json("maintainability.json")
         self.thresholds = {"complexity": 10, "maintainability": 65}
 
-    def _load_json(self, filename: str) -> Dict:
+    def _load_json(self, filename: str) -> dict:
         """Load JSON data file"""
         try:
             with open(filename) as f:
@@ -29,7 +27,7 @@ class ComplexityReporter:
             print(f"Warning: Could not parse {filename}")
             return {}
 
-    def analyze_complexity(self) -> Dict:
+    def analyze_complexity(self) -> dict:
         """Analyze complexity data and identify issues"""
         issues = {
             "high_complexity": [],
@@ -75,7 +73,7 @@ class ComplexityReporter:
 
         return issues
 
-    def generate_markdown_report(self, issues: Dict) -> str:
+    def generate_markdown_report(self, issues: dict) -> str:
         """Generate markdown report for PR comment"""
         report = f"""## 📊 Code Complexity Analysis
 
@@ -130,7 +128,7 @@ class ComplexityReporter:
 
         return report
 
-    def generate_refactoring_recommendations(self, issues: Dict) -> List[str]:
+    def generate_refactoring_recommendations(self, issues: dict) -> list[str]:
         """Generate specific refactoring recommendations"""
         recommendations = []
 
@@ -148,7 +146,7 @@ class ComplexityReporter:
 
         return recommendations
 
-    def should_block_merge(self, issues: Dict) -> bool:
+    def should_block_merge(self, issues: dict) -> bool:
         """Determine if complexity issues should block merge"""
         # Block if there are functions with very high complexity
         critical_complexity = [

@@ -23,7 +23,7 @@ def check_policies():
     # Check if results.json exists
     results_file = Path("results.json")
     if results_file.exists():
-        with open(results_file, "r") as f:
+        with open(results_file) as f:
             results = json.load(f)
             print(f"Found results: {results.get('status', 'unknown')}")
     else:

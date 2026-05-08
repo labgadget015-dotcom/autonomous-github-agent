@@ -3,11 +3,11 @@
 
 import json
 import os
-import sys
-from pathlib import Path
-from enum import Enum
-from typing import Dict, List, Any, Optional
 import subprocess
+import sys
+from enum import Enum
+from pathlib import Path
+from typing import Any
 
 
 class ContextMode(Enum):
@@ -26,7 +26,7 @@ class SmartContextGatherer:
         self.event_name = os.environ.get("GITHUB_EVENT_NAME", "unknown")
         self.files_changed_threshold = {"minimal": 3, "standard": 10}
 
-    def get_changed_files(self) -> List[str]:
+    def get_changed_files(self) -> list[str]:
         """Get list of changed files from git."""
         try:
             result = subprocess.run(
@@ -41,7 +41,7 @@ class SmartContextGatherer:
             print(f"Warning: Could not get changed files: {e}")
             return []
 
-    def determine_context_mode(self, files_changed: List[str]) -> ContextMode:
+    def determine_context_mode(self, files_changed: list[str]) -> ContextMode:
         """Determine optimal context mode based on change scope."""
         num_files = len([f for f in files_changed if f])
 
@@ -54,7 +54,7 @@ class SmartContextGatherer:
         else:
             return ContextMode.COMPREHENSIVE
 
-    def gather_minimal_context(self, changed_files: List[str]) -> Dict[str, Any]:
+    def gather_minimal_context(self, changed_files: list[str]) -> dict[str, Any]:
         """Gather minimal context - only changed files."""
         return {
             "mode": "minimal",
@@ -62,7 +62,7 @@ class SmartContextGatherer:
             "file_count": len(changed_files),
         }
 
-    def gather_standard_context(self, changed_files: List[str]) -> Dict[str, Any]:
+    def gather_standard_context(self, changed_files: list[str]) -> dict[str, Any]:
         """Gather standard context - changed files + related."""
         # Get related files (same directory)
         related_files = set()
@@ -87,7 +87,7 @@ class SmartContextGatherer:
             "related_count": len(related_files),
         }
 
-    def gather_comprehensive_context(self) -> Dict[str, Any]:
+    def gather_comprehensive_context(self) -> dict[str, Any]:
         """Gather comprehensive context - full repo."""
         files = []
         try:
@@ -105,7 +105,7 @@ class SmartContextGatherer:
             "file_count": len(files),
         }
 
-    def gather_context(self) -> Dict[str, Any]:
+    def gather_context(self) -> dict[str, Any]:
         """Main entry point for smart context gathering."""
         # Base context
         context = {
@@ -150,7 +150,7 @@ class SmartContextGatherer:
 
         return context
 
-    def _estimate_tokens(self, context: Dict[str, Any]) -> int:
+    def _estimate_tokens(self, context: dict[str, Any]) -> int:
         """Estimate token usage for context."""
         # Rough estimation: 1 token ≈ 4 characters
         context_str = json.dumps(context)

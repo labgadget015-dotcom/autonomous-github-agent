@@ -4,9 +4,7 @@ Notification Manager
 Sends notifications to various channels (Slack, Discord, Email)
 """
 
-import json
 import os
-from typing import Dict, List, Optional
 
 try:
     import requests
@@ -95,7 +93,7 @@ class NotificationManager:
 
         self.send_all_channels(message, severity)
 
-    def notify_security_issue(self, issue: Dict):
+    def notify_security_issue(self, issue: dict):
         """Notify about security vulnerability"""
         severity = issue.get("severity", "MEDIUM")
         file = issue.get("file", "unknown")
@@ -110,9 +108,9 @@ class NotificationManager:
         message = f"📉 Test coverage dropped by {drop:.1f}% ({old_coverage:.1f}% → {new_coverage:.1f}%)"
         self.send_all_channels(message, "warning")
 
-    def notify_quality_gate_failure(self, failures: List[str]):
+    def notify_quality_gate_failure(self, failures: list[str]):
         """Notify about quality gate failures"""
-        message = f"⚠️ Quality Gate Failed:\n" + "\n".join(f"- {f}" for f in failures)
+        message = "⚠️ Quality Gate Failed:\n" + "\n".join(f"- {f}" for f in failures)
         self.send_all_channels(message, "warning")
 
     def send_all_channels(self, message: str, severity: str = "info"):
@@ -127,7 +125,7 @@ class NotificationManager:
 
         return results
 
-    def send_daily_summary(self, stats: Dict):
+    def send_daily_summary(self, stats: dict):
         """Send daily summary report"""
         message = f"""📊 Daily CI/CD Summary
 

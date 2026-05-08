@@ -4,12 +4,10 @@ GitHub Actions Status Monitor
 Real-time monitoring of GitHub Actions workflow runs.
 """
 
-import json
 import os
 import sys
 import time
 from datetime import datetime
-from typing import Dict, List, Optional
 
 try:
     import requests
@@ -21,7 +19,7 @@ except ImportError:
 class GitHubActionsMonitor:
     """Monitor GitHub Actions workflows."""
 
-    def __init__(self, repo: str, token: Optional[str] = None):
+    def __init__(self, repo: str, token: str | None = None):
         self.repo = repo  # Format: owner/repo
         self.token = token or os.getenv("GITHUB_TOKEN")
         self.base_url = f"https://api.github.com/repos/{repo}"
@@ -37,11 +35,11 @@ class GitHubActionsMonitor:
 
     def get_workflow_runs(
         self,
-        workflow_id: Optional[str] = None,
-        branch: Optional[str] = None,
-        status: Optional[str] = None,
+        workflow_id: str | None = None,
+        branch: str | None = None,
+        status: str | None = None,
         limit: int = 10,
-    ) -> List[Dict]:
+    ) -> list[dict]:
         """Get workflow runs."""
         url = f"{self.base_url}/actions/runs"
         params = {"per_page": limit}
@@ -61,7 +59,7 @@ class GitHubActionsMonitor:
             print(f"❌ Error fetching workflow runs: {e}")
             return []
 
-    def get_run_details(self, run_id: int) -> Optional[Dict]:
+    def get_run_details(self, run_id: int) -> dict | None:
         """Get details of a specific run."""
         url = f"{self.base_url}/actions/runs/{run_id}"
 
@@ -73,7 +71,7 @@ class GitHubActionsMonitor:
             print(f"❌ Error fetching run details: {e}")
             return None
 
-    def get_run_jobs(self, run_id: int) -> List[Dict]:
+    def get_run_jobs(self, run_id: int) -> list[dict]:
         """Get jobs for a workflow run."""
         url = f"{self.base_url}/actions/runs/{run_id}/jobs"
 
@@ -96,7 +94,7 @@ class GitHubActionsMonitor:
             minutes = (seconds % 3600) // 60
             return f"{hours}h {minutes}m"
 
-    def get_status_emoji(self, status: str, conclusion: Optional[str] = None) -> str:
+    def get_status_emoji(self, status: str, conclusion: str | None = None) -> str:
         """Get emoji for status."""
         if status == "completed":
             if conclusion == "success":
@@ -116,7 +114,7 @@ class GitHubActionsMonitor:
         else:
             return "❓"
 
-    def display_run_summary(self, run: Dict):
+    def display_run_summary(self, run: dict):
         """Display summary of a workflow run."""
         status = run["status"]
         conclusion = run.get("conclusion")
@@ -213,7 +211,7 @@ class GitHubActionsMonitor:
         for run in runs:
             self.display_run_summary(run)
 
-    def get_workflow_statistics(self, days: int = 30) -> Dict:
+    def get_workflow_statistics(self, days: int = 30) -> dict:
         """Get workflow statistics."""
         runs = self.get_workflow_runs(limit=100)  # Get more runs for stats
 

@@ -16,7 +16,7 @@ def handle_errors():
     # Check for error files
     audit_file = Path("audit.log")
     if audit_file.exists():
-        with open(audit_file, "r") as f:
+        with open(audit_file) as f:
             audit = json.load(f)
             violations = audit.get("violations", [])
             audit_warnings = audit.get("warnings", [])
@@ -29,7 +29,7 @@ def handle_errors():
     # Check results
     results_file = Path("results.json")
     if results_file.exists():
-        with open(results_file, "r") as f:
+        with open(results_file) as f:
             results = json.load(f)
             if results.get("status") != "success":
                 errors.append("AI agent reported non-success status")

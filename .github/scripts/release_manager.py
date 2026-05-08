@@ -8,9 +8,7 @@ import argparse
 import re
 import subprocess
 import sys
-from datetime import datetime
 from pathlib import Path
-from typing import Optional
 
 
 class ReleaseManager:
@@ -26,7 +24,7 @@ class ReleaseManager:
         self.dry_run = dry_run
         self.root = Path.cwd()
 
-    def get_current_version(self) -> Optional[str]:
+    def get_current_version(self) -> str | None:
         """Get current version from git tags."""
         try:
             result = subprocess.run(
@@ -151,7 +149,7 @@ class ReleaseManager:
             subprocess.run(
                 ["git", "commit", "-m", f"chore: bump version to {version}"], check=True
             )
-            print(f"✅ Committed version bump")
+            print("✅ Committed version bump")
         except subprocess.CalledProcessError as e:
             print(f"❌ Error committing changes: {e}")
             sys.exit(1)

@@ -5,11 +5,9 @@ Tests all CI/CD components working together end-to-end.
 """
 
 import json
-import os
 import subprocess
 import sys
 from pathlib import Path
-from typing import Dict, List, Tuple
 
 
 class IntegrationTester:
@@ -65,7 +63,7 @@ class IntegrationTester:
 
         # Validate JSON
         try:
-            with open(output_file, "r", encoding="utf-8") as f:
+            with open(output_file, encoding="utf-8") as f:
                 data = json.load(f)
 
             required_keys = ["pylint", "flake8", "bandit", "radon"]
@@ -98,7 +96,7 @@ class IntegrationTester:
             return False
 
         try:
-            with open(output_file, "r", encoding="utf-8") as f:
+            with open(output_file, encoding="utf-8") as f:
                 data = json.load(f)
 
             if "summary" not in data:
@@ -206,7 +204,7 @@ class IntegrationTester:
                     print(f"❌ Missing section: {section}")
                     return False
 
-            print(f"✅ Workflow optimization report valid")
+            print("✅ Workflow optimization report valid")
             return True
         except Exception as e:
             print(f"❌ Error validating report: {e}")
@@ -243,7 +241,7 @@ class IntegrationTester:
                     print(f"❌ Missing section: {section}")
                     return False
 
-            print(f"✅ Cost report valid")
+            print("✅ Cost report valid")
             return True
         except Exception as e:
             print(f"❌ Error validating cost report: {e}")
@@ -279,7 +277,7 @@ class IntegrationTester:
                     print(f"❌ Missing section: {section}")
                     return False
 
-            print(f"✅ Performance benchmark valid")
+            print("✅ Performance benchmark valid")
             return True
         except Exception as e:
             print(f"❌ Error validating benchmark: {e}")
@@ -368,7 +366,7 @@ class IntegrationTester:
             return False
 
         try:
-            with open(tasks_file, "r", encoding="utf-8") as f:
+            with open(tasks_file, encoding="utf-8") as f:
                 data = json.load(f)
 
             if "tasks" not in data:
@@ -390,12 +388,12 @@ class IntegrationTester:
         total = self.passed + self.failed
         success_rate = (self.passed / total * 100) if total > 0 else 0
 
-        print(f"\n📊 Results:")
+        print("\n📊 Results:")
         print(f"  ✅ Passed: {self.passed}")
         print(f"  ❌ Failed: {self.failed}")
         print(f"  📈 Success Rate: {success_rate:.1f}%")
 
-        print(f"\n📋 Detailed Results:")
+        print("\n📋 Detailed Results:")
         for result in self.results:
             status = "✅" if result["status"] == "PASSED" else "❌"
             print(f"  {status} {result['test']}")

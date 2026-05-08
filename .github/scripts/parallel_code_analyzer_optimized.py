@@ -9,10 +9,8 @@ import hashlib
 import json
 import os
 import time
-from concurrent.futures import ThreadPoolExecutor
-from contextlib import asynccontextmanager, contextmanager
+from contextlib import contextmanager
 from pathlib import Path
-from typing import Dict, List, Optional
 
 try:
     import orjson  # 3-5x faster than json
@@ -55,7 +53,7 @@ class ResultCache:
         """Generate cache key."""
         return self.cache_dir / f"{tool}_{file_hash[:16]}.json"
 
-    def get(self, tool: str, file_path: str) -> Optional[Dict]:
+    def get(self, tool: str, file_path: str) -> dict | None:
         """Get cached result if file unchanged."""
         try:
             file_hash = self._get_file_hash(file_path)
@@ -70,7 +68,7 @@ class ResultCache:
             pass
         return None
 
-    def set(self, tool: str, file_path: str, result: Dict):
+    def set(self, tool: str, file_path: str, result: dict):
         """Cache result."""
         try:
             file_hash = self._get_file_hash(file_path)
@@ -101,11 +99,11 @@ class OptimizedCodeAnalyzer:
         self.results = {}
         self.use_cache = os.getenv("ANALYSIS_CACHE", "true").lower() == "true"
 
-    def load_config(self, config_file: str) -> Dict:
+    def load_config(self, config_file: str) -> dict:
         """Load configuration from YAML file."""
         if yaml and os.path.exists(config_file):
             try:
-                with open(config_file, "r", encoding="utf-8") as f:
+                with open(config_file, encoding="utf-8") as f:
                     return yaml.safe_load(f)
             except Exception as e:
                 print(f"⚠️ Error loading config: {e}")
@@ -127,7 +125,7 @@ class OptimizedCodeAnalyzer:
             },
         }
 
-    async def run_command_async(self, cmd: List[str], tool_name: str) -> Dict:
+    async def run_command_async(self, cmd: list[str], tool_name: str) -> dict:
         """Run command asynchronously using subprocess."""
         try:
             process = await asyncio.create_subprocess_exec(
@@ -154,7 +152,7 @@ class OptimizedCodeAnalyzer:
         except Exception as e:
             return {"tool": tool_name, "status": "error", "error": str(e)}
 
-    async def run_ruff(self, target: str) -> Dict:
+    async def run_ruff(self, target: str) -> dict:
         """Run Ruff linter (fast replacement for flake8, isort)."""
         if self.use_cache:
             cached = self.cache.get("ruff", target)
@@ -170,7 +168,7 @@ class OptimizedCodeAnalyzer:
 
         return result
 
-    async def run_pylint(self, target: str) -> Dict:
+    async def run_pylint(self, target: str) -> dict:
         """Run Pylint analysis."""
         if self.use_cache:
             cached = self.cache.get("pylint", target)
@@ -192,7 +190,7 @@ class OptimizedCodeAnalyzer:
 
         return result
 
-    async def run_bandit(self, target: str) -> Dict:
+    async def run_bandit(self, target: str) -> dict:
         """Run Bandit security scanner."""
         if self.use_cache:
             cached = self.cache.get("bandit", target)
@@ -208,7 +206,7 @@ class OptimizedCodeAnalyzer:
 
         return result
 
-    async def run_radon(self, target: str) -> Dict:
+    async def run_radon(self, target: str) -> dict:
         """Run Radon complexity analysis."""
         if self.use_cache:
             cached = self.cache.get("radon", target)
@@ -236,7 +234,7 @@ class OptimizedCodeAnalyzer:
 
         return result
 
-    async def analyze_all(self) -> Dict:
+    async def analyze_all(self) -> dict:
         """Run all analysis tools in parallel."""
         targets = self.config.get("targets", ["."])
         tools = self.config.get("tools", {})
@@ -277,7 +275,7 @@ class OptimizedCodeAnalyzer:
 
         return organized
 
-    def save_results(self, results: Dict, output_file: str = "analysis-results.json"):
+    def save_results(self, results: dict, output_file: str = "analysis-results.json"):
         """Save results to file using fast JSON library."""
         try:
             with open(output_file, "wb") as f:

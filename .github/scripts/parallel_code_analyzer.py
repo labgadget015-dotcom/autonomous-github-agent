@@ -11,7 +11,6 @@ import subprocess
 import sys
 import time
 from pathlib import Path
-from typing import Dict, List, Tuple
 
 import yaml
 
@@ -24,14 +23,14 @@ class ParallelCodeAnalyzer:
         self.config = self._load_config()
         self.results = {}
 
-    def _load_config(self) -> Dict:
+    def _load_config(self) -> dict:
         """Load configuration from YAML file"""
         if self.config_path.exists():
             with open(self.config_path) as f:
                 return yaml.safe_load(f)
         return self._default_config()
 
-    def _default_config(self) -> Dict:
+    def _default_config(self) -> dict:
         """Default configuration if no config file exists"""
         return {
             "thresholds": {"pylint": 8.0, "complexity": 10, "security": "medium"},
@@ -39,7 +38,7 @@ class ParallelCodeAnalyzer:
             "exclude_patterns": ["__pycache__", "*.pyc", ".git"],
         }
 
-    def run_pylint(self, target: str) -> Tuple[int, str, str]:
+    def run_pylint(self, target: str) -> tuple[int, str, str]:
         """Run Pylint analysis"""
         cmd = [
             "pylint",
@@ -57,7 +56,7 @@ class ParallelCodeAnalyzer:
         except Exception as e:
             return 1, "", f"Pylint error: {str(e)}"
 
-    def run_flake8(self, target: str) -> Tuple[int, str, str]:
+    def run_flake8(self, target: str) -> tuple[int, str, str]:
         """Run Flake8 analysis"""
         cmd = [
             "flake8",
@@ -75,7 +74,7 @@ class ParallelCodeAnalyzer:
         except Exception as e:
             return 1, "", f"Flake8 error: {str(e)}"
 
-    def run_bandit(self, target: str) -> Tuple[int, str, str]:
+    def run_bandit(self, target: str) -> tuple[int, str, str]:
         """Run Bandit security analysis"""
         cmd = [
             "bandit",
@@ -93,7 +92,7 @@ class ParallelCodeAnalyzer:
         except Exception as e:
             return 1, "", f"Bandit error: {str(e)}"
 
-    def run_radon_complexity(self, target: str) -> Tuple[int, str, str]:
+    def run_radon_complexity(self, target: str) -> tuple[int, str, str]:
         """Run Radon complexity analysis"""
         cmd = [
             "radon",
@@ -110,7 +109,7 @@ class ParallelCodeAnalyzer:
         except Exception as e:
             return 1, "", f"Radon error: {str(e)}"
 
-    def run_radon_maintainability(self, target: str) -> Tuple[int, str, str]:
+    def run_radon_maintainability(self, target: str) -> tuple[int, str, str]:
         """Run Radon maintainability index"""
         cmd = ["radon", "mi", target, "-j"]
 
@@ -120,7 +119,7 @@ class ParallelCodeAnalyzer:
         except Exception as e:
             return 1, "", f"Radon MI error: {str(e)}"
 
-    async def run_all_async(self) -> Dict:
+    async def run_all_async(self) -> dict:
         """Run all analysis tools concurrently using asyncio"""
         start_time = time.time()
 
@@ -151,7 +150,7 @@ class ParallelCodeAnalyzer:
         elapsed = time.time() - start_time
         return self._process_results(results, elapsed)
 
-    def _process_results(self, results: List, elapsed: float) -> Dict:
+    def _process_results(self, results: list, elapsed: float) -> dict:
         """Process and structure analysis results"""
         processed = {
             "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
@@ -191,7 +190,7 @@ class ParallelCodeAnalyzer:
 
         return processed
 
-    def generate_report(self, results: Dict) -> str:
+    def generate_report(self, results: dict) -> str:
         """Generate markdown report"""
         report = f"""# Code Analysis Report
         
@@ -219,7 +218,7 @@ class ParallelCodeAnalyzer:
 
         return report
 
-    def save_results(self, results: Dict, output_path: str = "analysis-results.json"):
+    def save_results(self, results: dict, output_path: str = "analysis-results.json"):
         """Save results to JSON file"""
         with open(output_path, "w") as f:
             json.dump(results, f, indent=2)

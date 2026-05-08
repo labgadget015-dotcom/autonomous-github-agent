@@ -1,12 +1,11 @@
 """Pytest configuration and fixtures for test suite."""
 
-import pytest
-import sys
-import os
-import tempfile
 import json
+import sys
 from pathlib import Path
-from unittest.mock import Mock, MagicMock, AsyncMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
+
+import pytest
 
 # Add project root to path
 project_root = Path(__file__).parent.parent

@@ -7,14 +7,12 @@ Covers: AuditLogger, PolicyEngine, MessageQueue, LLMClient, GitHubClient,
 Designed to push coverage from ~0.7% toward 80%+.
 """
 
-import pytest
-import asyncio
 import json
-import tempfile
-import os
-from pathlib import Path
-from unittest.mock import Mock, MagicMock, patch, AsyncMock, mock_open, call
 import sys
+from pathlib import Path
+from unittest.mock import AsyncMock, MagicMock, mock_open, patch
+
+import pytest
 
 # ---------------------------------------------------------------------------
 # Path setup — repo layout puts core/ at project root
@@ -53,7 +51,6 @@ class TestAuditLogger:
 
     @pytest.mark.asyncio
     async def test_log_action_writes_jsonl(self, tmp_path):
-        from core.audit_logger import AuditLogger
 
         al = self._make_logger(tmp_path)
         await al.log_action(
@@ -72,7 +69,6 @@ class TestAuditLogger:
 
     @pytest.mark.asyncio
     async def test_log_action_multiple_entries(self, tmp_path):
-        from core.audit_logger import AuditLogger
 
         al = self._make_logger(tmp_path)
         for i in range(5):
@@ -107,7 +103,6 @@ class TestAuditLogger:
 
     @pytest.mark.asyncio
     async def test_get_audit_trail_returns_entries(self, tmp_path):
-        from core.audit_logger import AuditLogger
 
         al = self._make_logger(tmp_path)
         await al.log_action("agent1", "action_a", {}, {"status": "ok"}, "t1")
@@ -117,7 +112,6 @@ class TestAuditLogger:
 
     @pytest.mark.asyncio
     async def test_get_audit_trail_filter_by_agent(self, tmp_path):
-        from core.audit_logger import AuditLogger
 
         al = self._make_logger(tmp_path)
         await al.log_action("agent1", "action_a", {}, {}, "t1")
@@ -984,7 +978,6 @@ class TestAuditLoggerExtended:
 
     @pytest.mark.asyncio
     async def test_get_logs_returns_all_entries(self, tmp_path):
-        from core.audit_logger import AuditLogger
 
         al = self._make_logger(tmp_path)
         for i in range(4):
@@ -994,7 +987,6 @@ class TestAuditLoggerExtended:
 
     @pytest.mark.asyncio
     async def test_get_logs_filter_by_agent(self, tmp_path):
-        from core.audit_logger import AuditLogger
 
         al = self._make_logger(tmp_path)
         await al.log_action("agent_a", "act", {}, {}, "t1")
@@ -1006,7 +998,6 @@ class TestAuditLoggerExtended:
 
     @pytest.mark.asyncio
     async def test_get_logs_filter_by_action(self, tmp_path):
-        from core.audit_logger import AuditLogger
 
         al = self._make_logger(tmp_path)
         await al.log_action("a", "create_issue", {}, {}, "t1")
@@ -1018,7 +1009,6 @@ class TestAuditLoggerExtended:
 
     @pytest.mark.asyncio
     async def test_get_logs_empty_file_returns_empty_list(self, tmp_path):
-        from core.audit_logger import AuditLogger
 
         al = self._make_logger(tmp_path)
         logs = al.get_logs()
@@ -1043,14 +1033,12 @@ class TestAuditLoggerExtended:
 
     @pytest.mark.asyncio
     async def test_archive_logs_no_s3_logs_warning(self, tmp_path):
-        from core.audit_logger import AuditLogger
 
         al = self._make_logger(tmp_path)
         # No S3 configured → should not raise
         await al.archive_logs(older_than_days=30)
 
     def test_close_does_not_raise_without_backends(self, tmp_path):
-        from core.audit_logger import AuditLogger
 
         al = self._make_logger(tmp_path)
         al.close()  # must not raise

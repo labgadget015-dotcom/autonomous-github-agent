@@ -10,9 +10,8 @@ Tracks and compares performance metrics over time:
 - Resource usage
 """
 
-import os
-import sys
 import json
+import sys
 import time
 
 try:
@@ -22,11 +21,11 @@ try:
 except ImportError:
     PSUTIL_AVAILABLE = False
     print("⚠️  psutil not available - some metrics will be limited")
-from pathlib import Path
-from typing import Dict, List, Any, Optional
-from dataclasses import dataclass, asdict
-from datetime import datetime
 import subprocess
+from dataclasses import asdict, dataclass
+from datetime import datetime
+from pathlib import Path
+from typing import Any
 
 
 @dataclass
@@ -39,7 +38,7 @@ class BenchmarkResult:
     cpu_usage_percent: float
     memory_mb: float
     success: bool
-    metadata: Dict[str, Any]
+    metadata: dict[str, Any]
 
 
 class PerformanceBenchmark:
@@ -63,7 +62,7 @@ class PerformanceBenchmark:
         start_mem = (
             psutil.Process().memory_info().rss / 1024 / 1024 if PSUTIL_AVAILABLE else 0
         )
-        cpu_start = psutil.cpu_percent(interval=0.1) if PSUTIL_AVAILABLE else 0
+        psutil.cpu_percent(interval=0.1) if PSUTIL_AVAILABLE else 0
 
         try:
             result = subprocess.run(
@@ -109,14 +108,14 @@ class PerformanceBenchmark:
         start_mem = (
             psutil.Process().memory_info().rss / 1024 / 1024 if PSUTIL_AVAILABLE else 0
         )
-        cpu_start = psutil.cpu_percent(interval=0.1) if PSUTIL_AVAILABLE else 0
+        psutil.cpu_percent(interval=0.1) if PSUTIL_AVAILABLE else 0
 
         success = True
         # Try multiple linters
         for linter in ["flake8", "pylint"]:
             try:
                 subprocess.run([linter, "--version"], capture_output=True, timeout=10)
-            except:
+            except Exception:
                 success = False
 
         duration = time.time() - start_time
@@ -148,7 +147,7 @@ class PerformanceBenchmark:
         start_mem = (
             psutil.Process().memory_info().rss / 1024 / 1024 if PSUTIL_AVAILABLE else 0
         )
-        cpu_start = psutil.cpu_percent(interval=0.1) if PSUTIL_AVAILABLE else 0
+        psutil.cpu_percent(interval=0.1) if PSUTIL_AVAILABLE else 0
 
         try:
             # Import and run copilot
@@ -183,7 +182,7 @@ class PerformanceBenchmark:
 
         return benchmark
 
-    def run_full_benchmark(self) -> List[BenchmarkResult]:
+    def run_full_benchmark(self) -> list[BenchmarkResult]:
         """Run complete benchmark suite"""
         print("\n" + "=" * 70)
         print("Performance Benchmark Suite")
@@ -201,10 +200,10 @@ class PerformanceBenchmark:
                 ["python", "-m", "pytest", "--version"], capture_output=True, timeout=5
             )
             benchmarks.insert(0, ("Test Suite", self.benchmark_tests))
-        except:
+        except Exception:
             print("⚠️  Pytest not available, skipping test benchmark")
 
-        for name, func in benchmarks:
+        for _name, func in benchmarks:
             try:
                 func()
             except Exception as e:
@@ -234,8 +233,8 @@ class PerformanceBenchmark:
         print(f"\n📊 Results saved to {results_file}")
 
     def compare_with_baseline(
-        self, baseline_file: Optional[str] = None
-    ) -> Dict[str, Any]:
+        self, baseline_file: str | None = None
+    ) -> dict[str, Any]:
         """Compare current results with baseline"""
         if not baseline_file:
             # Find most recent baseline
@@ -245,7 +244,7 @@ class PerformanceBenchmark:
                 return {}
             baseline_file = baseline_files[-2]  # Second most recent
 
-        with open(baseline_file, "r") as f:
+        with open(baseline_file) as f:
             baseline_data = json.load(f)
 
         baseline_benchmarks = {
@@ -298,7 +297,7 @@ class PerformanceBenchmark:
 
     def generate_report(self, output_path: str = "BENCHMARK_REPORT.md") -> None:
         """Generate benchmark report"""
-        print(f"\n📝 Generating benchmark report...")
+        print("\n📝 Generating benchmark report...")
 
         report = []
         report.append("# Performance Benchmark Report")
@@ -365,7 +364,7 @@ def main():
 
     try:
         benchmark = PerformanceBenchmark(repo_path=args.repo_path)
-        results = benchmark.run_full_benchmark()
+        benchmark.run_full_benchmark()
 
         if args.compare:
             benchmark.compare_with_baseline()

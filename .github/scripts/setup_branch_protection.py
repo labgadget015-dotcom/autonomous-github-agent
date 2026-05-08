@@ -14,11 +14,11 @@ Environment Variables:
     GITHUB_REPOSITORY: Repository in format "owner/repo" (optional, defaults to current repo)
 """
 
+import argparse
 import os
 import sys
-import argparse
 import traceback
-from typing import Dict, Any
+from typing import Any
 
 try:
     from github import Github, GithubException
@@ -27,7 +27,7 @@ except ImportError:
     sys.exit(1)
 
 
-def get_branch_protection_config() -> Dict[str, Any]:
+def get_branch_protection_config() -> dict[str, Any]:
     """
     Define comprehensive branch protection rules for the main branch.
 
@@ -144,13 +144,13 @@ def setup_branch_protection(
         print(
             f"\n✅ Branch protection successfully configured for '{branch_name}' branch!"
         )
-        print(f"\nProtection Summary:")
+        print("\nProtection Summary:")
         print(f"  • Direct pushes to {branch_name} are now blocked")
         print(
             f"  • Pull requests require at least {config['require_pull_request_reviews']['required_approving_review_count']} approval(s)"
         )
-        print(f"  • All conversations must be resolved before merging")
-        print(f"  • Force pushes and deletions are disabled")
+        print("  • All conversations must be resolved before merging")
+        print("  • Force pushes and deletions are disabled")
 
         return True
 

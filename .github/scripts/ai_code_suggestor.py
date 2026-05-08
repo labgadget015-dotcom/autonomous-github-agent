@@ -97,7 +97,7 @@ class AICodeSuggestor:
         """Analyze a single file for suggestions"""
         suggestions = []
 
-        with open(file_path, "r", encoding="utf-8") as f:
+        with open(file_path, encoding="utf-8") as f:
             content = f.read()
             lines = content.split("\n")
 
@@ -353,7 +353,7 @@ class AICodeSuggestor:
 
     def generate_report(self, output_path: str = "CODE_SUGGESTIONS.md") -> None:
         """Generate markdown report of suggestions"""
-        print(f"\n📝 Generating suggestions report...")
+        print("\n📝 Generating suggestions report...")
 
         report = []
         report.append("# AI-Powered Code Suggestions Report")
@@ -416,9 +416,9 @@ class AICodeSuggestor:
                 report.append(f"\n**Reasoning:** {suggestion.reasoning}")
 
                 if suggestion.current_code != suggestion.suggested_code:
-                    report.append(f"\n**Current:**")
+                    report.append("\n**Current:**")
                     report.append(f"```python\n{suggestion.current_code}\n```")
-                    report.append(f"\n**Suggested:**")
+                    report.append("\n**Suggested:**")
                     report.append(f"```python\n{suggestion.suggested_code}\n```")
 
                 report.append("\n---\n")
@@ -473,12 +473,12 @@ def main():
                 suggestor.export_json(args.json)
 
             # Show summary
-            print(f"\n📊 Summary:")
+            print("\n📊 Summary:")
             print(f"   Total suggestions: {len(suggestions)}")
             print(f"   Auto-fixable: {len(suggestor.get_auto_fixable_suggestions())}")
 
             # Top suggestions
-            print(f"\n🔝 Top 3 Suggestions:")
+            print("\n🔝 Top 3 Suggestions:")
             for i, suggestion in enumerate(suggestions[:3], 1):
                 print(f"   {i}. {suggestion.title} ({suggestion.file_path})")
         else:

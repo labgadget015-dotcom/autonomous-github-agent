@@ -5,20 +5,20 @@ Tests for Elite AI Copilot
 Validates core functionality of the elite copilot system.
 """
 
-import pytest
 import sys
 from pathlib import Path
-from unittest.mock import Mock, patch, MagicMock
+
+import pytest
 
 # Add scripts directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent / ".github" / "scripts"))
 
 from elite_copilot import (
-    EliteCopilot,
-    CopilotMode,
-    TaskPriority,
-    CopilotTask,
     CopilotInsight,
+    CopilotMode,
+    CopilotTask,
+    EliteCopilot,
+    TaskPriority,
 )
 
 

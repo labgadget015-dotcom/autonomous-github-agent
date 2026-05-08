@@ -5,14 +5,11 @@ Exports workflow metrics for monitoring with Prometheus and Grafana
 """
 
 import json
-import time
-from pathlib import Path
-from typing import Dict, List
 
 from prometheus_client import (
     CollectorRegistry,
-    Gauge,
     Counter,
+    Gauge,
     Histogram,
     push_to_gateway,
     write_to_textfile,
@@ -154,7 +151,7 @@ class WorkflowMetricsExporter:
             status = "success" if health_data.get("passed") else "failure"
             self.workflow_runs.labels(workflow="code_analysis", status=status).inc()
 
-    def _load_json(self, filename: str) -> Dict:
+    def _load_json(self, filename: str) -> dict:
         """Load JSON file"""
         try:
             with open(filename) as f:
@@ -162,12 +159,12 @@ class WorkflowMetricsExporter:
         except (FileNotFoundError, json.JSONDecodeError):
             return {}
 
-    def _calculate_health_score(self, data: Dict) -> int:
+    def _calculate_health_score(self, data: dict) -> int:
         """Calculate health score from analysis data"""
         # Simple calculation - can be enhanced
         return 100 if data.get("passed") else 70
 
-    def _calculate_avg_complexity(self, data: Dict) -> float:
+    def _calculate_avg_complexity(self, data: dict) -> float:
         """Calculate average complexity"""
         total = 0
         count = 0
@@ -179,7 +176,7 @@ class WorkflowMetricsExporter:
 
         return total / count if count > 0 else 0
 
-    def _calculate_avg_maintainability(self, data: Dict) -> float:
+    def _calculate_avg_maintainability(self, data: dict) -> float:
         """Calculate average maintainability index"""
         scores = []
 

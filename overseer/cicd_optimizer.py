@@ -6,11 +6,11 @@ Designs and refines CI/CD workflows with automated testing, linting,
 build, and deployment pipelines.
 """
 
-import os
-import yaml
-from pathlib import Path
-from typing import Dict, List, Any, Optional
 import logging
+from pathlib import Path
+from typing import Any
+
+import yaml
 
 logger = logging.getLogger(__name__)
 
@@ -21,12 +21,12 @@ class CICDOptimizer:
     automated pipelines.
     """
 
-    def __init__(self, repo_path: Path, config: Dict):
+    def __init__(self, repo_path: Path, config: dict):
         self.repo_path = repo_path
         self.config = config
         self.workflows_dir = repo_path / ".github" / "workflows"
 
-    def analyze(self) -> Dict[str, Any]:
+    def analyze(self) -> dict[str, Any]:
         """
         Analyze CI/CD workflows and suggest improvements.
 
@@ -64,7 +64,7 @@ class CICDOptimizer:
 
         return results
 
-    def _analyze_workflow(self, workflow_file: Path, results: Dict):
+    def _analyze_workflow(self, workflow_file: Path, results: dict):
         """Analyze a single workflow file"""
         try:
             with open(workflow_file) as f:
@@ -112,11 +112,11 @@ class CICDOptimizer:
         except Exception as e:
             logger.warning(f"Error analyzing workflow {workflow_file}: {e}")
 
-    def _check_for_caching(self, workflow: Dict) -> bool:
+    def _check_for_caching(self, workflow: dict) -> bool:
         """Check if workflow uses caching"""
         jobs = workflow.get("jobs", {})
 
-        for job_name, job_config in jobs.items():
+        for _job_name, job_config in jobs.items():
             steps = job_config.get("steps", [])
             for step in steps:
                 if step.get("uses", "").startswith("actions/cache"):
@@ -124,21 +124,21 @@ class CICDOptimizer:
 
         return False
 
-    def _check_for_matrix(self, workflow: Dict) -> bool:
+    def _check_for_matrix(self, workflow: dict) -> bool:
         """Check if workflow uses matrix strategy"""
         jobs = workflow.get("jobs", {})
 
-        for job_name, job_config in jobs.items():
+        for _job_name, job_config in jobs.items():
             if "strategy" in job_config and "matrix" in job_config["strategy"]:
                 return True
 
         return False
 
-    def _check_for_artifacts(self, workflow: Dict) -> bool:
+    def _check_for_artifacts(self, workflow: dict) -> bool:
         """Check if workflow uploads artifacts"""
         jobs = workflow.get("jobs", {})
 
-        for job_name, job_config in jobs.items():
+        for _job_name, job_config in jobs.items():
             steps = job_config.get("steps", [])
             for step in steps:
                 if step.get("uses", "").startswith("actions/upload-artifact"):
@@ -146,7 +146,7 @@ class CICDOptimizer:
 
         return False
 
-    def _check_missing_workflows(self, results: Dict):
+    def _check_missing_workflows(self, results: dict):
         """Check for recommended workflows that are missing"""
 
         # Check for test workflow

@@ -7,9 +7,10 @@ Prevents OOM errors when processing large codebases
 
 import asyncio
 import time
+from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import Any, AsyncIterator, Dict, Optional
+from typing import Any
 
 try:
     import orjson as json
@@ -77,7 +78,7 @@ class StreamingResultWriter:
             self._file.close()
             self._file = None
 
-    async def write(self, result: Dict[str, Any]):
+    async def write(self, result: dict[str, Any]):
         """
         Write a single result
 
@@ -111,7 +112,7 @@ class StreamingResultWriter:
         self._buffer_bytes = 0
         self._last_flush = time.time()
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get writer statistics"""
         return {
             "total_written": self._total_written,
@@ -141,7 +142,7 @@ class StreamingResultReader:
         """
         self.input_path = input_path
 
-    async def read_all(self) -> AsyncIterator[Dict[str, Any]]:
+    async def read_all(self) -> AsyncIterator[dict[str, Any]]:
         """
         Async generator that yields results one at a time
 
@@ -164,7 +165,7 @@ class StreamingResultReader:
                     print(f"❌ Error parsing line: {e}")
                     continue
 
-    async def read_filtered(self, filter_fn: callable) -> AsyncIterator[Dict[str, Any]]:
+    async def read_filtered(self, filter_fn: callable) -> AsyncIterator[dict[str, Any]]:
         """
         Read and filter results
 
@@ -205,7 +206,7 @@ class StreamingAggregator:
             "total_errors": 0,
         }
 
-    async def process_result(self, result: Dict[str, Any]):
+    async def process_result(self, result: dict[str, Any]):
         """
         Process a single result and update statistics
 
@@ -235,7 +236,7 @@ class StreamingAggregator:
         if result.get("error"):
             self.stats["total_errors"] += 1
 
-    def get_summary(self) -> Dict[str, Any]:
+    def get_summary(self) -> dict[str, Any]:
         """Get aggregated summary statistics"""
         return self.stats.copy()
 
@@ -303,7 +304,7 @@ async def example_usage():
         reader = StreamingResultReader(output_file)
         error_count = 0
 
-        async for result in reader.read_filtered(
+        async for _result in reader.read_filtered(
             lambda r: any(i.get("severity") == "error" for i in r.get("issues", []))
         ):
             error_count += 1

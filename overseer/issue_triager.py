@@ -6,11 +6,11 @@ Automates issue triaging, labeling, and prioritization based on
 detected code patterns and content analysis.
 """
 
+import logging
 import re
 import unicodedata
 from pathlib import Path
-from typing import Dict, List, Any, Optional
-import logging
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +21,7 @@ class IssueTriager:
     issues based on patterns and content analysis.
     """
 
-    def __init__(self, repo_path: Path, config: Dict):
+    def __init__(self, repo_path: Path, config: dict):
         self.repo_path = repo_path
         self.config = config
 
@@ -116,7 +116,7 @@ class IssueTriager:
             ],
         }
 
-    def process(self) -> Dict[str, Any]:
+    def process(self) -> dict[str, Any]:
         """
         Process and triage issues.
 
@@ -138,7 +138,7 @@ class IssueTriager:
 
         return results
 
-    def analyze_issue_content(self, title: str, body: str) -> Dict[str, Any]:
+    def analyze_issue_content(self, title: str, body: str) -> dict[str, Any]:
         """
         Analyze issue content to suggest labels and priority.
 
@@ -180,7 +180,7 @@ class IssueTriager:
             "confidence": self._calculate_confidence(content, suggested_labels),
         }
 
-    def _matches_patterns(self, text: str, patterns: List[str]) -> bool:
+    def _matches_patterns(self, text: str, patterns: list[str]) -> bool:
         """Check if text matches any of the patterns.
 
         Uses ``re.UNICODE`` (the Python 3 default) explicitly so that ``\\w``
@@ -191,7 +191,7 @@ class IssueTriager:
                 return True
         return False
 
-    def _calculate_confidence(self, content: str, labels: List[str]) -> float:
+    def _calculate_confidence(self, content: str, labels: list[str]) -> float:
         """Calculate confidence score for label suggestions.
 
         Pattern matching uses ``re.UNICODE`` explicitly so that ``\\w`` / ``\\b``
@@ -213,7 +213,7 @@ class IssueTriager:
 
         return min(1.0, match_count / max(1, len(labels)))
 
-    def _detect_common_patterns(self) -> List[Dict]:
+    def _detect_common_patterns(self) -> list[dict]:
         """Detect common patterns in repository for better triaging"""
         patterns = []
 

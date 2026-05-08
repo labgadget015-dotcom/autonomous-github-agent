@@ -5,23 +5,22 @@ Tests for Repository Overseer
 Comprehensive test suite for the overseer modules.
 """
 
-import unittest
-import tempfile
 import shutil
-from pathlib import Path
-import os
 import sys
+import tempfile
+import unittest
+from pathlib import Path
 
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from overseer import RepositoryOverseer
-from overseer.code_analyzer import CodeAnalyzer
-from overseer.doc_generator import DocumentationGenerator
-from overseer.dependency_manager import DependencyManager
-from overseer.cicd_optimizer import CICDOptimizer
-from overseer.issue_triager import IssueTriager
 from overseer.automation_engine import AutomationEngine
+from overseer.cicd_optimizer import CICDOptimizer
+from overseer.code_analyzer import CodeAnalyzer
+from overseer.dependency_manager import DependencyManager
+from overseer.doc_generator import DocumentationGenerator
+from overseer.issue_triager import IssueTriager
 from overseer.monitor import RepositoryMonitor
 
 

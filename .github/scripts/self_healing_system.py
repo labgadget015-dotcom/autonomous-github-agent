@@ -6,12 +6,10 @@ Implements circuit breaker pattern and intelligent retry strategies
 """
 
 import asyncio
-import time
-from dataclasses import dataclass, field
+from collections.abc import Callable
+from dataclasses import dataclass
 from datetime import datetime, timedelta
 from enum import Enum
-from typing import Dict, List, Optional, Callable
-import hashlib
 
 
 class CircuitState(Enum):
@@ -30,9 +28,9 @@ class FailureRecord:
     component: str
     error_type: str
     error_message: str
-    stack_trace: Optional[str] = None
+    stack_trace: str | None = None
     recovery_attempted: bool = False
-    recovery_successful: Optional[bool] = None
+    recovery_successful: bool | None = None
 
 
 @dataclass
@@ -54,8 +52,8 @@ class CircuitBreaker:
     state: CircuitState = CircuitState.CLOSED
     failure_count: int = 0
     success_count: int = 0
-    last_failure_time: Optional[datetime] = None
-    open_time: Optional[datetime] = None
+    last_failure_time: datetime | None = None
+    open_time: datetime | None = None
 
     def record_success(self):
         """Record successful operation"""
@@ -190,9 +188,9 @@ class SelfHealingSystem:
     """
 
     def __init__(self):
-        self.failures: List[FailureRecord] = []
-        self.circuit_breakers: Dict[str, CircuitBreaker] = {}
-        self.recovery_strategies: Dict[str, Callable] = {}
+        self.failures: list[FailureRecord] = []
+        self.circuit_breakers: dict[str, CircuitBreaker] = {}
+        self.recovery_strategies: dict[str, Callable] = {}
 
     def register_circuit_breaker(self, name: str, breaker: CircuitBreaker):
         """Register a circuit breaker"""
@@ -255,7 +253,7 @@ class SelfHealingSystem:
             print(f"⚠️  No recovery strategy for {failure.error_type}")
             failure.recovery_successful = False
 
-    def analyze_failure_patterns(self) -> Dict[str, any]:
+    def analyze_failure_patterns(self) -> dict[str, any]:
         """Analyze failure patterns to identify systemic issues"""
         if not self.failures:
             return {"status": "no_failures"}

@@ -6,9 +6,7 @@ Automatically generates CHANGELOG.md from git commit history.
 
 import re
 import subprocess
-import sys
 from datetime import datetime
-from typing import Dict, List, Tuple
 
 
 class ChangelogGenerator:
@@ -33,7 +31,7 @@ class ChangelogGenerator:
     def __init__(self):
         self.commits = []
 
-    def get_git_tags(self) -> List[str]:
+    def get_git_tags(self) -> list[str]:
         """Get all git tags sorted by date."""
         try:
             result = subprocess.run(
@@ -48,7 +46,7 @@ class ChangelogGenerator:
 
     def get_commits_between(
         self, from_ref: str = None, to_ref: str = "HEAD"
-    ) -> List[Dict]:
+    ) -> list[dict]:
         """Get commits between two refs."""
         cmd = ["git", "log", "--pretty=format:%H|%s|%an|%ae|%ad", "--date=short"]
 
@@ -81,7 +79,7 @@ class ChangelogGenerator:
         except subprocess.CalledProcessError:
             return []
 
-    def parse_commit_type(self, message: str) -> Tuple[str, str, str, bool]:
+    def parse_commit_type(self, message: str) -> tuple[str, str, str, bool]:
         """Parse conventional commit message."""
         # Pattern: type(scope): message
         pattern = r"^(\w+)(?:\(([^)]+)\))?(!)?:\s*(.+)$"
@@ -96,7 +94,7 @@ class ChangelogGenerator:
         else:
             return "other", "", message, False
 
-    def group_commits(self, commits: List[Dict]) -> Dict[str, List[Dict]]:
+    def group_commits(self, commits: list[dict]) -> dict[str, list[dict]]:
         """Group commits by type."""
         groups = {}
 
@@ -120,7 +118,7 @@ class ChangelogGenerator:
 
         return groups
 
-    def format_section(self, type_name: str, commits: List[Dict]) -> str:
+    def format_section(self, type_name: str, commits: list[dict]) -> str:
         """Format a section of the changelog."""
         if type_name not in self.COMMIT_TYPES:
             return ""
@@ -135,7 +133,7 @@ class ChangelogGenerator:
         return "\n".join(lines)
 
     def generate_version_section(
-        self, version: str, date: str, commits: List[Dict]
+        self, version: str, date: str, commits: list[dict]
     ) -> str:
         """Generate changelog section for a version."""
         groups = self.group_commits(commits)
@@ -239,7 +237,7 @@ def main():
     generator = ChangelogGenerator()
 
     print("📝 Generating CHANGELOG...")
-    changelog = generator.generate_changelog()
+    generator.generate_changelog()
 
     print("\n✅ CHANGELOG generation complete!")
 

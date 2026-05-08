@@ -11,18 +11,16 @@ This is the central brain of the elite AI copilot system that:
 - Provides real-time suggestions and improvements
 """
 
-import os
 import sys
-import json
 import time
-import asyncio
-import yaml
 import traceback
-from pathlib import Path
-from typing import Dict, List, Any, Optional
-from dataclasses import dataclass, asdict
-from enum import Enum
+from dataclasses import asdict, dataclass
 from datetime import datetime
+from enum import Enum
+from pathlib import Path
+from typing import Any
+
+import yaml
 
 
 class CopilotMode(Enum):
@@ -51,11 +49,11 @@ class CopilotTask:
     type: str
     description: str
     priority: TaskPriority
-    context: Dict[str, Any]
+    context: dict[str, Any]
     mode: CopilotMode
     created_at: str
     status: str = "pending"
-    result: Optional[Dict] = None
+    result: dict | None = None
 
     def to_dict(self):
         return {
@@ -75,7 +73,7 @@ class CopilotInsight:
     description: str
     suggested_action: str
     confidence: float
-    evidence: List[str]
+    evidence: list[str]
 
 
 class EliteCopilot:
@@ -91,7 +89,7 @@ class EliteCopilot:
     - Real-time collaboration with developers
     """
 
-    def __init__(self, config_path: Optional[str] = None):
+    def __init__(self, config_path: str | None = None):
         """Initialize the elite copilot"""
         self.config = self._load_config(config_path)
         self.mode = CopilotMode(self.config.get("mode", "assistant"))
@@ -108,7 +106,7 @@ class EliteCopilot:
         print(f"🚀 Elite AI Copilot initialized in {self.mode.value} mode")
         print(f"📊 Session ID: {self.session_id}")
 
-    def _load_config(self, config_path: Optional[str]) -> Dict:
+    def _load_config(self, config_path: str | None) -> dict:
         """Load copilot configuration"""
         default_config = {
             "mode": "assistant",
@@ -130,13 +128,13 @@ class EliteCopilot:
         }
 
         if config_path and Path(config_path).exists():
-            with open(config_path, "r") as f:
+            with open(config_path) as f:
                 user_config = yaml.safe_load(f)
                 default_config.update(user_config)
 
         return default_config
 
-    def analyze_repository(self, repo_path: str) -> Dict[str, Any]:
+    def analyze_repository(self, repo_path: str) -> dict[str, Any]:
         """
         Perform comprehensive repository analysis
 
@@ -196,7 +194,7 @@ class EliteCopilot:
 
         return analysis_results
 
-    def _analyze_code_quality(self, repo_path: str) -> List[CopilotInsight]:
+    def _analyze_code_quality(self, repo_path: str) -> list[CopilotInsight]:
         """Analyze code quality metrics"""
         insights = []
 
@@ -215,7 +213,7 @@ class EliteCopilot:
 
         return insights
 
-    def _analyze_security(self, repo_path: str) -> List[CopilotInsight]:
+    def _analyze_security(self, repo_path: str) -> list[CopilotInsight]:
         """Analyze security vulnerabilities"""
         insights = []
 
@@ -234,7 +232,7 @@ class EliteCopilot:
 
         return insights
 
-    def _analyze_architecture(self, repo_path: str) -> List[CopilotInsight]:
+    def _analyze_architecture(self, repo_path: str) -> list[CopilotInsight]:
         """Analyze architecture patterns and structure"""
         insights = []
 
@@ -252,7 +250,7 @@ class EliteCopilot:
 
         return insights
 
-    def _analyze_performance(self, repo_path: str) -> List[CopilotInsight]:
+    def _analyze_performance(self, repo_path: str) -> list[CopilotInsight]:
         """Analyze performance patterns"""
         insights = []
 
@@ -270,7 +268,7 @@ class EliteCopilot:
 
         return insights
 
-    def _analyze_documentation(self, repo_path: str) -> List[CopilotInsight]:
+    def _analyze_documentation(self, repo_path: str) -> list[CopilotInsight]:
         """Analyze documentation coverage and quality"""
         insights = []
 
@@ -288,7 +286,7 @@ class EliteCopilot:
 
         return insights
 
-    def _calculate_health_score(self, insights: List[CopilotInsight]) -> float:
+    def _calculate_health_score(self, insights: list[CopilotInsight]) -> float:
         """Calculate overall repository health score"""
         if not insights:
             return 75.0  # Default baseline
@@ -308,7 +306,7 @@ class EliteCopilot:
 
         return max(0, min(100, score))
 
-    def _generate_recommendations(self, insights: List[CopilotInsight]) -> List[str]:
+    def _generate_recommendations(self, insights: list[CopilotInsight]) -> list[str]:
         """Generate actionable recommendations from insights"""
         recommendations = []
 
@@ -337,7 +335,7 @@ class EliteCopilot:
         return recommendations
 
     def provide_assistance(
-        self, query: str, context: Optional[Dict[str, Any]] = None
+        self, query: str, context: dict[str, Any] | None = None
     ) -> str:
         """
         Provide intelligent assistance for developer queries
@@ -372,7 +370,7 @@ How else can I assist you?
 
         return response
 
-    def generate_report(self, analysis_results: Dict[str, Any], output_path: str):
+    def generate_report(self, analysis_results: dict[str, Any], output_path: str):
         """Generate comprehensive analysis report"""
         print(f"\n📝 Generating report: {output_path}")
 
@@ -416,7 +414,7 @@ How else can I assist you?
 
     def run_autonomous_mode(self, repo_path: str):
         """Run copilot in fully autonomous mode"""
-        print(f"\n🤖 Running in AUTONOMOUS mode")
+        print("\n🤖 Running in AUTONOMOUS mode")
         print("⚠️  Warning: This will make automated decisions")
 
         # Analyze repository
@@ -437,8 +435,8 @@ How else can I assist you?
         return results
 
     def _create_tasks_from_insights(
-        self, insights: List[CopilotInsight]
-    ) -> List[CopilotTask]:
+        self, insights: list[CopilotInsight]
+    ) -> list[CopilotTask]:
         """Convert insights into actionable tasks"""
         tasks = []
 
@@ -518,7 +516,7 @@ def main():
             results = copilot.analyze_repository(args.repo_path)
             copilot.generate_report(results, args.output)
 
-        print(f"\n🎉 Copilot session completed successfully")
+        print("\n🎉 Copilot session completed successfully")
 
     except KeyboardInterrupt:
         print("\n\n⚠️  Copilot interrupted by user")

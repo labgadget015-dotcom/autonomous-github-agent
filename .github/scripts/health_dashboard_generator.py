@@ -5,10 +5,8 @@ Creates automated markdown dashboards for repository health metrics
 """
 
 import json
-import os
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional
 
 
 class HealthDashboardGenerator:
@@ -18,7 +16,7 @@ class HealthDashboardGenerator:
         self.metrics = {}
         self.timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S UTC")
 
-    def load_analysis_results(self) -> Dict:
+    def load_analysis_results(self) -> dict:
         """Load code analysis results"""
         try:
             with open("analysis-results.json") as f:
@@ -26,7 +24,7 @@ class HealthDashboardGenerator:
         except FileNotFoundError:
             return {}
 
-    def load_coverage_data(self) -> Dict:
+    def load_coverage_data(self) -> dict:
         """Load test coverage data"""
         try:
             with open("coverage.json") as f:
@@ -34,7 +32,7 @@ class HealthDashboardGenerator:
         except FileNotFoundError:
             return {}
 
-    def load_complexity_data(self) -> Dict:
+    def load_complexity_data(self) -> dict:
         """Load complexity metrics"""
         complexity = {}
         try:
@@ -51,7 +49,7 @@ class HealthDashboardGenerator:
 
         return complexity
 
-    def load_security_data(self) -> Dict:
+    def load_security_data(self) -> dict:
         """Load security scan results"""
         try:
             with open("bandit-report.json") as f:
@@ -59,7 +57,7 @@ class HealthDashboardGenerator:
         except FileNotFoundError:
             return {}
 
-    def load_violations(self) -> Dict:
+    def load_violations(self) -> dict:
         """Load threshold violations"""
         try:
             with open("threshold-violations.json") as f:
@@ -263,7 +261,7 @@ class HealthDashboardGenerator:
             total_complexity = 0
             high_complexity = 0
 
-            for filepath, functions in cc_data.items():
+            for _filepath, functions in cc_data.items():
                 for func in functions:
                     total_functions += 1
                     cc = func.get("complexity", 0)

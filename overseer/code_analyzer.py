@@ -7,11 +7,10 @@ and performance optimizations.
 """
 
 import ast
-import os
-import re
-from pathlib import Path
-from typing import Dict, List, Any, Optional
 import logging
+import os
+from pathlib import Path
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +21,7 @@ class CodeAnalyzer:
     architectural issues, and performance problems.
     """
 
-    def __init__(self, repo_path: Path, config: Dict):
+    def __init__(self, repo_path: Path, config: dict):
         self.repo_path = repo_path
         self.config = config
         self.results = {
@@ -33,7 +32,7 @@ class CodeAnalyzer:
             "quality_score": 100,
         }
 
-    def analyze(self) -> Dict[str, Any]:
+    def analyze(self) -> dict[str, Any]:
         """
         Run comprehensive code analysis.
 
@@ -57,7 +56,7 @@ class CodeAnalyzer:
 
         return self.results
 
-    def _find_python_files(self) -> List[Path]:
+    def _find_python_files(self) -> list[Path]:
         """Find all Python files in the repository"""
         python_files = []
 
@@ -87,7 +86,7 @@ class CodeAnalyzer:
     def _analyze_file(self, file_path: Path):
         """Analyze a single Python file"""
         try:
-            with open(file_path, "r", encoding="utf-8") as f:
+            with open(file_path, encoding="utf-8") as f:
                 content = f.read()
 
             # Parse AST
@@ -145,7 +144,7 @@ class CodeAnalyzer:
                     blocks[block] = [i]
 
         # Report duplications
-        for block, occurrences in blocks.items():
+        for _block, occurrences in blocks.items():
             if len(occurrences) > 1:
                 self.results["refactoring"].append(
                     {

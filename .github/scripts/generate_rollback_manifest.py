@@ -7,7 +7,6 @@ Reads git metadata from environment variables set by the workflow:
 """
 
 import os
-import subprocess
 from datetime import datetime, timezone
 
 
@@ -25,7 +24,7 @@ def main():
 
     # Read existing content
     if os.path.exists(path):
-        with open(path, "r") as f:
+        with open(path) as f:
             existing = f.read()
     else:
         existing = "# Rollback Manifest\n\nThis file tracks all commits to main for rollback purposes.\n\n"
@@ -33,15 +32,15 @@ def main():
     # Build the new entry
     entry_lines = [
         f"## {short} — {timestamp}",
-        f"",
+        "",
         f"- **SHA**: `{sha}`",
         f"- **Author**: {author}",
         f"- **Message**: {msg}",
         f"- **Files changed**: {len(files_changed)} file(s)",
     ]
     if files_changed:
-        entry_lines.append(f"")
-        entry_lines.append(f"**Changed files:**")
+        entry_lines.append("")
+        entry_lines.append("**Changed files:**")
         for f in files_changed[:20]:  # cap at 20 files
             entry_lines.append(f"- `{f}`")
     entry_lines.append("")

@@ -6,13 +6,10 @@ Continuously learns from execution patterns to improve performance
 """
 
 import asyncio
-import json
-import time
-from dataclasses import dataclass, asdict
+import statistics
+from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
-import statistics
 
 try:
     import orjson
@@ -51,7 +48,7 @@ class WorkflowMetrics:
     lines_changed: int
     test_count: int
     parallel_jobs: int
-    resource_usage: Dict[str, float]  # CPU, memory, disk I/O
+    resource_usage: dict[str, float]  # CPU, memory, disk I/O
     cost_cents: float
 
     def to_dict(self) -> dict:
@@ -84,7 +81,7 @@ class WorkflowPatternAnalyzer:
 
     def __init__(self, history_file: Path):
         self.history_file = history_file
-        self.metrics: List[WorkflowMetrics] = []
+        self.metrics: list[WorkflowMetrics] = []
         self.load_history()
 
     def load_history(self):
@@ -130,7 +127,7 @@ class WorkflowPatternAnalyzer:
             self.metrics = self.metrics[-1000:]
         self.save_history()
 
-    def analyze_cache_patterns(self) -> Optional[OptimizationRecommendation]:
+    def analyze_cache_patterns(self) -> OptimizationRecommendation | None:
         """Analyze cache hit rates and recommend improvements"""
         if len(self.metrics) < 10:
             return None
@@ -162,7 +159,7 @@ class WorkflowPatternAnalyzer:
             )
         return None
 
-    def analyze_parallelization(self) -> Optional[OptimizationRecommendation]:
+    def analyze_parallelization(self) -> OptimizationRecommendation | None:
         """Analyze parallel job efficiency"""
         if len(self.metrics) < 10:
             return None
@@ -203,7 +200,7 @@ class WorkflowPatternAnalyzer:
                 )
         return None
 
-    def analyze_timing_patterns(self) -> Optional[OptimizationRecommendation]:
+    def analyze_timing_patterns(self) -> OptimizationRecommendation | None:
         """Analyze execution timing patterns"""
         if len(self.metrics) < 20:
             return None
@@ -242,7 +239,7 @@ class WorkflowPatternAnalyzer:
                 )
         return None
 
-    def analyze_resource_efficiency(self) -> Optional[OptimizationRecommendation]:
+    def analyze_resource_efficiency(self) -> OptimizationRecommendation | None:
         """Analyze resource usage patterns"""
         if len(self.metrics) < 10:
             return None
@@ -286,7 +283,7 @@ class WorkflowPatternAnalyzer:
             )
         return None
 
-    def analyze_cost_trends(self) -> Dict[str, any]:
+    def analyze_cost_trends(self) -> dict[str, any]:
         """Analyze cost trends over time"""
         if len(self.metrics) < 30:
             return {"status": "insufficient_data"}
@@ -324,7 +321,7 @@ class WorkflowPatternAnalyzer:
             "monthly_projection_usd": last_week_cost * 4.33,
         }
 
-    def generate_recommendations(self) -> List[OptimizationRecommendation]:
+    def generate_recommendations(self) -> list[OptimizationRecommendation]:
         """Generate all optimization recommendations"""
         recommendations = []
 
@@ -358,7 +355,7 @@ class AIWorkflowOptimizer:
     def __init__(self, history_file: str = ".workflow_history.json"):
         self.analyzer = WorkflowPatternAnalyzer(Path(history_file))
 
-    async def optimize(self) -> Dict[str, any]:
+    async def optimize(self) -> dict[str, any]:
         """Run optimization analysis"""
         print("🤖 AI Workflow Optimizer\n")
         print("📊 Analyzing workflow patterns...\n")
@@ -390,32 +387,32 @@ class AIWorkflowOptimizer:
 
         return report
 
-    def print_report(self, report: Dict[str, any]):
+    def print_report(self, report: dict[str, any]):
         """Print optimization report"""
         print("=" * 70)
         print("🎯 AI OPTIMIZATION RECOMMENDATIONS")
         print("=" * 70)
 
-        print(f"\n📈 Analysis Summary:")
+        print("\n📈 Analysis Summary:")
         print(f"  • Metrics analyzed: {report['metrics_analyzed']}")
         print(f"  • Recommendations: {len(report['recommendations'])}")
 
         if report["cost_analysis"]["status"] == "analyzed":
             cost = report["cost_analysis"]
-            print(f"\n💰 Cost Trends:")
+            print("\n💰 Cost Trends:")
             print(f"  • Last week: ${cost['last_week_cost_usd']:.2f}")
             print(f"  • Previous week: ${cost['prev_week_cost_usd']:.2f}")
             print(f"  • Change: {cost['change_percent']:+.1f}% ({cost['trend']})")
             print(f"  • Monthly projection: ${cost['monthly_projection_usd']:.2f}")
 
         savings = report["total_potential_savings"]
-        print(f"\n💎 Total Potential Savings:")
+        print("\n💎 Total Potential Savings:")
         print(f"  • Time: {savings['time_minutes']:.1f} minutes per run")
         print(f"  • Cost: ${savings['cost_usd_per_run']:.2f} per run")
         print(f"  • Monthly: ${savings['cost_usd_monthly']:.2f}")
 
         if report["recommendations"]:
-            print(f"\n🔍 Recommendations (by priority):\n")
+            print("\n🔍 Recommendations (by priority):\n")
 
             for i, rec in enumerate(report["recommendations"], 1):
                 print(

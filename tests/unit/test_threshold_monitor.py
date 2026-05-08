@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 import sys
 from pathlib import Path
-import pytest
+
 import yaml
 
 # Add scripts directory to path

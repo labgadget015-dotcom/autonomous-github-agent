@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-import asyncio
 import sys
 from pathlib import Path
+
 import pytest
 
 # Add scripts directory to path
@@ -13,9 +13,9 @@ if _scripts_path not in sys.path:
     sys.path.insert(0, _scripts_path)
 
 from streaming_results import (
-    StreamingResultWriter,
-    StreamingResultReader,
     StreamingAggregator,
+    StreamingResultReader,
+    StreamingResultWriter,
 )
 
 
@@ -86,7 +86,6 @@ class TestStreamingResultReader:
 
     @pytest.mark.asyncio
     async def test_reads_written_records(self, tmp_path):
-        import json as stdlib_json
 
         output = tmp_path / "results.jsonl"
         # Write via writer
