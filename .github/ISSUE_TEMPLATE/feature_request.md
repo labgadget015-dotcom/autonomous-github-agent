@@ -11,22 +11,14 @@ assignees: ''
 ## Feature Description
 <!-- Provide a clear and concise description of the feature you'd like to see -->
 
-
-
 ## Problem Statement
 <!-- Describe the problem this feature would solve. Example: "I'm always frustrated when..." -->
-
-
 
 ## Proposed Solution
 <!-- Describe what you want to happen. Be as specific as possible -->
 
-
-
 ## Alternative Solutions
 <!-- Describe any alternative solutions or features you've considered -->
-
-
 
 ## Use Cases
 <!-- Describe specific use cases where this feature would be valuable -->
@@ -43,12 +35,8 @@ assignees: ''
 ## Implementation Ideas
 <!-- Optional: If you have thoughts on how this could be implemented, share them here -->
 
-
-
 ## Additional Context
 <!-- Add any other context, mockups, or screenshots about the feature request here -->
-
-
 
 ## Priority
 How important is this feature to you?

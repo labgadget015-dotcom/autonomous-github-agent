@@ -11,8 +11,6 @@ assignees: ''
 ## Bug Description
 <!-- Provide a clear and concise description of what the bug is -->
 
-
-
 ## Steps to Reproduce
 <!-- Provide detailed steps to reproduce the issue -->
 1.
@@ -23,12 +21,8 @@ assignees: ''
 ## Expected Behavior
 <!-- Describe what you expected to happen -->
 
-
-
 ## Actual Behavior
 <!-- Describe what actually happened -->
-
-
 
 ## Environment
 <!-- Provide information about your environment -->
@@ -46,12 +40,8 @@ assignees: ''
 ## Screenshots
 <!-- If applicable, add screenshots to help explain your problem -->
 
-
-
 ## Additional Context
 <!-- Add any other context about the problem here -->
-
-
 
 ## Checklist
 - [ ] I have searched existing issues to ensure this is not a duplicate

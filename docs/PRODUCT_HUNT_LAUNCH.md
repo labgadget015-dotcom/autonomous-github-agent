@@ -92,7 +92,7 @@ Automatically triage issues, review PRs, generate tests & docs. 90% cheaper than
 Free for 5 repos. Start now:
 [ProductHunt Link]
 
-#ProductHunt #GitHub #AI"
+ProductHunt #GitHub #AI
 
 ### LinkedIn
 "Excited to announce Autonomous GitHub Agent is live on Product Hunt!

@@ -12,7 +12,6 @@
 
 ---
 
-
 ## 📚 Documentation Suggestions
 
 ### Add docstring to 'ErrorSeverity:'
@@ -254,7 +253,6 @@ class MockUtils:
 ```
 
 ---
-
 
 ## 🎨 Style Suggestions
 
