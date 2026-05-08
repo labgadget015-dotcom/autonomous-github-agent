@@ -43,4 +43,3 @@ This project follows standard coding conventions.
 ### Continuous Integration
 
 This project uses GitHub Actions for CI/CD.
-

@@ -1593,4 +1593,3 @@ Test monitoring and alerting.
 ### Function: `test_load_handling(self, load_level)`
 
 Test handling different load levels.
-

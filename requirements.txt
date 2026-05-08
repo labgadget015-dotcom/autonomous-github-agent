@@ -74,4 +74,3 @@ pip-audit>=2.7.0  # Scans installed packages for known CVEs (complement to bandi
 colorama>=0.4.6  # Colored terminal output
 click>=8.1.0  # CLI tool support
 rich>=13.0.0  # Rich terminal output
-

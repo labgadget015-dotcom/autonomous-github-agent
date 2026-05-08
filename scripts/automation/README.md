@@ -51,4 +51,3 @@ Run linters on codebase
 ```bash
 ./lint-code.sh
 ```
-
