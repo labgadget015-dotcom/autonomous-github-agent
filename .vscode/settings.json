@@ -1,7 +1,7 @@
 {
     "python.defaultInterpreterPath": "${workspaceFolder}/venv/bin/python",
     "python.envFile": "${workspaceFolder}/.env",
-    
+
     // Linting
     "python.linting.enabled": true,
     "python.linting.pylintEnabled": true,
@@ -16,18 +16,18 @@
         "--max-complexity=10",
         "--ignore=E203,W503"
     ],
-    
+
     // Formatting
     "python.formatting.provider": "black",
     "python.formatting.blackArgs": [
         "--line-length=120"
     ],
-    
+
     // Sorting imports
     "python.sortImports.args": [
         "--profile=black"
     ],
-    
+
     // Testing
     "python.testing.pytestEnabled": true,
     "python.testing.unittestEnabled": false,
@@ -37,7 +37,7 @@
         "-n",
         "auto"
     ],
-    
+
     // Type checking
     "python.analysis.typeCheckingMode": "basic",
     "python.analysis.autoImportCompletions": true,
@@ -45,7 +45,7 @@
         "reportGeneralTypeIssues": "warning",
         "reportOptionalMemberAccess": "warning"
     },
-    
+
     // Editor settings
     "editor.formatOnSave": true,
     "editor.codeActionsOnSave": {
@@ -55,7 +55,7 @@
     "editor.tabSize": 4,
     "editor.insertSpaces": true,
     "editor.trimAutoWhitespace": true,
-    
+
     // File associations
     "files.associations": {
         "*.yml": "yaml",
@@ -63,7 +63,7 @@
         ".env*": "dotenv",
         "Dockerfile*": "dockerfile"
     },
-    
+
     // Files to exclude from explorer
     "files.exclude": {
         "**/__pycache__": true,
@@ -76,7 +76,7 @@
         "**/venv": true,
         "**/.git": false
     },
-    
+
     // Search exclusions
     "search.exclude": {
         "**/__pycache__": true,
@@ -87,7 +87,7 @@
         "**/htmlcov": true,
         "**/.pytest_cache": true
     },
-    
+
     // File watcher exclusions
     "files.watcherExclude": {
         "**/__pycache__/**": true,
@@ -96,12 +96,12 @@
         "**/.git/subtree-cache/**": true,
         "**/node_modules/**": true
     },
-    
+
     // Git settings
     "git.ignoreLimitWarning": true,
     "git.enableSmartCommit": true,
     "git.confirmSync": false,
-    
+
     // Terminal
     "terminal.integrated.env.linux": {
         "PYTHONPATH": "${workspaceFolder}"
@@ -112,7 +112,7 @@
     "terminal.integrated.env.windows": {
         "PYTHONPATH": "${workspaceFolder}"
     },
-    
+
     // YAML schema for GitHub Actions
     "yaml.schemas": {
         "https://json.schemastore.org/github-workflow.json": [
@@ -124,7 +124,7 @@
             "action.yaml"
         ]
     },
-    
+
     // JSON schema validation
     "json.schemas": [
         {
@@ -132,14 +132,14 @@
             "url": "https://json.schemastore.org/badge.json"
         }
     ],
-    
+
     // Auto-save
     "files.autoSave": "afterDelay",
     "files.autoSaveDelay": 1000,
-    
+
     // Workspace recommendations
     "extensions.ignoreRecommendations": false,
-    
+
     // Coverage highlighting
     "coverage-gutters.coverageFileNames": [
         "coverage.xml",
@@ -148,14 +148,14 @@
     ],
     "coverage-gutters.showLineCoverage": true,
     "coverage-gutters.showRulerCoverage": true,
-    
+
     // Task runner
     "task.autoDetect": "on",
-    
+
     // Markdown
     "markdown.preview.breaks": true,
     "markdown.preview.linkify": true,
-    
+
     // Spell checker (if extension installed)
     "cSpell.words": [
         "autopilot",

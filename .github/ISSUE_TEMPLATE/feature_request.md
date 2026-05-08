@@ -30,15 +30,15 @@ assignees: ''
 
 ## Use Cases
 <!-- Describe specific use cases where this feature would be valuable -->
-1. 
-2. 
-3. 
+1.
+2.
+3.
 
 ## Expected Benefits
 <!-- List the benefits this feature would provide -->
-- 
-- 
-- 
+-
+-
+-
 
 ## Implementation Ideas
 <!-- Optional: If you have thoughts on how this could be implemented, share them here -->

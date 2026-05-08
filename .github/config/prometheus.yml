@@ -32,10 +32,10 @@ scrape_configs:
         labels:
           service: 'github-actions'
           environment: 'production'
-    
+
     scrape_interval: 15m
     scrape_timeout: 30s
-    
+
   # For file-based metrics, use node_exporter textfile collector:
   # 1. Install node_exporter on your server
   # 2. Copy prometheus.txt to /var/lib/node_exporter/textfile_collector/
@@ -53,7 +53,7 @@ scrape_configs:
         labels:
           service: 'github-api'
           environment: 'production'
-    
+
     scrape_interval: 5m
     scrape_timeout: 10s
 
@@ -64,7 +64,7 @@ scrape_configs:
         labels:
           service: 'code-quality'
           environment: 'production'
-    
+
     scrape_interval: 30m
 
   # Security Scan Metrics
@@ -74,7 +74,7 @@ scrape_configs:
         labels:
           service: 'security'
           environment: 'production'
-    
+
     scrape_interval: 1h
 
   # Test Coverage Metrics
@@ -84,7 +84,7 @@ scrape_configs:
         labels:
           service: 'test-coverage'
           environment: 'production'
-    
+
     scrape_interval: 30m
 
 # Storage configuration

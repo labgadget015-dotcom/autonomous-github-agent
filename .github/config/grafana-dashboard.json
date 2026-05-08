@@ -6,7 +6,7 @@
     "schemaVersion": 27,
     "version": 1,
     "refresh": "5m",
-    
+
     "panels": [
       {
         "id": 1,
@@ -43,7 +43,7 @@
           }
         }
       },
-      
+
       {
         "id": 2,
         "title": "Total Workflow Runs",
@@ -67,7 +67,7 @@
           }
         }
       },
-      
+
       {
         "id": 3,
         "title": "Average Workflow Duration",
@@ -100,7 +100,7 @@
           }
         }
       },
-      
+
       {
         "id": 4,
         "title": "API Rate Limit Usage",
@@ -133,7 +133,7 @@
           }
         }
       },
-      
+
       {
         "id": 5,
         "title": "Workflow Duration Over Time",
@@ -169,7 +169,7 @@
           "mode": "time"
         }
       },
-      
+
       {
         "id": 6,
         "title": "Workflow Success/Failure Breakdown",
@@ -200,7 +200,7 @@
           }
         }
       },
-      
+
       {
         "id": 7,
         "title": "Code Quality Score Trend",
@@ -250,7 +250,7 @@
           "name": "Code Quality Alert"
         }
       },
-      
+
       {
         "id": 8,
         "title": "Test Coverage Percentage",
@@ -300,7 +300,7 @@
           "name": "Coverage Alert"
         }
       },
-      
+
       {
         "id": 9,
         "title": "Security Vulnerabilities",
@@ -332,7 +332,7 @@
           }
         }
       },
-      
+
       {
         "id": 10,
         "title": "Code Complexity (Avg)",
@@ -365,7 +365,7 @@
           }
         }
       },
-      
+
       {
         "id": 11,
         "title": "Build Time Percentiles",
@@ -402,16 +402,16 @@
         }
       }
     ],
-    
+
     "time": {
       "from": "now-7d",
       "to": "now"
     },
-    
+
     "timepicker": {
       "refresh_intervals": ["5m", "15m", "30m", "1h", "2h", "1d"]
     },
-    
+
     "annotations": {
       "list": [
         {

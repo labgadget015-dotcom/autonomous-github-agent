@@ -33,19 +33,19 @@ jobs:
   parallel-analysis:
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 1  # Shallow clone for speed
-      
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: 'pip'
-      
+
       - name: Cache pip dependencies
         uses: actions/cache@v4
         with:
@@ -64,7 +64,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip wheel
           pip install -r requirements.txt
-      
+
       - name: Run ruff lint (fast, zero-config)
         run: |
           ruff check core/ agents/ autopilot/ .github/scripts \
@@ -77,7 +77,7 @@ jobs:
         run: |
           python .github/scripts/parallel_code_analyzer.py
         continue-on-error: true
-      
+
       - name: Upload analysis results
         uses: actions/upload-artifact@v4
         if: always()
@@ -87,7 +87,7 @@ jobs:
             analysis-results.json
             *.html
           retention-days: 30
-      
+
       - name: Comment PR with results
         if: github.event_name == 'pull_request'
         uses: actions/github-script@v7
@@ -95,33 +95,33 @@ jobs:
           script: |
             const fs = require('fs');
             const results = JSON.parse(fs.readFileSync('analysis-results.json', 'utf8'));
-            
+
             const status = results.passed ? '✅ PASSED' : '❌ FAILED';
             const body = `## Code Quality Analysis ${status}
-            
+
             **Duration:** ${results.elapsed_seconds}s
             **Total Issues:** ${results.summary.total_issues}
-            
+
             ### Tool Results
-            ${Object.entries(results.tools).map(([tool, data]) => 
+            ${Object.entries(results.tools).map(([tool, data]) =>
               `- **${tool}**: ${data.status === 'passed' ? '✅' : '❌'}`
             ).join('\n')}
-            
+
             <details>
             <summary>View detailed results</summary>
-            
+
             \`\`\`json
             ${JSON.stringify(results, null, 2)}
             \`\`\`
             </details>`;
-            
+
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
               body: body
             });
-      
+
       - name: Check thresholds and fail if needed
         continue-on-error: true
         run: |
@@ -136,20 +136,20 @@ jobs:
       fail-fast: false
       matrix:
         python-version: ['3.10', '3.11', '3.12']
-    
+
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
           cache: 'pip'
-      
+
       - name: Install dependencies
         run: |
           pip install -r requirements.txt
-      
+
       - name: Run optimized pytest
         run: |
           pytest \
@@ -166,13 +166,13 @@ jobs:
             --strict-markers \
             --disable-warnings \
             -n auto
-      
+
       - name: Generate coverage badge
         if: matrix.python-version == '3.11' && github.event_name == 'push'
         run: |
           pip install coverage-badge
           coverage-badge -o coverage.svg -f
-      
+
       - name: Upload coverage reports
         if: matrix.python-version == '3.11'
         uses: codecov/codecov-action@v4
@@ -181,7 +181,7 @@ jobs:
           flags: unittests
           name: codecov-umbrella
           fail_ci_if_error: false
-      
+
       - name: Upload HTML coverage report
         if: matrix.python-version == '3.11'
         uses: actions/upload-artifact@v4
@@ -195,19 +195,19 @@ jobs:
     permissions:
       security-events: write
       contents: read
-    
+
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: 'pip'
-      
+
       - name: Install Bandit
         run: pip install bandit[toml]
-      
+
       - name: Run Bandit security scan
         run: |
           bandit -r core/ agents/ autopilot/ .github/scripts \
@@ -216,7 +216,7 @@ jobs:
             --severity-level medium \
             --confidence-level medium \
             --exit-zero
-      
+
       - name: Check critical vulnerabilities
         id: check_critical
         run: |
@@ -232,14 +232,14 @@ jobs:
             sys.exit(1)
           print('✅ No critical security issues found')
           "
-      
+
       - name: Upload Bandit results
         uses: actions/upload-artifact@v4
         if: always()
         with:
           name: bandit-security-report
           path: bandit-report.json
-      
+
       - name: Create security issue if critical vulnerabilities found
         if: failure() && steps.check_critical.outcome == 'failure'
         uses: actions/github-script@v7
@@ -248,26 +248,26 @@ jobs:
             const fs = require('fs');
             const report = JSON.parse(fs.readFileSync('bandit-report.json', 'utf8'));
             const critical = report.results.filter(r => r.issue_severity === 'HIGH');
-            
+
             const body = `## 🚨 Critical Security Vulnerabilities Detected
-            
+
             Found **${critical.length}** critical security issues:
-            
+
             ${critical.map(issue => `
             ### ${issue.issue_text}
             - **File:** \`${issue.filename}\`
             - **Line:** ${issue.line_number}
             - **Severity:** ${issue.issue_severity}
             - **Confidence:** ${issue.issue_confidence}
-            
+
             \`\`\`python
             ${issue.code}
             \`\`\`
             `).join('\n')}
-            
+
             **Action Required:** Fix these issues immediately before merging.
             `;
-            
+
             github.rest.issues.create({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -279,30 +279,30 @@ jobs:
   # Code complexity monitoring with Radon
   complexity-check:
     runs-on: ubuntu-latest
-    
+
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: 'pip'
-      
+
       - name: Install Radon
         run: pip install radon
-      
+
       - name: Run complexity analysis
         run: |
           radon cc core/ agents/ autopilot/ .github/scripts -a -j > complexity.json
           radon mi core/ agents/ autopilot/ .github/scripts -j > maintainability.json
-      
+
       - name: Generate complexity report
         id: complexity_report
         run: |
           python .github/scripts/complexity_reporter.py
         continue-on-error: true
-      
+
       - name: Comment on PR with complexity changes
         if: github.event_name == 'pull_request'
         uses: actions/github-script@v7
@@ -311,7 +311,7 @@ jobs:
             const fs = require('fs');
             if (fs.existsSync('complexity-report.md')) {
               const report = fs.readFileSync('complexity-report.md', 'utf8');
-              
+
               github.rest.issues.createComment({
                 issue_number: context.issue.number,
                 owner: context.repo.owner,
@@ -319,7 +319,7 @@ jobs:
                 body: report
               });
             }
-      
+
       - name: Upload complexity reports
         uses: actions/upload-artifact@v4
         with:
@@ -334,17 +334,17 @@ jobs:
     needs: [parallel-analysis, test-coverage, security-scan, complexity-check]
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    
+
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Download all artifacts
         uses: actions/download-artifact@v4
-      
+
       - name: Generate health dashboard
         run: |
           python .github/scripts/health_dashboard_generator.py
-      
+
       - name: Commit dashboard updates
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"

@@ -38,15 +38,15 @@ print_header() {
 # Check Python version
 check_python() {
     print_header "Checking Python Installation"
-    
+
     if ! command -v python3 &> /dev/null; then
         print_error "Python 3 is not installed. Please install Python 3.11 or later."
         exit 1
     fi
-    
+
     PYTHON_VERSION=$(python3 --version | cut -d' ' -f2)
     print_success "Python $PYTHON_VERSION found"
-    
+
     # Check if version is 3.11 or later
     REQUIRED_VERSION="3.11.0"
     if [ "$(printf '%s\n' "$REQUIRED_VERSION" "$PYTHON_VERSION" | sort -V | head -n1)" != "$REQUIRED_VERSION" ]; then
@@ -57,7 +57,7 @@ check_python() {
 # Create and activate virtual environment
 setup_virtualenv() {
     print_header "Setting Up Virtual Environment"
-    
+
     if [ -d "venv" ]; then
         print_warning "Virtual environment already exists. Skipping creation."
     else
@@ -65,7 +65,7 @@ setup_virtualenv() {
         python3 -m venv venv
         print_success "Virtual environment created"
     fi
-    
+
     print_info "To activate the virtual environment, run:"
     print_info "  source venv/bin/activate  (Linux/Mac)"
     print_info "  venv\\Scripts\\activate     (Windows)"
@@ -74,7 +74,7 @@ setup_virtualenv() {
 # Install dependencies
 install_dependencies() {
     print_header "Installing Dependencies"
-    
+
     # Activate virtual environment
     if [ -f "venv/bin/activate" ]; then
         source venv/bin/activate
@@ -84,23 +84,23 @@ install_dependencies() {
         print_error "Virtual environment not found. Please create it first."
         exit 1
     fi
-    
+
     print_info "Installing Python packages..."
     pip install --upgrade pip setuptools wheel
     pip install -r requirements.txt
-    
+
     print_info "Installing development dependencies..."
     pip install pytest pytest-cov pytest-xdist
     pip install black isort flake8 pylint bandit radon
     pip install pre-commit
-    
+
     print_success "All dependencies installed"
 }
 
 # Setup environment file
 setup_env_file() {
     print_header "Setting Up Environment File"
-    
+
     if [ -f ".env" ]; then
         print_warning ".env file already exists. Skipping."
         print_info "If you want to reset it, run: cp .env.development .env"
@@ -115,15 +115,15 @@ setup_env_file() {
 # Install pre-commit hooks
 install_precommit() {
     print_header "Installing Pre-commit Hooks"
-    
+
     if [ -f "venv/bin/activate" ]; then
         source venv/bin/activate
     fi
-    
+
     print_info "Installing pre-commit hooks..."
     pre-commit install
     print_success "Pre-commit hooks installed"
-    
+
     print_info "Running pre-commit on all files..."
     pre-commit run --all-files || true
     print_success "Pre-commit check complete"
@@ -132,23 +132,23 @@ install_precommit() {
 # Create necessary directories
 create_directories() {
     print_header "Creating Necessary Directories"
-    
+
     mkdir -p reports
     mkdir -p .github/badges
     mkdir -p logs
     mkdir -p tmp
-    
+
     print_success "Directories created"
 }
 
 # Run initial tests
 run_tests() {
     print_header "Running Initial Tests"
-    
+
     if [ -f "venv/bin/activate" ]; then
         source venv/bin/activate
     fi
-    
+
     print_info "Running test suite..."
     if pytest -n auto --tb=short -v; then
         print_success "All tests passed!"
@@ -161,35 +161,35 @@ run_tests() {
 # Display final instructions
 show_final_instructions() {
     print_header "Setup Complete! 🎉"
-    
+
     echo -e "Your development environment is ready. Next steps:\n"
     echo -e "1. Activate the virtual environment:"
     echo -e "   ${GREEN}source venv/bin/activate${NC} (Linux/Mac)"
     echo -e "   ${GREEN}venv\\Scripts\\activate${NC} (Windows)\n"
-    
+
     echo -e "2. Edit ${GREEN}.env${NC} and add your credentials:"
     echo -e "   - GITHUB_TOKEN (required)"
     echo -e "   - Other API keys as needed\n"
-    
+
     echo -e "3. Run the local test script:"
     echo -e "   ${GREEN}python scripts/test-local.py${NC}\n"
-    
+
     echo -e "4. Start developing:"
     echo -e "   - Write code in ${GREEN}.github/scripts/${NC}"
     echo -e "   - Run tests: ${GREEN}pytest -n auto${NC}"
     echo -e "   - Format code: ${GREEN}black . && isort .${NC}"
     echo -e "   - Check quality: ${GREEN}make lint${NC}\n"
-    
+
     echo -e "5. Before committing:"
     echo -e "   - Pre-commit hooks will run automatically"
     echo -e "   - Or run manually: ${GREEN}pre-commit run --all-files${NC}\n"
-    
+
     echo -e "6. Useful commands:"
     echo -e "   - ${GREEN}make help${NC} - Show all available commands"
     echo -e "   - ${GREEN}make test${NC} - Run tests"
     echo -e "   - ${GREEN}make lint${NC} - Run linters"
     echo -e "   - ${GREEN}make format${NC} - Auto-format code\n"
-    
+
     print_info "Documentation: Check README.md and CONTRIBUTING.md"
     print_info "Need help? Open an issue on GitHub"
 }
@@ -198,7 +198,7 @@ show_final_instructions() {
 main() {
     print_header "Autonomous GitHub Agent - Development Setup"
     print_info "This script will set up your local development environment\n"
-    
+
     # Run all setup steps
     check_python
     setup_virtualenv
@@ -206,7 +206,7 @@ main() {
     setup_env_file
     create_directories
     install_precommit
-    
+
     # Ask if user wants to run tests
     echo -e "\n${YELLOW}Do you want to run initial tests? (y/n)${NC}"
     read -r response
@@ -215,7 +215,7 @@ main() {
     else
         print_info "Skipping initial tests. You can run them later with: pytest"
     fi
-    
+
     show_final_instructions
 }
 

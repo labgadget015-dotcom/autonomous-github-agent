@@ -127,7 +127,7 @@ class HealthDashboardGenerator:
         # Generate dashboard
         dashboard = f"""# 📊 Repository Health Dashboard
 
-**Last Updated:** {self.timestamp}  
+**Last Updated:** {self.timestamp}
 **Health Score:** {emoji} **{health_score}/100** ({status})
 
 ---

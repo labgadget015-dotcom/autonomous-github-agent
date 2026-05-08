@@ -112,7 +112,7 @@ class CostCalculator:
         tier_usage = self.check_free_tier_usage(monthly_minutes)
 
         report = f"""# GitHub Actions Cost Report
-        
+
 ## Configuration
 - **Account Type**: {self.account_type.title()}
 - **Runs per Day**: {runs_per_day}

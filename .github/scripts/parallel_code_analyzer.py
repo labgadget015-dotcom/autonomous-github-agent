@@ -193,9 +193,9 @@ class ParallelCodeAnalyzer:
     def generate_report(self, results: dict) -> str:
         """Generate markdown report"""
         report = f"""# Code Analysis Report
-        
-**Generated:** {results['timestamp']}  
-**Duration:** {results['elapsed_seconds']}s  
+
+**Generated:** {results['timestamp']}
+**Duration:** {results['elapsed_seconds']}s
 **Status:** {'✅ PASSED' if results['passed'] else '❌ FAILED'}
 
 ## Summary

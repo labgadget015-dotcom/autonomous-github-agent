@@ -112,9 +112,9 @@ class IssueAutoCreator:
         date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
         body = f"""## Code Quality Alert
-        
+
 **Date**: {date}
-**Quality Score**: {score:.1f}/{self.quality_threshold} ⚠️  
+**Quality Score**: {score:.1f}/{self.quality_threshold} ⚠️
 **Status**: Below threshold
 
 ### Summary
@@ -155,7 +155,7 @@ Code quality has fallen below the acceptable threshold. This requires immediate 
         date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
         body = f"""## 🔒 Security Alert
-        
+
 **Date**: {date}
 **Severity**: HIGH 🔴
 
@@ -187,7 +187,7 @@ Code quality has fallen below the acceptable threshold. This requires immediate 
         date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
         body = f"""## 🔧 Code Complexity Alert
-        
+
 **Date**: {date}
 **High-Complexity Functions**: {len(functions)}
 

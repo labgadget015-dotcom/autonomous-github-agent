@@ -132,7 +132,7 @@ class InlinePRCommentBot:
 
 {message}
 
-**Type:** {issue.get('type', 'convention')}  
+**Type:** {issue.get('type', 'convention')}
 **Message ID:** `{message_id}`
 
 <details>
@@ -154,8 +154,8 @@ class InlinePRCommentBot:
 
         comment = f"""{emoji} **Security Issue:** {text}
 
-**Severity:** {severity}  
-**Confidence:** {confidence}  
+**Severity:** {severity}
+**Confidence:** {confidence}
 **CWE:** {issue.get('issue_cwe', {}).get('id', 'N/A')}
 
 <details>
@@ -318,10 +318,10 @@ Function `{name}` has a cyclomatic complexity of **{complexity}** (threshold: 10
 
         body = f"""## 🤖 Code Quality Review Summary
 
-**Total Issues Found:** {total}  
+**Total Issues Found:** {total}
 **Comments Posted:** {posted}
 
-The inline comments show critical and high-priority issues. 
+The inline comments show critical and high-priority issues.
 {'Additional issues were found but not displayed to keep the review focused.' if total > posted else ''}
 
 To see all issues, check the workflow artifacts.

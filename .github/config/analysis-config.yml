@@ -9,7 +9,7 @@ thresholds:
   maintainability: 65      # Minimum maintainability index (0-100)
   security: "medium"       # Minimum Bandit severity (low, medium, high)
   coverage: 80             # Minimum test coverage percentage
-  
+
 # Targets for analysis
 targets:
   - .github/scripts
@@ -34,26 +34,26 @@ pylint:
   enable:
     - useless-suppression
   max_line_length: 100
-  
+
 flake8:
   max_line_length: 100
   ignore:
     - E203  # Whitespace before ':'
     - W503  # Line break before binary operator
   max_complexity: 10
-  
+
 bandit:
   exclude_dirs:
     - tests
     - .github/scripts/test_*.py
   skips:
     - B101  # Assert used (OK in tests)
-  
+
 radon:
   complexity_grade_threshold: B  # A, B, C, D, E, F
   maintainability_threshold: 65
   show_complexity: true
-  
+
 # Coverage settings
 coverage:
   targets:
@@ -63,7 +63,7 @@ coverage:
     - "*/test_*.py"
     - "*/__init__.py"
   fail_under: 80
-  
+
 # Escalation rules - auto-create issues
 escalation:
   enabled: true
@@ -75,13 +75,13 @@ escalation:
     low: "priority: low"
   assignees:
     - "@repo-owner"
-  
+
 # Performance optimization
 performance:
   parallel_jobs: 4
   cache_enabled: true
   timeout_seconds: 600
-  
+
 # Reporting
 reporting:
   formats:

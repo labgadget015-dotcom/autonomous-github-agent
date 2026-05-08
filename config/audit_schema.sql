@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS audit_logs (
     result JSONB,
     status VARCHAR(50) NOT NULL,
     rollback TEXT,
-    
+
     -- Indexes for faster queries
     CONSTRAINT unique_task_action UNIQUE (task_id, agent, action, timestamp)
 );
@@ -41,7 +41,7 @@ COMMENT ON COLUMN audit_logs.rollback IS 'Instructions for rolling back this act
 
 -- Create view for recent actions
 CREATE OR REPLACE VIEW recent_audit_logs AS
-SELECT 
+SELECT
     id,
     timestamp,
     task_id,
@@ -55,7 +55,7 @@ LIMIT 1000;
 
 -- Create view for error logs
 CREATE OR REPLACE VIEW error_audit_logs AS
-SELECT 
+SELECT
     id,
     timestamp,
     task_id,
@@ -81,7 +81,7 @@ BEGIN
         RETURNING *
     )
     SELECT COUNT(*) INTO archived_count FROM archived;
-    
+
     RETURN archived_count;
 END;
 $$ LANGUAGE plpgsql;

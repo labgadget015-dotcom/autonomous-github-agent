@@ -200,8 +200,8 @@ class ThresholdMonitor:
         """Generate detailed issue body"""
         body = f"""## {violation.get('message', 'Code quality issue detected')}
 
-**Type:** {violation['type'].upper()}  
-**Severity:** {violation['severity'].upper()}  
+**Type:** {violation['type'].upper()}
+**Severity:** {violation['severity'].upper()}
 **Detected:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC')}
 
 """

@@ -103,7 +103,7 @@ read -p "Enter choice [1-4]: " DEPLOY_MODE
 case $DEPLOY_MODE in
     1)
         info "Selected: Self-hosted deployment"
-        
+
         # Clone or update repository
         if [ -d "$INSTALL_DIR" ]; then
             info "Updating existing installation..."
@@ -115,19 +115,19 @@ case $DEPLOY_MODE in
             cd "$INSTALL_DIR"
         fi
         success "Repository ready"
-        
+
         # Create virtual environment
         info "Setting up Python virtual environment..."
         python3 -m venv venv
         source venv/bin/activate
         success "Virtual environment created"
-        
+
         # Install dependencies
         info "Installing Python dependencies..."
         pip install --upgrade pip
         pip install -r requirements.txt 2>/dev/null || pip install aiohttp anthropic openai requests pyyaml pylint flake8 bandit pytest
         success "Dependencies installed"
-        
+
         # Setup environment variables
         info "Configuring environment variables..."
         if [ ! -f ".env" ]; then
@@ -137,7 +137,7 @@ case $DEPLOY_MODE in
             echo "  - OPENAI_API_KEY (optional, for cloud LLM)"
             echo "  - ANTHROPIC_API_KEY (optional, for cloud LLM)"
         fi
-        
+
         # Setup local LLM (optional)
         read -p "Install local LLM (Ollama) for 90% cost savings? (y/N) " -n 1 -r
         echo
@@ -148,12 +148,12 @@ case $DEPLOY_MODE in
             elif [[ "$OS" == "macos" ]]; then
                 brew install ollama
             fi
-            
+
             info "Pulling recommended model (deepseek-coder-v2)..."
             ollama pull deepseek-coder-v2:16b-lite-instruct-q4_0
             success "Local LLM installed and ready"
         fi
-        
+
         success "Self-hosted deployment complete!"
         echo ""
         info "To start using the agent:"
@@ -161,33 +161,33 @@ case $DEPLOY_MODE in
         echo "  2. Run: source venv/bin/activate"
         echo "  3. Test: python .github/scripts/async_parallel_analyzer.py"
         ;;
-        
+
     2)
         info "Selected: Docker deployment"
-        
+
         # Check Docker
         if ! command -v docker &> /dev/null; then
             error "Docker is required. Install from: https://docs.docker.com/get-docker/"
         fi
         success "Docker found"
-        
+
         # Clone repository if needed
         if [ ! -d "$INSTALL_DIR" ]; then
             git clone "$REPO_URL" "$INSTALL_DIR"
         fi
         cd "$INSTALL_DIR"
-        
+
         # Build Docker image
         info "Building Docker image..."
         docker build -t autonomous-github-agent:latest .
         success "Docker image built"
-        
+
         # Setup environment
         if [ ! -f ".env" ]; then
             cp .env.example .env
             warn "Please edit .env file with your API keys before running"
         fi
-        
+
         # Run container
         info "Starting container..."
         docker run -d \
@@ -196,51 +196,51 @@ case $DEPLOY_MODE in
             -v $(pwd)/.github:/app/.github \
             -p 8080:8080 \
             autonomous-github-agent:latest
-        
+
         success "Docker deployment complete!"
         echo ""
         info "Container is running. Check status with:"
         echo "  docker ps"
         echo "  docker logs autonomous-github-agent"
         ;;
-        
+
     3)
         info "Selected: Kubernetes deployment"
-        
+
         # Check kubectl
         if ! command -v kubectl &> /dev/null; then
             error "kubectl is required. Install from: https://kubernetes.io/docs/tasks/tools/"
         fi
         success "kubectl found"
-        
+
         # Clone repository
         if [ ! -d "$INSTALL_DIR" ]; then
             git clone "$REPO_URL" "$INSTALL_DIR"
         fi
         cd "$INSTALL_DIR"
-        
+
         # Create namespace
         info "Creating Kubernetes namespace..."
         kubectl create namespace autonomous-agent || true
-        
+
         # Create secrets
         info "Setting up secrets..."
         read -p "Enter GitHub Token: " GITHUB_TOKEN
         kubectl create secret generic github-credentials \
             --from-literal=token=$GITHUB_TOKEN \
             -n autonomous-agent || true
-        
+
         # Apply manifests
         info "Deploying to Kubernetes..."
         kubectl apply -f k8s/ -n autonomous-agent
-        
+
         success "Kubernetes deployment complete!"
         echo ""
         info "Check deployment status:"
         echo "  kubectl get pods -n autonomous-agent"
         echo "  kubectl logs -f deployment/autonomous-agent -n autonomous-agent"
         ;;
-        
+
     4)
         info "Selected: Cloud Platform deployment"
         echo "Select cloud provider:"
@@ -248,7 +248,7 @@ case $DEPLOY_MODE in
         echo "2) Google Cloud (Cloud Run/GKE)"
         echo "3) Azure (Container Instances/AKS)"
         read -p "Enter choice [1-3]: " CLOUD_CHOICE
-        
+
         case $CLOUD_CHOICE in
             1)
                 info "AWS deployment - Please ensure AWS CLI is configured"
@@ -268,7 +268,7 @@ case $DEPLOY_MODE in
                 ;;
         esac
         ;;
-        
+
     *)
         error "Invalid deployment mode"
         ;;

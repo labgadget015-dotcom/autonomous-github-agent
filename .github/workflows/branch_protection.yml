@@ -18,21 +18,21 @@ permissions:
 jobs:
   setup-branch-protection:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-      
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
           cache: 'pip'
-      
+
       - name: Install dependencies
         run: |
           pip install PyGithub
-      
+
       - name: Verify branch protection
         if: github.event.inputs.verify_only == 'true'
         env:
@@ -40,7 +40,7 @@ jobs:
           GITHUB_REPOSITORY: ${{ github.repository }}
         run: |
           python .github/scripts/setup_branch_protection.py --verify-only --branch ${{ github.event.inputs.branch_name || 'main' }}
-      
+
       - name: Setup branch protection
         if: github.event.inputs.verify_only != 'true'
         env:

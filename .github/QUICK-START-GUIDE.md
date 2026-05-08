@@ -77,11 +77,11 @@ pytest --cov=agents agents/
 
 ## 📊 What Runs on PR?
 
-✅ Parallel analysis (Pylint, Flake8, Bandit) - **5 min**  
-✅ Multi-version testing (Python 3.10, 3.11, 3.12)  
-✅ Coverage reports with PR comments  
-✅ Complexity analysis with warnings  
-✅ Security scanning with blocking on critical issues  
+✅ Parallel analysis (Pylint, Flake8, Bandit) - **5 min**
+✅ Multi-version testing (Python 3.10, 3.11, 3.12)
+✅ Coverage reports with PR comments
+✅ Complexity analysis with warnings
+✅ Security scanning with blocking on critical issues
 
 ---
 
@@ -141,10 +141,10 @@ bandit -r agents/ -v
 
 ## 🔐 Security Checks
 
-✅ Bandit: Code vulnerabilities  
-✅ Safety: Dependency CVEs  
-✅ mypy: Type checking  
-✅ Pre-commit: File security  
+✅ Bandit: Code vulnerabilities
+✅ Safety: Dependency CVEs
+✅ mypy: Type checking
+✅ Pre-commit: File security
 
 ---
 

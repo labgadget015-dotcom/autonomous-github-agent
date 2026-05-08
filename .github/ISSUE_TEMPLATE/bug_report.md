@@ -15,10 +15,10 @@ assignees: ''
 
 ## Steps to Reproduce
 <!-- Provide detailed steps to reproduce the issue -->
-1. 
-2. 
-3. 
-4. 
+1.
+2.
+3.
+4.
 
 ## Expected Behavior
 <!-- Describe what you expected to happen -->

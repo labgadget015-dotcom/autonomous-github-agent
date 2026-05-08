@@ -76,6 +76,6 @@ exclude_dirs:
 # Options: all, low, medium, high
 severity: medium
 
-# Confidence threshold  
+# Confidence threshold
 # Options: all, low, medium, high
 confidence: medium
