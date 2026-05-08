@@ -34,7 +34,7 @@ class RepositoryMonitor:
         """
         logger.info("Starting repository monitoring...")
 
-        results = {
+        results: dict[str, Any] = {
             "quality": {},
             "performance": {},
             "security": {},
@@ -130,10 +130,12 @@ class RepositoryMonitor:
             try:
                 with open(package_json) as f:
                     data = json.load(f)
-                    deps = len(data.get("dependencies", {})) + len(
+                    npm_deps = len(data.get("dependencies", {})) + len(
                         data.get("devDependencies", {})
                     )
-                    performance["dependency_count"] += deps
+                    performance["dependency_count"] = (
+                        int(performance["dependency_count"]) + npm_deps
+                    )
             except Exception:
                 pass
 

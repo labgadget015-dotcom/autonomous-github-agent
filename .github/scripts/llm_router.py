@@ -120,7 +120,9 @@ class LLMRouter:
         except Exception:
             return LLMResponse("", model, 0, 0.0, 0, False)
 
-    def route(self, prompt: str, task_type: str, context: dict = None) -> LLMResponse:
+    def route(
+        self, prompt: str, task_type: str, context: dict | None = None
+    ) -> LLMResponse:
         context = context or {}
         complexity = self.classify(task_type, context)
         self.stats["total"] += 1
