@@ -1,5 +1,36 @@
 # Rollback Manifest
 
+## 2948624 — 2026-05-08 08:29 UTC
+
+- **SHA**: `29486248cdd128ad13ced428bfe48827f3fe3e8c`
+- **Author**: GadgetAI
+- **Message**: fix: resolve all ruff violations to pass pre-commit CI
+- **Files changed**: 115 file(s)
+
+**Changed files:**
+- `.github/scripts/ai_code_suggestor.py`
+- `.github/scripts/ai_workflow_optimizer.py`
+- `.github/scripts/async_parallel_analyzer.py`
+- `.github/scripts/badge_generator.py`
+- `.github/scripts/changelog_generator.py`
+- `.github/scripts/check_policy.py`
+- `.github/scripts/complexity_reporter.py`
+- `.github/scripts/copilot_integration.py`
+- `.github/scripts/cost_calculator.py`
+- `.github/scripts/cot_selector.py`
+- `.github/scripts/dependency_updater.py`
+- `.github/scripts/distributed_monitoring.py`
+- `.github/scripts/elite_copilot.py`
+- `.github/scripts/error_handler.py`
+- `.github/scripts/gather_context.py`
+- `.github/scripts/generate_rollback_manifest.py`
+- `.github/scripts/health_dashboard_generator.py`
+- `.github/scripts/inline_pr_commenter.py`
+- `.github/scripts/issue_auto_creator.py`
+- `.github/scripts/llm_router.py`
+
+---
+
 ## 22527de — 2026-05-08 08:06 UTC
 
 - **SHA**: `22527dedc0668e7c4fd854848dd6c259158cd0be`
