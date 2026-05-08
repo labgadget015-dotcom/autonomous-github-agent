@@ -1,5 +1,17 @@
 # Rollback Manifest
 
+## 0b6bb65 — 2026-05-08 11:51 UTC
+
+- **SHA**: `0b6bb65f706e7bc6fe99be33f6336fb6c8b77723`
+- **Author**: Gadget Lab
+- **Message**: ok
+- **Files changed**: 1 file(s)
+
+**Changed files:**
+- `.bandit`
+
+---
+
 ## 6f85fc8 — 2026-05-08 11:14 UTC
 
 - **SHA**: `6f85fc8528f210f44ceb9eb21e9185be0e3470fa`
