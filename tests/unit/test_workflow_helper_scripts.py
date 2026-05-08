@@ -66,6 +66,14 @@ class TestAiAgentMain:
         assert "Ref: refs/heads/main" in output
         assert "Actor: unknown" in output
 
+    def test_run_ai_agent_uses_explicit_actor(self, tmp_path, monkeypatch, capsys):
+        monkeypatch.chdir(tmp_path)
+
+        ai_agent_main.run_ai_agent({"actor": "octocat"})
+
+        output = capsys.readouterr().out
+        assert "Actor: octocat" in output
+
 
 class TestErrorHandler:
     def test_handle_errors_returns_success_when_no_input_files_exist(
