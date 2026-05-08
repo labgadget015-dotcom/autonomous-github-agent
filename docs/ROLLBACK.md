@@ -1,5 +1,17 @@
 # Rollback Manifest
 
+## c2af2c8 — 2026-05-08 10:11 UTC
+
+- **SHA**: `c2af2c8d622da1c26b22e26cf9a4aefd1a3ba48b`
+- **Author**: GadgetAI
+- **Message**: fix: add detect-secrets baseline required by pre-commit hook
+- **Files changed**: 1 file(s)
+
+**Changed files:**
+- `.secrets.baseline`
+
+---
+
 ## 237059c — 2026-05-08 09:43 UTC
 
 - **SHA**: `237059cd1885795f080126490bd1b350880cfb48`
