@@ -1,5 +1,23 @@
 # Rollback Manifest
 
+## 6f85fc8 — 2026-05-08 11:14 UTC
+
+- **SHA**: `6f85fc8528f210f44ceb9eb21e9185be0e3470fa`
+- **Author**: GadgetAI
+- **Message**: fix: resolve markdownlint violations (MD012, MD018, MD019)
+- **Files changed**: 7 file(s)
+
+**Changed files:**
+- `.github/ISSUE_TEMPLATE/bug_report.md`
+- `.github/ISSUE_TEMPLATE/feature_request.md`
+- `DEPLOYMENT_CODE_SUGGESTIONS.md`
+- `README.md`
+- `docs/CHANGELOG.md`
+- `docs/CONSOLIDATION_ROADMAP.md`
+- `docs/PRODUCT_HUNT_LAUNCH.md`
+
+---
+
 ## 002bad8 — 2026-05-08 11:09 UTC
 
 - **SHA**: `002bad8f1154f5a8db6a1d1954d7c0b8d96d2478`
