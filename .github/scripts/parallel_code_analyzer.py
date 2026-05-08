@@ -18,31 +18,27 @@ import yaml
 
 class ParallelCodeAnalyzer:
     """Run multiple code analysis tools in parallel"""
-    
+
     def __init__(self, config_path: str = ".github/config/analysis-config.yml"):
         self.config_path = Path(config_path)
         self.config = self._load_config()
         self.results = {}
-        
+
     def _load_config(self) -> Dict:
         """Load configuration from YAML file"""
         if self.config_path.exists():
             with open(self.config_path) as f:
                 return yaml.safe_load(f)
         return self._default_config()
-    
+
     def _default_config(self) -> Dict:
         """Default configuration if no config file exists"""
         return {
-            "thresholds": {
-                "pylint": 8.0,
-                "complexity": 10,
-                "security": "medium"
-            },
+            "thresholds": {"pylint": 8.0, "complexity": 10, "security": "medium"},
             "targets": [".github/scripts", "tests"],
-            "exclude_patterns": ["__pycache__", "*.pyc", ".git"]
+            "exclude_patterns": ["__pycache__", "*.pyc", ".git"],
         }
-    
+
     def run_pylint(self, target: str) -> Tuple[int, str, str]:
         """Run Pylint analysis"""
         cmd = [
@@ -50,22 +46,17 @@ class ParallelCodeAnalyzer:
             target,
             f"--fail-under={self.config['thresholds']['pylint']}",
             "--output-format=json",
-            "--reports=y"
+            "--reports=y",
         ]
-        
+
         try:
-            result = subprocess.run(
-                cmd,
-                capture_output=True,
-                text=True,
-                timeout=300
-            )
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
             return result.returncode, result.stdout, result.stderr
         except subprocess.TimeoutExpired:
             return 1, "", "Pylint timeout after 5 minutes"
         except Exception as e:
             return 1, "", f"Pylint error: {str(e)}"
-    
+
     def run_flake8(self, target: str) -> Tuple[int, str, str]:
         """Run Flake8 analysis"""
         cmd = [
@@ -75,40 +66,33 @@ class ParallelCodeAnalyzer:
             "--extend-ignore=E203,W503",
             "--format=json",
             "--count",
-            "--statistics"
+            "--statistics",
         ]
-        
+
         try:
-            result = subprocess.run(
-                cmd,
-                capture_output=True,
-                text=True,
-                timeout=180
-            )
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=180)
             return result.returncode, result.stdout, result.stderr
         except Exception as e:
             return 1, "", f"Flake8 error: {str(e)}"
-    
+
     def run_bandit(self, target: str) -> Tuple[int, str, str]:
         """Run Bandit security analysis"""
         cmd = [
             "bandit",
-            "-r", target,
-            "-f", "json",
-            "--severity-level", self.config['thresholds']['security']
+            "-r",
+            target,
+            "-f",
+            "json",
+            "--severity-level",
+            self.config["thresholds"]["security"],
         ]
-        
+
         try:
-            result = subprocess.run(
-                cmd,
-                capture_output=True,
-                text=True,
-                timeout=180
-            )
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=180)
             return result.returncode, result.stdout, result.stderr
         except Exception as e:
             return 1, "", f"Bandit error: {str(e)}"
-    
+
     def run_radon_complexity(self, target: str) -> Tuple[int, str, str]:
         """Run Radon complexity analysis"""
         cmd = [
@@ -117,60 +101,56 @@ class ParallelCodeAnalyzer:
             target,
             "-a",
             "-j",  # JSON output
-            f"--min={chr(ord('A') + min(self.config['thresholds']['complexity'] // 2, 5))}"
+            f"--min={chr(ord('A') + min(self.config['thresholds']['complexity'] // 2, 5))}",
         ]
-        
+
         try:
-            result = subprocess.run(
-                cmd,
-                capture_output=True,
-                text=True,
-                timeout=120
-            )
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
             return result.returncode, result.stdout, result.stderr
         except Exception as e:
             return 1, "", f"Radon error: {str(e)}"
-    
+
     def run_radon_maintainability(self, target: str) -> Tuple[int, str, str]:
         """Run Radon maintainability index"""
         cmd = ["radon", "mi", target, "-j"]
-        
+
         try:
-            result = subprocess.run(
-                cmd,
-                capture_output=True,
-                text=True,
-                timeout=120
-            )
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
             return result.returncode, result.stdout, result.stderr
         except Exception as e:
             return 1, "", f"Radon MI error: {str(e)}"
-    
+
     async def run_all_async(self) -> Dict:
         """Run all analysis tools concurrently using asyncio"""
         start_time = time.time()
-        
+
         with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
             loop = asyncio.get_event_loop()
-            
+
             # Create tasks for all analysis tools
             tasks = []
-            for target in self.config['targets']:
-                tasks.extend([
-                    loop.run_in_executor(executor, self.run_pylint, target),
-                    loop.run_in_executor(executor, self.run_flake8, target),
-                    loop.run_in_executor(executor, self.run_bandit, target),
-                    loop.run_in_executor(executor, self.run_radon_complexity, target),
-                    loop.run_in_executor(executor, self.run_radon_maintainability, target),
-                ])
-            
+            for target in self.config["targets"]:
+                tasks.extend(
+                    [
+                        loop.run_in_executor(executor, self.run_pylint, target),
+                        loop.run_in_executor(executor, self.run_flake8, target),
+                        loop.run_in_executor(executor, self.run_bandit, target),
+                        loop.run_in_executor(
+                            executor, self.run_radon_complexity, target
+                        ),
+                        loop.run_in_executor(
+                            executor, self.run_radon_maintainability, target
+                        ),
+                    ]
+                )
+
             # Wait for all tasks to complete
             results = await asyncio.gather(*tasks, return_exceptions=True)
-        
+
         # Process results
         elapsed = time.time() - start_time
         return self._process_results(results, elapsed)
-    
+
     def _process_results(self, results: List, elapsed: float) -> Dict:
         """Process and structure analysis results"""
         processed = {
@@ -181,34 +161,36 @@ class ParallelCodeAnalyzer:
                 "critical": 0,
                 "high": 0,
                 "medium": 0,
-                "low": 0
+                "low": 0,
             },
             "tools": {},
-            "passed": True
+            "passed": True,
         }
-        
-        tool_names = ["pylint", "flake8", "bandit", "radon_cc", "radon_mi"] * len(self.config['targets'])
-        
+
+        tool_names = ["pylint", "flake8", "bandit", "radon_cc", "radon_mi"] * len(
+            self.config["targets"]
+        )
+
         for i, (returncode, stdout, stderr) in enumerate(results):
             if isinstance(results[i], Exception):
                 continue
-                
+
             tool = tool_names[i]
-            
+
             if tool not in processed["tools"]:
                 processed["tools"][tool] = {
                     "status": "passed" if returncode == 0 else "failed",
                     "output": stdout,
-                    "errors": stderr
+                    "errors": stderr,
                 }
-            
+
             # Count issues
             if returncode != 0:
                 processed["passed"] = False
                 processed["summary"]["total_issues"] += 1
-        
+
         return processed
-    
+
     def generate_report(self, results: Dict) -> str:
         """Generate markdown report"""
         report = f"""# Code Analysis Report
@@ -227,16 +209,16 @@ class ParallelCodeAnalyzer:
 ## Tool Results
 
 """
-        for tool, data in results['tools'].items():
-            status_emoji = "✅" if data['status'] == "passed" else "❌"
+        for tool, data in results["tools"].items():
+            status_emoji = "✅" if data["status"] == "passed" else "❌"
             report += f"### {status_emoji} {tool.upper()}\n"
             report += f"Status: {data['status']}\n\n"
-            
-            if data['errors']:
+
+            if data["errors"]:
                 report += f"**Errors:**\n```\n{data['errors']}\n```\n\n"
-        
+
         return report
-    
+
     def save_results(self, results: Dict, output_path: str = "analysis-results.json"):
         """Save results to JSON file"""
         with open(output_path, "w") as f:
@@ -247,19 +229,19 @@ class ParallelCodeAnalyzer:
 async def main():
     """Main entry point"""
     print("🚀 Starting parallel code analysis...")
-    
+
     analyzer = ParallelCodeAnalyzer()
     results = await analyzer.run_all_async()
-    
+
     # Generate and display report
     report = analyzer.generate_report(results)
     print(report)
-    
+
     # Save results
     analyzer.save_results(results)
-    
+
     # Exit with appropriate code
-    sys.exit(0 if results['passed'] else 1)
+    sys.exit(0 if results["passed"] else 1)
 
 
 if __name__ == "__main__":

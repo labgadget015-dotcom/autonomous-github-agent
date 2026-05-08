@@ -18,7 +18,9 @@ logger = logging.getLogger(__name__)
 class APIOptimizationAgent:
     """Intelligent agent for optimizing API request strategies."""
 
-    def __init__(self, config=None, learning_rate: float = 0.1, discount_factor: float = 0.95):
+    def __init__(
+        self, config=None, learning_rate: float = 0.1, discount_factor: float = 0.95
+    ):
         """Initialize the API optimization agent.
 
         Args:

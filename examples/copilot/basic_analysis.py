@@ -16,7 +16,7 @@ from pathlib import Path
 
 # Add the scripts directory to Python path
 repo_root = Path(__file__).parent.parent.parent
-sys.path.insert(0, str(repo_root / '.github' / 'scripts'))
+sys.path.insert(0, str(repo_root / ".github" / "scripts"))
 
 from elite_copilot import EliteCopilot, CopilotMode
 
@@ -26,21 +26,21 @@ def main():
     print("EXAMPLE: Basic Repository Analysis")
     print("=" * 70)
     print()
-    
+
     # Initialize the Elite Copilot in assistant mode
     print("Step 1: Initializing Elite Copilot...")
     copilot = EliteCopilot()
     copilot.mode = CopilotMode.ASSISTANT
     print(f"✅ Copilot initialized in {copilot.mode.value} mode")
     print()
-    
+
     # Run repository analysis
     print("Step 2: Running repository analysis...")
     repo_path = str(repo_root)
     results = copilot.analyze_repository(repo_path)
     print(f"✅ Analysis completed")
     print()
-    
+
     # Display key results
     print("Step 3: Results Summary")
     print("-" * 70)
@@ -48,45 +48,45 @@ def main():
     print(f"🔍 Insights Found: {len(results['insights'])}")
     print(f"💡 Recommendations: {len(results['recommendations'])}")
     print()
-    
+
     # Show insights by category
     print("Step 4: Insights by Category")
     print("-" * 70)
-    
+
     by_category = {}
-    for insight in results['insights']:
+    for insight in results["insights"]:
         category = insight.category
         if category not in by_category:
             by_category[category] = []
         by_category[category].append(insight)
-    
+
     for category, insights in by_category.items():
         print(f"\n{category.upper()} ({len(insights)} insights):")
         for insight in insights:
             emoji = {
-                'critical': '🔴',
-                'high': '🟠',
-                'medium': '🟡',
-                'low': '🟢',
-                'info': 'ℹ️'
-            }.get(insight.severity, '•')
+                "critical": "🔴",
+                "high": "🟠",
+                "medium": "🟡",
+                "low": "🟢",
+                "info": "ℹ️",
+            }.get(insight.severity, "•")
             print(f"  {emoji} {insight.title}")
             print(f"     → {insight.suggested_action}")
-    
+
     # Show recommendations
     print("\n" + "=" * 70)
     print("RECOMMENDATIONS")
     print("=" * 70)
-    for i, rec in enumerate(results['recommendations'], 1):
+    for i, rec in enumerate(results["recommendations"], 1):
         print(f"{i}. {rec}")
-    
+
     # Generate report
     print("\n" + "=" * 70)
     print("Step 5: Generating detailed report...")
-    output_path = repo_root / 'EXAMPLE_ANALYSIS_REPORT.md'
+    output_path = repo_root / "EXAMPLE_ANALYSIS_REPORT.md"
     copilot.generate_report(results, str(output_path))
     print(f"✅ Report saved to: {output_path}")
-    
+
     print("\n" + "=" * 70)
     print("✨ Example completed successfully!")
     print("=" * 70)
@@ -97,7 +97,7 @@ def main():
     print()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     try:
         main()
     except KeyboardInterrupt:
@@ -106,5 +106,6 @@ if __name__ == '__main__':
     except Exception as e:
         print(f"\n❌ Error: {e}")
         import traceback
+
         traceback.print_exc()
         sys.exit(1)

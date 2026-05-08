@@ -126,7 +126,10 @@ class AuditLogger:
             await self._write_to_postgres(log_entry)
         logger.info(
             "Logged action: %s.%s (task_id: %s, hash: %s)",
-            agent, action, task_id, chain_hash[:12],
+            agent,
+            action,
+            task_id,
+            chain_hash[:12],
         )
 
     async def _write_to_file(self, log_entry: dict[str, Any]):

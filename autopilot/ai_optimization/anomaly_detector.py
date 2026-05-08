@@ -53,7 +53,11 @@ class AnomalyDetector:
         """
         if not metrics:
             return []
-        return self.analyze_commit_batch(metrics) if metrics and isinstance(metrics[0], dict) and 'sha' in metrics[0] else []
+        return (
+            self.analyze_commit_batch(metrics)
+            if metrics and isinstance(metrics[0], dict) and "sha" in metrics[0]
+            else []
+        )
 
     def establish_baseline(self, commits: list[Any]):
         """Establish baseline metrics from historical commits.
@@ -232,7 +236,10 @@ class AnomalyDetector:
             "explanation": explanation,
             "change_type": change_type,
             "features": {
-                name: float(value) for name, value in zip(self.feature_names, features, strict=False)  # noqa: E501
+                name: float(value)
+                for name, value in zip(
+                    self.feature_names, features, strict=False
+                )  # noqa: E501
             },
         }
 

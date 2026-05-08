@@ -256,8 +256,8 @@ class LLMClient:
     def _record_cost(self, input_tokens: int, output_tokens: int) -> None:
         """Accumulate cost and append a record to the costs JSONL file."""
         price_in, price_out = self._PRICING.get(self.model, (0.01, 0.03))
-        call_cost = (
-            (input_tokens / 1000 * price_in) + (output_tokens / 1000 * price_out)
+        call_cost = (input_tokens / 1000 * price_in) + (
+            output_tokens / 1000 * price_out
         )
         self._session_input_tokens += input_tokens
         self._session_output_tokens += output_tokens
@@ -272,7 +272,10 @@ class LLMClient:
         }
         logger.info(
             "LLM cost: $%.4f (in=%d, out=%d) session_total=$%.4f",
-            call_cost, input_tokens, output_tokens, self._session_cost_usd,
+            call_cost,
+            input_tokens,
+            output_tokens,
+            self._session_cost_usd,
         )
         try:
             with open(self._costs_file, "a") as f:
@@ -293,4 +296,3 @@ class LLMClient:
     def cost_limit_exceeded(self, max_usd: float) -> bool:
         """Return True if session cost has exceeded *max_usd*."""
         return self._session_cost_usd > max_usd
-

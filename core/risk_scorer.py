@@ -47,7 +47,14 @@ _SECURITY_SENSITIVE = re.compile(
 
 # File extensions that are higher risk when modified
 _HIGH_RISK_EXTENSIONS = {
-    ".sql", ".sh", ".bash", ".ps1", ".yaml", ".yml", ".toml", ".cfg"
+    ".sql",
+    ".sh",
+    ".bash",
+    ".ps1",
+    ".yaml",
+    ".yml",
+    ".toml",
+    ".cfg",
 }
 _TEST_PATH = re.compile(r"(test_|_test\.|/tests?/)", re.IGNORECASE)
 
@@ -195,8 +202,7 @@ def score_pull_request(
 
     # --- 6. No tests modified when source changed ---
     source_files = [
-        p for p in changed_paths
-        if p.endswith(".py") and not _TEST_PATH.search(p)
+        p for p in changed_paths if p.endswith(".py") and not _TEST_PATH.search(p)
     ]
     test_files = [p for p in changed_paths if _TEST_PATH.search(p)]
     if source_files and not test_files and files_changed > 0:

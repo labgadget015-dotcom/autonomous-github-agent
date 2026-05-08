@@ -91,15 +91,24 @@ class AgentConfig:
         flags = _load_flags()
         self._raw = flags
         bool_fields = {
-            "dry_run", "require_approval", "auto_merge", "auto_close_issues",
-            "auto_delete_branches", "auto_label",
+            "dry_run",
+            "require_approval",
+            "auto_merge",
+            "auto_close_issues",
+            "auto_delete_branches",
+            "auto_label",
         }
         float_fields = {
-            "risk_score_threshold", "flaky_test_fail_rate", "llm_max_cost_usd"
+            "risk_score_threshold",
+            "flaky_test_fail_rate",
+            "llm_max_cost_usd",
         }
         int_fields = {"max_auto_fix_files"}
         str_fields = {
-            "metrics_file", "rollback_file", "audit_log_file", "llm_costs_file"
+            "metrics_file",
+            "rollback_file",
+            "audit_log_file",
+            "llm_costs_file",
         }
 
         for fname in bool_fields:

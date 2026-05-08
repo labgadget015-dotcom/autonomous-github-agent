@@ -12,8 +12,7 @@ from typing import Dict, List, Optional, Union
 
 # Configure logging
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
 
@@ -36,7 +35,7 @@ def load_json_file(file_path: Union[str, Path]) -> Optional[Dict]:
             logger.warning(f"File not found: {file_path}")
             return None
 
-        with open(path, 'r', encoding='utf-8') as file:
+        with open(path, "r", encoding="utf-8") as file:
             return json.load(file)
     except json.JSONDecodeError as error:
         logger.error(f"Invalid JSON in {file_path}: {error}")
@@ -60,7 +59,7 @@ def save_json_file(data: Dict, file_path: Union[str, Path]) -> bool:
         path = Path(file_path)
         path.parent.mkdir(parents=True, exist_ok=True)
 
-        with open(path, 'w', encoding='utf-8') as file:
+        with open(path, "w", encoding="utf-8") as file:
             json.dump(data, file, indent=2, ensure_ascii=False)
         return True
     except Exception as error:
@@ -88,7 +87,7 @@ def calculate_quality_score(
     pylint_issues: int = 0,
     flake8_issues: int = 0,
     security_high: int = 0,
-    security_medium: int = 0
+    security_medium: int = 0,
 ) -> float:
     """Calculate an overall code quality score.
 
@@ -121,17 +120,14 @@ def format_file_size(size_bytes: int) -> str:
     Returns:
         Formatted string (e.g., "1.5 MB")
     """
-    for unit in ['B', 'KB', 'MB', 'GB', 'TB']:
+    for unit in ["B", "KB", "MB", "GB", "TB"]:
         if size_bytes < 1024.0:
             return f"{size_bytes:.1f} {unit}"
         size_bytes /= 1024.0
     return f"{size_bytes:.1f} PB"
 
 
-def find_files_by_extension(
-    directory: Union[str, Path],
-    extension: str
-) -> List[Path]:
+def find_files_by_extension(directory: Union[str, Path], extension: str) -> List[Path]:
     """Find all files with a specific extension in a directory.
 
     Args:
@@ -154,9 +150,7 @@ def find_files_by_extension(
 
 
 def validate_threshold(
-    value: float,
-    threshold: float,
-    higher_is_better: bool = True
+    value: float, threshold: float, higher_is_better: bool = True
 ) -> bool:
     """Validate if a value meets a threshold requirement.
 
@@ -176,9 +170,6 @@ def validate_threshold(
 if __name__ == "__main__":
     # Example usage
     score = calculate_quality_score(
-        pylint_issues=5,
-        flake8_issues=3,
-        security_high=0,
-        security_medium=2
+        pylint_issues=5, flake8_issues=3, security_high=0, security_medium=2
     )
     print(f"Quality Score: {score:.2f}/10.0")

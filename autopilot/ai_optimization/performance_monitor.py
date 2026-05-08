@@ -338,7 +338,9 @@ class PerformanceMonitor:
             for metric, comp in summary["baseline_comparison"].items():
                 if abs(comp["improvement_percent"]) > 1:  # Show if >1% change
                     symbol = "✓" if comp["status"] == "improved" else "✗"
-                    logger.info("  %s %s: %+.1f%%", symbol, metric, comp["improvement_percent"])
+                    logger.info(
+                        "  %s %s: %+.1f%%", symbol, metric, comp["improvement_percent"]
+                    )
 
         logger.info("=" * 70)
 

@@ -254,9 +254,9 @@ class GitHubClient:
         Returns:
             Repository object
         """
-        owner, repo = full_name.split('/', 1)
+        owner, repo = full_name.split("/", 1)
         return self.get_repository(owner, repo)
-    
+
     def close_issue(self, full_name: str, issue_number: int):
         """
         Close an issue.
@@ -264,11 +264,11 @@ class GitHubClient:
             full_name: Repository full name in owner/repo format
             issue_number: Issue number
         """
-        owner, repo = full_name.split('/', 1)
+        owner, repo = full_name.split("/", 1)
         issue = self.get_issue(owner, repo, issue_number)
         issue.edit(state="closed")
         logger.info(f"Closed issue #{issue_number} in {full_name}")
-    
+
     def list_repos(self, org: str = None, user: str = None) -> list[Repository]:
         """
         List repositories for an organization or user.
@@ -289,7 +289,7 @@ class GitHubClient:
         except GithubException as e:
             logger.error(f"Error listing repos: {str(e)}")
             raise
-    
+
     def add_labels(self, full_name: str, issue_number: int, labels: list[str]):
         """
         Add labels to an issue.
@@ -302,8 +302,10 @@ class GitHubClient:
         issue = self.get_issue(owner, repo, issue_number)
         issue.add_to_labels(*labels)
         logger.info(f"Added labels {labels} to issue #{issue_number} in {full_name}")
-    
-    def merge_pull_request(self, full_name: str, pr_number: int, merge_method: str = "merge"):
+
+    def merge_pull_request(
+        self, full_name: str, pr_number: int, merge_method: str = "merge"
+    ):
         """
         Merge a pull request.
         Args:

@@ -20,6 +20,7 @@ from pathlib import Path
 @dataclass
 class CodeSuggestion:
     """Represents a code suggestion"""
+
     id: str
     category: str  # refactoring, performance, security, style, documentation
     title: str
@@ -66,10 +67,13 @@ class AICodeSuggestor:
                 print(f"   ⚠️  Error analyzing {py_file}: {e}")
 
         # Sort by confidence and impact
-        self.suggestions.sort(key=lambda s: (
-            {'high': 3, 'medium': 2, 'low': 1}.get(s.impact, 0),
-            s.confidence
-        ), reverse=True)
+        self.suggestions.sort(
+            key=lambda s: (
+                {"high": 3, "medium": 2, "low": 1}.get(s.impact, 0),
+                s.confidence,
+            ),
+            reverse=True,
+        )
 
         print(f"✅ Generated {len(self.suggestions)} suggestions")
         return self.suggestions
@@ -77,8 +81,15 @@ class AICodeSuggestor:
     def _should_skip_file(self, file_path: Path) -> bool:
         """Check if file should be skipped"""
         skip_patterns = [
-            '.git', '__pycache__', 'venv', 'env', '.pytest_cache',
-            'htmlcov', 'dist', 'build', '.eggs'
+            ".git",
+            "__pycache__",
+            "venv",
+            "env",
+            ".pytest_cache",
+            "htmlcov",
+            "dist",
+            "build",
+            ".eggs",
         ]
         return any(pattern in str(file_path) for pattern in skip_patterns)
 
@@ -86,9 +97,9 @@ class AICodeSuggestor:
         """Analyze a single file for suggestions"""
         suggestions = []
 
-        with open(file_path, 'r', encoding='utf-8') as f:
+        with open(file_path, "r", encoding="utf-8") as f:
             content = f.read()
-            lines = content.split('\n')
+            lines = content.split("\n")
 
         # Check for common patterns
         suggestions.extend(self._check_import_organization(file_path, lines))
@@ -99,7 +110,9 @@ class AICodeSuggestor:
 
         return suggestions
 
-    def _check_import_organization(self, file_path: Path, lines: list[str]) -> list[CodeSuggestion]:
+    def _check_import_organization(
+        self, file_path: Path, lines: list[str]
+    ) -> list[CodeSuggestion]:
         """Check if imports are properly organized"""
         suggestions = []
 
@@ -107,7 +120,7 @@ class AICodeSuggestor:
         import_lines = []
         for i, line in enumerate(lines):
             stripped = line.strip()
-            if stripped.startswith(('import ', 'from ')):
+            if stripped.startswith(("import ", "from ")):
                 import_lines.append((i, line))
 
         if not import_lines:
@@ -120,9 +133,12 @@ class AICodeSuggestor:
 
         for i, line in import_lines:
             stripped = line.strip()
-            if stripped.startswith('from .') or stripped.startswith('import .'):
+            if stripped.startswith("from .") or stripped.startswith("import ."):
                 local_imports.append((i, line))
-            elif any(lib in stripped for lib in ['os', 'sys', 'json', 'time', 'datetime', 're', 'pathlib']):
+            elif any(
+                lib in stripped
+                for lib in ["os", "sys", "json", "time", "datetime", "re", "pathlib"]
+            ):
                 stdlib_imports.append((i, line))
             else:
                 third_party_imports.append((i, line))
@@ -148,13 +164,15 @@ class AICodeSuggestor:
                     confidence=0.9,
                     impact="low",
                     effort="low",
-                    auto_fixable=True
+                    auto_fixable=True,
                 )
                 suggestions.append(suggestion)
 
         return suggestions
 
-    def _check_function_complexity(self, file_path: Path, lines: list[str]) -> list[CodeSuggestion]:
+    def _check_function_complexity(
+        self, file_path: Path, lines: list[str]
+    ) -> list[CodeSuggestion]:
         """Check for overly complex functions"""
         suggestions = []
 
@@ -167,13 +185,13 @@ class AICodeSuggestor:
             stripped = line.strip()
 
             # Detect function definition
-            if stripped.startswith('def '):
+            if stripped.startswith("def "):
                 in_function = True
                 function_start = i
-                function_name = stripped.split('(')[0].replace('def ', '').strip()
+                function_name = stripped.split("(")[0].replace("def ", "").strip()
                 indent_count = len(line) - len(line.lstrip())
 
-            elif in_function and stripped and not stripped.startswith('#'):
+            elif in_function and stripped and not stripped.startswith("#"):
                 current_indent = len(line) - len(line.lstrip())
 
                 # Function ended
@@ -196,7 +214,7 @@ class AICodeSuggestor:
                             confidence=0.85,
                             impact="medium",
                             effort="medium",
-                            auto_fixable=False
+                            auto_fixable=False,
                         )
                         suggestions.append(suggestion)
 
@@ -212,7 +230,7 @@ class AICodeSuggestor:
 
         for line in lines:
             stripped = line.strip()
-            if not stripped or stripped.startswith('#'):
+            if not stripped or stripped.startswith("#"):
                 continue
 
             indent = len(line) - len(line.lstrip())
@@ -226,7 +244,9 @@ class AICodeSuggestor:
 
         return max_nesting
 
-    def _check_docstring_presence(self, file_path: Path, lines: list[str]) -> list[CodeSuggestion]:
+    def _check_docstring_presence(
+        self, file_path: Path, lines: list[str]
+    ) -> list[CodeSuggestion]:
         """Check if functions and classes have docstrings"""
         suggestions = []
 
@@ -234,7 +254,7 @@ class AICodeSuggestor:
             stripped = line.strip()
 
             # Check for function or class without docstring
-            if stripped.startswith(('def ', 'class ')):
+            if stripped.startswith(("def ", "class ")):
                 # Look for docstring in next few lines
                 has_docstring = False
                 for j in range(i + 1, min(i + 5, len(lines))):
@@ -242,11 +262,16 @@ class AICodeSuggestor:
                     if next_line.startswith(('"""', "'''")):
                         has_docstring = True
                         break
-                    elif next_line and not next_line.startswith('#'):
+                    elif next_line and not next_line.startswith("#"):
                         break
 
-                if not has_docstring and not stripped.startswith('def __'):
-                    name = stripped.split('(')[0].replace('def ', '').replace('class ', '').strip()
+                if not has_docstring and not stripped.startswith("def __"):
+                    name = (
+                        stripped.split("(")[0]
+                        .replace("def ", "")
+                        .replace("class ", "")
+                        .strip()
+                    )
                     suggestion = CodeSuggestion(
                         id=f"docstring_{file_path.name}_{i}",
                         category="documentation",
@@ -260,20 +285,22 @@ class AICodeSuggestor:
                         confidence=0.95,
                         impact="low",
                         effort="low",
-                        auto_fixable=False
+                        auto_fixable=False,
                     )
                     suggestions.append(suggestion)
 
         return suggestions
 
-    def _check_error_handling(self, file_path: Path, lines: list[str]) -> list[CodeSuggestion]:
+    def _check_error_handling(
+        self, file_path: Path, lines: list[str]
+    ) -> list[CodeSuggestion]:
         """Check for bare except clauses"""
         suggestions = []
 
         for i, line in enumerate(lines):
             stripped = line.strip()
 
-            if stripped == 'except:' or stripped.startswith('except:'):
+            if stripped == "except:" or stripped.startswith("except:"):
                 suggestion = CodeSuggestion(
                     id=f"except_{file_path.name}_{i}",
                     category="security",
@@ -282,24 +309,28 @@ class AICodeSuggestor:
                     file_path=str(file_path),
                     line_number=i + 1,
                     current_code=line,
-                    suggested_code=line.replace('except:', 'except Exception:'),
+                    suggested_code=line.replace("except:", "except Exception:"),
                     reasoning="Bare except can hide critical errors and make debugging difficult",
                     confidence=0.98,
                     impact="medium",
                     effort="low",
-                    auto_fixable=True
+                    auto_fixable=True,
                 )
                 suggestions.append(suggestion)
 
         return suggestions
 
-    def _check_performance_patterns(self, file_path: Path, lines: list[str]) -> list[CodeSuggestion]:
+    def _check_performance_patterns(
+        self, file_path: Path, lines: list[str]
+    ) -> list[CodeSuggestion]:
         """Check for performance anti-patterns"""
         suggestions = []
 
         for i, line in enumerate(lines):
             # Check for string concatenation in loops
-            if '+=' in line and any(loop in lines[max(0, i-10):i] for loop in ['for ', 'while ']):
+            if "+=" in line and any(
+                loop in lines[max(0, i - 10) : i] for loop in ["for ", "while "]
+            ):
                 if "str" in line or "'" in line or '"' in line:
                     suggestion = CodeSuggestion(
                         id=f"perf_{file_path.name}_{i}",
@@ -314,7 +345,7 @@ class AICodeSuggestor:
                         confidence=0.7,
                         impact="low",
                         effort="low",
-                        auto_fixable=False
+                        auto_fixable=False,
                     )
                     suggestions.append(suggestion)
 
@@ -339,13 +370,15 @@ class AICodeSuggestor:
         report.append("## 📊 Summary by Category\n")
         for category, suggestions in sorted(by_category.items()):
             emoji = {
-                'refactoring': '🔨',
-                'performance': '⚡',
-                'security': '🔒',
-                'style': '🎨',
-                'documentation': '📚'
-            }.get(category, '•')
-            report.append(f"{emoji} **{category.title()}**: {len(suggestions)} suggestions")
+                "refactoring": "🔨",
+                "performance": "⚡",
+                "security": "🔒",
+                "style": "🎨",
+                "documentation": "📚",
+            }.get(category, "•")
+            report.append(
+                f"{emoji} **{category.title()}**: {len(suggestions)} suggestions"
+            )
 
         report.append("\n---\n")
 
@@ -353,24 +386,32 @@ class AICodeSuggestor:
         for category in sorted(by_category.keys()):
             suggestions = by_category[category]
             emoji = {
-                'refactoring': '🔨',
-                'performance': '⚡',
-                'security': '🔒',
-                'style': '🎨',
-                'documentation': '📚'
-            }.get(category, '•')
+                "refactoring": "🔨",
+                "performance": "⚡",
+                "security": "🔒",
+                "style": "🎨",
+                "documentation": "📚",
+            }.get(category, "•")
 
             report.append(f"\n## {emoji} {category.title()} Suggestions\n")
 
             for suggestion in suggestions[:10]:  # Limit to top 10 per category
-                impact_emoji = {'high': '🔴', 'medium': '🟡', 'low': '🟢'}.get(suggestion.impact, '⚪')
+                impact_emoji = {"high": "🔴", "medium": "🟡", "low": "🟢"}.get(
+                    suggestion.impact, "⚪"
+                )
 
                 report.append(f"### {suggestion.title}")
-                report.append(f"- **File:** `{suggestion.file_path}` (Line {suggestion.line_number})")
-                report.append(f"- **Impact:** {impact_emoji} {suggestion.impact.title()}")
+                report.append(
+                    f"- **File:** `{suggestion.file_path}` (Line {suggestion.line_number})"
+                )
+                report.append(
+                    f"- **Impact:** {impact_emoji} {suggestion.impact.title()}"
+                )
                 report.append(f"- **Effort:** {suggestion.effort.title()}")
                 report.append(f"- **Confidence:** {suggestion.confidence * 100:.0f}%")
-                report.append(f"- **Auto-fixable:** {'✅ Yes' if suggestion.auto_fixable else '❌ No'}")
+                report.append(
+                    f"- **Auto-fixable:** {'✅ Yes' if suggestion.auto_fixable else '❌ No'}"
+                )
                 report.append(f"\n**Description:** {suggestion.description}")
                 report.append(f"\n**Reasoning:** {suggestion.reasoning}")
 
@@ -383,8 +424,8 @@ class AICodeSuggestor:
                 report.append("\n---\n")
 
         # Save report
-        with open(output_path, 'w') as f:
-            f.write('\n'.join(report))
+        with open(output_path, "w") as f:
+            f.write("\n".join(report))
 
         print(f"✅ Report saved to {output_path}")
 
@@ -395,11 +436,11 @@ class AICodeSuggestor:
     def export_json(self, output_path: str = "code_suggestions.json") -> None:
         """Export suggestions as JSON"""
         data = {
-            'total_suggestions': len(self.suggestions),
-            'suggestions': [asdict(s) for s in self.suggestions]
+            "total_suggestions": len(self.suggestions),
+            "suggestions": [asdict(s) for s in self.suggestions],
         }
 
-        with open(output_path, 'w') as f:
+        with open(output_path, "w") as f:
             json.dump(data, f, indent=2)
 
         print(f"✅ JSON export saved to {output_path}")
@@ -409,12 +450,10 @@ def main():
     """CLI entry point"""
     import argparse
 
-    parser = argparse.ArgumentParser(
-        description='AI-Powered Code Suggestions'
-    )
-    parser.add_argument('--repo-path', default='.', help='Path to repository')
-    parser.add_argument('--output', default='CODE_SUGGESTIONS.md', help='Output file')
-    parser.add_argument('--json', help='Also export as JSON')
+    parser = argparse.ArgumentParser(description="AI-Powered Code Suggestions")
+    parser.add_argument("--repo-path", default=".", help="Path to repository")
+    parser.add_argument("--output", default="CODE_SUGGESTIONS.md", help="Output file")
+    parser.add_argument("--json", help="Also export as JSON")
 
     args = parser.parse_args()
 
@@ -453,9 +492,10 @@ def main():
     except Exception as e:
         print(f"\n❌ Error: {e}")
         import traceback
+
         traceback.print_exc()
         sys.exit(1)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

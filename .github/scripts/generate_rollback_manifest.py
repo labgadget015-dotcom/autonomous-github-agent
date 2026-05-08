@@ -5,6 +5,7 @@ Called by security_scan.yml after each push to main.
 Reads git metadata from environment variables set by the workflow:
   SHA, SHORT_SHA, MSG, AUTHOR, FILES_CHANGED (space-separated list)
 """
+
 import os
 import subprocess
 from datetime import datetime, timezone
@@ -52,7 +53,9 @@ def main():
     # Prepend the new entry after the header
     header_end = existing.find("\n\n", existing.find("#"))
     if header_end != -1:
-        new_content = existing[: header_end + 2] + new_entry + existing[header_end + 2 :]
+        new_content = (
+            existing[: header_end + 2] + new_entry + existing[header_end + 2 :]
+        )
     else:
         new_content = existing + new_entry
 

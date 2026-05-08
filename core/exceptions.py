@@ -9,7 +9,6 @@ over error handling and avoids masking unexpected failures with broad
 
 from __future__ import annotations
 
-
 # ---------------------------------------------------------------------------
 # Base
 # ---------------------------------------------------------------------------

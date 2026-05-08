@@ -55,7 +55,10 @@ class AccessPredictor:
         )
 
         # Key characteristics
-        key_hash = int(hashlib.sha256(key.encode(), usedforsecurity=False).hexdigest()[:8], 16) % 100
+        key_hash = (
+            int(hashlib.sha256(key.encode(), usedforsecurity=False).hexdigest()[:8], 16)
+            % 100
+        )
 
         features = np.array(
             [
@@ -248,9 +251,7 @@ class IntelligentCache:
         # The ML predictor is re-trained at runtime and is not saved.
         try:
             # Store each entry as a two-element list [value, timestamp]
-            serializable_cache = {
-                k: [v, ts] for k, (v, ts) in self.cache.items()
-            }
+            serializable_cache = {k: [v, ts] for k, (v, ts) in self.cache.items()}
             payload = {"cache": serializable_cache, "stats": self.stats}
             with open(filepath, "w", encoding="utf-8") as f:
                 json.dump(payload, f)
@@ -307,5 +308,7 @@ if __name__ == "__main__":
 
         if i % 20 == 0:
             stats = cache.get_stats()
-            _demo_logger.info("Iteration %d: Hit rate = %.2f%%", i, stats["hit_rate"] * 100)
+            _demo_logger.info(
+                "Iteration %d: Hit rate = %.2f%%", i, stats["hit_rate"] * 100
+            )
             _demo_logger.info("Stats: %s", stats)

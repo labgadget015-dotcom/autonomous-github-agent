@@ -6,6 +6,7 @@ import json
 import sys
 from pathlib import Path
 
+
 def load_context(context_file):
     """Load context from JSON file."""
     try:
@@ -14,6 +15,7 @@ def load_context(context_file):
     except Exception as e:
         print(f"Error loading context: {e}")
         return {}
+
 
 def run_ai_agent(context):
     """Execute AI agent operations."""
@@ -25,11 +27,7 @@ def run_ai_agent(context):
 
     # Placeholder for AI agent logic
     # This would integrate with your LLM/AI service
-    results = {
-        "status": "success",
-        "agent_actions": [],
-        "recommendations": []
-    }
+    results = {"status": "success", "agent_actions": [], "recommendations": []}
 
     # Save results
     results_file = Path("results.json")
@@ -38,6 +36,7 @@ def run_ai_agent(context):
 
     print(f"Results saved to {results_file}")
     return results
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run AI agent")

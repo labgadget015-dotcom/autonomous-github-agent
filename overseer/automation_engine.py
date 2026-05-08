@@ -18,58 +18,56 @@ class AutomationEngine:
     """
     Intelligent automation script generator for common development tasks.
     """
-    
+
     def __init__(self, repo_path: Path, config: Dict):
         self.repo_path = repo_path
         self.config = config
-        self.scripts_dir = repo_path / 'scripts' / 'automation'
-    
+        self.scripts_dir = repo_path / "scripts" / "automation"
+
     def generate(self) -> Dict[str, Any]:
         """
         Generate automation scripts.
-        
+
         Returns:
             Dictionary containing generated script information
         """
         logger.info("Generating automation scripts...")
-        
-        results = {
-            'formatting': [],
-            'release': [],
-            'setup': []
-        }
-        
+
+        results = {"formatting": [], "release": [], "setup": []}
+
         # Ensure scripts directory exists
         self.scripts_dir.mkdir(parents=True, exist_ok=True)
-        
+
         # Generate formatting scripts
-        if self.config.get('automation', {}).get('code_formatting'):
+        if self.config.get("automation", {}).get("code_formatting"):
             formatting_scripts = self._generate_formatting_scripts()
-            results['formatting'] = formatting_scripts
-        
+            results["formatting"] = formatting_scripts
+
         # Generate release scripts
-        if self.config.get('automation', {}).get('release_tagging'):
+        if self.config.get("automation", {}).get("release_tagging"):
             release_scripts = self._generate_release_scripts()
-            results['release'] = release_scripts
-        
+            results["release"] = release_scripts
+
         # Generate setup scripts
-        if self.config.get('automation', {}).get('environment_setup'):
+        if self.config.get("automation", {}).get("environment_setup"):
             setup_scripts = self._generate_setup_scripts()
-            results['setup'] = setup_scripts
-        
-        logger.info(f"Generated {len(results['formatting']) + len(results['release']) + len(results['setup'])} automation scripts")
-        
+            results["setup"] = setup_scripts
+
+        logger.info(
+            f"Generated {len(results['formatting']) + len(results['release']) + len(results['setup'])} automation scripts"
+        )
+
         return results
-    
+
     def _generate_formatting_scripts(self) -> List[str]:
         """Generate code formatting automation scripts"""
         scripts = []
-        
+
         # Check if Python project
-        if list(self.repo_path.glob('**/*.py')):
+        if list(self.repo_path.glob("**/*.py")):
             # Generate Python formatting script
-            script_path = self.scripts_dir / 'format_python.sh'
-            
+            script_path = self.scripts_dir / "format_python.sh"
+
             content = """#!/bin/bash
 # Auto-generated Python code formatting script
 
@@ -103,19 +101,19 @@ fi
 
 echo "All formatting checks complete!"
 """
-            
-            with open(script_path, 'w') as f:
+
+            with open(script_path, "w") as f:
                 f.write(content)
-            
+
             # Make executable
             os.chmod(script_path, 0o755)
-            
+
             scripts.append(str(script_path.relative_to(self.repo_path)))
-        
+
         # Check if JavaScript project
-        if list(self.repo_path.glob('**/*.js')) or list(self.repo_path.glob('**/*.ts')):
-            script_path = self.scripts_dir / 'format_javascript.sh'
-            
+        if list(self.repo_path.glob("**/*.js")) or list(self.repo_path.glob("**/*.ts")):
+            script_path = self.scripts_dir / "format_javascript.sh"
+
             content = """#!/bin/bash
 # Auto-generated JavaScript code formatting script
 
@@ -141,21 +139,21 @@ fi
 
 echo "All formatting checks complete!"
 """
-            
-            with open(script_path, 'w') as f:
+
+            with open(script_path, "w") as f:
                 f.write(content)
-            
+
             os.chmod(script_path, 0o755)
             scripts.append(str(script_path.relative_to(self.repo_path)))
-        
+
         return scripts
-    
+
     def _generate_release_scripts(self) -> List[str]:
         """Generate release automation scripts"""
         scripts = []
-        
-        script_path = self.scripts_dir / 'create_release.sh'
-        
+
+        script_path = self.scripts_dir / "create_release.sh"
+
         content = r"""#!/bin/bash
 # Auto-generated release creation script
 
@@ -193,23 +191,23 @@ git push origin "v$VERSION"
 echo "✓ Release v$VERSION created successfully!"
 echo "GitHub will automatically create a release from the tag."
 """
-        
-        with open(script_path, 'w') as f:
+
+        with open(script_path, "w") as f:
             f.write(content)
-        
+
         os.chmod(script_path, 0o755)
         scripts.append(str(script_path.relative_to(self.repo_path)))
-        
+
         return scripts
-    
+
     def _generate_setup_scripts(self) -> List[str]:
         """Generate environment setup scripts"""
         scripts = []
-        
+
         # Check if Python project
-        if (self.repo_path / 'requirements.txt').exists():
-            script_path = self.scripts_dir / 'setup_python.sh'
-            
+        if (self.repo_path / "requirements.txt").exists():
+            script_path = self.scripts_dir / "setup_python.sh"
+
             content = """#!/bin/bash
 # Auto-generated Python environment setup script
 
@@ -263,17 +261,17 @@ echo ""
 echo "Setup complete! To activate the environment, run:"
 echo "  source venv/bin/activate"
 """
-            
-            with open(script_path, 'w') as f:
+
+            with open(script_path, "w") as f:
                 f.write(content)
-            
+
             os.chmod(script_path, 0o755)
             scripts.append(str(script_path.relative_to(self.repo_path)))
-        
+
         # Check if Node.js project
-        if (self.repo_path / 'package.json').exists():
-            script_path = self.scripts_dir / 'setup_nodejs.sh'
-            
+        if (self.repo_path / "package.json").exists():
+            script_path = self.scripts_dir / "setup_nodejs.sh"
+
             content = """#!/bin/bash
 # Auto-generated Node.js environment setup script
 
@@ -304,11 +302,11 @@ fi
 echo ""
 echo "Setup complete!"
 """
-            
-            with open(script_path, 'w') as f:
+
+            with open(script_path, "w") as f:
                 f.write(content)
-            
+
             os.chmod(script_path, 0o755)
             scripts.append(str(script_path.relative_to(self.repo_path)))
-        
+
         return scripts

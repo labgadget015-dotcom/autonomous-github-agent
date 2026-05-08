@@ -12,10 +12,10 @@ from typing import Dict, List
 
 # Script templates
 SCRIPTS = {
-    'format_python': {
-        'name': 'format-python.sh',
-        'description': 'Format Python code with black and isort',
-        'content': '''#!/bin/bash
+    "format_python": {
+        "name": "format-python.sh",
+        "description": "Format Python code with black and isort",
+        "content": """#!/bin/bash
 # Auto-generated Python code formatter
 set -e
 
@@ -42,12 +42,12 @@ echo "Running isort..."
 isort . --profile black --skip-gitignore
 
 echo "✅ Python code formatting complete!"
-'''
+""",
     },
-    'format_javascript': {
-        'name': 'format-javascript.sh',
-        'description': 'Format JavaScript/TypeScript code with prettier',
-        'content': '''#!/bin/bash
+    "format_javascript": {
+        "name": "format-javascript.sh",
+        "description": "Format JavaScript/TypeScript code with prettier",
+        "content": """#!/bin/bash
 # Auto-generated JavaScript code formatter
 set -e
 
@@ -65,12 +65,12 @@ prettier --write "**/*.{js,jsx,ts,tsx,json,css,scss,md}" \\
     --ignore-path .gitignore
 
 echo "✅ JavaScript code formatting complete!"
-'''
+""",
     },
-    'release_tag': {
-        'name': 'create-release.sh',
-        'description': 'Create a new release with automatic versioning',
-        'content': '''#!/bin/bash
+    "release_tag": {
+        "name": "create-release.sh",
+        "description": "Create a new release with automatic versioning",
+        "content": """#!/bin/bash
 # Auto-generated release tagger
 set -e
 
@@ -147,12 +147,12 @@ git push origin "$NEW_VERSION"
 echo ""
 echo -e "${GREEN}✅ Release $NEW_VERSION created successfully!${NC}"
 echo "View release: https://github.com/$(git remote get-url origin | sed 's/.*github.com[:/]\\(.*\\)\\.git/\\1/')/releases/tag/$NEW_VERSION"
-'''
+""",
     },
-    'setup_dev_env': {
-        'name': 'setup-dev-env.sh',
-        'description': 'Setup development environment',
-        'content': '''#!/bin/bash
+    "setup_dev_env": {
+        "name": "setup-dev-env.sh",
+        "description": "Setup development environment",
+        "content": """#!/bin/bash
 # Auto-generated development environment setup
 set -e
 
@@ -221,12 +221,12 @@ echo ""
 echo "To activate the environment:"
 echo "  source .venv/bin/activate  # Linux/macOS"
 echo "  .venv\\Scripts\\activate     # Windows"
-'''
+""",
     },
-    'run_tests': {
-        'name': 'run-tests.sh',
-        'description': 'Run all tests with coverage',
-        'content': '''#!/bin/bash
+    "run_tests": {
+        "name": "run-tests.sh",
+        "description": "Run all tests with coverage",
+        "content": """#!/bin/bash
 # Auto-generated test runner
 set -e
 
@@ -263,12 +263,12 @@ fi
 
 echo ""
 echo "Coverage report: htmlcov/index.html"
-'''
+""",
     },
-    'lint_code': {
-        'name': 'lint-code.sh',
-        'description': 'Run linters on codebase',
-        'content': '''#!/bin/bash
+    "lint_code": {
+        "name": "lint-code.sh",
+        "description": "Run linters on codebase",
+        "content": """#!/bin/bash
 # Auto-generated code linter
 set -e
 
@@ -322,63 +322,63 @@ else
 fi
 
 exit $EXIT_CODE
-'''
-    }
+""",
+    },
 }
 
 
 def generate_scripts(output_dir: Path = None) -> List[Path]:
     """
     Generate all automation scripts.
-    
+
     Args:
         output_dir: Directory to save scripts (default: scripts/automation)
-    
+
     Returns:
         List of generated script paths
     """
     if output_dir is None:
-        output_dir = Path('scripts') / 'automation'
-    
+        output_dir = Path("scripts") / "automation"
+
     output_dir.mkdir(parents=True, exist_ok=True)
     generated = []
-    
+
     print(f"📁 Generating automation scripts in {output_dir}...")
     print()
-    
+
     for script_id, script_data in SCRIPTS.items():
-        script_path = output_dir / script_data['name']
-        
+        script_path = output_dir / script_data["name"]
+
         # Write script
-        with open(script_path, 'w') as f:
-            f.write(script_data['content'])
-        
+        with open(script_path, "w") as f:
+            f.write(script_data["content"])
+
         # Make executable
         script_path.chmod(0o755)
-        
+
         generated.append(script_path)
         print(f"✅ Generated: {script_data['name']}")
         print(f"   Description: {script_data['description']}")
-    
+
     print()
     print(f"🎉 Generated {len(generated)} automation scripts!")
-    
+
     # Create README
-    readme_path = output_dir / 'README.md'
-    with open(readme_path, 'w') as f:
+    readme_path = output_dir / "README.md"
+    with open(readme_path, "w") as f:
         f.write("# Automation Scripts\n\n")
         f.write("Auto-generated scripts for common repository tasks.\n\n")
         f.write("## Available Scripts\n\n")
-        
+
         for script_id, script_data in SCRIPTS.items():
             f.write(f"### {script_data['name']}\n\n")
             f.write(f"{script_data['description']}\n\n")
             f.write(f"```bash\n")
             f.write(f"./{script_data['name']}\n")
             f.write(f"```\n\n")
-    
+
     print(f"📝 Generated: {readme_path}")
-    
+
     return generated
 
 
@@ -386,14 +386,14 @@ def main():
     """Main entry point"""
     output_dir = Path(sys.argv[1]) if len(sys.argv) > 1 else None
     generated = generate_scripts(output_dir)
-    
+
     print()
     print("💡 Usage:")
     print("  Make scripts executable: chmod +x scripts/automation/*.sh")
     print("  Run a script: ./scripts/automation/format-python.sh")
-    
+
     return 0
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sys.exit(main())
