@@ -387,3 +387,6 @@ class TestLowOperationalRiskChange:
         assert not is_low_operational_risk_change([])
         assert not is_low_operational_risk_change(None)
         assert not is_low_operational_risk_change([""])
+
+    def test_ignores_none_items_and_uses_valid_paths(self):
+        assert is_low_operational_risk_change([None, "tests/unit/test_policy_engine.py"])  # type: ignore[list-item]

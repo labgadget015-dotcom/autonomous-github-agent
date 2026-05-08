@@ -64,7 +64,12 @@ def is_low_operational_risk_change(changed_paths: list[str] | None) -> bool:
     if not changed_paths:
         return False
 
+    valid_paths = 0
     for path in changed_paths:
+        if not isinstance(path, str) or not path.strip():
+            continue
+
+        valid_paths += 1
         normalized = path.lower()
         filename = normalized.rsplit("/", 1)[-1]
         if (
@@ -78,7 +83,7 @@ def is_low_operational_risk_change(changed_paths: list[str] | None) -> bool:
             continue
         return False
 
-    return True
+    return valid_paths > 0
 
 
 @dataclass
