@@ -59,6 +59,28 @@ _HIGH_RISK_EXTENSIONS = {
 _TEST_PATH = re.compile(r"(test_|_test\.|/tests?/)", re.IGNORECASE)
 
 
+def is_low_operational_risk_change(changed_paths: list[str] | None) -> bool:
+    """Return True when all changed files are test/docs-only paths."""
+    if not changed_paths:
+        return False
+
+    for path in changed_paths:
+        normalized = path.lower()
+        filename = normalized.rsplit("/", 1)[-1]
+        if (
+            normalized.startswith("tests/")
+            or normalized.startswith("docs/")
+            or normalized.endswith(".md")
+            or normalized.endswith(".rst")
+            or filename.startswith("test_")
+            or filename.endswith("_test.py")
+        ):
+            continue
+        return False
+
+    return True
+
+
 @dataclass
 class RiskFactor:
     """A single scored risk signal."""

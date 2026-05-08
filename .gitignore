@@ -219,3 +219,4 @@ coverage.json
 
 # Runtime cost tracking
 .llm_costs.jsonl
+logs/audit.jsonl

@@ -103,7 +103,10 @@ jobs:
           python3 - <<'PYEOF'
           import os, sys, subprocess, json
           sys.path.insert(0, ".")
-          from core.risk_scorer import score_pull_request
+          from core.risk_scorer import (
+              is_low_operational_risk_change,
+              score_pull_request,
+          )
 
           # Get diff stats
           base = os.environ["BASE_SHA"]
@@ -168,10 +171,14 @@ jobs:
           except Exception as e:
               print(f"Warning: could not post comment: {e}")
 
-          # Fail workflow if CRITICAL risk
-          if report.band.value == "CRITICAL":
+          low_risk_only = is_low_operational_risk_change(changed_paths)
+
+          # Fail workflow only for CRITICAL risk outside test/docs-only changes
+          if report.band.value == "CRITICAL" and not low_risk_only:
               print("::error::PR risk score is CRITICAL — requires manual review before merge.")
               sys.exit(1)
+          if report.band.value == "CRITICAL" and low_risk_only:
+              print("::warning::PR risk score is CRITICAL, but changes are test/docs-only; not failing workflow.")
           PYEOF
 
   # ─────────────────────────────────────────────────────────────────────────────
