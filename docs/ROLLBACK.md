@@ -1,5 +1,17 @@
 # Rollback Manifest
 
+## a21528c — 2026-05-08 09:33 UTC
+
+- **SHA**: `a21528cda6910b9b55150de270109808706e7eb4`
+- **Author**: GadgetAI
+- **Message**: fix: exclude .vscode/settings.json from check-json (uses JSONC)
+- **Files changed**: 1 file(s)
+
+**Changed files:**
+- `.pre-commit-config.yaml`
+
+---
+
 ## 95aa060 — 2026-05-08 09:30 UTC
 
 - **SHA**: `95aa0609eaed70d405e43853e5d501cfc7e46dc4`
