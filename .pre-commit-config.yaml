@@ -58,6 +58,7 @@ repos:
         args: [--fix=lf]
       - id: no-commit-to-branch
         args: [--branch, main, --branch, master]
+        stages: [pre-push]
 
   # YAML linting
   - repo: https://github.com/adrienverge/yamllint
