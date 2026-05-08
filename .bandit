@@ -1,81 +1,92 @@
 # Bandit Security Configuration
-# Used by pre-commit and CI/CD workflows
 
-# Tests to skip
+Used by pre-commit and CI/CD workflows
+
+## Tests to skip
+
 skips:
-  - B101  # Assert used (OK in tests)
-  - B601  # Parameterized shell calls (handled with validation)
 
-# Tests to run
+- B101  # Assert used (OK in tests)
+- B601  # Parameterized shell calls (handled with validation)
+
+## Tests to run
+
 tests:
-  - B201  # Flask debug mode
-  - B301  # Pickle usage
-  - B302  # marshal usage
-  - B303  # MD5 usage
-  - B304  # Insecure cipher usage
-  - B305  # Insecure cipher mode
-  - B306  # tempfile.mktemp usage
-  - B307  # eval usage
-  - B308  # mark_safe usage
-  - B309  # HTTPSConnection usage
-  - B310  # urllib usage
-  - B311  # random usage
-  - B312  # Telnet usage
-  - B313  # XML usage
-  - B314  # XML usage
-  - B315  # XML usage
-  - B316  # XML usage
-  - B317  # XML usage
-  - B318  # XML usage
-  - B319  # XML usage
-  - B320  # XML usage
-  - B321  # FTP usage
-  - B322  # Input usage
-  - B323  # unverified SSL context
-  - B324  # hashlib usage
-  - B401  # import telnetlib
-  - B402  # import ftplib
-  - B403  # import pickle
-  - B404  # import subprocess
-  - B405  # import xml
-  - B406  # import xml
-  - B407  # import xml
-  - B408  # import xml
-  - B409  # import xml
-  - B410  # import lxml
-  - B411  # import xmlrpclib
-  - B412  # import httpoxy
-  - B413  # import pyCrypto
-  - B501  # request without certificate validation
-  - B502  # SSL with bad version
-  - B503  # SSL with bad defaults
-  - B504  # SSL with no version specified
-  - B505  # Weak cryptographic key
-  - B506  # yaml load
-  - B507  # SSH no host key verification
-  - B601  # Parameterized shell
-  - B602  # shell=True
-  - B603  # subprocess without shell
-  - B604  # shell=True in call
-  - B605  # shell=True in Popen
-  - B606  # No shell usage
-  - B607  # Partial path for shell
-  - B608  # SQL injection
-  - B609  # wildcard injection
 
-# Exclude directories
+- B201  # Flask debug mode
+- B301  # Pickle usage
+- B302  # marshal usage
+- B303  # MD5 usage
+- B304  # Insecure cipher usage
+- B305  # Insecure cipher mode
+- B306  # tempfile.mktemp usage
+- B307  # eval usage
+- B308  # mark_safe usage
+- B309  # HTTPSConnection usage
+- B310  # urllib usage
+- B311  # random usage
+- B312  # Telnet usage
+- B313  # XML usage
+- B314  # XML usage
+- B315  # XML usage
+- B316  # XML usage
+- B317  # XML usage
+- B318  # XML usage
+- B319  # XML usage
+- B320  # XML usage
+- B321  # FTP usage
+- B322  # Input usage
+- B323  # unverified SSL context
+- B324  # hashlib usage
+- B401  # import telnetlib
+- B402  # import ftplib
+- B403  # import pickle
+- B404  # import subprocess
+- B405  # import xml
+- B406  # import xml
+- B407  # import xml
+- B408  # import xml
+- B409  # import xml
+- B410  # import lxml
+- B411  # import xmlrpclib
+- B412  # import httpoxy
+- B413  # import pyCrypto
+- B501  # request without certificate validation
+- B502  # SSL with bad version
+- B503  # SSL with bad defaults
+- B504  # SSL with no version specified
+- B505  # Weak cryptographic key
+- B506  # yaml load
+- B507  # SSH no host key verification
+- B601  # Parameterized shell
+- B602  # shell=True
+- B603  # subprocess without shell
+- B604  # shell=True in call
+- B605  # shell=True in Popen
+- B606  # No shell usage
+- B607  # Partial path for shell
+- B608  # SQL injection
+- B609  # wildcard injection
+
+## Exclude directories
+
 exclude_dirs:
-  - /tests/
-  - /venv/
-  - /.venv/
-  - /node_modules/
-  - /build/
-  - /dist/
 
-# Severity threshold
-# Options: all, low, medium, high
+- /tests/
+- /venv/
+- /.venv/
+- /node_modules/
+- /build/
+- /dist/
+
+## Severity threshold
+
+Options: all, low, medium, high
+
 severity: medium
 
-# Confidence threshold
-# Options: all, low, medium, high
+## Confidence threshold
+
+Options: all, low, medium, high
+
 confidence: medium
