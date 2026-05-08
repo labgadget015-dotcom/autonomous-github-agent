@@ -1,5 +1,25 @@
 # Rollback Manifest
 
+## e8ee387 — 2026-05-08 08:58 UTC
+
+- **SHA**: `e8ee3875bc278652317e062a28ae95cec3c99c6a`
+- **Author**: GadgetAI
+- **Message**: fix: resolve mypy type errors in overseer/ core/ autopilot/
+- **Files changed**: 9 file(s)
+
+**Changed files:**
+- `autopilot/ai_optimization/anomaly_detector.py`
+- `core/policy_engine.py`
+- `overseer/automation_engine.py`
+- `overseer/cicd_optimizer.py`
+- `overseer/code_analyzer.py`
+- `overseer/dependency_manager.py`
+- `overseer/doc_generator.py`
+- `overseer/issue_triager.py`
+- `overseer/monitor.py`
+
+---
+
 ## 7c42be3 — 2026-05-08 08:53 UTC
 
 - **SHA**: `7c42be37592faafb4b63ad47dd1cbfad0cf6087b`
