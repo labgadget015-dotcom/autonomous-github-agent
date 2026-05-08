@@ -1,5 +1,20 @@
 # Rollback Manifest
 
+## 0bbe948 — 2026-05-08 08:43 UTC
+
+- **SHA**: `0bbe9489ae2d6cbe9ce347198d4b6a5296807cbf`
+- **Author**: GadgetAI
+- **Message**: fix: resolve mypy errors in overseer and scripts
+- **Files changed**: 4 file(s)
+
+**Changed files:**
+- `.github/scripts/llm_router.py`
+- `.pre-commit-config.yaml`
+- `overseer/monitor.py`
+- `pyproject.toml`
+
+---
+
 ## ab800b3 — 2026-05-08 08:37 UTC
 
 - **SHA**: `ab800b3ed9a2636fb331914b29b63f489e2506bf`
