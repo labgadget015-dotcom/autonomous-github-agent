@@ -1,5 +1,17 @@
 # Rollback Manifest
 
+## 78157c2 — 2026-05-08 09:36 UTC
+
+- **SHA**: `78157c2379e3bc4812ec1b6ae666fc4c169eeeed`
+- **Author**: GadgetAI
+- **Message**: fix: restrict no-commit-to-branch hook to pre-push stage
+- **Files changed**: 1 file(s)
+
+**Changed files:**
+- `.pre-commit-config.yaml`
+
+---
+
 ## a21528c — 2026-05-08 09:33 UTC
 
 - **SHA**: `a21528cda6910b9b55150de270109808706e7eb4`
