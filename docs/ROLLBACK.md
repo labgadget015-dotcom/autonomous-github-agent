@@ -1,5 +1,17 @@
 # Rollback Manifest
 
+## 0306da6 — 2026-05-08 07:53 UTC
+
+- **SHA**: `0306da6709b286705d346ebe46a1465fe72a40fa`
+- **Author**: GadgetAI
+- **Message**: docs: add CLAUDE.md with environment and architecture guidance
+- **Files changed**: 1 file(s)
+
+**Changed files:**
+- `CLAUDE.md`
+
+---
+
 ## 03bbcc4 — 2026-05-06 04:52 UTC
 
 - **SHA**: `03bbcc4c800f7af418523bff357cea7da335a75b`
