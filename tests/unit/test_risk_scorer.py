@@ -2,7 +2,12 @@
 
 from __future__ import annotations
 
-from core.risk_scorer import RiskBand, RiskReport, score_pull_request
+from core.risk_scorer import (
+    RiskBand,
+    RiskReport,
+    is_low_operational_risk_change,
+    score_pull_request,
+)
 
 
 class TestScoreBands:
@@ -356,3 +361,32 @@ class TestScoreSummary:
         md = report.as_markdown()
         if report.band == RiskBand.MEDIUM:
             assert "Auto-merge blocked" not in md
+
+
+class TestLowOperationalRiskChange:
+    def test_true_for_tests_and_docs_only_paths(self):
+        assert is_low_operational_risk_change(
+            [
+                "tests/unit/test_policy_engine.py",
+                "docs/risk-scoring.md",
+                "README.md",
+            ]
+        )
+
+    def test_true_for_test_filename_patterns(self):
+        assert is_low_operational_risk_change(
+            ["agents/test_dispatcher.py", "autopilot/score_test.py"]
+        )
+
+    def test_false_when_non_low_risk_path_is_present(self):
+        assert not is_low_operational_risk_change(
+            ["tests/unit/test_policy_engine.py", "core/policy_engine.py"]
+        )
+
+    def test_false_for_empty_or_missing_paths(self):
+        assert not is_low_operational_risk_change([])
+        assert not is_low_operational_risk_change(None)
+        assert not is_low_operational_risk_change([""])
+
+    def test_ignores_none_items_and_uses_valid_paths(self):
+        assert is_low_operational_risk_change([None, "tests/unit/test_policy_engine.py"])  # type: ignore[list-item]
