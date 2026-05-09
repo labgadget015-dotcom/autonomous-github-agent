@@ -1,5 +1,14 @@
 # Rollback Manifest
 
+## 5aec882 — 2026-05-09 06:31 UTC
+
+- **SHA**: `5aec88275b36c7b53022269aec5d9a7473f1251e`
+- **Author**: Gadget Lab
+- **Message**: Merge pull request #120 from labgadget015-dotcom/copilot/fix-inline-pr-risk-scoring
+- **Files changed**: 0 file(s)
+
+---
+
 ## 0b6bb65 — 2026-05-08 11:51 UTC
 
 - **SHA**: `0b6bb65f706e7bc6fe99be33f6336fb6c8b77723`
