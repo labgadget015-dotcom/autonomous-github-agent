@@ -96,11 +96,24 @@ config/         — agent_config.yaml, policies.yaml, code_standards.yaml
 - Dry-run mode is **on by default** (`dry_run = true`) — set `require_approval = true` to confirm before write actions
 - LLM cost cap: `llm_max_cost_usd = 1.0` per run (pyproject.toml); autopilot generates daily summaries to `DAILY_SUMMARY.md` using `autopilot/autopilot.py`
 
+### Reusable action (`action.yml`)
+
+The repo also ships as a publishable composite GitHub Action. External repos can consume it via `uses: labgadget015-dotcom/autonomous-github-agent@main`. Inputs: `analysis_mode` (parallel/sequential/auto), `local_llm_enabled`, `local_llm_endpoint` (default `http://localhost:11434` — Ollama), `complexity_threshold`, `severity_threshold`. Note the URL differs from the in-repo default (`http://localhost:1234/v1` in `llm_router.py`).
+
+### Task context (`context.json`)
+
+At runtime the agent reads a `context.json` file (see `context.json.example`). Shape:
+```json
+{ "repository": "owner/repo", "event_name": "pull_request", "ref": "refs/heads/main",
+  "actor": "username", "pull_request": { "number": 1, "title": "...", "base": "main", "head": "feature" },
+  "github_api_url": "https://api.github.com", "timestamp": "..." }
+```
+
 ### n8n constraints
 
 - Sessions expire after ~30–60 min of inactivity; autosave silently fails with 401. Claude cannot re-authenticate — Gadget must log in.
 - Canvas drag-and-drop is unreliable; prefer JavaScript/Pinia store manipulation when automating node placement.
-- "Notify Slack — DRC Result" node still needs OAuth (channel: `drc-recommendations`).
+- "Notify Slack — DRC Result" node uses HTTP Request → Slack Incoming Webhook (no OAuth). Channel: `#drc-recommendations` (gadgetai.slack.com). Webhook secret stored as `SLACK_WEBHOOK_URL` GitHub secret.
 
 ### GitHub Actions constraints
 
