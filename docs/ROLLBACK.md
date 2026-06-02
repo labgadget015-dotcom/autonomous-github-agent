@@ -1,5 +1,17 @@
 # Rollback Manifest
 
+## c2eb0de — 2026-06-02 06:59 UTC
+
+- **SHA**: `c2eb0de8f5ed9aeb80db791655c53ef49873124d`
+- **Author**: GadgetAI
+- **Message**: docs: update CLAUDE.md with action.yml, context.json, and Slack node fix
+- **Files changed**: 1 file(s)
+
+**Changed files:**
+- `CLAUDE.md`
+
+---
+
 ## 5aec882 — 2026-05-09 06:31 UTC
 
 - **SHA**: `5aec88275b36c7b53022269aec5d9a7473f1251e`
