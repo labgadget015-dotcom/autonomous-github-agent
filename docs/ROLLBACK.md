@@ -1,5 +1,17 @@
 # Rollback Manifest
 
+## 2b5eb86 — 2026-06-04 06:28 UTC
+
+- **SHA**: `2b5eb8622329b09d89b4bae96130ba1df2c1c3b9`
+- **Author**: GadgetAI
+- **Message**: docs: improve CLAUDE.md with venv setup, test layout, and coverage clarifications
+- **Files changed**: 1 file(s)
+
+**Changed files:**
+- `CLAUDE.md`
+
+---
+
 ## c2eb0de — 2026-06-02 06:59 UTC
 
 - **SHA**: `c2eb0de8f5ed9aeb80db791655c53ef49873124d`
