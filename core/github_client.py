@@ -132,7 +132,6 @@ class GitHubClient:
             Created Issue object
         """
         owner, repo = full_name.split("/", 1)
-        self._wait_for_rate_limit()
 
         try:
             repository = self.get_repository(owner, repo)
@@ -157,8 +156,6 @@ class GitHubClient:
         Returns:
             Issue object
         """
-        self._wait_for_rate_limit()
-
         try:
             repository = self.get_repository(owner, repo)
             return repository.get_issue(issue_number)
@@ -180,7 +177,6 @@ class GitHubClient:
             PullRequest object
         """
         owner, repo = full_name.split("/", 1)
-        self._wait_for_rate_limit()
 
         try:
             repository = self.get_repository(owner, repo)
@@ -210,8 +206,6 @@ class GitHubClient:
         Returns:
             List of Issue objects
         """
-        self._wait_for_rate_limit()
-
         try:
             repository = self.get_repository(owner, repo)
             paginator = repository.get_issues(state=state, labels=labels or [])
@@ -233,7 +227,6 @@ class GitHubClient:
             body: Comment body
         """
         owner, repo = full_name.split("/", 1)
-        self._wait_for_rate_limit()
 
         try:
             issue = self.get_issue(owner, repo, issue_number)

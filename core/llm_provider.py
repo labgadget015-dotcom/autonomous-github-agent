@@ -6,6 +6,7 @@ Provides an abstraction layer for LLM providers (OpenAI, Anthropic, etc.)
 with unified interface, error handling, and per-session cost tracking.
 """
 
+import asyncio
 import json
 import logging
 from datetime import datetime
@@ -168,7 +169,8 @@ class LLMClient:
 
         messages.append({"role": "user", "content": prompt})
 
-        response = self._client.chat.completions.create(  # type: ignore[attr-defined]
+        response = await asyncio.to_thread(
+            self._client.chat.completions.create,  # type: ignore[attr-defined]
             model=self.model,
             messages=messages,
             max_tokens=max_tokens,
@@ -213,7 +215,10 @@ class LLMClient:
         if system_prompt:
             kwargs["system"] = system_prompt
 
-        response = self._client.messages.create(**kwargs)  # type: ignore[attr-defined]
+        response = await asyncio.to_thread(
+            self._client.messages.create,  # type: ignore[attr-defined]
+            **kwargs,
+        )
 
         # Track token usage
         if hasattr(response, "usage"):
