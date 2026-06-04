@@ -1,5 +1,18 @@
 # Rollback Manifest
 
+## c2a49c8 — 2026-06-04 06:40 UTC
+
+- **SHA**: `c2a49c82e04b0d6310a6ae65746ddf4583933524`
+- **Author**: GadgetAI
+- **Message**: fix: wrap blocking LLM calls in asyncio.to_thread and remove pre-call rate limiting
+- **Files changed**: 2 file(s)
+
+**Changed files:**
+- `core/github_client.py`
+- `core/llm_provider.py`
+
+---
+
 ## 2b5eb86 — 2026-06-04 06:28 UTC
 
 - **SHA**: `2b5eb8622329b09d89b4bae96130ba1df2c1c3b9`
