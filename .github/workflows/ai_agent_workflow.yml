@@ -116,7 +116,7 @@ jobs:
 
       - name: Select CoT template
         run: |
-          python -c "from .github.scripts.cot_selector import CoTSelector; selector = CoTSelector(); print(selector.select_template({'files_changed': 5}))"
+          PYTHONPATH=.github/scripts python -c "from cot_selector import OptimizedCoTSelector; selector = OptimizedCoTSelector(); print(selector.select_template({'files_changed': 5}))"
 
       - name: Run AI agent
         run: python .github/scripts/ai_agent_main.py --context context.json
