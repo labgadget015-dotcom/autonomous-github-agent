@@ -1,5 +1,17 @@
 # Rollback Manifest
 
+## 4768dab — 2026-06-04 06:45 UTC
+
+- **SHA**: `4768dab1a3b65a9a42120512ef38e39a6ea008e1`
+- **Author**: GadgetAI
+- **Message**: fix: correct CoT selector import in ai_agent_workflow
+- **Files changed**: 1 file(s)
+
+**Changed files:**
+- `.github/workflows/ai_agent_workflow.yml`
+
+---
+
 ## c2a49c8 — 2026-06-04 06:40 UTC
 
 - **SHA**: `c2a49c82e04b0d6310a6ae65746ddf4583933524`
