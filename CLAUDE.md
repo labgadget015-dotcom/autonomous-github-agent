@@ -16,16 +16,21 @@ This shell manages the **GadgetLab autonomous GitHub agent pipeline**. There are
 
 ## Development Commands (run from `/home/ai/autonomous-github-agent/`)
 
-The repo uses a `.venv` but dependencies must be installed first if the venv is missing packages:
+Activate the venv first, or prefix commands with `.venv/bin/`:
 
 ```bash
-pip install -r requirements.txt          # install all deps
-pytest tests/ -v                         # full test suite (coverage enabled by default)
-pytest tests/unit/test_core.py -v        # single test file
+source .venv/bin/activate
+pip install -r requirements.txt          # install all deps if venv is missing packages
+```
+
+```bash
+pytest tests/ -v                         # full suite (unit + integration, coverage on by default)
+pytest tests/unit/test_core.py -v        # single unit test file
+pytest tests/test_core.py -v             # single integration test file
 pytest -m "not slow" -v                  # skip slow tests
-pytest -k "test_github" -v               # filter by name
-pre-commit run --all-files               # run all pre-commit hooks
-ruff check . --fix                       # lint + auto-fix
+pytest -k "test_github" -v              # filter by name
+pre-commit run --all-files               # run all pre-commit hooks (fail_fast: true — stops on first failure)
+ruff check . --fix                       # lint + auto-fix (covers isort, bugbear, pyupgrade)
 black .github/scripts/ core/ agents/     # format
 mypy core/ agents/ autopilot/            # type-check (ignores missing stubs)
 bandit -r core agents autopilot          # security scan
@@ -43,7 +48,9 @@ make analyze         # parallel code analysis
 make validate        # validate all implementations
 ```
 
-pytest configuration is in `pytest.ini`. Coverage threshold: 55% (configured), 70% (pyproject.toml). asyncio mode is `auto`.
+pytest configuration is in `pytest.ini`. The `pytest` run enforces ≥55% coverage (`--cov-fail-under=55` in `pytest.ini addopts`); `pyproject.toml [tool.coverage.report]` sets `fail_under=70` for standalone `coverage report` runs. asyncio mode is `auto`.
+
+**Test layout:** `tests/unit/` holds 40+ focused unit tests (one per module). `tests/` root holds broader integration/smoke tests (`test_core.py`, `test_overseer.py`, etc.).
 
 ## Architecture Overview
 
@@ -81,8 +88,9 @@ overseer/       — autonomous repo management: code_analyzer, issue_triager,
                   automation_engine, cicd_optimizer, dependency_manager,
                   doc_generator, orchestrator, monitor
 autopilot/      — daily summaries; autopilot.py + ai_optimization/ sub-package
-                  (NLP filter, ML priority scorer, anomaly detector, cache)
-.github/scripts/ — 30+ standalone scripts invoked by GitHub Actions workflows
+                  (NLP filter, ML priority scorer, anomaly detector, cache);
+                  behavior configured via autopilot/config.yaml
+.github/scripts/ — 40+ standalone scripts invoked by GitHub Actions workflows
 tests/          — top-level integration tests + tests/unit/ for all modules
 config/         — agent_config.yaml, policies.yaml, code_standards.yaml
 ```
