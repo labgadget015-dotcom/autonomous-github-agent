@@ -1,0 +1,8 @@
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Ignore detect-secrets baseline file containing hashed secret fingerprints"
+paths = [
+    '''.secrets.baseline''',
+]
