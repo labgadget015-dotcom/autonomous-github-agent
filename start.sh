@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 # Quick start script for Autonomous GitHub Agent (Linux/macOS)
 
 set -e
