@@ -1,0 +1,23 @@
+ci/cd:
+  - changed-files:
+      - any-glob-to-any-file:
+          - ".github/workflows/**"
+          - ".github/scripts/**"
+
+documentation:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "**/*.md"
+          - "docs/**"
+
+testing:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "tests/**"
+          - "pytest.ini"
+
+security:
+  - changed-files:
+      - any-glob-to-any-file:
+          - ".secrets.baseline"
+          - ".github/workflows/security*.yml"
