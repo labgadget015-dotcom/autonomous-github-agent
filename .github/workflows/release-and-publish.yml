@@ -20,7 +20,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set version
         id: version
@@ -34,7 +34,7 @@ jobs:
           echo "Release version: $VERSION"
 
       - name: Setup Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v6
         with:
           python-version: '3.11'
 
@@ -121,7 +121,7 @@ jobs:
           echo "Version: v${{ steps.version.outputs.version }}"
 
       - name: Notify on success
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             github.rest.issues.createComment({
