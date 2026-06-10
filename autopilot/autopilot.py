@@ -303,13 +303,17 @@ class GitHubAutopilot:
         # When the path comes from config (no --output arg), keep the existing
         # behaviour of rooting at the repo root via Path(__file__).parent.parent.
         config_output_path = self.config["output"].get("file", "DAILY_SUMMARY.md")
-        if output_file is not None:
+        
+        if output_file:
             output_file_path = Path(output_file)
             if not output_file_path.is_absolute():
                 output_file_path = Path.cwd() / output_file_path
-        else:
+        elif config_output_path:
             output_file_path = Path(__file__).parent.parent / config_output_path
-        if output_file_path:
+        else:
+            output_file_path = None
+
+        if output_file_path is not None:
             with open(output_file_path, "w") as f:
                 f.write(summary)
             print(f"✅ Summary written to: {output_file_path}")
