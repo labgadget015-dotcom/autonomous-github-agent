@@ -67,4 +67,5 @@ echo "✅ Development environment setup complete!"
 echo ""
 echo "To activate the environment:"
 echo "  source .venv/bin/activate  # Linux/macOS"
+# shellcheck disable=SC2028
 echo '  .venv\Scripts\activate     # Windows'
