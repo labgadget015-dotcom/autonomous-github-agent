@@ -1,5 +1,36 @@
 # Rollback Manifest
 
+## 9c1c2d7 — 2026-06-13 06:18 UTC
+
+- **SHA**: `9c1c2d7d0a87c90c10fefa57b9c104dd6187eec1`
+- **Author**: Gadget Lab
+- **Message**: fix: bump actions to Node 24 runtimes and fix daily summary path (#147)
+- **Files changed**: 21 file(s)
+
+**Changed files:**
+- `.github/scripts/deployment-automation.sh`
+- `.github/workflows/agent_dispatcher.yml`
+- `.github/workflows/ai_agent_workflow.yml`
+- `.github/workflows/branch_protection.yml`
+- `.github/workflows/code-quality-optimized.yml`
+- `.github/workflows/dry_run_gate.yml`
+- `.github/workflows/elite_copilot.yml`
+- `.github/workflows/monitoring_export.yml`
+- `.github/workflows/pre-commit-ci.yml`
+- `.github/workflows/release-and-publish.yml`
+- `.github/workflows/repository-overseer.yml`
+- `.github/workflows/security_scan.yml`
+- `.github/workflows/test_metrics.yml`
+- `.gitleaks.toml`
+- `autopilot/autopilot.py`
+- `scripts/automation/create-release.sh`
+- `scripts/automation/lint-code.sh`
+- `scripts/automation/setup-dev-env.sh`
+- `scripts/automation/setup_python.sh`
+- `scripts/setup-dev.sh`
+
+---
+
 ## 4768dab — 2026-06-04 06:45 UTC
 
 - **SHA**: `4768dab1a3b65a9a42120512ef38e39a6ea008e1`
