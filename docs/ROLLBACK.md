@@ -1,5 +1,17 @@
 # Rollback Manifest
 
+## ea88faa — 2026-06-13 06:40 UTC
+
+- **SHA**: `ea88faaac9cc6fadb604decdf124e972ff7f17eb`
+- **Author**: GadgetAI
+- **Message**: fix: add .github/labeler.yml to resolve Auto Label CI failure
+- **Files changed**: 1 file(s)
+
+**Changed files:**
+- `.github/labeler.yml`
+
+---
+
 ## 9c1c2d7 — 2026-06-13 06:18 UTC
 
 - **SHA**: `9c1c2d7d0a87c90c10fefa57b9c104dd6187eec1`
