@@ -303,7 +303,7 @@ class GitHubAutopilot:
         # When the path comes from config (no --output arg), keep the existing
         # behaviour of rooting at the repo root via Path(__file__).parent.parent.
         config_output_path = self.config["output"].get("file", "DAILY_SUMMARY.md")
-        
+
         if output_file:
             output_file_path = Path(output_file)
             if not output_file_path.is_absolute():
