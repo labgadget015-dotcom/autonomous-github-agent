@@ -77,8 +77,10 @@ install_dependencies() {
 
     # Activate virtual environment
     if [ -f "venv/bin/activate" ]; then
+        # shellcheck source=/dev/null
         source venv/bin/activate
     elif [ -f "venv/Scripts/activate" ]; then
+        # shellcheck source=/dev/null
         source venv/Scripts/activate
     else
         print_error "Virtual environment not found. Please create it first."
@@ -117,6 +119,7 @@ install_precommit() {
     print_header "Installing Pre-commit Hooks"
 
     if [ -f "venv/bin/activate" ]; then
+        # shellcheck source=/dev/null
         source venv/bin/activate
     fi
 
@@ -146,6 +149,7 @@ run_tests() {
     print_header "Running Initial Tests"
 
     if [ -f "venv/bin/activate" ]; then
+        # shellcheck source=/dev/null
         source venv/bin/activate
     fi
 

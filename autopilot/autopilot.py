@@ -296,11 +296,24 @@ class GitHubAutopilot:
             print("=" * 60 + "\n")
 
         # Write to file
-        output_path = output_file or self.config["output"].get(
-            "file", "DAILY_SUMMARY.md"
-        )
-        if output_path:
-            output_file_path = Path(__file__).parent.parent / output_path
+        # When output_file is supplied via --output on the CLI, resolve it
+        # relative to the caller's working directory so that invocations like
+        #   cd autopilot && python autopilot.py --output ../DAILY_SUMMARY.md
+        # land the file at the repo root as intended.
+        # When the path comes from config (no --output arg), keep the existing
+        # behaviour of rooting at the repo root via Path(__file__).parent.parent.
+        config_output_path = self.config["output"].get("file", "DAILY_SUMMARY.md")
+
+        if output_file:
+            output_file_path = Path(output_file)
+            if not output_file_path.is_absolute():
+                output_file_path = Path.cwd() / output_file_path
+        elif config_output_path:
+            output_file_path = Path(__file__).parent.parent / config_output_path
+        else:
+            output_file_path = None
+
+        if output_file_path is not None:
             with open(output_file_path, "w") as f:
                 f.write(summary)
             print(f"✅ Summary written to: {output_file_path}")

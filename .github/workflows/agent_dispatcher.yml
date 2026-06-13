@@ -79,11 +79,11 @@ jobs:
     needs: route
     if: needs.route.outputs.should_risk_score == 'true' && github.event_name == 'pull_request'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.11"
           cache: pip
@@ -192,7 +192,7 @@ jobs:
     steps:
       - name: Label PR by changed paths
         if: github.event_name == 'pull_request'
-        uses: actions/labeler@v5
+        uses: actions/labeler@v6
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           sync-labels: false

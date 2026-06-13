@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 # Quick start script for Autonomous GitHub Agent (Linux/macOS)
 
 set -e
@@ -30,7 +30,7 @@ if [ ! -f ".env" ]; then
         echo ""
         echo "IMPORTANT: Please edit .env file with your configuration!"
         echo "Run: nano .env (or use your preferred editor)"
-        read -p "Press Enter to continue after editing .env..."
+        read -r -p "Press Enter to continue after editing .env..."
     else
         echo "ERROR: .env.example not found"
         exit 1

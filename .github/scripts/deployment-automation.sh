@@ -98,7 +98,7 @@ echo "1) Self-hosted (Local installation)"
 echo "2) Docker (Containerized deployment)"
 echo "3) Kubernetes (K8s cluster deployment)"
 echo "4) Cloud Platform (AWS/GCP/Azure)"
-read -p "Enter choice [1-4]: " DEPLOY_MODE
+read -r -p "Enter choice [1-4]: " DEPLOY_MODE
 
 case $DEPLOY_MODE in
     1)
@@ -119,6 +119,7 @@ case $DEPLOY_MODE in
         # Create virtual environment
         info "Setting up Python virtual environment..."
         python3 -m venv venv
+        # shellcheck source=/dev/null
         source venv/bin/activate
         success "Virtual environment created"
 
@@ -193,7 +194,7 @@ case $DEPLOY_MODE in
         docker run -d \
             --name autonomous-github-agent \
             --env-file .env \
-            -v $(pwd)/.github:/app/.github \
+            -v "$(pwd)/.github":/app/.github \
             -p 8080:8080 \
             autonomous-github-agent:latest
 
@@ -225,9 +226,9 @@ case $DEPLOY_MODE in
 
         # Create secrets
         info "Setting up secrets..."
-        read -p "Enter GitHub Token: " GITHUB_TOKEN
+        read -r -p "Enter GitHub Token: " GITHUB_TOKEN
         kubectl create secret generic github-credentials \
-            --from-literal=token=$GITHUB_TOKEN \
+            --from-literal=token="$GITHUB_TOKEN" \
             -n autonomous-agent || true
 
         # Apply manifests
@@ -247,7 +248,7 @@ case $DEPLOY_MODE in
         echo "1) AWS (ECS/EKS)"
         echo "2) Google Cloud (Cloud Run/GKE)"
         echo "3) Azure (Container Instances/AKS)"
-        read -p "Enter choice [1-3]: " CLOUD_CHOICE
+        read -r -p "Enter choice [1-3]: " CLOUD_CHOICE
 
         case $CLOUD_CHOICE in
             1)
