@@ -1,0 +1,6 @@
+[allowlist]
+  description = "Known false positives"
+  paths = [
+    '''.secrets.baseline''',
+    '''docs/API_EXAMPLES.md''',
+  ]
