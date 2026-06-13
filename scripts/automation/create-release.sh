@@ -29,7 +29,7 @@ echo "1) Patch (v$MAJOR.$MINOR.$((PATCH+1)))"
 echo "2) Minor (v$MAJOR.$((MINOR+1)).0)"
 echo "3) Major (v$((MAJOR+1)).0.0)"
 echo "4) Custom"
-read -p "Enter choice [1-4]: " choice
+read -r -p "Enter choice [1-4]: " choice
 
 case $choice in
     1)
@@ -42,7 +42,7 @@ case $choice in
         NEW_VERSION="v$((MAJOR+1)).0.0"
         ;;
     4)
-        read -p "Enter custom version (e.g., v1.2.3): " NEW_VERSION
+        read -r -p "Enter custom version (e.g., v1.2.3): " NEW_VERSION
         ;;
     *)
         echo -e "${RED}Invalid choice${NC}"
@@ -56,11 +56,11 @@ echo -e "${YELLOW}Creating release: $NEW_VERSION${NC}"
 # Get commit messages since last tag
 echo ""
 echo "Recent changes:"
-git log $CURRENT_VERSION..HEAD --oneline --decorate
+git log "$CURRENT_VERSION"..HEAD --oneline --decorate
 
 # Confirm
 echo ""
-read -p "Proceed with release $NEW_VERSION? [y/N]: " confirm
+read -r -p "Proceed with release $NEW_VERSION? [y/N]: " confirm
 if [[ ! $confirm =~ ^[Yy]$ ]]; then
     echo "Release cancelled"
     exit 0

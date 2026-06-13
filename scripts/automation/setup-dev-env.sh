@@ -32,6 +32,7 @@ fi
 
 # Activate virtual environment
 echo "Activating virtual environment..."
+# shellcheck source=/dev/null
 source .venv/bin/activate 2>/dev/null || source .venv/Scripts/activate 2>/dev/null
 
 # Upgrade pip
@@ -66,4 +67,4 @@ echo "✅ Development environment setup complete!"
 echo ""
 echo "To activate the environment:"
 echo "  source .venv/bin/activate  # Linux/macOS"
-echo "  .venv\Scripts\activate     # Windows"
+echo '  .venv\Scripts\activate     # Windows'
