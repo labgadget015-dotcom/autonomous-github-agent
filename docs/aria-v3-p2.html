@@ -211,6 +211,25 @@ canvas { display: block; }
 .typing-dots span:nth-child(3) { animation-delay: .4s; }
 @keyframes bounce { 0%,60%,100% { transform:translateY(0); } 30% { transform:translateY(-6px); } }
 
+/* ── PHASE 3: MULTI-ANALYST ──────────────────────────────────────────── */
+.analyst-pills { display:flex; gap:6px; padding:10px 18px; border-bottom:1px solid var(--border); align-items:center; }
+.analyst-pill { font-size:10px; font-weight:700; padding:3px 11px; border-radius:20px; border:1.5px solid; cursor:pointer; letter-spacing:.6px; transition:background .15s, color .15s; background:transparent; font-family:var(--mono); }
+#brief-btn { margin-left:auto; font-size:10px; font-weight:600; padding:4px 11px; border-radius:6px; border:1.5px solid var(--teal2); color:var(--teal); background:transparent; cursor:pointer; font-family:var(--sans); white-space:nowrap; }
+#brief-btn:hover { background:var(--teal-dim); }
+#brief-btn:disabled { opacity:.4; cursor:default; }
+#chat-view { display:flex; flex-direction:column; flex:1; overflow:hidden; }
+#briefing-view { display:none; flex-direction:column; flex:1; overflow:hidden; }
+#briefing-view.active { display:flex; }
+.brief-top { display:flex; align-items:center; gap:10px; padding:8px 14px; border-bottom:1px solid var(--border); }
+.brief-top-title { font-size:11px; font-weight:700; color:var(--teal); letter-spacing:.5px; flex:1; }
+#brief-back { font-size:11px; color:var(--t2); background:transparent; border:1px solid var(--border2); border-radius:5px; padding:3px 9px; cursor:pointer; font-family:var(--sans); }
+.brief-cards { flex:1; overflow-y:auto; display:flex; flex-direction:column; }
+.brief-card { padding:14px 18px; border-bottom:1px solid var(--border); }
+.brief-card-hd { font-size:10px; font-weight:700; letter-spacing:1.2px; margin-bottom:8px; font-family:var(--mono); display:flex; align-items:center; gap:7px; }
+.brief-card-dot { width:6px; height:6px; border-radius:50%; flex-shrink:0; }
+.brief-card-body { font-size:12.5px; line-height:1.6; color:var(--t1); white-space:pre-wrap; }
+.brief-card.synthesis { background:rgba(15,184,184,.06); border-top:2px solid var(--teal2); }
+
 /* ── ACTIONS LOG ─────────────────────────────────────────────────────── */
 .action-item { border-left: 3px solid var(--teal2); padding: 8px 12px; background: var(--bg3); border-radius: 0 6px 6px 0; margin-bottom: 6px; }
 .action-meta { font-size: 10px; color: var(--t3); margin-bottom: 3px; }
@@ -302,7 +321,7 @@ canvas { display: block; }
       <option value="middle-east">Middle East</option>
     </select>
   </div>
-  <div class="sb-status">System: <span>OPERATIONAL</span> · v3.2.0-pwa</div>
+  <div class="sb-status">System: <span>OPERATIONAL</span> · v3.3.0-multi</div>
 </aside>
 
 <!-- ── MAIN ─────────────────────────────────────────────────────────────── -->
@@ -529,17 +548,35 @@ canvas { display: block; }
     </div>
     <button class="ai-close" onclick="toggleAI()">✕</button>
   </div>
-  <div id="ai-messages"></div>
-  <div class="ai-quick">
-    <button class="ai-qbtn" onclick="aiAsk('What needs urgent attention right now?')">🚨 Urgent</button>
-    <button class="ai-qbtn" onclick="aiAsk('Which nodes are at highest risk of failure?')">⚠️ Risk</button>
-    <button class="ai-qbtn" onclick="aiAsk('Give me a 24h operational outlook.')">📅 Outlook</button>
-    <button class="ai-qbtn" onclick="aiAsk('What is the beneficiary coverage status?')">👥 Coverage</button>
-    <button class="ai-qbtn" onclick="aiAsk('Summarise all critical infrastructure failures.')">⚡ Failures</button>
+  <!-- Phase 3: analyst selector -->
+  <div class="analyst-pills">
+    <button class="analyst-pill" id="pill-aria" onclick="setAnalyst('aria')" style="border-color:#0FB8B8;background:#0FB8B8;color:#fff">ARIA</button>
+    <button class="analyst-pill" id="pill-ops"  onclick="setAnalyst('ops')"  style="border-color:#F59E0B;color:#F59E0B">OPS</button>
+    <button class="analyst-pill" id="pill-risk" onclick="setAnalyst('risk')" style="border-color:#EF4444;color:#EF4444">RISK</button>
+    <button id="brief-btn" onclick="launchBriefing()">⬡ Brief Panel</button>
   </div>
-  <div class="ai-input-row">
-    <textarea id="ai-input" placeholder="Ask ARIA anything about field operations…" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();aiSend();}"></textarea>
-    <button id="ai-send" onclick="aiSend()">Send</button>
+  <!-- Chat view -->
+  <div id="chat-view">
+    <div id="ai-messages"></div>
+    <div class="ai-quick">
+      <button class="ai-qbtn" onclick="aiAsk('What needs urgent attention right now?')">🚨 Urgent</button>
+      <button class="ai-qbtn" onclick="aiAsk('Which nodes are at highest risk of failure?')">⚠️ Risk</button>
+      <button class="ai-qbtn" onclick="aiAsk('Give me a 24h operational outlook.')">📅 Outlook</button>
+      <button class="ai-qbtn" onclick="aiAsk('What is the beneficiary coverage status?')">👥 Coverage</button>
+      <button class="ai-qbtn" onclick="aiAsk('Summarise all critical infrastructure failures.')">⚡ Failures</button>
+    </div>
+    <div class="ai-input-row">
+      <textarea id="ai-input" placeholder="Ask ARIA anything about field operations…" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();aiSend();}"></textarea>
+      <button id="ai-send" onclick="aiSend()">Send</button>
+    </div>
+  </div>
+  <!-- Briefing view (Phase 3) -->
+  <div id="briefing-view">
+    <div class="brief-top">
+      <span class="brief-top-title">⬡ PANEL BRIEFING — DRC MODE</span>
+      <button id="brief-back" onclick="exitBriefing()">← Back</button>
+    </div>
+    <div class="brief-cards" id="brief-cards"></div>
   </div>
 </div>
 
@@ -1697,37 +1734,7 @@ async function aiSend() {
   document.getElementById('ai-send').disabled = true;
   aiHistory.push({ role:'user', content: q });
 
-  // Phase 1: inject live risk scores into system prompt
-  const top3 = topRiskNodes(3);
-  const riskContext = top3.map(n => `  - ${n.name}: score=${n.riskScore}/100 ${n.riskScore>=65?'[CRITICAL RISK]':n.riskScore>=30?'[ELEVATED]':'[LOW]'}`).join('\n');
-
-  const r = region();
-  const online  = r.nodes.filter(n=>n.status==='online').length;
-  const offline = r.nodes.filter(n=>n.status==='offline').length;
-  const crits   = r.alerts.filter(a=>a.sev==='crit').length;
-  const warns   = r.alerts.filter(a=>a.sev==='warn').length;
-  const benef   = r.sectors.reduce((a,s)=>a+s.beneficiaries,0);
-
-  const systemPrompt = `You are ARIA — AI Relief Infrastructure Analyst — embedded in a humanitarian operations dashboard monitoring crisis response infrastructure in ${r.label}.
-
-NETWORK STATUS:
-- ${online}/${r.nodes.length} nodes online, ${offline} offline
-- ${crits} critical alerts, ${warns} warnings active
-- Beneficiaries reached: ~${fmtNum(benef)}
-
-RISK WATCH (Predictive Scoring — Phase 1):
-${riskContext}
-
-SECTOR HEALTH:
-${r.sectors.map(s=>`  - ${s.name}: ${s.pct}%`).join('\n')}
-
-ACTIVE CRITICAL ALERTS:
-${r.alerts.filter(a=>a.sev==='crit').map(a=>`  - ${a.msg}`).join('\n') || '  None'}
-
-CONVOY STATUS:
-${r.convoys.map(c=>`  - ${c.id}: ${c.from}→${c.to} (${c.progress}%) ${c.status==='delayed'?'[DELAYED]':''}`).join('\n')}
-
-You help humanitarian operations coordinators prioritise responses. Be concise, direct, and actionable. Use the predictive risk scores to flag nodes that need preemptive attention before they fail. Always suggest concrete next steps.`;
+  const systemPrompt = buildFullSystemPrompt(activeAnalyst);
 
   try {
     const resp = await fetch('https://api.anthropic.com/v1/messages', {
@@ -1755,6 +1762,189 @@ You help humanitarian operations coordinators prioritise responses. Be concise, 
 
   aiThinking = false;
   document.getElementById('ai-send').disabled = false;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   PHASE 3: MULTI-ANALYST COLLABORATION (DRC PATTERN)
+══════════════════════════════════════════════════════════════════════════ */
+
+const ANALYSTS = {
+  aria: {
+    label: 'ARIA', accent: '#0FB8B8',
+    title: '⬡ ARIA Analyst',
+    role: 'You are ARIA — the primary humanitarian ops coordinator embedded in a crisis dashboard. Provide overall situational awareness, coordination priorities, and actionable next steps. Be concise and directive.',
+  },
+  ops: {
+    label: 'OPS', accent: '#F59E0B',
+    title: '⬡ OPS Specialist',
+    role: 'You are ARIA-OPS — the field operations specialist. Focus on logistics, convoy routing, supply chain constraints, and physical infrastructure capacity. Ground every recommendation in operational realities and resource limits.',
+  },
+  risk: {
+    label: 'RISK', accent: '#EF4444',
+    title: '⬡ RISK Auditor',
+    role: 'You are ARIA-RISK — the risk auditor. Challenge assumptions, identify vulnerabilities and blind spots in the current response plan. Flag escalation signals, single points of failure, and what could go catastrophically wrong.',
+  },
+};
+
+let activeAnalyst = 'aria';
+
+function setAnalyst(id) {
+  if (!ANALYSTS[id]) return;
+  activeAnalyst = id;
+  ['aria', 'ops', 'risk'].forEach(a => {
+    const pill = document.getElementById('pill-' + a);
+    if (!pill) return;
+    const ac = ANALYSTS[a].accent;
+    if (a === id) {
+      pill.style.background = ac;
+      pill.style.color = '#fff';
+    } else {
+      pill.style.background = 'transparent';
+      pill.style.color = ac;
+    }
+  });
+  const title = document.querySelector('.ai-title');
+  if (title) title.textContent = ANALYSTS[id].title;
+  aiHistory = [];
+}
+
+function buildOpsContext() {
+  const top3 = topRiskNodes(3);
+  const riskCtx = top3.map(n =>
+    `  - ${n.name}: score=${n.riskScore}/100 ${n.riskScore >= 65 ? '[CRITICAL]' : n.riskScore >= 30 ? '[ELEVATED]' : '[LOW]'}`
+  ).join('\n');
+  const r = region();
+  const online  = r.nodes.filter(n => n.status === 'online').length;
+  const offline = r.nodes.filter(n => n.status === 'offline').length;
+  const crits   = r.alerts.filter(a => a.sev === 'crit').length;
+  const warns   = r.alerts.filter(a => a.sev === 'warn').length;
+  const benef   = r.sectors.reduce((acc, s) => acc + s.beneficiaries, 0);
+  return `REGION: ${r.label}
+NETWORK: ${online}/${r.nodes.length} online, ${offline} offline
+ALERTS: ${crits} critical, ${warns} warnings
+BENEFICIARIES: ~${fmtNum(benef)}
+RISK WATCH (Phase 1 scores):
+${riskCtx}
+SECTOR HEALTH:
+${r.sectors.map(s => `  - ${s.name}: ${s.pct}%`).join('\n')}
+CRITICAL ALERTS:
+${r.alerts.filter(a => a.sev === 'crit').map(a => `  - ${a.msg}`).join('\n') || '  None'}
+CONVOYS:
+${r.convoys.map(c => `  - ${c.id}: ${c.from}→${c.to} (${c.progress}%) ${c.status === 'delayed' ? '[DELAYED]' : ''}`).join('\n')}`;
+}
+
+function buildFullSystemPrompt(analystId) {
+  const a = ANALYSTS[analystId] || ANALYSTS.aria;
+  return `${a.role}
+
+CURRENT OPERATIONS BRIEF:
+${buildOpsContext()}
+
+Respond concisely and actionably. Prioritise the highest-impact actions.`;
+}
+
+async function launchBriefing() {
+  const btn = document.getElementById('brief-btn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Briefing…';
+
+  document.getElementById('chat-view').style.display = 'none';
+  const bv = document.getElementById('briefing-view');
+  bv.classList.add('active');
+  const cardsEl = document.getElementById('brief-cards');
+  cardsEl.innerHTML = '';
+
+  const opsCtx = buildOpsContext();
+  const question = 'Provide your specialist assessment and top recommendation.';
+  const order = ['aria', 'ops', 'risk'];
+  const results = {};
+
+  // Create placeholder cards
+  order.forEach(id => {
+    const a = ANALYSTS[id];
+    const card = document.createElement('div');
+    card.className = 'brief-card';
+    card.innerHTML = `
+      <div class="brief-card-hd">
+        <span class="brief-card-dot" style="background:${a.accent}"></span>
+        <span style="color:${a.accent}">${a.label}</span>
+        <span style="color:var(--t3);font-weight:400;font-size:9px">${id==='aria'?'OPS COORDINATOR':id==='ops'?'FIELD SPECIALIST':'RISK AUDITOR'}</span>
+      </div>
+      <div class="brief-card-body" id="brief-body-${id}"><div class="typing-dots"><span></span><span></span><span></span></div></div>`;
+    cardsEl.appendChild(card);
+  });
+
+  const synthCard = document.createElement('div');
+  synthCard.className = 'brief-card synthesis';
+  synthCard.innerHTML = `
+    <div class="brief-card-hd">
+      <span class="brief-card-dot" style="background:var(--teal)"></span>
+      <span style="color:var(--teal)">SYNTHESIS</span>
+      <span style="color:var(--t3);font-weight:400;font-size:9px">JOINT RECOMMENDATION</span>
+    </div>
+    <div class="brief-card-body" id="brief-body-synth"><div class="typing-dots"><span></span><span></span><span></span></div></div>`;
+  cardsEl.appendChild(synthCard);
+
+  // Fire all 3 analysts in parallel
+  await Promise.all(order.map(async id => {
+    try {
+      const resp = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'anthropic-dangerous-direct-browser-calls': 'true' },
+        body: JSON.stringify({
+          model: 'claude-haiku-4-5-20251001',
+          max_tokens: 280,
+          system: buildFullSystemPrompt(id),
+          messages: [{ role: 'user', content: question }],
+        }),
+      });
+      const data = await resp.json();
+      results[id] = data.content?.[0]?.text || 'No response.';
+    } catch (e) {
+      results[id] = `⚠ ${ANALYSTS[id].label} unavailable: ${e.message}`;
+    }
+    const bodyEl = document.getElementById('brief-body-' + id);
+    if (bodyEl) bodyEl.textContent = results[id];
+  }));
+
+  // Synthesis call
+  const synthPrompt = `You are ARIA SYNTHESIS — you reconcile three specialist perspectives into one joint recommendation for the ops commander.
+
+${opsCtx}
+
+ANALYST INPUTS:
+[ARIA Ops Coordinator]: ${results.aria}
+[OPS Field Specialist]: ${results.ops}
+[RISK Auditor]: ${results.risk}
+
+Synthesise the key points and any tensions into ONE actionable joint recommendation (3–4 sentences). Open with the single most important action.`;
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'anthropic-dangerous-direct-browser-calls': 'true' },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 280,
+        system: synthPrompt,
+        messages: [{ role: 'user', content: 'Provide the joint recommendation.' }],
+      }),
+    });
+    const data = await resp.json();
+    const synthEl = document.getElementById('brief-body-synth');
+    if (synthEl) synthEl.textContent = data.content?.[0]?.text || 'Synthesis unavailable.';
+  } catch (e) {
+    const synthEl = document.getElementById('brief-body-synth');
+    if (synthEl) synthEl.textContent = `⚠ Synthesis unavailable: ${e.message}`;
+  }
+
+  btn.disabled = false;
+  btn.textContent = '⬡ Brief Panel';
+}
+
+function exitBriefing() {
+  document.getElementById('briefing-view').classList.remove('active');
+  document.getElementById('chat-view').style.display = 'flex';
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
@@ -1857,7 +2047,7 @@ function showView(id, el) {
     { ts:'09:03', sev:'warn', msg:'Convoy KE-07 delayed — road closure' },
   ].forEach(e => eventHistory.push(e));
 
-  addIngestLog('SYSTEM', 'ARIA v3.2.0-pwa initialised with Risk Scoring + Offline Engine');
+  addIngestLog('SYSTEM', 'ARIA v3.3.0-multi initialised with Risk Scoring + Offline + Multi-Analyst Engine');
   addIngestLog('RISK', 'Phase 1 predictive scoring active — monitoring ' + REGIONS['east-africa'].nodes.length + ' nodes');
 
   if (demoMode) startDemo();
