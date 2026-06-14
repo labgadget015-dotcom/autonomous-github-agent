@@ -15,7 +15,7 @@ json5>=0.9.0
 pytest>=7.4.0
 pytest-cov>=4.1.0
 pytest-xdist>=3.3.0  # Parallel test execution
-pytest-asyncio>=0.21.0  # Async test support
+pytest-asyncio>=0.21.0,<1.0.0  # Async test support — 1.x has breaking collection changes
 
 # Code Quality
 ruff>=0.1.0  # Fast linter (replaces flake8, isort, some pylint)
