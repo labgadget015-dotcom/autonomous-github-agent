@@ -1,0 +1,1973 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ARIA — Aid & Relief Infrastructure Analyst v3</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0A7C7C">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ── TOKENS ──────────────────────────────────────────────────────────── */
+:root {
+  --bg:       #0B1623;
+  --bg2:      #111E2E;
+  --bg3:      #182438;
+  --panel:    #1A2940;
+  --border:   #1E3248;
+  --border2:  #243A55;
+  --teal:     #0FB8B8;
+  --teal2:    #0A8C8C;
+  --teal-dim: #0A3F3F;
+  --blue:     #3B82F6;
+  --amber:    #F59E0B;
+  --amber-dim:#3D2E00;
+  --green:    #10B981;
+  --green-dim:#0A3020;
+  --red:      #EF4444;
+  --red-dim:  #3A0A0A;
+  --purple:   #A855F7;
+  --t1:       #E2EBF5;
+  --t2:       #7FA3C4;
+  --t3:       #4A6A8A;
+  --mono:     'JetBrains Mono', monospace;
+  --sans:     'Inter', sans-serif;
+  --radius:   8px;
+  --shadow:   0 4px 24px rgba(0,0,0,0.4);
+}
+
+/* ── RESET ───────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; overflow: hidden; }
+body { font-family: var(--sans); background: var(--bg); color: var(--t1); font-size: 13px; }
+button { font-family: var(--sans); cursor: pointer; border: none; outline: none; }
+input, textarea, select { font-family: var(--sans); outline: none; }
+canvas { display: block; }
+
+/* ── LAYOUT ──────────────────────────────────────────────────────────── */
+#app { display: flex; height: 100vh; }
+#sidebar { width: 220px; min-width: 220px; background: var(--bg2); border-right: 1px solid var(--border); display: flex; flex-direction: column; }
+#main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+#topbar { height: 52px; background: var(--bg2); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 16px; gap: 12px; flex-shrink: 0; }
+#content { flex: 1; overflow-y: auto; padding: 20px; }
+
+/* ── SIDEBAR ─────────────────────────────────────────────────────────── */
+.sb-logo { padding: 16px 16px 12px; border-bottom: 1px solid var(--border); }
+.sb-logo-title { font-size: 18px; font-weight: 700; color: var(--teal); letter-spacing: -.5px; }
+.sb-logo-sub { font-size: 10px; color: var(--t3); margin-top: 2px; letter-spacing: .5px; }
+.sb-section { padding: 12px 10px 6px; font-size: 10px; font-weight: 600; color: var(--t3); letter-spacing: 1px; text-transform: uppercase; }
+.nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 14px; margin: 1px 6px; border-radius: 6px; cursor: pointer; color: var(--t2); font-size: 12.5px; font-weight: 500; transition: all .15s; position: relative; }
+.nav-item:hover { background: var(--bg3); color: var(--t1); }
+.nav-item.active { background: var(--teal-dim); color: var(--teal); }
+.nav-item .nav-badge { margin-left: auto; background: var(--red); color: #fff; font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 10px; }
+.sb-region { padding: 12px 10px 8px; border-top: 1px solid var(--border); margin-top: auto; }
+.sb-region label { font-size: 10px; color: var(--t3); text-transform: uppercase; letter-spacing: .8px; display: block; margin-bottom: 6px; }
+.sb-region select { width: 100%; background: var(--bg3); border: 1px solid var(--border2); color: var(--t1); padding: 7px 10px; border-radius: 6px; font-size: 12px; }
+.sb-status { padding: 10px 14px; font-size: 11px; color: var(--t3); border-top: 1px solid var(--border); }
+.sb-status span { color: var(--green); font-weight: 600; }
+
+/* ── TOPBAR ──────────────────────────────────────────────────────────── */
+#view-title { font-size: 14px; font-weight: 600; color: var(--t1); }
+.tb-spacer { flex: 1; }
+.tb-btn { background: var(--bg3); border: 1px solid var(--border2); color: var(--t2); padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 500; display: flex; align-items: center; gap: 6px; transition: all .15s; }
+.tb-btn:hover { border-color: var(--teal2); color: var(--teal); }
+.tb-btn.active { background: var(--teal-dim); border-color: var(--teal2); color: var(--teal); }
+#last-update { font-size: 11px; color: var(--t3); font-family: var(--mono); }
+.demo-badge { background: var(--amber-dim); border: 1px solid var(--amber); color: var(--amber); padding: 3px 10px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+
+/* ── VIEWS ───────────────────────────────────────────────────────────── */
+.view { display: none; }
+.view.active { display: block; animation: fadeIn .2s ease; }
+@keyframes fadeIn { from { opacity:0; transform:translateY(4px); } to { opacity:1; transform:translateY(0); } }
+
+/* ── CARDS ───────────────────────────────────────────────────────────── */
+.card { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; }
+.card-title { font-size: 11px; font-weight: 600; color: var(--t3); text-transform: uppercase; letter-spacing: .8px; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+.grid { display: grid; gap: 14px; }
+.g2 { grid-template-columns: 1fr 1fr; }
+.g3 { grid-template-columns: 1fr 1fr 1fr; }
+.g4 { grid-template-columns: repeat(4, 1fr); }
+
+/* ── KPI ─────────────────────────────────────────────────────────────── */
+.kpi { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; }
+.kpi-label { font-size: 10px; color: var(--t3); text-transform: uppercase; letter-spacing: .8px; }
+.kpi-val { font-size: 28px; font-weight: 700; font-family: var(--mono); margin: 4px 0 2px; }
+.kpi-sub { font-size: 11px; color: var(--t3); }
+.kpi-green { color: var(--green); }
+.kpi-amber { color: var(--amber); }
+.kpi-red { color: var(--red); }
+.kpi-teal { color: var(--teal); }
+
+/* ── RISK WATCH ──────────────────────────────────────────────────────── */
+#risk-watch-card { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; border-left: 3px solid var(--amber); }
+.risk-watch-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); }
+.risk-watch-row:last-child { border-bottom: none; }
+.rw-name { flex: 1; font-size: 12.5px; font-weight: 500; color: var(--t1); }
+.rw-score { font-family: var(--mono); font-size: 13px; font-weight: 700; min-width: 36px; text-align: right; }
+.rw-trend { font-size: 14px; min-width: 18px; }
+.rw-eta { font-size: 10px; color: var(--t3); font-family: var(--mono); min-width: 36px; text-align: right; }
+.risk-badge { padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; min-width: 42px; text-align: center; }
+.risk-low   { background: var(--green-dim); color: var(--green); }
+.risk-med   { background: var(--amber-dim); color: var(--amber); }
+.risk-high  { background: var(--red-dim);   color: var(--red); }
+
+/* ── NODE LIST ───────────────────────────────────────────────────────── */
+.node-item { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 6px; cursor: pointer; transition: background .12s; }
+.node-item:hover { background: var(--bg3); }
+.node-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.nd-online  { background: var(--green); box-shadow: 0 0 6px var(--green); }
+.nd-offline { background: var(--red); }
+.nd-warn    { background: var(--amber); box-shadow: 0 0 6px var(--amber); }
+.node-name  { flex: 1; font-size: 12.5px; font-weight: 500; color: var(--t1); }
+.node-lat   { font-family: var(--mono); font-size: 11px; color: var(--t2); }
+.node-type  { font-size: 10px; color: var(--t3); background: var(--bg3); padding: 2px 7px; border-radius: 4px; }
+.node-risk-chip { font-size: 10px; font-weight: 700; font-family: var(--mono); padding: 2px 6px; border-radius: 4px; min-width: 30px; text-align: center; }
+
+/* ── SECTOR BARS ─────────────────────────────────────────────────────── */
+.sector-row { display: flex; align-items: center; gap: 12px; padding: 6px 0; }
+.sector-name { width: 110px; font-size: 12px; color: var(--t2); }
+.sector-bar-wrap { flex: 1; height: 6px; background: var(--bg3); border-radius: 3px; overflow: hidden; }
+.sector-bar { height: 100%; border-radius: 3px; transition: width .6s ease; }
+.sector-pct { width: 38px; text-align: right; font-family: var(--mono); font-size: 12px; }
+
+/* ── ALERTS ──────────────────────────────────────────────────────────── */
+.alert-item { display: flex; gap: 10px; padding: 10px 12px; border-radius: 6px; background: var(--bg3); margin-bottom: 6px; border-left: 3px solid transparent; cursor: pointer; transition: opacity .15s; }
+.alert-item:hover { opacity: .85; }
+.alert-crit { border-left-color: var(--red); }
+.alert-warn { border-left-color: var(--amber); }
+.alert-info { border-left-color: var(--blue); }
+.alert-sev  { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 4px; height: fit-content; flex-shrink: 0; }
+.sev-crit { background: var(--red-dim); color: var(--red); }
+.sev-warn { background: var(--amber-dim); color: var(--amber); }
+.sev-info { background: #0A1A3A; color: var(--blue); }
+.alert-body { flex: 1; }
+.alert-msg  { font-size: 12.5px; color: var(--t1); }
+.alert-meta { font-size: 11px; color: var(--t3); margin-top: 2px; }
+
+/* ── MAP ─────────────────────────────────────────────────────────────── */
+#map-svg { width: 100%; height: 420px; background: var(--bg3); border-radius: var(--radius); border: 1px solid var(--border); }
+
+/* ── TOPOLOGY ────────────────────────────────────────────────────────── */
+#topo-canvas { width: 100%; height: 380px; border-radius: var(--radius); background: var(--bg3); border: 1px solid var(--border); }
+
+/* ── CONVOY ──────────────────────────────────────────────────────────── */
+.convoy-item { background: var(--bg3); border-radius: 6px; padding: 12px; margin-bottom: 8px; }
+.convoy-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.convoy-id   { font-family: var(--mono); font-size: 12px; font-weight: 600; color: var(--teal); }
+.convoy-prog { height: 5px; background: var(--border2); border-radius: 3px; overflow: hidden; }
+.convoy-prog-fill { height: 100%; border-radius: 3px; transition: width .8s ease; }
+
+/* ── SPARKLINE ───────────────────────────────────────────────────────── */
+.sparkline { width: 80px; height: 28px; }
+
+/* ── MODAL ───────────────────────────────────────────────────────────── */
+#modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.6); z-index: 100; display: none; align-items: center; justify-content: center; backdrop-filter: blur(3px); }
+#modal-overlay.open { display: flex; }
+#modal-box { background: var(--panel); border: 1px solid var(--border2); border-radius: 12px; width: 560px; max-height: 85vh; overflow-y: auto; box-shadow: var(--shadow); }
+.modal-head { padding: 20px 24px 16px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: flex-start; position: sticky; top: 0; background: var(--panel); z-index: 1; }
+.modal-title { font-size: 16px; font-weight: 700; color: var(--t1); }
+.modal-sub   { font-size: 12px; color: var(--t3); margin-top: 2px; }
+.modal-close { background: var(--bg3); border: 1px solid var(--border); color: var(--t2); width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 14px; }
+.modal-body  { padding: 20px 24px; }
+.modal-section { margin-bottom: 18px; }
+.modal-section-title { font-size: 10px; font-weight: 600; color: var(--t3); text-transform: uppercase; letter-spacing: .8px; margin-bottom: 10px; }
+.modal-row { display: flex; justify-content: space-between; align-items: center; padding: 7px 0; border-bottom: 1px solid var(--border); font-size: 12.5px; }
+.modal-row:last-child { border-bottom: none; }
+.modal-row-label { color: var(--t3); }
+.modal-row-val   { color: var(--t1); font-family: var(--mono); font-size: 12px; }
+
+/* ── RISK SCORE GAUGE ────────────────────────────────────────────────── */
+.risk-gauge-wrap { display: flex; align-items: center; gap: 12px; padding: 12px; background: var(--bg3); border-radius: 8px; margin-bottom: 12px; }
+.risk-gauge-score { font-size: 36px; font-weight: 700; font-family: var(--mono); min-width: 60px; }
+.risk-gauge-detail { flex: 1; }
+.risk-gauge-label { font-size: 11px; color: var(--t3); margin-bottom: 3px; }
+.risk-gauge-bar-wrap { height: 8px; background: var(--border2); border-radius: 4px; overflow: hidden; }
+.risk-gauge-bar { height: 100%; border-radius: 4px; transition: width .6s; }
+.risk-gauge-meta { font-size: 11px; color: var(--t2); margin-top: 4px; }
+
+/* ── AI PANEL ────────────────────────────────────────────────────────── */
+#ai-panel { position: fixed; right: -420px; top: 0; bottom: 0; width: 420px; background: var(--bg2); border-left: 1px solid var(--border2); z-index: 50; display: flex; flex-direction: column; transition: right .3s cubic-bezier(.4,0,.2,1); box-shadow: -8px 0 32px rgba(0,0,0,.4); }
+#ai-panel.open { right: 0; }
+.ai-header { padding: 16px 18px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
+.ai-title  { font-size: 14px; font-weight: 700; color: var(--teal); flex: 1; }
+.ai-close  { background: var(--bg3); border: 1px solid var(--border); color: var(--t2); width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+#ai-messages { flex: 1; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+.ai-msg { padding: 10px 13px; border-radius: 8px; font-size: 12.5px; line-height: 1.55; }
+.ai-msg.user      { background: var(--teal-dim); border: 1px solid var(--teal2); color: var(--t1); align-self: flex-end; max-width: 85%; }
+.ai-msg.assistant { background: var(--bg3); border: 1px solid var(--border); color: var(--t1); align-self: flex-start; max-width: 95%; white-space: pre-wrap; }
+.ai-quick { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px 14px; border-top: 1px solid var(--border); }
+.ai-qbtn  { background: var(--bg3); border: 1px solid var(--border2); color: var(--t2); padding: 5px 10px; border-radius: 6px; font-size: 11px; cursor: pointer; transition: all .12s; }
+.ai-qbtn:hover { border-color: var(--teal2); color: var(--teal); }
+.ai-input-row { display: flex; gap: 8px; padding: 12px 14px; border-top: 1px solid var(--border); }
+#ai-input { flex: 1; background: var(--bg3); border: 1px solid var(--border2); color: var(--t1); padding: 9px 12px; border-radius: 6px; font-size: 13px; resize: none; height: 40px; }
+#ai-input:focus { border-color: var(--teal2); }
+#ai-send  { background: var(--teal2); color: #fff; padding: 9px 14px; border-radius: 6px; font-size: 13px; font-weight: 600; }
+#ai-send:hover { background: var(--teal); }
+.typing-dots span { display: inline-block; width: 6px; height: 6px; background: var(--t3); border-radius: 50%; margin: 0 2px; animation: bounce .9s infinite; }
+.typing-dots span:nth-child(2) { animation-delay: .2s; }
+.typing-dots span:nth-child(3) { animation-delay: .4s; }
+@keyframes bounce { 0%,60%,100% { transform:translateY(0); } 30% { transform:translateY(-6px); } }
+
+/* ── ACTIONS LOG ─────────────────────────────────────────────────────── */
+.action-item { border-left: 3px solid var(--teal2); padding: 8px 12px; background: var(--bg3); border-radius: 0 6px 6px 0; margin-bottom: 6px; }
+.action-meta { font-size: 10px; color: var(--t3); margin-bottom: 3px; }
+.action-text { font-size: 12px; color: var(--t2); }
+
+/* ── EVENT LOG ───────────────────────────────────────────────────────── */
+.evt-item { display: flex; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 12px; align-items: flex-start; }
+.evt-time { font-family: var(--mono); font-size: 10.5px; color: var(--t3); white-space: nowrap; min-width: 55px; }
+.evt-sev  { padding: 1px 6px; border-radius: 3px; font-size: 10px; font-weight: 700; height: fit-content; flex-shrink: 0; }
+.evt-msg  { color: var(--t2); flex: 1; }
+
+/* ── BENEFICIARY VIEW ────────────────────────────────────────────────── */
+.benef-row { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 6px; cursor: pointer; }
+.benef-row:hover { background: var(--bg3); }
+.benef-icon { font-size: 18px; width: 32px; text-align: center; }
+.benef-label { flex: 1; font-size: 13px; font-weight: 500; }
+.benef-count { font-family: var(--mono); font-size: 13px; color: var(--teal); font-weight: 600; }
+.benef-pct   { font-size: 11px; color: var(--t3); min-width: 38px; text-align: right; }
+
+/* ── DATA SOURCES ────────────────────────────────────────────────────── */
+.ds-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 6px; background: var(--bg3); margin-bottom: 6px; }
+.ds-dot  { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.ds-live { background: var(--green); }
+.ds-warn { background: var(--amber); }
+.ds-err  { background: var(--red); }
+.ds-name { flex: 1; font-size: 12.5px; font-weight: 500; }
+.ds-status { font-size: 11px; color: var(--t3); }
+
+/* ── TOAST ───────────────────────────────────────────────────────────── */
+#toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--panel); border: 1px solid var(--border2); color: var(--t1); padding: 10px 20px; border-radius: 8px; font-size: 13px; z-index: 200; transition: transform .3s ease; pointer-events: none; box-shadow: var(--shadow); }
+#toast.show { transform: translateX(-50%) translateY(0); }
+
+/* ── INGESTION LOG ───────────────────────────────────────────────────── */
+.ingest-row { display: flex; gap: 8px; padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 11.5px; align-items: center; }
+.ingest-ts { font-family: var(--mono); color: var(--t3); min-width: 55px; }
+.ingest-src { color: var(--teal); font-weight: 600; min-width: 70px; }
+.ingest-msg { color: var(--t2); flex: 1; }
+
+/* ── POWER/WATER ─────────────────────────────────────────────────────── */
+.pw-item { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+.pw-label { flex: 1; font-size: 12.5px; color: var(--t2); }
+.pw-val   { font-family: var(--mono); font-size: 13px; font-weight: 600; min-width: 60px; text-align: right; }
+.pw-bar-wrap { width: 100px; height: 6px; background: var(--border2); border-radius: 3px; overflow: hidden; }
+.pw-bar { height: 100%; border-radius: 3px; }
+
+/* ── SCROLLBAR ───────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+/* ── PWA / PHASE 2 ───────────────────────────────────────────────────── */
+#conn-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; transition: background .4s, box-shadow .4s; cursor:default; }
+#install-btn { display:none; }
+#sw-update-banner { display:none; position:fixed; top:0; left:0; right:0; z-index:300; background:var(--teal-dim); border-bottom:1px solid var(--teal2); padding:10px 20px; align-items:center; justify-content:center; gap:14px; font-size:13px; color:var(--t1); }
+#sw-update-banner .upd-apply { background:var(--teal2); color:#fff; padding:5px 14px; border-radius:6px; font-size:12px; font-weight:600; cursor:pointer; border:none; font-family:var(--sans); }
+#sw-update-banner .upd-apply:hover { background:var(--teal); }
+#sw-update-banner .upd-dismiss { background:transparent; border:1px solid var(--border2); color:var(--t2); padding:5px 10px; border-radius:6px; font-size:12px; cursor:pointer; font-family:var(--sans); }
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- ── SIDEBAR ──────────────────────────────────────────────────────────── -->
+<aside id="sidebar">
+  <div class="sb-logo">
+    <div class="sb-logo-title">⬡ ARIA</div>
+    <div class="sb-logo-sub">AID & RELIEF INFRASTRUCTURE ANALYST</div>
+  </div>
+
+  <div class="sb-section">NAVIGATION</div>
+  <div class="nav-item active" onclick="showView('overview',this)">📊 <span>Overview</span></div>
+  <div class="nav-item" onclick="showView('map',this)">🗺️ <span>Live Map</span></div>
+  <div class="nav-item" onclick="showView('nodes',this)">📡 <span>Nodes</span> <span class="nav-badge" id="offline-badge">0</span></div>
+  <div class="nav-item" onclick="showView('sectors',this)">🏥 <span>Sectors</span></div>
+  <div class="nav-item" onclick="showView('connectivity',this)">🔗 <span>Connectivity</span></div>
+  <div class="nav-item" onclick="showView('power',this)">⚡ <span>Power & Water</span></div>
+  <div class="nav-item" onclick="showView('logistics',this)">🚛 <span>Logistics</span></div>
+  <div class="nav-item" onclick="showView('beneficiaries',this)">👥 <span>Beneficiaries</span></div>
+  <div class="nav-item" onclick="showView('alerts',this)">🚨 <span>Alerts</span> <span class="nav-badge" id="alert-badge">0</span></div>
+  <div class="nav-item" onclick="showView('history',this)">📋 <span>History</span></div>
+  <div class="nav-item" onclick="showView('actions',this)">🤖 <span>ARIA Actions</span></div>
+  <div class="nav-item" onclick="showView('sources',this)">🌐 <span>Data Sources</span></div>
+
+  <div class="sb-region">
+    <label>ACTIVE REGION</label>
+    <select id="region-select" onchange="switchRegion(this.value)">
+      <option value="east-africa">East Africa</option>
+      <option value="south-asia">South Asia</option>
+      <option value="middle-east">Middle East</option>
+    </select>
+  </div>
+  <div class="sb-status">System: <span>OPERATIONAL</span> · v3.2.0-pwa</div>
+</aside>
+
+<!-- ── MAIN ─────────────────────────────────────────────────────────────── -->
+<main id="main">
+
+  <!-- TOPBAR -->
+  <div id="topbar">
+    <span id="view-title">Dashboard</span>
+    <div class="tb-spacer"></div>
+    <span id="conn-dot" title="Network status"></span>
+    <span id="last-update" class="tb-label">--</span>
+    <button class="tb-btn" id="install-btn" onclick="installApp()">⬇ Install App</button>
+    <button class="tb-btn demo-badge" id="demo-btn" onclick="toggleDemo()">● LIVE DEMO</button>
+    <button class="tb-btn" onclick="fetchAllSources()">↻ Refresh Data</button>
+    <button class="tb-btn" id="btn-ai" onclick="toggleAI()">🛰 ARIA Analyst</button>
+  </div>
+
+  <!-- CONTENT -->
+  <div id="content">
+
+    <!-- ── OVERVIEW ──────────────────────────────────────────────────── -->
+    <div class="view active" id="view-overview">
+
+      <!-- Risk Watch (Phase 1 addition) -->
+      <div id="risk-watch-card" style="margin-bottom:14px;">
+        <div class="card-title">⚠️ RISK WATCH — Predictive Failure Intelligence</div>
+        <div id="risk-watch-rows">
+          <div style="color:var(--t3);font-size:12px;padding:8px 0;">Calculating risk scores…</div>
+        </div>
+      </div>
+
+      <!-- KPI Row -->
+      <div class="grid g4" style="margin-bottom:14px;" id="kpi-row">
+        <div class="kpi"><div class="kpi-label">Nodes Online</div><div class="kpi-val kpi-green" id="k-online">--</div><div class="kpi-sub" id="k-online-sub">of -- total</div></div>
+        <div class="kpi"><div class="kpi-label">Critical Alerts</div><div class="kpi-val kpi-red" id="k-crits">--</div><div class="kpi-sub" id="k-crit-sub">-- warnings active</div></div>
+        <div class="kpi"><div class="kpi-label">People Reached</div><div class="kpi-val kpi-teal" id="k-benef">--</div><div class="kpi-sub">beneficiaries</div></div>
+        <div class="kpi"><div class="kpi-label">Network Health</div><div class="kpi-val kpi-amber" id="k-health">--%</div><div class="kpi-sub">overall score</div></div>
+      </div>
+
+      <div class="grid g2" style="margin-bottom:14px;">
+        <!-- Sector Health -->
+        <div class="card">
+          <div class="card-title">SECTOR HEALTH</div>
+          <div id="sector-bars"></div>
+        </div>
+        <!-- Active Alerts -->
+        <div class="card">
+          <div class="card-title">ACTIVE ALERTS <span style="margin-left:auto;font-size:11px;color:var(--teal);cursor:pointer" onclick="showView('alerts',document.querySelector('.nav-item:nth-child(10))'))">View all →</span></div>
+          <div id="overview-alerts"></div>
+        </div>
+      </div>
+
+      <div class="grid g2">
+        <!-- Node Status -->
+        <div class="card">
+          <div class="card-title">NODE STATUS</div>
+          <div id="overview-nodes"></div>
+        </div>
+        <!-- Convoy Status -->
+        <div class="card">
+          <div class="card-title">CONVOY STATUS</div>
+          <div id="overview-convoys"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── MAP ───────────────────────────────────────────────────────── -->
+    <div class="view" id="view-map">
+      <div class="card" style="margin-bottom:14px;">
+        <div class="card-title">LIVE NETWORK MAP — <span id="map-region-label" style="color:var(--teal)">East Africa</span></div>
+        <svg id="map-svg" viewBox="0 0 700 400"></svg>
+      </div>
+    </div>
+
+    <!-- ── NODES ─────────────────────────────────────────────────────── -->
+    <div class="view" id="view-nodes">
+      <div class="card">
+        <div class="card-title">ALL NODES — <span id="nodes-region-label" style="color:var(--teal)">East Africa</span>
+          <span style="margin-left:auto;font-size:11px;color:var(--t3)">Click node for details</span>
+        </div>
+        <div id="node-list-full"></div>
+      </div>
+    </div>
+
+    <!-- ── SECTORS ────────────────────────────────────────────────────── -->
+    <div class="view" id="view-sectors">
+      <div class="card">
+        <div class="card-title">HUMANITARIAN SECTOR STATUS</div>
+        <div id="sectors-detail"></div>
+      </div>
+    </div>
+
+    <!-- ── CONNECTIVITY ───────────────────────────────────────────────── -->
+    <div class="view" id="view-connectivity">
+      <div class="card" style="margin-bottom:14px;">
+        <div class="card-title">NETWORK TOPOLOGY</div>
+        <canvas id="topo-canvas"></canvas>
+      </div>
+      <div class="card">
+        <div class="card-title">LATENCY MATRIX</div>
+        <div id="latency-matrix"></div>
+      </div>
+    </div>
+
+    <!-- ── POWER & WATER ──────────────────────────────────────────────── -->
+    <div class="view" id="view-power">
+      <div class="grid g2">
+        <div class="card">
+          <div class="card-title">⚡ POWER SYSTEMS</div>
+          <div id="power-list"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">💧 WATER SYSTEMS</div>
+          <div id="water-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── LOGISTICS ──────────────────────────────────────────────────── -->
+    <div class="view" id="view-logistics">
+      <div class="card">
+        <div class="card-title">🚛 CONVOY TRACKING</div>
+        <div id="convoy-list-full"></div>
+      </div>
+    </div>
+
+    <!-- ── BENEFICIARIES ──────────────────────────────────────────────── -->
+    <div class="view" id="view-beneficiaries">
+      <div class="grid g2" style="margin-bottom:14px;">
+        <div class="kpi"><div class="kpi-label">Total Covered</div><div class="kpi-val kpi-teal" id="b-total">--</div><div class="kpi-sub">beneficiaries</div></div>
+        <div class="kpi"><div class="kpi-label">Coverage Rate</div><div class="kpi-val kpi-green" id="b-rate">--%</div><div class="kpi-sub">of target population</div></div>
+      </div>
+      <div class="card">
+        <div class="card-title">SECTOR BENEFICIARY BREAKDOWN</div>
+        <div id="benef-list"></div>
+      </div>
+    </div>
+
+    <!-- ── ALERTS ─────────────────────────────────────────────────────── -->
+    <div class="view" id="view-alerts">
+      <div class="card">
+        <div class="card-title">ALL ACTIVE ALERTS
+          <span style="margin-left:auto">
+            <button class="tb-btn" style="font-size:11px;padding:4px 10px" onclick="clearAlerts()">Clear All</button>
+          </span>
+        </div>
+        <div id="alerts-full"></div>
+      </div>
+    </div>
+
+    <!-- ── HISTORY ────────────────────────────────────────────────────── -->
+    <div class="view" id="view-history">
+      <div class="card">
+        <div class="card-title">EVENT HISTORY
+          <span style="margin-left:auto">
+            <button class="tb-btn" style="font-size:11px;padding:4px 10px" onclick="exportCSV()">↓ Export CSV</button>
+          </span>
+        </div>
+        <div id="history-list"></div>
+      </div>
+    </div>
+
+    <!-- ── ACTIONS ────────────────────────────────────────────────────── -->
+    <div class="view" id="view-actions">
+      <div class="card">
+        <div class="card-title">🤖 ARIA AI ACTIONS LOG</div>
+        <div id="actions-list"></div>
+      </div>
+    </div>
+
+    <!-- ── DATA SOURCES ───────────────────────────────────────────────── -->
+    <div class="view" id="view-sources">
+      <div class="grid g2" style="margin-bottom:14px;">
+        <div class="card">
+          <div class="card-title">EXTERNAL DATA SOURCES</div>
+          <div id="sources-list"></div>
+          <button class="tb-btn" style="margin-top:12px;width:100%;justify-content:center" onclick="fetchAllSources()">↻ Refresh All Sources</button>
+        </div>
+        <div class="card">
+          <div class="card-title">INGESTION LOG</div>
+          <div id="ingest-log" style="max-height:320px;overflow-y:auto;"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">CUSTOM DATA SOURCE</div>
+        <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;">
+          <div style="flex:1;min-width:200px">
+            <div style="font-size:11px;color:var(--t3);margin-bottom:4px">Name</div>
+            <input id="ds-custom-name" placeholder="Source name…" style="width:100%;background:var(--bg3);border:1px solid var(--border2);color:var(--t1);padding:8px 10px;border-radius:6px;font-size:12px;">
+          </div>
+          <div style="flex:2;min-width:280px">
+            <div style="font-size:11px;color:var(--t3);margin-bottom:4px">Endpoint URL</div>
+            <input id="ds-custom-url" placeholder="https://…" style="width:100%;background:var(--bg3);border:1px solid var(--border2);color:var(--t1);padding:8px 10px;border-radius:6px;font-size:12px;">
+          </div>
+          <button class="tb-btn" onclick="addCustomSource()" style="height:36px">+ Add Source</button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</main>
+</div><!-- /app -->
+
+<!-- ── MODAL ─────────────────────────────────────────────────────────────── -->
+<div id="modal-overlay" onclick="if(event.target===this)closeModal()">
+  <div id="modal-box">
+    <div class="modal-head">
+      <div>
+        <div class="modal-title" id="modal-title">Node Details</div>
+        <div class="modal-sub"  id="modal-sub"></div>
+      </div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+  </div>
+</div>
+
+<!-- ── AI PANEL ───────────────────────────────────────────────────────────── -->
+<div id="ai-panel">
+  <div class="ai-header">
+    <div>
+      <div class="ai-title">⬡ ARIA Analyst</div>
+      <div style="font-size:11px;color:var(--t3)">AI-powered operational intelligence</div>
+    </div>
+    <button class="ai-close" onclick="toggleAI()">✕</button>
+  </div>
+  <div id="ai-messages"></div>
+  <div class="ai-quick">
+    <button class="ai-qbtn" onclick="aiAsk('What needs urgent attention right now?')">🚨 Urgent</button>
+    <button class="ai-qbtn" onclick="aiAsk('Which nodes are at highest risk of failure?')">⚠️ Risk</button>
+    <button class="ai-qbtn" onclick="aiAsk('Give me a 24h operational outlook.')">📅 Outlook</button>
+    <button class="ai-qbtn" onclick="aiAsk('What is the beneficiary coverage status?')">👥 Coverage</button>
+    <button class="ai-qbtn" onclick="aiAsk('Summarise all critical infrastructure failures.')">⚡ Failures</button>
+  </div>
+  <div class="ai-input-row">
+    <textarea id="ai-input" placeholder="Ask ARIA anything about field operations…" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();aiSend();}"></textarea>
+    <button id="ai-send" onclick="aiSend()">Send</button>
+  </div>
+</div>
+
+<!-- ── TOAST ──────────────────────────────────────────────────────────────── -->
+<div id="toast"></div>
+
+<!-- ── SW UPDATE BANNER (Phase 2) ────────────────────────────────────────── -->
+<div id="sw-update-banner">
+  <span>⚡ ARIA update available — new features ready</span>
+  <button class="upd-apply" onclick="applyUpdate()">Apply &amp; Reload</button>
+  <button class="upd-dismiss" onclick="document.getElementById('sw-update-banner').style.display='none'">Dismiss</button>
+</div>
+
+<script>
+'use strict';
+
+/* ══════════════════════════════════════════════════════════════════════════
+   DATA — REGIONS & NODES
+══════════════════════════════════════════════════════════════════════════ */
+const REGIONS = {
+  'east-africa': {
+    label: 'East Africa Crisis Zone',
+    nodes: [
+      { id:'n1',  name:'Nairobi HQ',         type:'Hub',    lat:65,  lng:290, status:'online',  latency:18,  loss:0.1, power:98, fuel:85, flow:240, sector:'logistics',  uptime:99.8 },
+      { id:'n2',  name:'Mombasa Port',        type:'Hub',    lat:130, lng:355, status:'online',  latency:24,  loss:0.3, power:94, fuel:72, flow:180, sector:'logistics',  uptime:99.1 },
+      { id:'n3',  name:'Kisumu Relay',        type:'Relay',  lat:110, lng:200, status:'online',  latency:31,  loss:1.1, power:88, fuel:60, flow:120, sector:'water',      uptime:97.4 },
+      { id:'n4',  name:'Garissa Generator',   type:'Power',  lat:90,  lng:330, status:'warn',    latency:52,  loss:4.2, power:55, fuel:14, flow:0,   sector:'power',      uptime:91.2 },
+      { id:'n5',  name:'Dadaab Camp Alpha',   type:'Camp',   lat:75,  lng:375, status:'online',  latency:67,  loss:2.8, power:72, fuel:48, flow:95,  sector:'shelter',    uptime:94.6 },
+      { id:'n6',  name:'Turkana Camp B',      type:'Camp',   lat:60,  lng:140, status:'warn',    latency:88,  loss:6.1, power:43, fuel:31, flow:0,   sector:'water',      uptime:87.3 },
+      { id:'n7',  name:'Marsabit Medical',    type:'Medical',lat:45,  lng:255, status:'online',  latency:44,  loss:1.9, power:81, fuel:67, flow:140, sector:'medical',    uptime:96.8 },
+      { id:'n8',  name:'Mandera Outpost',     type:'Relay',  lat:30,  lng:395, status:'offline', latency:999, loss:100, power:0,  fuel:0,  flow:0,   sector:'comms',      uptime:71.2 },
+      { id:'n9',  name:'Wajir Distribution',  type:'Supply', lat:70,  lng:340, status:'online',  latency:38,  loss:2.0, power:76, fuel:55, flow:110, sector:'food',       uptime:95.1 },
+      { id:'n10', name:'Lokichoggio Relay',   type:'Relay',  lat:30,  lng:170, status:'warn',    latency:71,  loss:5.5, power:49, fuel:28, flow:75,  sector:'logistics',  uptime:88.7 },
+    ],
+    convoys: [
+      { id:'KE-04', from:'Nairobi HQ', to:'Dadaab Camp Alpha', progress:72, status:'on-track', cargo:'Medical Supplies 4.2t', eta:'3h 20m' },
+      { id:'KE-07', from:'Mombasa Port', to:'Garissa Generator', progress:35, status:'delayed', cargo:'Fuel 8000L', eta:'Delayed — road A3 closed' },
+      { id:'KE-11', from:'Kisumu Relay', to:'Turkana Camp B', progress:88, status:'on-track', cargo:'Water Purification', eta:'0h 45m' },
+    ],
+    sectors: [
+      { name:'Medical',       pct:82, icon:'🏥', beneficiaries:52000, target:63000 },
+      { name:'Water',         pct:61, icon:'💧', beneficiaries:38000, target:62000 },
+      { name:'Power',         pct:55, icon:'⚡', beneficiaries:31000, target:56000 },
+      { name:'Communications',pct:74, icon:'📡', beneficiaries:47000, target:63500 },
+      { name:'Logistics',     pct:88, icon:'🚛', beneficiaries:56000, target:63600 },
+      { name:'Shelter',       pct:79, icon:'🏠', beneficiaries:50000, target:63300 },
+      { name:'Food Security', pct:68, icon:'🌾', beneficiaries:43000, target:63200 },
+      { name:'Protection',    pct:91, icon:'🛡️', beneficiaries:58000, target:63700 },
+    ],
+    power: [
+      { name:'Nairobi HQ Grid',     pct:98, fuel:85,  gen:'Mains+Solar', status:'ok' },
+      { name:'Garissa Generator',   pct:55, fuel:14,  gen:'Diesel',      status:'crit' },
+      { name:'Dadaab Solar Array',  pct:72, fuel:null, gen:'Solar',       status:'warn' },
+      { name:'Turkana Battery Bank',pct:43, fuel:null, gen:'Battery',     status:'crit' },
+      { name:'Wajir Hybrid',        pct:76, fuel:55,  gen:'Hybrid',      status:'ok' },
+    ],
+    water: [
+      { name:'Kisumu Pump Station', flow:120, cap:200, status:'ok' },
+      { name:'Turkana Camp B Pump', flow:0,   cap:95,  status:'fail' },
+      { name:'Dadaab Borehole',     flow:95,  cap:140, status:'ok' },
+      { name:'Wajir Tank System',   flow:110, cap:150, status:'ok' },
+    ],
+    alerts: [],
+    dataSources: [
+      { id:'hdx',     name:'UN OCHA HDX',     status:'live', desc:'Humanitarian data exchange' },
+      { id:'relief',  name:'ReliefWeb API',   status:'live', desc:'Situation reports & updates' },
+      { id:'unhcr',   name:'UNHCR Population',status:'warn', desc:'Displacement tracking' },
+      { id:'local',   name:'Field Sensors',   status:'live', desc:'IoT telemetry (simulated)' },
+    ]
+  },
+  'south-asia': {
+    label: 'South Asia Crisis Zone',
+    nodes: [
+      { id:'s1', name:'Dhaka Coordination',  type:'Hub',    lat:120, lng:300, status:'online', latency:22, loss:0.4, power:95, fuel:88, flow:200, sector:'logistics', uptime:99.2 },
+      { id:'s2', name:'Cox\'s Bazar Camp',   type:'Camp',   lat:170, lng:340, status:'online', latency:41, loss:2.1, power:78, fuel:62, flow:130, sector:'shelter',   uptime:95.8 },
+      { id:'s3', name:'Chittagong Hub',      type:'Hub',    lat:155, lng:325, status:'warn',   latency:59, loss:4.8, power:61, fuel:38, flow:80,  sector:'water',     uptime:89.3 },
+      { id:'s4', name:'Sylhet Relay',        type:'Relay',  lat:90,  lng:315, status:'online', latency:33, loss:1.2, power:87, fuel:70, flow:145, sector:'comms',     uptime:97.1 },
+      { id:'s5', name:'Khulna Medical',      type:'Medical',lat:145, lng:270, status:'offline',latency:999,loss:100, power:0,  fuel:0,  flow:0,   sector:'medical',   uptime:76.4 },
+      { id:'s6', name:'Rangpur Supply',      type:'Supply', lat:75,  lng:280, status:'online', latency:47, loss:2.9, power:73, fuel:51, flow:105, sector:'food',      uptime:93.7 },
+    ],
+    convoys: [
+      { id:'BD-02', from:'Dhaka Coordination', to:'Cox\'s Bazar Camp', progress:55, status:'on-track', cargo:'NFI Kits 6.1t', eta:'5h 10m' },
+      { id:'BD-05', from:'Chittagong Hub', to:'Khulna Medical', progress:20, status:'delayed', cargo:'Medical Supplies', eta:'Delayed — flooding' },
+    ],
+    sectors: [
+      { name:'Medical',       pct:61, icon:'🏥', beneficiaries:88000,  target:144000 },
+      { name:'Water',         pct:74, icon:'💧', beneficiaries:107000, target:145000 },
+      { name:'Power',         pct:69, icon:'⚡', beneficiaries:100000, target:145000 },
+      { name:'Communications',pct:82, icon:'📡', beneficiaries:119000, target:145000 },
+      { name:'Logistics',     pct:77, icon:'🚛', beneficiaries:112000, target:145000 },
+      { name:'Shelter',       pct:58, icon:'🏠', beneficiaries:84000,  target:145000 },
+      { name:'Food Security', pct:71, icon:'🌾', beneficiaries:103000, target:145000 },
+      { name:'Protection',    pct:85, icon:'🛡️', beneficiaries:123000, target:145000 },
+    ],
+    power: [
+      { name:'Dhaka City Grid',    pct:95, fuel:88,  gen:'Mains', status:'ok' },
+      { name:'Cox\'s Bazar Solar', pct:78, fuel:null, gen:'Solar', status:'ok' },
+      { name:'Chittagong Diesel',  pct:61, fuel:38,  gen:'Diesel', status:'warn' },
+    ],
+    water: [
+      { name:'Dhaka Municipal',    flow:200, cap:250, status:'ok' },
+      { name:'Cox\'s Bazar Well',  flow:130, cap:160, status:'ok' },
+      { name:'Khulna Pump',        flow:0,   cap:120, status:'fail' },
+    ],
+    alerts: [],
+    dataSources: [
+      { id:'hdx',  name:'UN OCHA HDX',   status:'live', desc:'Humanitarian data exchange' },
+      { id:'iom',  name:'IOM DTM',       status:'live', desc:'Displacement tracking matrix' },
+      { id:'local',name:'Field Sensors', status:'live', desc:'IoT telemetry (simulated)' },
+    ]
+  },
+  'middle-east': {
+    label: 'Middle East Response Zone',
+    nodes: [
+      { id:'m1', name:'Amman Hub',           type:'Hub',    lat:110, lng:220, status:'online', latency:19, loss:0.2, power:99, fuel:92, flow:220, sector:'logistics', uptime:99.9 },
+      { id:'m2', name:'Zaatari Camp',        type:'Camp',   lat:90,  lng:240, status:'online', latency:36, loss:1.8, power:81, fuel:65, flow:140, sector:'shelter',   uptime:96.4 },
+      { id:'m3', name:'Azraq Relay',         type:'Relay',  lat:95,  lng:265, status:'warn',   latency:63, loss:5.1, power:57, fuel:29, flow:70,  sector:'comms',     uptime:87.8 },
+      { id:'m4', name:'Gaza Medical Point',  type:'Medical',lat:155, lng:165, status:'warn',   latency:91, loss:8.4, power:38, fuel:18, flow:55,  sector:'medical',   uptime:79.2 },
+      { id:'m5', name:'Erbil Supply',        type:'Supply', lat:65,  lng:310, status:'online', latency:28, loss:0.8, power:91, fuel:78, flow:160, sector:'food',      uptime:98.1 },
+      { id:'m6', name:'Mosul Relay',         type:'Relay',  lat:55,  lng:295, status:'offline',latency:999,loss:100, power:0,  fuel:0,  flow:0,   sector:'comms',     uptime:68.3 },
+    ],
+    convoys: [
+      { id:'JO-03', from:'Amman Hub', to:'Zaatari Camp', progress:81, status:'on-track', cargo:'Food Rations 9.0t', eta:'1h 05m' },
+      { id:'IQ-01', from:'Erbil Supply', to:'Mosul Relay', progress:14, status:'delayed', cargo:'Generator Fuel', eta:'Delayed — security hold' },
+    ],
+    sectors: [
+      { name:'Medical',       pct:44, icon:'🏥', beneficiaries:97000,  target:220000 },
+      { name:'Water',         pct:68, icon:'💧', beneficiaries:150000, target:220000 },
+      { name:'Power',         pct:51, icon:'⚡', beneficiaries:112000, target:220000 },
+      { name:'Communications',pct:72, icon:'📡', beneficiaries:158000, target:220000 },
+      { name:'Logistics',     pct:83, icon:'🚛', beneficiaries:183000, target:220000 },
+      { name:'Shelter',       pct:76, icon:'🏠', beneficiaries:167000, target:220000 },
+      { name:'Food Security', pct:62, icon:'🌾', beneficiaries:136000, target:220000 },
+      { name:'Protection',    pct:55, icon:'🛡️', beneficiaries:121000, target:220000 },
+    ],
+    power: [
+      { name:'Amman Grid',         pct:99, fuel:92,  gen:'Mains',  status:'ok' },
+      { name:'Zaatari Solar',      pct:81, fuel:null, gen:'Solar',  status:'ok' },
+      { name:'Gaza Diesel Backup', pct:38, fuel:18,  gen:'Diesel', status:'crit' },
+      { name:'Mosul Generator',    pct:0,  fuel:0,   gen:'Offline',status:'crit' },
+    ],
+    water: [
+      { name:'Amman Municipal',   flow:220, cap:260, status:'ok' },
+      { name:'Zaatari Tankers',   flow:140, cap:180, status:'ok' },
+      { name:'Gaza Well System',  flow:55,  cap:140, status:'warn' },
+    ],
+    alerts: [],
+    dataSources: [
+      { id:'ocha', name:'OCHA ReliefWeb',  status:'live', desc:'Situation reports' },
+      { id:'unhcr',name:'UNHCR Population',status:'live', desc:'Displacement data' },
+      { id:'local',name:'Field Sensors',   status:'warn', desc:'Partial connectivity' },
+    ]
+  }
+};
+
+/* ══════════════════════════════════════════════════════════════════════════
+   STATE
+══════════════════════════════════════════════════════════════════════════ */
+let currentRegion = 'east-africa';
+let demoMode = true;
+let demoInterval = null;
+let aiThinking = false;
+let aiHistory = [];
+let eventHistory = [];
+let ariaActions = [];
+let customSources = [];
+
+/* ══════════════════════════════════════════════════════════════════════════
+   PHASE 1 — PREDICTIVE RISK SCORING ENGINE
+══════════════════════════════════════════════════════════════════════════ */
+
+const HISTORY_LEN = 48;
+const HISTORY_SHORT = 12;
+const HISTORY_MED = 24;
+
+// Initialise metric history buffers for all nodes in all regions
+function initNodeHistories() {
+  Object.values(REGIONS).forEach(region => {
+    region.nodes.forEach(node => {
+      if (!node._history) {
+        // Pre-fill history with near-current values + small noise
+        node._history = {
+          latency:    Array.from({length: HISTORY_LEN}, () => node.latency   + (Math.random()-0.5)*8),
+          loss:       Array.from({length: HISTORY_LEN}, () => Math.max(0, node.loss + (Math.random()-0.5)*1)),
+          power:      Array.from({length: HISTORY_LEN}, () => clamp(node.power + (Math.random()-0.5)*5, 0, 100)),
+          fuel:       Array.from({length: HISTORY_LEN}, () => clamp(node.fuel  + (Math.random()-0.5)*3, 0, 100)),
+          flow:       Array.from({length: HISTORY_LEN}, () => Math.max(0, node.flow + (Math.random()-0.5)*10)),
+          outages:    [],   // timestamps of recent outage events
+        };
+        node.riskScore = 0;
+      }
+    });
+  });
+}
+
+// Push current telemetry into rolling history buffer
+function pushHistory(node) {
+  const h = node._history;
+  if (!h) return;
+  const push = (arr, val) => { arr.push(val); if (arr.length > HISTORY_LEN) arr.shift(); };
+  push(h.latency, node.status === 'offline' ? 999 : node.latency + (Math.random()-0.5)*4);
+  push(h.loss,    node.status === 'offline' ? 100  : Math.max(0, node.loss + (Math.random()-0.5)*0.5));
+  push(h.power,   node.status === 'offline' ? 0    : clamp(node.power + (Math.random()-0.5)*2, 0, 100));
+  push(h.fuel,    node.status === 'offline' ? 0    : Math.max(0, node.fuel - Math.random()*0.3));
+  push(h.flow,    node.status === 'offline' ? 0    : Math.max(0, node.flow + (Math.random()-0.5)*5));
+  if (node.status === 'offline') h.outages.push(Date.now());
+  // Prune outages older than 72h
+  const cutoff = Date.now() - 72*3600*1000;
+  h.outages = h.outages.filter(t => t > cutoff);
+}
+
+// Linear slope: positive = rising (worse for latency/loss, better for power/fuel)
+function linearSlope(arr) {
+  const n = arr.length;
+  if (n < 2) return 0;
+  const xMean = (n - 1) / 2;
+  const yMean = arr.reduce((a,b) => a+b, 0) / n;
+  let num = 0, den = 0;
+  arr.forEach((y, x) => { num += (x - xMean) * (y - yMean); den += (x - xMean) ** 2; });
+  return den === 0 ? 0 : num / den;
+}
+
+// Standard deviation
+function stdDev(arr) {
+  if (arr.length < 2) return 0;
+  const mean = arr.reduce((a,b) => a+b, 0) / arr.length;
+  const variance = arr.reduce((a,b) => a + (b-mean)**2, 0) / arr.length;
+  return Math.sqrt(variance);
+}
+
+function clamp(v, min, max) { return Math.min(max, Math.max(min, v)); }
+
+// Core risk score function (Phase 1)
+function computeRiskScore(node) {
+  if (!node._history) return 0;
+  const h = node._history;
+
+  // Instant offline = max risk
+  if (node.status === 'offline') return 100;
+
+  const latSlice12 = h.latency.slice(-HISTORY_SHORT);
+  const latSlice24 = h.latency.slice(-HISTORY_MED);
+
+  // Trend component: rising latency = bad
+  const latTrend = linearSlope(latSlice12);   // ms per tick
+  const trendScore = clamp(latTrend * 2.5, 0, 35);
+
+  // Volatility component
+  const volatility = stdDev(latSlice24);
+  const volatilityScore = clamp(volatility * 0.4, 0, 25);
+
+  // Fuel penalty (accelerates risk when fuel < 25%)
+  const fuelPenalty = node.fuel < 25 ? (25 - node.fuel) * 1.2 : 0;
+
+  // Power penalty
+  const powerPenalty = node.power < 40 ? (40 - node.power) * 0.6 : 0;
+
+  // Packet loss contribution
+  const lossPenalty = clamp(node.loss * 1.5, 0, 20);
+
+  // Recent outage history (each outage in 72h adds penalty)
+  const outagePenalty = h.outages.length * 12;
+
+  const raw = trendScore + volatilityScore + fuelPenalty + powerPenalty + lossPenalty + outagePenalty;
+  return Math.round(clamp(raw, 0, 100));
+}
+
+// Compute and store risk scores for current region
+function updateRiskScores() {
+  const nodes = REGIONS[currentRegion].nodes;
+  nodes.forEach(n => { n.riskScore = computeRiskScore(n); });
+}
+
+// Return top N riskiest nodes for the current region
+function topRiskNodes(n=3) {
+  return [...REGIONS[currentRegion].nodes]
+    .sort((a,b) => b.riskScore - a.riskScore)
+    .slice(0, n);
+}
+
+// Estimated time-to-failure based on score
+function riskETA(score) {
+  if (score >= 90) return '~2h';
+  if (score >= 75) return '~5h';
+  if (score >= 60) return '~10h';
+  if (score >= 45) return '~18h';
+  return null;
+}
+
+// Risk colour
+function riskColor(score) {
+  if (score >= 65) return { color: 'var(--red)',   cls: 'risk-high', label: 'HIGH' };
+  if (score >= 30) return { color: 'var(--amber)', cls: 'risk-med',  label: 'MED' };
+  return              { color: 'var(--green)',  cls: 'risk-low',  label: 'LOW' };
+}
+
+// Build Risk Watch widget HTML
+function buildRiskWatch() {
+  const top = topRiskNodes(3);
+  const el = document.getElementById('risk-watch-rows');
+  if (!el) return;
+
+  if (top.every(n => n.riskScore === 0)) {
+    el.innerHTML = '<div style="color:var(--t3);font-size:12px;padding:8px 0;">Calculating risk scores…</div>';
+    return;
+  }
+
+  el.innerHTML = top.map(node => {
+    const { color, cls, label } = riskColor(node.riskScore);
+    const trend = node._history ? linearSlope(node._history.latency.slice(-8)) : 0;
+    const trendArrow = trend > 1 ? '▲' : trend < -1 ? '▼' : '→';
+    const trendColor = trend > 1 ? 'var(--red)' : trend < -1 ? 'var(--green)' : 'var(--t3)';
+    const eta = riskETA(node.riskScore);
+    return `
+      <div class="risk-watch-row">
+        <span class="rw-name">${node.name}</span>
+        <span class="risk-badge ${cls}">${label}</span>
+        <span class="rw-score" style="color:${color}">${node.riskScore}</span>
+        <span class="rw-trend" style="color:${trendColor}">${trendArrow}</span>
+        <span class="rw-eta">${eta || '—'}</span>
+      </div>`;
+  }).join('');
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   REGION & DATA MANAGEMENT
+══════════════════════════════════════════════════════════════════════════ */
+
+function region() { return REGIONS[currentRegion]; }
+
+function switchRegion(r) {
+  currentRegion = r;
+  aiHistory = [];
+  document.getElementById('map-region-label').textContent  = region().label;
+  document.getElementById('nodes-region-label').textContent = region().label;
+  updateRiskScores();
+  renderAll();
+  toast(`Switched to ${region().label}`, 'ok');
+}
+
+// Ensure alerts array has some baseline content for the current region
+function ensureAlerts() {
+  const r = region();
+  if (r.alerts.length === 0) {
+    const alertTemplates = {
+      'east-africa': [
+        { id:'a1', sev:'crit', msg:'Mandera Outpost offline — 2h 14m disconnected', node:'n8',  ts: relTime(134) },
+        { id:'a2', sev:'crit', msg:'Garissa Generator: fuel critical — 14h remaining', node:'n4', ts: relTime(45) },
+        { id:'a3', sev:'crit', msg:'Turkana Camp B pump failure — 6,400 beneficiaries at risk', node:'n6', ts: relTime(28) },
+        { id:'a4', sev:'warn', msg:'Convoy KE-07 delayed — road A3 closure', node:null, ts: relTime(15) },
+        { id:'a5', sev:'warn', msg:'Lokichoggio Relay: high packet loss (5.5%)', node:'n10', ts: relTime(8) },
+        { id:'a6', sev:'info', msg:'HDX dataset sync completed — 47 Kenya datasets indexed', node:null, ts: relTime(3) },
+      ],
+      'south-asia': [
+        { id:'a1', sev:'crit', msg:'Khulna Medical offline — flood damage', node:'s5', ts: relTime(88) },
+        { id:'a2', sev:'warn', msg:'Chittagong Hub: degraded — high packet loss', node:'s3', ts: relTime(32) },
+        { id:'a3', sev:'warn', msg:'Convoy BD-05 delayed — flooding on N1 highway', node:null, ts: relTime(19) },
+      ],
+      'middle-east': [
+        { id:'a1', sev:'crit', msg:'Mosul Relay offline — security incident', node:'m6', ts: relTime(201) },
+        { id:'a2', sev:'crit', msg:'Gaza Medical Point: power critical (38%)', node:'m4', ts: relTime(56) },
+        { id:'a3', sev:'warn', msg:'Azraq Relay: fuel low (29%) — 29h remaining', node:'m3', ts: relTime(22) },
+        { id:'a4', sev:'warn', msg:'Convoy IQ-01 held — security clearance pending', node:null, ts: relTime(10) },
+      ]
+    };
+    r.alerts = alertTemplates[currentRegion] || [];
+  }
+}
+
+function relTime(minutesAgo) {
+  const d = new Date(Date.now() - minutesAgo * 60000);
+  return d.toTimeString().slice(0,5);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   RENDER FUNCTIONS
+══════════════════════════════════════════════════════════════════════════ */
+
+function renderAll() {
+  ensureAlerts();
+  updateRiskScores();
+  renderKPIs();
+  renderRiskWatch();
+  renderSectorBars();
+  renderOverviewAlerts();
+  renderOverviewNodes();
+  renderOverviewConvoys();
+  renderNodeListFull();
+  renderSectorsDetail();
+  renderConnectivity();
+  renderPowerWater();
+  renderConvoysFull();
+  renderBeneficiaries();
+  renderAlertsFull();
+  renderHistory();
+  renderActions();
+  renderSources();
+  drawMap();
+  drawTopology();
+  updateBadges();
+  updateLastUpdate();
+}
+
+function renderKPIs() {
+  const nodes = region().nodes;
+  const online = nodes.filter(n => n.status === 'online').length;
+  const total  = nodes.length;
+  const crits  = region().alerts.filter(a => a.sev === 'crit').length;
+  const warns  = region().alerts.filter(a => a.sev === 'warn').length;
+  const benef  = region().sectors.reduce((a,s) => a + s.beneficiaries, 0);
+  const health = Math.round(nodes.filter(n=>n.status!=='offline').length / total * 100);
+
+  set('k-online', online);
+  set('k-online-sub', `of ${total} total`);
+  set('k-crits', crits);
+  set('k-crit-sub', `${warns} warnings active`);
+  set('k-benef', fmtNum(benef));
+  set('k-health', health + '%');
+}
+
+function renderRiskWatch() { buildRiskWatch(); }
+
+function renderSectorBars() {
+  const el = document.getElementById('sector-bars');
+  if (!el) return;
+  el.innerHTML = region().sectors.map(s => {
+    const col = s.pct >= 75 ? 'var(--green)' : s.pct >= 50 ? 'var(--amber)' : 'var(--red)';
+    const pctCol = s.pct >= 75 ? 'kpi-green' : s.pct >= 50 ? 'kpi-amber' : 'kpi-red';
+    return `<div class="sector-row">
+      <span class="sector-name">${s.icon} ${s.name}</span>
+      <div class="sector-bar-wrap"><div class="sector-bar" style="width:${s.pct}%;background:${col}"></div></div>
+      <span class="sector-pct ${pctCol}">${s.pct}%</span>
+    </div>`;
+  }).join('');
+}
+
+function renderOverviewAlerts() {
+  const el = document.getElementById('overview-alerts');
+  if (!el) return;
+  el.innerHTML = region().alerts.slice(0, 5).map(a => alertHTML(a)).join('');
+}
+
+function alertHTML(a) {
+  return `<div class="alert-item alert-${a.sev}" onclick="alertClick('${a.id}')">
+    <span class="alert-sev sev-${a.sev}">${a.sev.toUpperCase()}</span>
+    <div class="alert-body">
+      <div class="alert-msg">${a.msg}</div>
+      <div class="alert-meta">${a.ts || '--'}</div>
+    </div>
+  </div>`;
+}
+
+function renderOverviewNodes() {
+  const el = document.getElementById('overview-nodes');
+  if (!el) return;
+  el.innerHTML = region().nodes.map(n => nodeRowHTML(n)).join('');
+}
+
+function nodeRowHTML(n) {
+  const { color, cls } = riskColor(n.riskScore || 0);
+  const chipBg = n.riskScore >= 65 ? 'var(--red-dim)' : n.riskScore >= 30 ? 'var(--amber-dim)' : 'var(--green-dim)';
+  const riskChip = n.riskScore > 0
+    ? `<span class="node-risk-chip" style="color:${color};background:${chipBg}" title="Risk Score">${n.riskScore}</span>`
+    : '';
+  return `<div class="node-item" onclick="openNodeModal('${n.id}')">
+    <div class="node-dot nd-${n.status}"></div>
+    <span class="node-name">${n.name}</span>
+    ${riskChip}
+    <span class="node-lat">${n.status === 'offline' ? 'OFFLINE' : n.latency + 'ms'}</span>
+    <span class="node-type">${n.type}</span>
+  </div>`;
+}
+
+function renderOverviewConvoys() {
+  const el = document.getElementById('overview-convoys');
+  if (!el) return;
+  el.innerHTML = region().convoys.map(c => {
+    const col = c.status === 'on-track' ? 'var(--green)' : 'var(--amber)';
+    return `<div class="convoy-item">
+      <div class="convoy-head">
+        <span class="convoy-id">${c.id}</span>
+        <span style="font-size:11px;color:${col}">${c.status === 'on-track' ? '● On track' : '⚠ Delayed'}</span>
+      </div>
+      <div style="font-size:11.5px;color:var(--t2);margin-bottom:8px">${c.from} → ${c.to}</div>
+      <div class="convoy-prog"><div class="convoy-prog-fill" style="width:${c.progress}%;background:${col}"></div></div>
+      <div style="display:flex;justify-content:space-between;font-size:10.5px;color:var(--t3);margin-top:4px">
+        <span>${c.cargo}</span><span>${c.eta}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderNodeListFull() {
+  const el = document.getElementById('node-list-full');
+  if (!el) return;
+  // Sort: offline first, then by risk score desc
+  const sorted = [...region().nodes].sort((a,b) => {
+    if (a.status === 'offline' && b.status !== 'offline') return -1;
+    if (b.status === 'offline' && a.status !== 'offline') return 1;
+    return (b.riskScore||0) - (a.riskScore||0);
+  });
+  el.innerHTML = sorted.map(n => {
+    const { color } = riskColor(n.riskScore || 0);
+    const chipBg = n.riskScore >= 65 ? 'var(--red-dim)' : n.riskScore >= 30 ? 'var(--amber-dim)' : 'var(--green-dim)';
+    return `<div class="node-item" onclick="openNodeModal('${n.id}')" style="border-bottom:1px solid var(--border)">
+      <div class="node-dot nd-${n.status}"></div>
+      <span class="node-name">${n.name}</span>
+      <span style="font-size:11px;color:var(--t3);margin-right:4px">${n.sector}</span>
+      ${n.riskScore > 0 ? `<span class="node-risk-chip" style="color:${color};background:${chipBg}" title="Risk Score ${n.riskScore}/100">${n.riskScore}</span>` : '<span style="min-width:30px"></span>'}
+      <span class="node-lat">${n.status === 'offline' ? 'OFFLINE' : n.latency+'ms'}</span>
+      <canvas class="sparkline" id="spark-${n.id}"></canvas>
+      <span class="node-type">${n.type}</span>
+    </div>`;
+  }).join('');
+  // Draw sparklines
+  sorted.forEach(n => drawSparkline(n));
+}
+
+function renderSectorsDetail() {
+  const el = document.getElementById('sectors-detail');
+  if (!el) return;
+  el.innerHTML = region().sectors.map(s => {
+    const col = s.pct >= 75 ? 'var(--green)' : s.pct >= 50 ? 'var(--amber)' : 'var(--red)';
+    const stat = s.pct >= 75 ? 'Operational' : s.pct >= 50 ? 'Degraded' : 'Critical';
+    return `<div style="padding:14px 0;border-bottom:1px solid var(--border)">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <span style="font-size:20px">${s.icon}</span>
+        <span style="font-size:13px;font-weight:600;flex:1">${s.name}</span>
+        <span style="font-size:12px;color:${col};font-weight:600">${stat}</span>
+        <span style="font-family:var(--mono);font-size:14px;color:${col};font-weight:700">${s.pct}%</span>
+      </div>
+      <div class="sector-bar-wrap" style="height:8px"><div class="sector-bar" style="width:${s.pct}%;background:${col}"></div></div>
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--t3);margin-top:6px">
+        <span>Beneficiaries: ${fmtNum(s.beneficiaries)}</span>
+        <span>Target: ${fmtNum(s.target)}</span>
+        <span>Gap: ${fmtNum(s.target - s.beneficiaries)}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderConnectivity() {
+  const el = document.getElementById('latency-matrix');
+  if (!el) return;
+  const nodes = region().nodes.slice(0, 6);
+  const hdr = `<div style="display:flex;gap:1px;margin-bottom:1px">
+    <div style="width:130px"></div>
+    ${nodes.map(n => `<div style="width:80px;font-size:10px;color:var(--t3);text-align:center;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">${n.name.split(' ')[0]}</div>`).join('')}
+  </div>`;
+  const rows = nodes.map(n1 => `
+    <div style="display:flex;gap:1px;margin-bottom:1px;align-items:center">
+      <div style="width:130px;font-size:11px;color:var(--t2);overflow:hidden;white-space:nowrap;text-overflow:ellipsis">${n1.name}</div>
+      ${nodes.map(n2 => {
+        if (n1.id === n2.id) return `<div style="width:80px;height:24px;background:var(--border);border-radius:3px;text-align:center;line-height:24px;font-size:10px;color:var(--t3)">—</div>`;
+        const lat = n1.status==='offline'||n2.status==='offline' ? null : Math.round((n1.latency+n2.latency)/2*(0.8+Math.random()*0.4));
+        const col = lat === null ? 'var(--red-dim)' : lat < 50 ? 'var(--green-dim)' : lat < 100 ? 'var(--amber-dim)' : 'var(--red-dim)';
+        const tc  = lat === null ? 'var(--red)' : lat < 50 ? 'var(--green)' : lat < 100 ? 'var(--amber)' : 'var(--red)';
+        return `<div style="width:80px;height:24px;background:${col};border-radius:3px;text-align:center;line-height:24px;font-size:10.5px;font-family:var(--mono);color:${tc}">${lat===null?'✕':lat+'ms'}</div>`;
+      }).join('')}
+    </div>`).join('');
+  el.innerHTML = hdr + rows;
+}
+
+function renderPowerWater() {
+  const pow = document.getElementById('power-list');
+  const wat = document.getElementById('water-list');
+  if (pow) pow.innerHTML = region().power.map(p => {
+    const col = p.status==='ok' ? 'var(--green)' : p.status==='warn' ? 'var(--amber)' : 'var(--red)';
+    return `<div class="pw-item">
+      <div class="pw-label">${p.name} <small style="color:var(--t3)">(${p.gen})</small></div>
+      ${p.fuel!==null ? `<div style="font-size:11px;color:var(--t3)">⛽${p.fuel}%</div>` : ''}
+      <div class="pw-bar-wrap"><div class="pw-bar" style="width:${p.pct}%;background:${col}"></div></div>
+      <div class="pw-val" style="color:${col}">${p.pct}%</div>
+    </div>`;
+  }).join('');
+
+  if (wat) wat.innerHTML = region().water.map(w => {
+    const pct = w.cap > 0 ? Math.round(w.flow/w.cap*100) : 0;
+    const col = w.status==='ok' ? 'var(--blue)' : w.status==='warn' ? 'var(--amber)' : 'var(--red)';
+    return `<div class="pw-item">
+      <div class="pw-label">${w.name}</div>
+      <div class="pw-bar-wrap"><div class="pw-bar" style="width:${pct}%;background:${col}"></div></div>
+      <div class="pw-val" style="color:${col}">${w.flow}L/h</div>
+    </div>`;
+  }).join('');
+}
+
+function renderConvoysFull() {
+  const el = document.getElementById('convoy-list-full');
+  if (!el) return;
+  el.innerHTML = region().convoys.map(c => {
+    const col = c.status === 'on-track' ? 'var(--green)' : 'var(--amber)';
+    return `<div class="convoy-item" onclick="openConvoyModal('${c.id}')">
+      <div class="convoy-head">
+        <span class="convoy-id">${c.id}</span>
+        <span style="font-size:12px;color:var(--t3)">${c.cargo}</span>
+        <span style="font-size:12px;color:${col};font-weight:600">${c.status==='on-track'?'● On track':'⚠ Delayed'}</span>
+      </div>
+      <div style="font-size:12px;color:var(--t2);margin-bottom:10px">${c.from} → ${c.to}</div>
+      <div class="convoy-prog"><div class="convoy-prog-fill" style="width:${c.progress}%;background:${col}"></div></div>
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--t3);margin-top:6px">
+        <span>${c.progress}% complete</span><span>ETA: ${c.eta}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderBeneficiaries() {
+  const sectors = region().sectors;
+  const total = sectors.reduce((a,s) => a+s.beneficiaries, 0);
+  const target = sectors.reduce((a,s) => a+s.target, 0);
+  const rate = Math.round(total/target*100);
+  set('b-total', fmtNum(total));
+  set('b-rate', rate+'%');
+  const el = document.getElementById('benef-list');
+  if (!el) return;
+  el.innerHTML = sectors.map(s => {
+    const pct = Math.round(s.beneficiaries/s.target*100);
+    const col = pct>=75?'var(--green)':pct>=50?'var(--amber)':'var(--red)';
+    return `<div class="benef-row">
+      <span class="benef-icon">${s.icon}</span>
+      <span class="benef-label">${s.name}</span>
+      <div class="sector-bar-wrap" style="width:120px"><div class="sector-bar" style="width:${pct}%;background:${col}"></div></div>
+      <span class="benef-count">${fmtNum(s.beneficiaries)}</span>
+      <span class="benef-pct" style="color:${col}">${pct}%</span>
+    </div>`;
+  }).join('');
+}
+
+function renderAlertsFull() {
+  const el = document.getElementById('alerts-full');
+  if (!el) return;
+  el.innerHTML = region().alerts.length
+    ? region().alerts.map(a => alertHTML(a)).join('')
+    : '<div style="color:var(--t3);padding:20px;text-align:center">No active alerts</div>';
+}
+
+function renderHistory() {
+  const el = document.getElementById('history-list');
+  if (!el) return;
+  const all = [...eventHistory].reverse().slice(0, 80);
+  el.innerHTML = all.length
+    ? all.map(e => `<div class="evt-item">
+        <span class="evt-time">${e.ts}</span>
+        <span class="evt-sev sev-${e.sev}">${e.sev.toUpperCase()}</span>
+        <span class="evt-msg">${e.msg}</span>
+      </div>`).join('')
+    : '<div style="color:var(--t3);padding:20px;text-align:center">No events recorded yet</div>';
+}
+
+function renderActions() {
+  const el = document.getElementById('actions-list');
+  if (!el) return;
+  el.innerHTML = ariaActions.length
+    ? ariaActions.slice().reverse().map(a => `<div class="action-item">
+        <div class="action-meta">${a.ts} · ARIA Analyst</div>
+        <div class="action-text">${a.text}</div>
+      </div>`).join('')
+    : '<div style="color:var(--t3);padding:20px;text-align:center">No AI recommendations yet — ask ARIA a question</div>';
+}
+
+function renderSources() {
+  const el = document.getElementById('sources-list');
+  if (!el) return;
+  const all = [...(region().dataSources || []), ...customSources];
+  el.innerHTML = all.map(ds => `<div class="ds-item">
+    <div class="ds-dot ds-${ds.status}"></div>
+    <div style="flex:1">
+      <div class="ds-name">${ds.name}</div>
+      <div class="ds-status">${ds.desc}</div>
+    </div>
+    <span style="font-size:11px;font-weight:600;color:${ds.status==='live'?'var(--green)':ds.status==='warn'?'var(--amber)':'var(--red)'}">${ds.status.toUpperCase()}</span>
+  </div>`).join('');
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   SPARKLINES (with risk band overlay — Phase 1)
+══════════════════════════════════════════════════════════════════════════ */
+
+function drawSparkline(node) {
+  const canvas = document.getElementById('spark-' + node.id);
+  if (!canvas || !node._history) return;
+  const W = 80, H = 28;
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, W, H);
+
+  const data = node._history.latency.slice(-20).map(v => Math.min(v, 300));
+  if (data.length < 2) return;
+
+  const mn = Math.min(...data);
+  const mx = Math.max(...data) || 1;
+  const toY = v => H - 2 - ((v - mn) / (mx - mn + 1)) * (H - 4);
+
+  // Risk zone shading — Phase 1 addition
+  if (node.riskScore >= 30) {
+    const riskThresholdY = toY(mx * 0.7);
+    ctx.fillStyle = node.riskScore >= 65 ? 'rgba(239,68,68,0.12)' : 'rgba(245,158,11,0.12)';
+    ctx.fillRect(0, 0, W, riskThresholdY);
+  }
+
+  // Line
+  const col = node.status === 'offline' ? '#EF4444' :
+              node.riskScore >= 65      ? '#EF4444' :
+              node.riskScore >= 30      ? '#F59E0B' : '#10B981';
+  ctx.beginPath();
+  ctx.strokeStyle = col;
+  ctx.lineWidth = 1.5;
+  data.forEach((v, i) => {
+    const x = (i / (data.length - 1)) * W;
+    const y = toY(v);
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   MAP DRAWING
+══════════════════════════════════════════════════════════════════════════ */
+
+function drawMap() {
+  const svg = document.getElementById('map-svg');
+  if (!svg) return;
+  const nodes = region().nodes;
+
+  // Draw connections
+  let links = '';
+  for (let i = 0; i < nodes.length; i++) {
+    for (let j = i+1; j < nodes.length; j++) {
+      const a = nodes[i], b = nodes[j];
+      const offline = a.status==='offline'||b.status==='offline';
+      links += `<line x1="${a.lng}" y1="${a.lat}" x2="${b.lng}" y2="${b.lat}"
+        stroke="${offline?'rgba(239,68,68,0.2)':'rgba(15,184,184,0.15)'}" stroke-width="1"/>`;
+    }
+  }
+
+  // Draw nodes
+  const circles = nodes.map(n => {
+    const col = n.status==='online'?'#10B981':n.status==='warn'?'#F59E0B':'#EF4444';
+    const pulse = n.status!=='offline' ? `
+      <circle cx="${n.lng}" cy="${n.lat}" r="12" fill="${col}" opacity="0.15">
+        <animate attributeName="r" values="8;16;8" dur="3s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0.2;0;0.2" dur="3s" repeatCount="indefinite"/>
+      </circle>` : '';
+    const riskRing = n.riskScore >= 65 ?
+      `<circle cx="${n.lng}" cy="${n.lat}" r="10" fill="none" stroke="#EF4444" stroke-width="2" opacity="0.6">
+        <animate attributeName="r" values="9;13;9" dur="1.5s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0.8;0.2;0.8" dur="1.5s" repeatCount="indefinite"/>
+      </circle>` :
+      n.riskScore >= 30 ?
+      `<circle cx="${n.lng}" cy="${n.lat}" r="10" fill="none" stroke="#F59E0B" stroke-width="1.5" opacity="0.5"/>` : '';
+    return `<g onclick="openNodeModal('${n.id}')" style="cursor:pointer">
+      ${pulse}
+      ${riskRing}
+      <circle cx="${n.lng}" cy="${n.lat}" r="6" fill="${col}" stroke="#0B1623" stroke-width="2"/>
+      <text x="${n.lng}" y="${n.lat - 10}" text-anchor="middle" fill="#7FA3C4" font-size="9" font-family="Inter">${n.name.split(' ')[0]}</text>
+    </g>`;
+  }).join('');
+
+  svg.innerHTML = `
+    <rect width="700" height="400" fill="#182438"/>
+    <rect width="700" height="400" fill="url(#grid)" opacity="0.3"/>
+    <defs>
+      <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+        <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1E3248" stroke-width="0.5"/>
+      </pattern>
+    </defs>
+    ${links}
+    ${circles}
+    <text x="12" y="390" fill="#4A6A8A" font-size="10" font-family="Inter">${region().label}</text>
+  `;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   TOPOLOGY CANVAS
+══════════════════════════════════════════════════════════════════════════ */
+
+function drawTopology() {
+  const canvas = document.getElementById('topo-canvas');
+  if (!canvas) return;
+  const W = canvas.offsetWidth || 700;
+  const H = 380;
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, W, H);
+
+  const nodes = region().nodes;
+  const cx = W/2, cy = H/2, r = Math.min(W,H)*0.36;
+
+  // Positions in ring layout
+  const pos = nodes.map((_, i) => ({
+    x: cx + r * Math.cos((i/nodes.length)*Math.PI*2 - Math.PI/2),
+    y: cy + r * Math.sin((i/nodes.length)*Math.PI*2 - Math.PI/2)
+  }));
+
+  // Draw edges
+  for (let i = 0; i < nodes.length; i++) {
+    for (let j = i+1; j < nodes.length; j++) {
+      if (Math.random() > 0.55) continue;
+      const a = nodes[i], b = nodes[j];
+      ctx.beginPath();
+      ctx.moveTo(pos[i].x, pos[i].y);
+      ctx.lineTo(pos[j].x, pos[j].y);
+      const off = a.status==='offline'||b.status==='offline';
+      ctx.strokeStyle = off ? 'rgba(239,68,68,0.2)' : 'rgba(15,184,184,0.15)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
+  }
+
+  // Draw nodes
+  nodes.forEach((n, i) => {
+    const { x, y } = pos[i];
+    const col = n.status==='online'?'#10B981':n.status==='warn'?'#F59E0B':'#EF4444';
+
+    // Risk aura — Phase 1 visual
+    if (n.riskScore >= 30) {
+      const auraCol = n.riskScore >= 65 ? 'rgba(239,68,68,' : 'rgba(245,158,11,';
+      ctx.beginPath();
+      ctx.arc(x, y, 16, 0, Math.PI*2);
+      ctx.fillStyle = auraCol + '0.15)';
+      ctx.fill();
+    }
+
+    ctx.beginPath();
+    ctx.arc(x, y, 8, 0, Math.PI*2);
+    ctx.fillStyle = col;
+    ctx.fill();
+    ctx.strokeStyle = '#0B1623';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    ctx.fillStyle = '#7FA3C4';
+    ctx.font = '10px Inter';
+    ctx.textAlign = 'center';
+    ctx.fillText(n.name.split(' ')[0], x, y + 20);
+
+    if (n.riskScore >= 30) {
+      ctx.fillStyle = n.riskScore>=65?'#EF4444':'#F59E0B';
+      ctx.font = 'bold 9px JetBrains Mono';
+      ctx.fillText(n.riskScore, x, y - 14);
+    }
+  });
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   NODE MODAL
+══════════════════════════════════════════════════════════════════════════ */
+
+function openNodeModal(nodeId) {
+  const n = region().nodes.find(x => x.id === nodeId);
+  if (!n) return;
+  const { color, label } = riskColor(n.riskScore || 0);
+  const eta = riskETA(n.riskScore || 0);
+
+  document.getElementById('modal-title').textContent = n.name;
+  document.getElementById('modal-sub').textContent = `${n.type} · ${n.sector} sector · ${n.status.toUpperCase()}`;
+
+  // Risk gauge HTML
+  const gaugeCol = color;
+  const gaugeBarCol = n.riskScore >= 65 ? 'var(--red)' : n.riskScore >= 30 ? 'var(--amber)' : 'var(--green)';
+  const riskGauge = `
+    <div class="modal-section">
+      <div class="modal-section-title">⚠ Predictive Risk Score</div>
+      <div class="risk-gauge-wrap">
+        <div class="risk-gauge-score" style="color:${gaugeCol}">${n.riskScore || 0}</div>
+        <div class="risk-gauge-detail">
+          <div class="risk-gauge-label">Risk Level: <strong style="color:${gaugeCol}">${label}</strong></div>
+          <div class="risk-gauge-bar-wrap">
+            <div class="risk-gauge-bar" style="width:${n.riskScore||0}%;background:${gaugeBarCol}"></div>
+          </div>
+          <div class="risk-gauge-meta">${eta ? `Estimated failure window: ${eta}` : 'No immediate failure risk detected'}</div>
+        </div>
+      </div>
+    </div>`;
+
+  // Sparkline with risk band
+  const sparkId = 'modal-spark-' + n.id;
+
+  document.getElementById('modal-body').innerHTML = `
+    ${riskGauge}
+    <div class="modal-section">
+      <div class="modal-section-title">Telemetry</div>
+      <div class="modal-row"><span class="modal-row-label">Status</span><span class="modal-row-val" style="color:${n.status==='online'?'var(--green)':n.status==='warn'?'var(--amber)':'var(--red)'}">${n.status.toUpperCase()}</span></div>
+      <div class="modal-row"><span class="modal-row-label">Latency</span><span class="modal-row-val">${n.status==='offline'?'—':n.latency+'ms'}</span></div>
+      <div class="modal-row"><span class="modal-row-label">Packet Loss</span><span class="modal-row-val">${n.status==='offline'?'—':n.loss+'%'}</span></div>
+      <div class="modal-row"><span class="modal-row-label">Uptime (30d)</span><span class="modal-row-val">${n.uptime}%</span></div>
+    </div>
+    <div class="modal-section">
+      <div class="modal-section-title">Latency History (with risk band)</div>
+      <canvas id="${sparkId}" style="width:100%;height:60px;border-radius:6px;background:var(--bg3)"></canvas>
+    </div>
+    <div class="modal-section">
+      <div class="modal-section-title">Infrastructure</div>
+      <div class="modal-row"><span class="modal-row-label">Power</span><span class="modal-row-val">${n.status==='offline'?'—':n.power+'%'}</span></div>
+      <div class="modal-row"><span class="modal-row-label">Fuel</span><span class="modal-row-val">${n.fuel?n.fuel+'%':'N/A'}</span></div>
+      <div class="modal-row"><span class="modal-row-label">Water Flow</span><span class="modal-row-val">${n.flow?n.flow+'L/h':'—'}</span></div>
+      <div class="modal-row"><span class="modal-row-label">Sector</span><span class="modal-row-val">${n.sector}</span></div>
+    </div>
+    <div class="modal-section">
+      <div class="modal-section-title">Risk Factor Breakdown</div>
+      ${buildRiskBreakdown(n)}
+    </div>`;
+
+  document.getElementById('modal-overlay').classList.add('open');
+
+  // Draw modal sparkline with risk band overlay
+  setTimeout(() => {
+    const c = document.getElementById(sparkId);
+    if (!c || !n._history) return;
+    const W = c.offsetWidth || 510; const H = 60;
+    c.width = W; c.height = H;
+    const ctx = c.getContext('2d');
+    const data = n._history.latency.slice(-32).map(v => Math.min(v, 400));
+    const mn = Math.min(...data); const mx = Math.max(...data) || 1;
+    const toY = v => H - 4 - ((v - mn) / (mx - mn + 1)) * (H - 8);
+
+    // Risk band shading
+    if (n.riskScore >= 30) {
+      const threshold = toY(mx * 0.65);
+      ctx.fillStyle = n.riskScore>=65 ? 'rgba(239,68,68,0.10)' : 'rgba(245,158,11,0.10)';
+      ctx.fillRect(0, 0, W, threshold);
+      ctx.strokeStyle = n.riskScore>=65 ? 'rgba(239,68,68,0.4)' : 'rgba(245,158,11,0.4)';
+      ctx.setLineDash([4,4]);
+      ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(0,threshold); ctx.lineTo(W,threshold); ctx.stroke();
+      ctx.setLineDash([]);
+    }
+
+    // Line
+    const lineCol = n.riskScore>=65?'#EF4444':n.riskScore>=30?'#F59E0B':'#10B981';
+    ctx.beginPath(); ctx.strokeStyle = lineCol; ctx.lineWidth = 2;
+    data.forEach((v,i) => { const x=(i/(data.length-1))*W, y=toY(v); i===0?ctx.moveTo(x,y):ctx.lineTo(x,y); });
+    ctx.stroke();
+  }, 50);
+}
+
+function buildRiskBreakdown(n) {
+  if (!n._history) return '<div style="color:var(--t3);font-size:12px">No history data yet</div>';
+  const h = n._history;
+  const slope = linearSlope(h.latency.slice(-12)).toFixed(2);
+  const vol = stdDev(h.latency.slice(-24)).toFixed(1);
+  const fuelP = n.fuel < 25 ? (25-n.fuel)*1.2 : 0;
+  const powerP = n.power < 40 ? (40-n.power)*0.6 : 0;
+  const outageP = h.outages.length * 12;
+
+  const row = (label, val, note) => `
+    <div class="modal-row">
+      <span class="modal-row-label">${label}</span>
+      <span class="modal-row-val">${val}</span>
+      ${note?`<span style="font-size:11px;color:var(--t3)">${note}</span>`:''}
+    </div>`;
+
+  return row('Latency trend', slope+' ms/tick', slope>0?'↑ Rising':'↓ Stable')
+       + row('Latency volatility', vol+' ms std', vol>10?'High jitter':'Stable')
+       + row('Fuel penalty', fuelP.toFixed(0)+' pts', n.fuel<25?'⚠ Low fuel':'—')
+       + row('Power penalty', powerP.toFixed(0)+' pts', n.power<40?'⚠ Low power':'—')
+       + row('Outage history', outageP+' pts', h.outages.length+' outage(s) in 72h');
+}
+
+function openConvoyModal(cid) {
+  const c = region().convoys.find(x => x.id === cid);
+  if (!c) return;
+  document.getElementById('modal-title').textContent = 'Convoy ' + c.id;
+  document.getElementById('modal-sub').textContent = c.cargo;
+  const col = c.status==='on-track'?'var(--green)':'var(--amber)';
+  document.getElementById('modal-body').innerHTML = `
+    <div class="modal-section">
+      <div class="modal-row"><span class="modal-row-label">From</span><span class="modal-row-val">${c.from}</span></div>
+      <div class="modal-row"><span class="modal-row-label">To</span><span class="modal-row-val">${c.to}</span></div>
+      <div class="modal-row"><span class="modal-row-label">Progress</span><span class="modal-row-val" style="color:${col}">${c.progress}%</span></div>
+      <div class="modal-row"><span class="modal-row-label">ETA</span><span class="modal-row-val">${c.eta}</span></div>
+      <div class="modal-row"><span class="modal-row-label">Status</span><span class="modal-row-val" style="color:${col}">${c.status}</span></div>
+    </div>
+    <div style="padding:12px;background:var(--bg3);border-radius:6px">
+      <div class="convoy-prog"><div class="convoy-prog-fill" style="width:${c.progress}%;background:${col}"></div></div>
+    </div>`;
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function alertClick(aid) {
+  const a = region().alerts.find(x => x.id === aid);
+  if (!a) return;
+  if (a.node) openNodeModal(a.node);
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('open');
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   DEMO MODE
+══════════════════════════════════════════════════════════════════════════ */
+
+function toggleDemo() {
+  demoMode = !demoMode;
+  const btn = document.getElementById('demo-btn');
+  if (demoMode) {
+    startDemo();
+    btn.textContent = '● LIVE DEMO';
+    btn.classList.add('demo-badge');
+  } else {
+    clearInterval(demoInterval);
+    btn.textContent = '○ Demo Off';
+    btn.classList.remove('demo-badge');
+  }
+}
+
+function startDemo() {
+  clearInterval(demoInterval);
+  demoInterval = setInterval(() => {
+    if (!demoMode) return;
+    tickTelemetry();
+    maybeFire();
+    updateRiskScores();
+    renderAll();
+  }, 4000);
+}
+
+function tickTelemetry() {
+  region().nodes.forEach(n => {
+    if (n.status === 'offline') return;
+    n.latency = Math.max(5, n.latency + (Math.random()-0.48)*6);
+    n.loss    = Math.max(0, n.loss + (Math.random()-0.5)*0.4);
+    n.power   = clamp(n.power + (Math.random()-0.5)*2, 5, 100);
+    n.fuel    = Math.max(0, n.fuel - Math.random()*0.4);
+    n.flow    = Math.max(0, n.flow + (Math.random()-0.5)*8);
+    pushHistory(n);
+  });
+}
+
+function maybeFire() {
+  if (Math.random() > 0.25) return;
+  const templates = [
+    { sev:'info', msg:'Telemetry sync completed for all active nodes' },
+    { sev:'warn', msg:'Packet loss spike detected on relay network' },
+    { sev:'warn', msg:'Generator fuel consumption above threshold' },
+    { sev:'info', msg:'Convoy position update received' },
+    { sev:'crit', msg:'Power fluctuation detected — investigating' },
+    { sev:'info', msg:'Water flow nominal across monitored sites' },
+  ];
+  const tmpl = templates[Math.floor(Math.random()*templates.length)];
+  const now = new Date().toTimeString().slice(0,5);
+  eventHistory.push({ ts: now, sev: tmpl.sev, msg: tmpl.msg });
+  if (eventHistory.length > 200) eventHistory.shift();
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   EXTERNAL DATA SOURCES
+══════════════════════════════════════════════════════════════════════════ */
+
+async function fetchAllSources() {
+  updateLastUpdate();
+  toast('↻ Fetching data from live sources…', 'ok');
+  addIngestLog('SYSTEM', 'Initiating data refresh cycle');
+
+  try {
+    const resp = await fetch('https://data.humdata.org/api/3/action/package_search?q=humanitarian&rows=3', { signal: AbortSignal.timeout(8000) });
+    if (resp.ok) {
+      const d = await resp.json();
+      const count = d.result?.count || 0;
+      addIngestLog('HDX', `Connected — ${count} datasets found`);
+      toast(`✓ HDX: ${count} datasets indexed`, 'ok');
+      updateSourceStatus('hdx', 'live');
+    }
+  } catch(e) {
+    addIngestLog('HDX', 'Unreachable — CORS or network');
+    updateSourceStatus('hdx', 'warn');
+  }
+
+  try {
+    const resp = await fetch('https://api.reliefweb.int/v1/reports?appname=aria-v3&limit=3', { signal: AbortSignal.timeout(8000) });
+    if (resp.ok) {
+      const d = await resp.json();
+      addIngestLog('RELIEF', `${d.totalCount || '?'} reports available`);
+      updateSourceStatus('relief', 'live');
+    }
+  } catch(e) {
+    addIngestLog('RELIEF', 'Unreachable — using cached');
+    updateSourceStatus('relief', 'warn');
+  }
+
+  addIngestLog('SENSORS', 'Field telemetry stream nominal');
+  updateLastUpdate();
+  renderSources();
+  buildIngestionLog();
+}
+
+function updateSourceStatus(id, status) {
+  const src = region().dataSources?.find(s => s.id === id);
+  if (src) src.status = status;
+}
+
+const ingestLog = [];
+function addIngestLog(src, msg) {
+  const ts = new Date().toTimeString().slice(0,5);
+  ingestLog.unshift({ ts, src, msg });
+  if (ingestLog.length > 40) ingestLog.pop();
+  buildIngestionLog();
+}
+
+function buildIngestionLog() {
+  const el = document.getElementById('ingest-log');
+  if (!el) return;
+  el.innerHTML = ingestLog.map(l => `
+    <div class="ingest-row">
+      <span class="ingest-ts">${l.ts}</span>
+      <span class="ingest-src">${l.src}</span>
+      <span class="ingest-msg">${l.msg}</span>
+    </div>`).join('');
+}
+
+function addCustomSource() {
+  const name = document.getElementById('ds-custom-name').value.trim();
+  const url  = document.getElementById('ds-custom-url').value.trim();
+  if (!name || !url) return toast('Enter a name and URL', 'err');
+  customSources.push({ id: 'c'+Date.now(), name, desc: url, status:'warn' });
+  document.getElementById('ds-custom-name').value = '';
+  document.getElementById('ds-custom-url').value = '';
+  toast(`Added custom source: ${name}`, 'ok');
+  renderSources();
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   AI ANALYST
+══════════════════════════════════════════════════════════════════════════ */
+
+function toggleAI() {
+  const p = document.getElementById('ai-panel');
+  const b = document.getElementById('btn-ai');
+  p.classList.toggle('open');
+  b.classList.toggle('active');
+}
+
+function aiAsk(q) {
+  document.getElementById('ai-input').value = q;
+  if (!document.getElementById('ai-panel').classList.contains('open')) toggleAI();
+  setTimeout(aiSend, 100);
+}
+
+async function aiSend() {
+  if (aiThinking) return;
+  const inp = document.getElementById('ai-input');
+  const q = inp.value.trim();
+  if (!q) return;
+  inp.value = '';
+  const msgs = document.getElementById('ai-messages');
+  msgs.innerHTML += `<div class="ai-msg user">${escHtml(q)}</div>`;
+  const thinkEl = document.createElement('div');
+  thinkEl.className = 'ai-msg assistant';
+  thinkEl.innerHTML = '<div class="typing-dots"><span></span><span></span><span></span></div>';
+  msgs.appendChild(thinkEl);
+  msgs.scrollTop = msgs.scrollHeight;
+  aiThinking = true;
+  document.getElementById('ai-send').disabled = true;
+  aiHistory.push({ role:'user', content: q });
+
+  // Phase 1: inject live risk scores into system prompt
+  const top3 = topRiskNodes(3);
+  const riskContext = top3.map(n => `  - ${n.name}: score=${n.riskScore}/100 ${n.riskScore>=65?'[CRITICAL RISK]':n.riskScore>=30?'[ELEVATED]':'[LOW]'}`).join('\n');
+
+  const r = region();
+  const online  = r.nodes.filter(n=>n.status==='online').length;
+  const offline = r.nodes.filter(n=>n.status==='offline').length;
+  const crits   = r.alerts.filter(a=>a.sev==='crit').length;
+  const warns   = r.alerts.filter(a=>a.sev==='warn').length;
+  const benef   = r.sectors.reduce((a,s)=>a+s.beneficiaries,0);
+
+  const systemPrompt = `You are ARIA — AI Relief Infrastructure Analyst — embedded in a humanitarian operations dashboard monitoring crisis response infrastructure in ${r.label}.
+
+NETWORK STATUS:
+- ${online}/${r.nodes.length} nodes online, ${offline} offline
+- ${crits} critical alerts, ${warns} warnings active
+- Beneficiaries reached: ~${fmtNum(benef)}
+
+RISK WATCH (Predictive Scoring — Phase 1):
+${riskContext}
+
+SECTOR HEALTH:
+${r.sectors.map(s=>`  - ${s.name}: ${s.pct}%`).join('\n')}
+
+ACTIVE CRITICAL ALERTS:
+${r.alerts.filter(a=>a.sev==='crit').map(a=>`  - ${a.msg}`).join('\n') || '  None'}
+
+CONVOY STATUS:
+${r.convoys.map(c=>`  - ${c.id}: ${c.from}→${c.to} (${c.progress}%) ${c.status==='delayed'?'[DELAYED]':''}`).join('\n')}
+
+You help humanitarian operations coordinators prioritise responses. Be concise, direct, and actionable. Use the predictive risk scores to flag nodes that need preemptive attention before they fail. Always suggest concrete next steps.`;
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'anthropic-dangerous-direct-browser-calls': 'true' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 1000,
+        system: systemPrompt,
+        messages: aiHistory,
+      })
+    });
+    const data = await resp.json();
+    const reply = data.content?.[0]?.text || 'No response.';
+    thinkEl.innerHTML = reply;
+    aiHistory.push({ role:'assistant', content: reply });
+    msgs.scrollTop = msgs.scrollHeight;
+
+    // Log to actions
+    ariaActions.push({ ts: new Date().toTimeString().slice(0,5), text: reply.slice(0, 200) + (reply.length>200?'…':'') });
+    renderActions();
+  } catch(e) {
+    thinkEl.innerHTML = `⚠ Could not reach ARIA Analyst. Check your API key or network connection.\n\n${e.message}`;
+  }
+
+  aiThinking = false;
+  document.getElementById('ai-send').disabled = false;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   UTILITIES
+══════════════════════════════════════════════════════════════════════════ */
+
+function set(id, val) { const e=document.getElementById(id); if(e) e.textContent=val; }
+function fmtNum(n) { return n>=1000000?(n/1000000).toFixed(1)+'M':n>=1000?(n/1000).toFixed(0)+'K':n.toString(); }
+function escHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function updateBadges() {
+  const offline = region().nodes.filter(n=>n.status==='offline').length;
+  const crits   = region().alerts.filter(a=>a.sev==='crit').length;
+  const ob = document.getElementById('offline-badge');
+  const ab = document.getElementById('alert-badge');
+  if (ob) { ob.textContent = offline; ob.style.display = offline>0?'':'none'; }
+  if (ab) { ab.textContent = crits;   ab.style.display = crits>0?'':'none'; }
+}
+
+function updateLastUpdate() {
+  const el = document.getElementById('last-update');
+  if (el) el.textContent = 'Updated: ' + new Date().toTimeString().slice(0,8);
+}
+
+function toast(msg, _type) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2800);
+}
+
+function clearAlerts() {
+  region().alerts = [];
+  renderAlertsFull();
+  renderOverviewAlerts();
+  updateBadges();
+  toast('All alerts cleared', 'ok');
+}
+
+function exportCSV() {
+  const rows = [['Timestamp','Severity','Message'], ...eventHistory.map(e=>[e.ts,e.sev,e.msg])];
+  const csv = rows.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+  a.download = 'ARIA_events_' + new Date().toISOString().slice(0,10) + '.csv';
+  a.click();
+}
+
+function showView(id, el) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const v = document.getElementById('view-'+id);
+  if (v) v.classList.add('active');
+  if (el) el.classList.add('active');
+  const titles = {
+    overview:'Dashboard', map:'Live Map', nodes:'Nodes', sectors:'Sectors',
+    connectivity:'Connectivity', power:'Power & Water', logistics:'Logistics',
+    beneficiaries:'Beneficiaries', alerts:'Alerts', history:'Event History',
+    actions:'ARIA Actions Log', sources:'Data Sources'
+  };
+  set('view-title', titles[id] || id);
+  // Re-draw canvas-based views on show
+  if (id === 'connectivity') drawTopology();
+  if (id === 'map') drawMap();
+  if (id === 'nodes') renderNodeListFull();
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   INIT
+══════════════════════════════════════════════════════════════════════════ */
+
+(function init() {
+  initNodeHistories();
+
+  // Seed some initial history variation to make scores meaningful immediately
+  Object.values(REGIONS).forEach(region => {
+    region.nodes.forEach(node => {
+      // Simulate 20 ticks of history
+      for (let i = 0; i < 20; i++) {
+        pushHistory(node);
+        // For degraded nodes, inject worsening trend
+        if (node.status === 'warn') {
+          node._history.latency[node._history.latency.length-1] += i * 1.5;
+        }
+      }
+    });
+  });
+
+  ensureAlerts();
+  updateRiskScores();
+  renderAll();
+
+  // Seed event history
+  [
+    { ts:'07:12', sev:'crit', msg:'Mandera Outpost lost connectivity' },
+    { ts:'07:34', sev:'warn', msg:'Garissa fuel level below 20%' },
+    { ts:'08:01', sev:'info', msg:'Convoy KE-04 departed Nairobi HQ' },
+    { ts:'08:19', sev:'crit', msg:'Turkana Camp B pump failure confirmed' },
+    { ts:'08:45', sev:'info', msg:'HDX data sync completed' },
+    { ts:'09:03', sev:'warn', msg:'Convoy KE-07 delayed — road closure' },
+  ].forEach(e => eventHistory.push(e));
+
+  addIngestLog('SYSTEM', 'ARIA v3.2.0-pwa initialised with Risk Scoring + Offline Engine');
+  addIngestLog('RISK', 'Phase 1 predictive scoring active — monitoring ' + REGIONS['east-africa'].nodes.length + ' nodes');
+
+  if (demoMode) startDemo();
+
+  window.addEventListener('resize', () => { drawTopology(); drawMap(); });
+})();
+
+/* ══════════════════════════════════════════════════════════════════════════
+   PHASE 2 — PWA / OFFLINE-FIRST
+══════════════════════════════════════════════════════════════════════════ */
+
+let _swRegistration = null;
+let _swWaiting = null;
+
+// Register service worker
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').then(reg => {
+      _swRegistration = reg;
+      addIngestLog('PWA', 'Service worker registered — offline mode active');
+
+      reg.addEventListener('updatefound', () => {
+        const installing = reg.installing;
+        installing.addEventListener('statechange', () => {
+          if (installing.state === 'installed' && navigator.serviceWorker.controller) {
+            _swWaiting = installing;
+            showUpdateBanner();
+            addIngestLog('PWA', 'App update available — click Apply to reload');
+          }
+        });
+      });
+    }).catch(err => {
+      console.warn('[ARIA SW] Registration failed:', err);
+      addIngestLog('PWA', 'Service worker unavailable — online-only mode');
+    });
+
+    // When SW takes control after skip-waiting, reload to activate new version
+    navigator.serviceWorker.addEventListener('controllerchange', () => window.location.reload());
+  });
+}
+
+// Install-to-home-screen prompt (A2HS / PWA install)
+let _installPrompt = null;
+
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  _installPrompt = e;
+  const btn = document.getElementById('install-btn');
+  if (btn) btn.style.display = 'flex';
+});
+
+window.addEventListener('appinstalled', () => {
+  const btn = document.getElementById('install-btn');
+  if (btn) btn.style.display = 'none';
+  _installPrompt = null;
+  toast('ARIA installed as standalone app', 'ok');
+  addIngestLog('PWA', 'App installed to home screen / desktop');
+});
+
+function installApp() {
+  if (!_installPrompt) return;
+  _installPrompt.prompt();
+  _installPrompt.userChoice.then(({ outcome }) => {
+    if (outcome === 'accepted') _installPrompt = null;
+  });
+}
+
+// Live connectivity indicator dot
+function updateConnDot() {
+  const dot = document.getElementById('conn-dot');
+  if (!dot) return;
+  if (navigator.onLine) {
+    dot.style.background = 'var(--green)';
+    dot.style.boxShadow  = '0 0 6px var(--green)';
+    dot.title = 'Online';
+  } else {
+    dot.style.background = 'var(--red)';
+    dot.style.boxShadow  = '0 0 6px var(--red)';
+    dot.title = 'Offline — serving cached data';
+  }
+}
+
+window.addEventListener('online', () => {
+  updateConnDot();
+  toast('Network restored', 'ok');
+  addIngestLog('NET', 'Connection restored — syncing pending data');
+  // Trigger background sync drain if supported
+  if (_swRegistration && 'sync' in _swRegistration) {
+    _swRegistration.sync.register('aria-outbox-sync').catch(() => {});
+  }
+});
+
+window.addEventListener('offline', () => {
+  updateConnDot();
+  toast('Offline — cached data mode active', 'warn');
+  addIngestLog('NET', 'Network lost — outbox queuing enabled');
+});
+
+// Initialise connectivity dot on page load
+updateConnDot();
+
+// SW update banner controls
+function showUpdateBanner() {
+  const b = document.getElementById('sw-update-banner');
+  if (b) b.style.display = 'flex';
+}
+
+function applyUpdate() {
+  if (_swWaiting) _swWaiting.postMessage({ type: 'SKIP_WAITING' });
+}
+</script>
+</body>
+</html>
