@@ -1,5 +1,18 @@
 # Rollback Manifest
 
+## 4762c41 — 2026-06-14 06:30 UTC
+
+- **SHA**: `4762c4179a0b50c50b73c638f966b2012d61f8b3`
+- **Author**: GadgetAI
+- **Message**: fix: pin pytest-asyncio<1.0.0 to prevent broken test collection
+- **Files changed**: 2 file(s)
+
+**Changed files:**
+- `pytest.ini`
+- `requirements.txt`
+
+---
+
 ## ea88faa — 2026-06-13 06:40 UTC
 
 - **SHA**: `ea88faaac9cc6fadb604decdf124e972ff7f17eb`
