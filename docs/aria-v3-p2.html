@@ -252,6 +252,12 @@ canvas { display: block; }
 /* ── DATA SOURCES ────────────────────────────────────────────────────── */
 .ds-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 6px; background: var(--bg3); margin-bottom: 6px; }
 .ds-dot  { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+/* Phase 4: live report items */
+.report-item { padding:9px 0; border-bottom:1px solid var(--border); }
+.report-item:last-child { border-bottom:none; }
+.report-title { font-size:12px; color:var(--t1); margin-bottom:4px; line-height:1.4; }
+.report-meta  { font-size:10px; color:var(--t3); display:flex; gap:10px; }
+.report-src   { color:var(--teal); font-weight:600; }
 .ds-live { background: var(--green); }
 .ds-warn { background: var(--amber); }
 .ds-err  { background: var(--red); }
@@ -321,7 +327,7 @@ canvas { display: block; }
       <option value="middle-east">Middle East</option>
     </select>
   </div>
-  <div class="sb-status">System: <span>OPERATIONAL</span> · v3.3.0-multi</div>
+  <div class="sb-status">System: <span>OPERATIONAL</span> · v3.4.0-pipeline</div>
 </aside>
 
 <!-- ── MAIN ─────────────────────────────────────────────────────────────── -->
@@ -505,7 +511,16 @@ canvas { display: block; }
           <div id="ingest-log" style="max-height:320px;overflow-y:auto;"></div>
         </div>
       </div>
-      <div class="card">
+      <div class="card" style="margin-top:14px">
+        <div class="card-title" style="display:flex;align-items:center;justify-content:space-between">
+          LIVE FIELD REPORTS
+          <span id="reports-status" style="font-size:10px;color:var(--t3);font-weight:400;font-family:var(--mono)">—</span>
+        </div>
+        <div id="live-reports-list" style="max-height:280px;overflow-y:auto;">
+          <div style="color:var(--t3);font-size:12px;padding:10px 0">Click ↻ Refresh to load live reports from ReliefWeb.</div>
+        </div>
+      </div>
+      <div class="card" style="margin-top:14px">
         <div class="card-title">CUSTOM DATA SOURCE</div>
         <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;">
           <div style="flex:1;min-width:200px">
@@ -915,6 +930,10 @@ function switchRegion(r) {
   updateRiskScores();
   renderAll();
   toast(`Switched to ${region().label}`, 'ok');
+  // Phase 4: refresh live reports for new region if sources view is visible
+  if (document.getElementById('view-sources')?.style.display !== 'none') {
+    fetchLiveReports();
+  }
 }
 
 // Ensure alerts array has some baseline content for the current region
@@ -1647,22 +1666,84 @@ async function fetchAllSources() {
     updateSourceStatus('hdx', 'warn');
   }
 
-  try {
-    const resp = await fetch('https://api.reliefweb.int/v1/reports?appname=aria-v3&limit=3', { signal: AbortSignal.timeout(8000) });
-    if (resp.ok) {
-      const d = await resp.json();
-      addIngestLog('RELIEF', `${d.totalCount || '?'} reports available`);
-      updateSourceStatus('relief', 'live');
-    }
-  } catch(e) {
-    addIngestLog('RELIEF', 'Unreachable — using cached');
-    updateSourceStatus('relief', 'warn');
-  }
+  // Phase 4: fetch real field reports (replaces simple ReliefWeb ping)
+  await fetchLiveReports();
 
   addIngestLog('SENSORS', 'Field telemetry stream nominal');
   updateLastUpdate();
   renderSources();
   buildIngestionLog();
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   PHASE 4: BENEFICIARY PIPELINE — LIVE FIELD REPORTS (ReliefWeb API)
+══════════════════════════════════════════════════════════════════════════ */
+
+const REGION_COUNTRIES = {
+  'east-africa': ['Somalia', 'Kenya', 'Ethiopia', 'South Sudan', 'Democratic Republic of the Congo'],
+  'south-asia':  ['Bangladesh', 'Myanmar', 'Afghanistan', 'Pakistan'],
+  'middle-east': ['Syria', 'Yemen', 'Iraq', 'Sudan'],
+};
+
+async function fetchLiveReports() {
+  const countries = REGION_COUNTRIES[currentRegion] || REGION_COUNTRIES['east-africa'];
+  const el       = document.getElementById('live-reports-list');
+  const statusEl = document.getElementById('reports-status');
+  if (el) el.innerHTML = '<div style="color:var(--t3);font-size:12px;padding:10px 0">⏳ Fetching live reports…</div>';
+
+  try {
+    const resp = await fetch('https://api.reliefweb.int/v1/reports?appname=aria-v3', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        filter: {
+          operator: 'OR',
+          conditions: countries.map(c => ({ field: 'primary_country.name', value: c })),
+        },
+        limit: 6,
+        sort: ['date:desc'],
+        fields: { include: ['title', 'date', 'source', 'url'] },
+      }),
+      signal: AbortSignal.timeout(10000),
+    });
+
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const data    = await resp.json();
+    const reports = data.data || [];
+    const total   = data.totalCount || reports.length;
+
+    if (statusEl) statusEl.textContent = `${total} total`;
+    addIngestLog('RELIEFWEB', `${reports.length} recent SitReps — ${countries[0]} zone (${total} total)`);
+    updateSourceStatus('relief', 'live');
+
+    if (!el) return reports;
+    if (reports.length === 0) {
+      el.innerHTML = '<div style="color:var(--t3);font-size:12px;padding:10px 0">No reports found for this region.</div>';
+      return reports;
+    }
+
+    el.innerHTML = reports.map(r => {
+      const f    = r.fields || {};
+      const title = f.title || 'Untitled Report';
+      const date  = (f.date?.original || '').slice(0, 10) || '—';
+      const src   = f.source?.[0]?.name || 'ReliefWeb';
+      return `<div class="report-item">
+        <div class="report-title">${escHtml(title)}</div>
+        <div class="report-meta">
+          <span class="report-src">${escHtml(src)}</span>
+          <span>${date}</span>
+        </div>
+      </div>`;
+    }).join('');
+
+    return reports;
+  } catch (e) {
+    addIngestLog('RELIEFWEB', `Fetch failed — ${e.message}`);
+    updateSourceStatus('relief', 'warn');
+    if (el) el.innerHTML = `<div style="color:var(--amber);font-size:12px;padding:10px 0">⚠ Live data unavailable (${e.message}). Cached data in use.</div>`;
+    if (statusEl) statusEl.textContent = 'offline';
+    return [];
+  }
 }
 
 function updateSourceStatus(id, status) {
@@ -2047,7 +2128,7 @@ function showView(id, el) {
     { ts:'09:03', sev:'warn', msg:'Convoy KE-07 delayed — road closure' },
   ].forEach(e => eventHistory.push(e));
 
-  addIngestLog('SYSTEM', 'ARIA v3.3.0-multi initialised with Risk Scoring + Offline + Multi-Analyst Engine');
+  addIngestLog('SYSTEM', 'ARIA v3.4.0-pipeline initialised with Risk Scoring + Offline + Multi-Analyst + Live Field Reports');
   addIngestLog('RISK', 'Phase 1 predictive scoring active — monitoring ' + REGIONS['east-africa'].nodes.length + ' nodes');
 
   if (demoMode) startDemo();
