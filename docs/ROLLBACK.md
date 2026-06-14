@@ -1,5 +1,17 @@
 # Rollback Manifest
 
+## 54f8e75 — 2026-06-14 07:37 UTC
+
+- **SHA**: `54f8e75cf9298f5826903c0eeadb88b260d69cae`
+- **Author**: GadgetAI
+- **Message**: fix: add pytest-timeout to resolve strict-config unknown option error
+- **Files changed**: 1 file(s)
+
+**Changed files:**
+- `requirements.txt`
+
+---
+
 ## 4762c41 — 2026-06-14 06:30 UTC
 
 - **SHA**: `4762c4179a0b50c50b73c638f966b2012d61f8b3`
