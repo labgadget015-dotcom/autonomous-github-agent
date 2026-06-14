@@ -258,6 +258,19 @@ canvas { display: block; }
 .report-title { font-size:12px; color:var(--t1); margin-bottom:4px; line-height:1.4; }
 .report-meta  { font-size:10px; color:var(--t3); display:flex; gap:10px; }
 .report-src   { color:var(--teal); font-weight:600; }
+
+/* ── PHASE 5: SITREP ─────────────────────────────────────────────────── */
+.sitrep-header { background:var(--bg3); border:1px solid var(--border2); border-radius:8px; padding:16px 20px; margin-bottom:14px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; }
+.sitrep-meta { font-size:11px; color:var(--t3); font-family:var(--mono); margin-top:4px; }
+.sitrep-period { color:var(--teal); }
+.sitrep-5w { border-collapse:collapse; width:100%; }
+.sitrep-5w th { background:var(--bg3); font-size:10px; font-weight:700; color:var(--teal); text-transform:uppercase; letter-spacing:.8px; padding:10px 14px; border:1px solid var(--border); text-align:left; white-space:nowrap; }
+.sitrep-5w td { padding:9px 14px; border:1px solid var(--border); font-size:12.5px; color:var(--t1); vertical-align:top; line-height:1.5; }
+.sitrep-5w tr:nth-child(even) td { background:rgba(15,184,184,.03); }
+#sitrep-narrative { min-height:120px; font-size:13px; line-height:1.7; color:var(--t1); white-space:pre-wrap; padding:4px 0; }
+.sitrep-gen-btn { background:var(--teal2); color:#fff; padding:8px 18px; border-radius:6px; font-size:13px; font-weight:600; cursor:pointer; font-family:var(--sans); }
+.sitrep-gen-btn:hover { background:var(--teal); }
+.sitrep-gen-btn:disabled { opacity:.4; cursor:default; }
 .ds-live { background: var(--green); }
 .ds-warn { background: var(--amber); }
 .ds-err  { background: var(--red); }
@@ -318,6 +331,7 @@ canvas { display: block; }
   <div class="nav-item" onclick="showView('history',this)">📋 <span>History</span></div>
   <div class="nav-item" onclick="showView('actions',this)">🤖 <span>ARIA Actions</span></div>
   <div class="nav-item" onclick="showView('sources',this)">🌐 <span>Data Sources</span></div>
+  <div class="nav-item" onclick="showView('sitrep',this)">📄 <span>SitRep</span></div>
 
   <div class="sb-region">
     <label>ACTIVE REGION</label>
@@ -327,7 +341,7 @@ canvas { display: block; }
       <option value="middle-east">Middle East</option>
     </select>
   </div>
-  <div class="sb-status">System: <span>OPERATIONAL</span> · v3.4.0-pipeline</div>
+  <div class="sb-status">System: <span>OPERATIONAL</span> · v3.5.0-sitrep</div>
 </aside>
 
 <!-- ── MAIN ─────────────────────────────────────────────────────────────── -->
@@ -533,6 +547,43 @@ canvas { display: block; }
           </div>
           <button class="tb-btn" onclick="addCustomSource()" style="height:36px">+ Add Source</button>
         </div>
+      </div>
+    </div>
+
+    <!-- ── SITREP ─────────────────────────────────────────────────────── -->
+    <div class="view" id="view-sitrep">
+      <div class="sitrep-header">
+        <div>
+          <div style="font-size:16px;font-weight:700;color:var(--teal);letter-spacing:-.3px">⬡ ARIA SITUATION REPORT</div>
+          <div class="sitrep-meta">OCHA 5W Format · Reporting Period: <span id="sitrep-period" class="sitrep-period">—</span></div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="sitrep-gen-btn" id="sitrep-gen-btn" onclick="generateSitRep()">⚡ Generate AI Narrative</button>
+          <button class="tb-btn" onclick="exportSitRepText()">↓ Export .txt</button>
+        </div>
+      </div>
+      <div class="card" style="margin-bottom:14px">
+        <div class="card-title">OCHA 5W MATRIX — <span id="sitrep-region-label" style="color:var(--teal)">East Africa</span></div>
+        <div style="overflow-x:auto">
+          <table class="sitrep-5w" id="sitrep-5w-table">
+            <thead>
+              <tr>
+                <th>WHO (Actor)</th>
+                <th>WHAT (Activity)</th>
+                <th>WHERE (Location)</th>
+                <th>WHEN (Period)</th>
+                <th>FOR WHOM (Beneficiaries)</th>
+              </tr>
+            </thead>
+            <tbody id="sitrep-5w-body"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">AI-GENERATED NARRATIVE
+          <span style="margin-left:auto;font-size:10px;color:var(--t3);font-weight:400;font-family:var(--mono)" id="sitrep-gen-status">—</span>
+        </div>
+        <div id="sitrep-narrative" style="color:var(--t3);font-size:12.5px">Click "Generate AI Narrative" to produce an OCHA-format SitRep narrative from live dashboard data.</div>
       </div>
     </div>
 
@@ -2029,6 +2080,159 @@ function exitBriefing() {
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
+   PHASE 5 — SITREP GENERATOR (OCHA 5W FORMAT)
+══════════════════════════════════════════════════════════════════════════ */
+
+const SECTOR_ACTORS = {
+  'Health':        'WHO / UNICEF / MSF',
+  'WASH':          'UNHCR / UNICEF / Oxfam',
+  'Food':          'WFP / ACF',
+  'Shelter':       'UNHCR / NRC / IOM',
+  'Education':     'UNICEF / Save the Children',
+  'Protection':    'UNHCR / IRC',
+  'Logistics':     'WFP / OCHA',
+  'Nutrition':     'UNICEF / ACF / WFP',
+  'Early Recovery':'UNDP / ILO',
+};
+
+function renderSitRepView() {
+  const r = region();
+  const today = new Date();
+  const period = today.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  const todayStr = today.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+  const periodEl = document.getElementById('sitrep-period');
+  if (periodEl) periodEl.textContent = period;
+  const regionLabelEl = document.getElementById('sitrep-region-label');
+  if (regionLabelEl) regionLabelEl.textContent = r.label;
+
+  const tbody = document.getElementById('sitrep-5w-body');
+  if (!tbody) return;
+
+  const onlineNodes = r.nodes.filter(n => n.status === 'online');
+  const locationStr = onlineNodes.slice(0, 4).map(n => n.name).join(', ')
+    + (onlineNodes.length > 4 ? ` +${onlineNodes.length - 4} more` : '');
+
+  tbody.innerHTML = r.sectors.map(s => {
+    const actor = SECTOR_ACTORS[s.name] || 'NGO Partners';
+    const activity = s.pct >= 80 ? `Active delivery (${s.pct}% capacity)`
+      : s.pct >= 50 ? `Partial delivery (${s.pct}% capacity)`
+      : `Critical shortfall (${s.pct}% capacity)`;
+    return `<tr>
+      <td><strong>${actor}</strong></td>
+      <td>${escHtml(s.name)}: ${activity}</td>
+      <td>${escHtml(locationStr)}</td>
+      <td>${todayStr}</td>
+      <td>${fmtNum(s.beneficiaries)} beneficiaries</td>
+    </tr>`;
+  }).join('');
+}
+
+async function generateSitRep() {
+  const btn = document.getElementById('sitrep-gen-btn');
+  const statusEl = document.getElementById('sitrep-gen-status');
+  const narrativeEl = document.getElementById('sitrep-narrative');
+  if (!btn || !narrativeEl) return;
+
+  btn.disabled = true;
+  btn.textContent = '⏳ Generating…';
+  if (statusEl) statusEl.textContent = 'requesting…';
+  narrativeEl.textContent = '';
+  narrativeEl.style.color = 'var(--t3)';
+
+  const r = region();
+  const today = new Date();
+  const period = today.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+
+  const sitRepPrompt = `You are an OCHA humanitarian reporting specialist. Generate a formal Situation Report (SitRep) narrative in OCHA standard format.
+
+REPORTING PERIOD: ${period}
+REGION: ${r.label}
+
+LIVE OPERATIONAL DATA:
+${buildOpsContext()}
+
+Write a concise SitRep with exactly these labeled sections:
+1. SITUATION OVERVIEW (2-3 sentences on overall crisis status)
+2. KEY DEVELOPMENTS (3 bullet points of the most critical events)
+3. HUMANITARIAN RESPONSE (2 sentences on what aid organizations are doing)
+4. GAPS & CONSTRAINTS (2 sentences on critical gaps)
+5. PRIORITIES — NEXT 72 HOURS (3 bullet points)
+
+Use formal humanitarian reporting language. Be specific and data-driven using the operational figures provided.`;
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'anthropic-dangerous-direct-browser-calls': 'true' },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 600,
+        system: sitRepPrompt,
+        messages: [{ role: 'user', content: 'Generate the situation report.' }],
+      }),
+    });
+    const data = await resp.json();
+    const text = data.content?.[0]?.text || 'SitRep generation failed.';
+    narrativeEl.textContent = text;
+    narrativeEl.style.color = 'var(--t1)';
+    if (statusEl) statusEl.textContent = 'generated ' + new Date().toTimeString().slice(0, 8);
+    addIngestLog('SITREP', 'AI narrative generated for ' + r.label);
+    toast('SitRep generated', 'ok');
+  } catch (e) {
+    narrativeEl.textContent = `⚠ Generation failed: ${e.message}`;
+    narrativeEl.style.color = 'var(--red)';
+    if (statusEl) statusEl.textContent = 'error';
+  }
+
+  btn.disabled = false;
+  btn.textContent = '⚡ Generate AI Narrative';
+}
+
+function exportSitRepText() {
+  const r = region();
+  const today = new Date();
+  const period = today.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  const narrative = document.getElementById('sitrep-narrative')?.textContent
+    || '(narrative not yet generated — click "Generate AI Narrative" first)';
+
+  const rows5w = r.sectors.map(s => {
+    const actor = (SECTOR_ACTORS[s.name] || 'NGO Partners').padEnd(30);
+    return `${actor} | ${s.name.padEnd(15)} | ${fmtNum(s.beneficiaries).padEnd(8)} beneficiaries`;
+  });
+
+  const divider = '═'.repeat(67);
+  const thin    = '─'.repeat(67);
+  const text = [
+    divider,
+    'ARIA SITUATION REPORT — OCHA 5W FORMAT',
+    `Region: ${r.label}    Reporting Period: ${period}`,
+    `Generated: ${today.toISOString()}`,
+    divider,
+    '',
+    '5W MATRIX',
+    thin,
+    'WHO (Actor)                    | WHAT (Sector)   | FOR WHOM',
+    thin,
+    ...rows5w,
+    '',
+    thin,
+    'AI-GENERATED NARRATIVE',
+    thin,
+    narrative,
+    '',
+    thin,
+    `ARIA v3.5.0-sitrep · ${today.toISOString()}`,
+  ].join('\n');
+
+  const a = document.createElement('a');
+  a.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(text);
+  a.download = `ARIA_SitRep_${r.label.replace(/\s+/g, '_')}_${today.toISOString().slice(0, 10)}.txt`;
+  a.click();
+  toast('SitRep exported', 'ok');
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
    UTILITIES
 ══════════════════════════════════════════════════════════════════════════ */
 
@@ -2084,13 +2288,14 @@ function showView(id, el) {
     overview:'Dashboard', map:'Live Map', nodes:'Nodes', sectors:'Sectors',
     connectivity:'Connectivity', power:'Power & Water', logistics:'Logistics',
     beneficiaries:'Beneficiaries', alerts:'Alerts', history:'Event History',
-    actions:'ARIA Actions Log', sources:'Data Sources'
+    actions:'ARIA Actions Log', sources:'Data Sources', sitrep:'SitRep Generator'
   };
   set('view-title', titles[id] || id);
   // Re-draw canvas-based views on show
   if (id === 'connectivity') drawTopology();
   if (id === 'map') drawMap();
   if (id === 'nodes') renderNodeListFull();
+  if (id === 'sitrep') renderSitRepView();
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
@@ -2128,7 +2333,7 @@ function showView(id, el) {
     { ts:'09:03', sev:'warn', msg:'Convoy KE-07 delayed — road closure' },
   ].forEach(e => eventHistory.push(e));
 
-  addIngestLog('SYSTEM', 'ARIA v3.4.0-pipeline initialised with Risk Scoring + Offline + Multi-Analyst + Live Field Reports');
+  addIngestLog('SYSTEM', 'ARIA v3.5.0-sitrep initialised with Risk Scoring + Offline + Multi-Analyst + Live Field Reports + SitRep Generator');
   addIngestLog('RISK', 'Phase 1 predictive scoring active — monitoring ' + REGIONS['east-africa'].nodes.length + ' nodes');
 
   if (demoMode) startDemo();
