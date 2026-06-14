@@ -16,6 +16,7 @@ pytest>=7.4.0
 pytest-cov>=4.1.0
 pytest-xdist>=3.3.0  # Parallel test execution
 pytest-asyncio>=0.21.0,<1.0.0  # Async test support — 1.x has breaking collection changes
+pytest-timeout>=2.2.0          # Enables timeout = 300 in pytest.ini (required by --strict-config)
 
 # Code Quality
 ruff>=0.1.0  # Fast linter (replaces flake8, isort, some pylint)
