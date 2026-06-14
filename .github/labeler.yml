@@ -1,39 +1,39 @@
 core:
   - changed-files:
-    - any-glob-to-any-file: 'core/**'
+      - any-glob-to-any-file: 'core/**'
 
 agents:
   - changed-files:
-    - any-glob-to-any-file: 'agents/**'
+      - any-glob-to-any-file: 'agents/**'
 
 autopilot:
   - changed-files:
-    - any-glob-to-any-file: 'autopilot/**'
+      - any-glob-to-any-file: 'autopilot/**'
 
 overseer-findings:
   - changed-files:
-    - any-glob-to-any-file: 'overseer/**'
+      - any-glob-to-any-file: 'overseer/**'
 
 ci/cd:
   - changed-files:
-    - any-glob-to-any-file: '.github/**'
+      - any-glob-to-any-file: '.github/**'
 
 testing:
   - changed-files:
-    - any-glob-to-any-file: 'tests/**'
+      - any-glob-to-any-file: 'tests/**'
 
 documentation:
   - changed-files:
-    - any-glob-to-any-file: 'docs/**'
-    - any-glob-to-any-file: '*.md'
+      - any-glob-to-any-file: 'docs/**'
+      - any-glob-to-any-file: '*.md'
 
 maintenance:
   - changed-files:
-    - any-glob-to-any-file: 'scripts/**'
-    - any-glob-to-any-file: '.github/scripts/**'
+      - any-glob-to-any-file: 'scripts/**'
+      - any-glob-to-any-file: '.github/scripts/**'
 
 dependencies:
   - changed-files:
-    - any-glob-to-any-file: 'requirements*.txt'
-    - any-glob-to-any-file: 'pyproject.toml'
-    - any-glob-to-any-file: 'setup.py'
+      - any-glob-to-any-file: 'requirements*.txt'
+      - any-glob-to-any-file: 'pyproject.toml'
+      - any-glob-to-any-file: 'setup.py'
