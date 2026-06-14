@@ -1880,6 +1880,7 @@ async function aiSend() {
       })
     });
     const data = await resp.json();
+    trackLLMCost('claude-sonnet-4-6', data.usage);
     const reply = data.content?.[0]?.text || 'No response.';
     thinkEl.innerHTML = reply;
     aiHistory.push({ role:'assistant', content: reply });
@@ -2031,6 +2032,7 @@ async function launchBriefing() {
         }),
       });
       const data = await resp.json();
+      trackLLMCost('claude-haiku-4-5-20251001', data.usage);
       results[id] = data.content?.[0]?.text || 'No response.';
     } catch (e) {
       results[id] = `⚠ ${ANALYSTS[id].label} unavailable: ${e.message}`;
@@ -2063,6 +2065,7 @@ Synthesise the key points and any tensions into ONE actionable joint recommendat
       }),
     });
     const data = await resp.json();
+    trackLLMCost('claude-haiku-4-5-20251001', data.usage);
     const synthEl = document.getElementById('brief-body-synth');
     if (synthEl) synthEl.textContent = data.content?.[0]?.text || 'Synthesis unavailable.';
   } catch (e) {
@@ -2173,6 +2176,7 @@ Use formal humanitarian reporting language. Be specific and data-driven using th
       }),
     });
     const data = await resp.json();
+    trackLLMCost('claude-haiku-4-5-20251001', data.usage);
     const text = data.content?.[0]?.text || 'SitRep generation failed.';
     narrativeEl.textContent = text;
     narrativeEl.style.color = 'var(--t1)';
@@ -2239,6 +2243,33 @@ function exportSitRepText() {
 function set(id, val) { const e=document.getElementById(id); if(e) e.textContent=val; }
 function fmtNum(n) { return n>=1000000?(n/1000000).toFixed(1)+'M':n>=1000?(n/1000).toFixed(0)+'K':n.toString(); }
 function escHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// Rolling monthly LLM cost tracker — warns at $30 threshold
+const LLM_COST_KEY = 'aria-llm-cost';
+const LLM_PRICES = {
+  'claude-sonnet-4-6':        { in: 3.00, out: 15.00 }, // $/MTok
+  'claude-haiku-4-5-20251001': { in: 0.80, out:  4.00 },
+};
+function trackLLMCost(model, usage) {
+  if (!usage) return;
+  const month = new Date().toISOString().slice(0, 7); // "YYYY-MM"
+  let rec;
+  try { rec = JSON.parse(localStorage.getItem(LLM_COST_KEY) || 'null'); } catch { rec = null; }
+  if (!rec || rec.month !== month) rec = { month, toks: {} };
+  const key = model.includes('haiku') ? 'haiku' : 'sonnet';
+  if (!rec.toks[key]) rec.toks[key] = { in: 0, out: 0 };
+  rec.toks[key].in  += usage.input_tokens  || 0;
+  rec.toks[key].out += usage.output_tokens || 0;
+  try { localStorage.setItem(LLM_COST_KEY, JSON.stringify(rec)); } catch {}
+  let cost = 0;
+  for (const [k, t] of Object.entries(rec.toks)) {
+    const p = k === 'haiku' ? LLM_PRICES['claude-haiku-4-5-20251001'] : LLM_PRICES['claude-sonnet-4-6'];
+    cost += (t.in / 1e6) * p.in + (t.out / 1e6) * p.out;
+  }
+  if (cost > 30) {
+    console.warn(`[ARIA] Estimated LLM spend this month: $${cost.toFixed(2)} — exceeds $30 threshold. Review usage.`);
+  }
+}
 
 function updateBadges() {
   const offline = region().nodes.filter(n=>n.status==='offline').length;
