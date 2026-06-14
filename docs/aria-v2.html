@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ARIA v2 — Aid &amp; Relief Infrastructure Analyst</title>
+<style>
+:root {
+  --bg-0: #080c18;
+  --bg-1: #0d1626;
+  --bg-2: #121e36;
+  --bg-3: #1a2a4a;
+  --border: rgba(59,130,246,0.15);
+  --border-strong: rgba(59,130,246,0.3);
+  --text-1: #e2e8f0;
+  --text-2: #94a3b8;
+  --text-3: #64748b;
+  --accent: #3b82f6;
+  --accent-dim: rgba(59,130,246,0.18);
+  --green: #22c55e;
+  --amber: #f59e0b;
+  --red: #ef4444;
+  --cyan: #06b6d4;
+  --green-dim: rgba(34,197,94,0.14);
+  --amber-dim: rgba(245,158,11,0.14);
+  --red-dim: rgba(239,68,68,0.14);
+  --font-mono: 'Courier New', monospace;
+  --radius: 8px;
+  --radius-sm: 4px;
+}
+*,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  background: var(--bg-0);
+  color: var(--text-1);
+  min-height: 100vh;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* ── Header ─────────────────────────────────────── */
+.hdr {
+  display: flex; align-items: center; gap: 14px;
+  padding: 0 20px; height: 52px;
+  background: var(--bg-1);
+  border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; z-index: 100;
+}
+.hdr-logo {
+  font-size: 16px; font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--accent); font-family: var(--font-mono);
+}
+.hdr-logo span { color: var(--cyan); }
+.hdr-badge {
+  font-size: 10px; font-weight: 700;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  padding: 2px 8px;
+  background: var(--accent-dim);
+  border: 1px solid var(--accent);
+  border-radius: 20px; color: var(--accent);
+}
+.hdr-spacer { flex: 1; }
+.hdr-clock { font-family: var(--font-mono); font-size: 12px; color: var(--text-3); }
+.hdr-status { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--green); }
+.hdr-dot {
+  width: 7px; height: 7px; border-radius: 50%; background: currentColor;
+  animation: blink 2s infinite;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.35} }
+
+/* ── Shell ──────────────────────────────────────── */
+.app {
+  display: grid; grid-template-columns: 1fr 320px;
+  height: calc(100vh - 52px); overflow: hidden;
+}
+.content { overflow-y: auto; padding: 18px; }
+
+/* ── Risk Watch ──────────────────────────────────── */
+.risk-watch {
+  background: var(--bg-2);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  padding: 14px 16px; margin-bottom: 14px;
+}
+.rw-hdr {
+  display: flex; align-items: center;
+  justify-content: space-between; margin-bottom: 11px;
+}
+.rw-title {
+  font-size: 11px; font-weight: 700;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--amber);
+}
+.rw-ts { font-size: 10px; color: var(--text-3); font-family: var(--font-mono); }
+.rw-rows { display: flex; flex-direction: column; gap: 7px; }
+.rw-row {
+  display: grid; grid-template-columns: 1fr auto auto auto;
+  align-items: center; gap: 10px;
+  padding: 7px 10px;
+  background: var(--bg-1); border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+.rw-name { font-size: 12px; font-weight: 500; color: var(--text-1); }
+.rw-score {
+  font-size: 11px; font-weight: 700;
+  padding: 2px 6px; border-radius: 3px;
+  font-family: var(--font-mono);
+}
+.rw-score.green { background: var(--green-dim); color: var(--green); }
+.rw-score.amber { background: var(--amber-dim); color: var(--amber); }
+.rw-score.red   { background: var(--red-dim);   color: var(--red);   }
+.rw-arrow { font-size: 11px; }
+.rw-arrow.up     { color: var(--red); }
+.rw-arrow.down   { color: var(--green); }
+.rw-arrow.stable { color: var(--text-3); }
+.rw-eta { font-size: 10px; color: var(--red); font-family: var(--font-mono); font-weight: 700; min-width: 30px; text-align: right; }
+
+/* ── KPI row ─────────────────────────────────────── */
+.kpi-row {
+  display: grid; grid-template-columns: repeat(4,1fr);
+  gap: 12px; margin-bottom: 14px;
+}
+.kpi {
+  background: var(--bg-2); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 13px 15px;
+}
+.kpi-label {
+  font-size: 10px; font-weight: 700;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--text-3); margin-bottom: 5px;
+}
+.kpi-value { font-size: 22px; font-weight: 700; font-family: var(--font-mono); }
+.kpi-sub   { font-size: 11px; color: var(--text-3); margin-top: 2px; }
+
+/* ── Node grid ───────────────────────────────────── */
+.node-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(274px, 1fr));
+  gap: 12px;
+}
+.node-card {
+  background: var(--bg-2); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 13px 15px;
+  cursor: pointer; transition: border-color .2s, background .2s;
+}
+.node-card:hover { border-color: var(--border-strong); background: var(--bg-3); }
+.nc-hdr { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.status-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.status-dot.nominal  { background: var(--green); }
+.status-dot.warning  { background: var(--amber); }
+.status-dot.critical { background: var(--red); animation: blink 1s infinite; }
+.nc-name { font-size: 13px; font-weight: 600; flex: 1; }
+.nc-type {
+  font-size: 9px; text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--text-3); background: var(--bg-1);
+  padding: 2px 5px; border-radius: 3px;
+}
+.nc-metrics {
+  display: grid; grid-template-columns: repeat(3,1fr);
+  gap: 6px; margin-bottom: 9px;
+}
+.nc-m { text-align: center; }
+.nc-m-val { font-size: 15px; font-weight: 700; font-family: var(--font-mono); }
+.nc-m-lbl { font-size: 9px; text-transform: uppercase; letter-spacing: .07em; color: var(--text-3); }
+.nc-spark { width: 100%; height: 30px; display: block; }
+.nc-footer {
+  display: flex; align-items: center;
+  justify-content: space-between; margin-top: 9px;
+}
+.risk-badge-sm {
+  font-size: 10px; font-weight: 700;
+  padding: 2px 6px; border-radius: 3px;
+  font-family: var(--font-mono);
+}
+.risk-badge-sm.green { background: var(--green-dim); color: var(--green); }
+.risk-badge-sm.amber { background: var(--amber-dim); color: var(--amber); }
+.risk-badge-sm.red   { background: var(--red-dim);   color: var(--red);   }
+.nc-coord { font-size: 10px; color: var(--text-3); font-family: var(--font-mono); }
+
+/* ── AI Panel ────────────────────────────────────── */
+.ai-panel {
+  background: var(--bg-1);
+  border-left: 1px solid var(--border);
+  display: flex; flex-direction: column; overflow: hidden;
+}
+.ai-hdr {
+  padding: 13px 15px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 8px;
+}
+.ai-hdr-title {
+  font-size: 11px; font-weight: 700;
+  letter-spacing: 0.1em; text-transform: uppercase; color: var(--cyan);
+}
+.ai-key-row {
+  padding: 8px 15px; border-bottom: 1px solid var(--border);
+}
+.ai-key-inp {
+  width: 100%; background: var(--bg-2);
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  color: var(--text-1); padding: 5px 8px;
+  font-size: 11px; font-family: var(--font-mono); outline: none;
+}
+.ai-key-inp::placeholder { color: var(--text-3); }
+.ai-key-inp:focus { border-color: var(--accent); }
+.ai-msgs {
+  flex: 1; overflow-y: auto; padding: 13px 15px;
+  display: flex; flex-direction: column; gap: 11px;
+}
+.ai-msg { display: flex; flex-direction: column; gap: 4px; }
+.ai-role {
+  font-size: 10px; font-weight: 700;
+  letter-spacing: 0.08em; text-transform: uppercase;
+}
+.ai-msg.user .ai-role { color: var(--accent); }
+.ai-msg.assistant .ai-role { color: var(--cyan); }
+.ai-body {
+  font-size: 12px; line-height: 1.55;
+  background: var(--bg-2); padding: 8px 10px;
+  border-radius: var(--radius-sm); border: 1px solid var(--border);
+}
+.ai-msg.user .ai-body { background: var(--accent-dim); border-color: var(--accent); }
+.ai-input-area {
+  padding: 11px 15px; border-top: 1px solid var(--border);
+  display: flex; flex-direction: column; gap: 7px;
+}
+.ai-textarea {
+  background: var(--bg-2); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); color: var(--text-1);
+  padding: 7px 9px; font-size: 12px; font-family: inherit;
+  resize: none; outline: none; min-height: 58px;
+}
+.ai-textarea:focus { border-color: var(--accent); }
+.ai-send {
+  background: var(--accent); color: #fff;
+  border: none; border-radius: var(--radius-sm);
+  padding: 7px 14px; font-size: 12px; font-weight: 600;
+  cursor: pointer; align-self: flex-end; transition: opacity .2s;
+}
+.ai-send:hover { opacity: .85; }
+.ai-send:disabled { opacity: .45; cursor: not-allowed; }
+
+/* ── Modal ───────────────────────────────────────── */
+.modal-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,.72); z-index: 200;
+  align-items: center; justify-content: center;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--bg-1);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  width: min(700px, 95vw); max-height: 86vh;
+  overflow-y: auto; padding: 20px;
+}
+.modal-hdr {
+  display: flex; align-items: center;
+  justify-content: space-between; margin-bottom: 15px;
+}
+.modal-title { font-size: 15px; font-weight: 700; }
+.modal-close {
+  background: none; border: 1px solid var(--border);
+  color: var(--text-2); width: 28px; height: 28px;
+  border-radius: var(--radius-sm); cursor: pointer;
+  font-size: 16px; line-height: 1;
+}
+.modal-close:hover { background: var(--bg-3); }
+.modal-meta {
+  display: grid; grid-template-columns: repeat(5,1fr);
+  gap: 8px; margin-bottom: 18px;
+}
+.mm {
+  background: var(--bg-2); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 10px 11px; text-align: center;
+}
+.mm-val { font-size: 18px; font-weight: 700; font-family: var(--font-mono); }
+.mm-lbl { font-size: 9px; text-transform: uppercase; letter-spacing: .08em; color: var(--text-3); margin-top: 3px; }
+.sparks-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+}
+.spark-block {
+  background: var(--bg-2); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 10px 12px;
+}
+.spark-block.wide { grid-column: 1 / -1; }
+.spark-lbl {
+  font-size: 10px; font-weight: 700;
+  letter-spacing: .08em; text-transform: uppercase;
+  color: var(--text-3); margin-bottom: 7px;
+}
+.spark-cv { width: 100%; height: 58px; display: block; }
+.evt-log { margin-top: 16px; }
+.evt-title {
+  font-size: 10px; font-weight: 700;
+  letter-spacing: .1em; text-transform: uppercase;
+  color: var(--text-3); margin-bottom: 8px;
+}
+.evt-row {
+  display: flex; gap: 10px;
+  padding: 5px 0; border-bottom: 1px solid var(--border);
+  font-size: 11px;
+}
+.evt-time { color: var(--text-3); font-family: var(--font-mono); white-space: nowrap; }
+.evt-sev { font-weight: 700; }
+.evt-sev.crit { color: var(--red); }
+.evt-sev.info { color: var(--accent); }
+.evt-desc { color: var(--text-2); }
+</style>
+</head>
+<body>
+
+<header class="hdr">
+  <div class="hdr-logo">ARIA<span>v2</span></div>
+  <div class="hdr-badge">DEMO MODE</div>
+  <div class="hdr-spacer"></div>
+  <div class="hdr-clock" id="hdr-clock">--:--:-- UTC</div>
+  <div class="hdr-status"><div class="hdr-dot"></div>Pipeline Active</div>
+</header>
+
+<div class="app">
+
+  <div class="content">
+
+    <!-- Risk Watch widget (above KPI row) -->
+    <div class="risk-watch">
+      <div class="rw-hdr">
+        <div class="rw-title">&#9888; Risk Watch</div>
+        <div class="rw-ts" id="rw-ts">Initialising&hellip;</div>
+      </div>
+      <div class="rw-rows" id="rw-rows"></div>
+    </div>
+
+    <!-- KPI row -->
+    <div class="kpi-row">
+      <div class="kpi">
+        <div class="kpi-label">Network Uptime</div>
+        <div class="kpi-value" id="kpi-uptime">&mdash;</div>
+        <div class="kpi-sub">last 24 h</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Avg Latency</div>
+        <div class="kpi-value" id="kpi-latency">&mdash;</div>
+        <div class="kpi-sub">across all nodes</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Active Nodes</div>
+        <div class="kpi-value" id="kpi-nodes">&mdash;</div>
+        <div class="kpi-sub">of 6 total</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Critical Alerts</div>
+        <div class="kpi-value" id="kpi-alerts" style="color:var(--red)">&mdash;</div>
+        <div class="kpi-sub">risk score &gt; 65</div>
+      </div>
+    </div>
+
+    <!-- Node grid (populated by JS) -->
+    <div class="node-grid" id="node-grid"></div>
+
+  </div>
+
+  <!-- AI assistant panel -->
+  <aside class="ai-panel">
+    <div class="ai-hdr">
+      <div class="ai-hdr-title">ARIA AI Assistant</div>
+    </div>
+    <div class="ai-key-row">
+      <input class="ai-key-inp" id="ai-key" type="password"
+             placeholder="Anthropic API key (optional for live AI)" />
+    </div>
+    <div class="ai-msgs" id="ai-msgs">
+      <div class="ai-msg assistant">
+        <div class="ai-role">ARIA</div>
+        <div class="ai-body">Pipeline initialised. Monitoring 6 nodes across East Africa and Yemen. Ask about node status, risk trends, or logistics.</div>
+      </div>
+    </div>
+    <div class="ai-input-area">
+      <textarea class="ai-textarea" id="ai-input" rows="3"
+                placeholder="Ask about node status, risks, fuel levels&#8230;"></textarea>
+      <button class="ai-send" id="ai-send" onclick="aiSend()">Send &#8593;</button>
+    </div>
+  </aside>
+
+</div>
+
+<!-- Drill-down modal -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
+  <div class="modal">
+    <div class="modal-hdr">
+      <div class="modal-title" id="modal-title">&mdash;</div>
+      <button class="modal-close" onclick="closeModalDirect()">&times;</button>
+    </div>
+    <div class="modal-meta" id="modal-meta"></div>
+    <div class="sparks-grid" id="sparks-grid"></div>
+    <div class="evt-log" id="evt-log"></div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+//  DATA LAYER
+// ═══════════════════════════════════════════════════════════
+
+const HISTORY_SIZE = 48;
+
+function makeHistory() {
+  return { slots: new Array(HISTORY_SIZE).fill(null), head: 0 };
+}
+
+function historyPush(h, entry) {
+  h.slots[h.head] = entry;
+  h.head = (h.head + 1) % HISTORY_SIZE;
+}
+
+function historyGetLast(h, count) {
+  var out = [];
+  for (var i = count - 1; i >= 0; i--) {
+    var idx = ((h.head - 1 - i) % HISTORY_SIZE + HISTORY_SIZE) % HISTORY_SIZE;
+    if (h.slots[idx] !== null) out.push(h.slots[idx]);
+  }
+  return out;
+}
+
+var NODES = [
+  { id:'khartoum',  name:'Khartoum Hub',    type:'HUB',     coord:'15.5°N 32.5°E', latency:42,  packetLoss:0.02, power:88, fuel:74, flow:340, history:makeHistory(), riskScore:0, outageEvents:[], status:'nominal',  _seed:1.1 },
+  { id:'juba',      name:'Juba Base Camp',   type:'RELIEF',  coord:'4.9°N 31.6°E',  latency:78,  packetLoss:0.06, power:61, fuel:38, flow:190, history:makeHistory(), riskScore:0, outageEvents:[], status:'warning',  _seed:2.3 },
+  { id:'mogadishu', name:'Mogadishu Port',   type:'SUPPLY',  coord:'2.0°N 45.3°E',  latency:55,  packetLoss:0.03, power:79, fuel:57, flow:480, history:makeHistory(), riskScore:0, outageEvents:[], status:'nominal',  _seed:0.7 },
+  { id:'nairobi',   name:'Nairobi HQ',       type:'COMMAND', coord:'1.3°S 36.8°E',  latency:22,  packetLoss:0.01, power:96, fuel:91, flow:620, history:makeHistory(), riskScore:0, outageEvents:[], status:'nominal',  _seed:1.5 },
+  { id:'bangui',    name:'Bangui Depot',     type:'DEPOT',   coord:'4.4°N 18.6°E',  latency:112, packetLoss:0.09, power:43, fuel:22, flow:130, history:makeHistory(), riskScore:0, outageEvents:[Date.now()-1.5*3600000, Date.now()-24*3600000], status:'critical', _seed:3.2 },
+  { id:'aden',      name:'Aden Relief',      type:'RELIEF',  coord:'12.8°N 45.0°E', latency:94,  packetLoss:0.07, power:52, fuel:31, flow:210, history:makeHistory(), riskScore:0, outageEvents:[Date.now()-48*3600000], status:'warning',  _seed:2.0 },
+];
+
+// ═══════════════════════════════════════════════════════════
+//  MATH HELPERS
+// ═══════════════════════════════════════════════════════════
+
+function linearSlope(arr) {
+  var n = arr.length;
+  if (n < 2) return 0;
+  var sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
+  for (var i = 0; i < n; i++) {
+    sumX += i; sumY += arr[i];
+    sumXY += i * arr[i]; sumX2 += i * i;
+  }
+  var denom = n * sumX2 - sumX * sumX;
+  return denom === 0 ? 0 : (n * sumXY - sumX * sumY) / denom;
+}
+
+function stdDev(arr) {
+  if (arr.length < 2) return 0;
+  var mean = arr.reduce(function(a,b){ return a+b; }, 0) / arr.length;
+  var variance = arr.reduce(function(s,v){ return s + (v-mean)*(v-mean); }, 0) / (arr.length - 1);
+  return Math.sqrt(variance);
+}
+
+function fuelPenalty(node) {
+  var f = node.fuel;
+  if (f >= 50) return 0;
+  if (f >= 20) return (50 - f) * 0.6;   // 0–18
+  return 18 + (20 - f) * 0.6;            // 18–30
+}
+
+function recentOutagePenalty(node, windowHours) {
+  var cutoff = Date.now() - windowHours * 3600000;
+  var count = node.outageEvents.filter(function(t){ return t > cutoff; }).length;
+  return Math.min(count * 15, 30);
+}
+
+function computeRiskScore(node) {
+  var hist24 = historyGetLast(node.history, 24);
+  if (hist24.length < 4) { node.riskScore = 0; return 0; }
+  var lat24 = hist24.map(function(h){ return h.latency; });
+  var lat12 = lat24.slice(-12);
+  var slope = linearSlope(lat12);
+  var sd    = stdDev(lat24);
+  var raw = slope * 0.4 + sd * 0.3 + fuelPenalty(node) + recentOutagePenalty(node, 72);
+  node.riskScore = Math.max(0, Math.min(100, raw));
+  return node.riskScore;
+}
+
+// ═══════════════════════════════════════════════════════════
+//  DEMO TICK
+// ═══════════════════════════════════════════════════════════
+
+var tickCount = 0;
+var TICK_MS   = 3000;
+
+function jitter(val, range, lo, hi) {
+  return Math.max(lo, Math.min(hi, val + (Math.random() - 0.5) * range));
+}
+
+function demoTick() {
+  tickCount++;
+  NODES.forEach(function(node) {
+    var wave = Math.sin(tickCount * 0.18 + node._seed) * 0.5 + 0.5;
+    node.latency    = jitter(node.latency    + wave * 2.5, 20,  5,  290);
+    node.packetLoss = jitter(node.packetLoss + wave * 0.005, 0.022, 0, 0.45);
+    node.power      = jitter(node.power,  4,  0, 100);
+    node.fuel       = Math.max(0, node.fuel - 0.06 - Math.random() * 0.14);
+    node.flow       = jitter(node.flow,  45, 0, 950);
+
+    historyPush(node.history, {
+      latency:    node.latency,
+      packetLoss: node.packetLoss,
+      power:      node.power,
+      fuel:       node.fuel,
+      flow:       node.flow,
+      t:          Date.now()
+    });
+
+    computeRiskScore(node);
+
+    // Prune outage events older than 72 h
+    var cutoff = Date.now() - 72 * 3600000;
+    node.outageEvents = node.outageEvents.filter(function(t){ return t > cutoff; });
+
+    // 1.5 % micro-outage chance per tick
+    if (Math.random() < 0.015) node.outageEvents.push(Date.now());
+
+    // Status from risk score
+    if      (node.riskScore >= 65) node.status = 'critical';
+    else if (node.riskScore >= 30) node.status = 'warning';
+    else                           node.status = 'nominal';
+  });
+
+  renderAll();
+  updateModalIfOpen();
+}
+
+setInterval(demoTick, TICK_MS);
+
+// ═══════════════════════════════════════════════════════════
+//  RENDERING HELPERS
+// ═══════════════════════════════════════════════════════════
+
+function riskClass(score) {
+  if (score >= 65) return 'red';
+  if (score >= 30) return 'amber';
+  return 'green';
+}
+
+function statusColor(status) {
+  if (status === 'critical') return '#ef4444';
+  if (status === 'warning')  return '#f59e0b';
+  return '#22c55e';
+}
+
+function getRiskTrend(node) {
+  var recent = historyGetLast(node.history, 8).map(function(h){ return h.latency; });
+  if (recent.length < 3) return 'stable';
+  var slope = linearSlope(recent);
+  if (slope >  1.5) return 'up';
+  if (slope < -1.5) return 'down';
+  return 'stable';
+}
+
+function updateClock() {
+  document.getElementById('hdr-clock').textContent =
+    new Date().toISOString().slice(11,19) + ' UTC';
+}
+
+// ── Risk Watch ─────────────────────────────────────────────
+
+function renderRiskWatch() {
+  var top3 = NODES.slice().sort(function(a,b){ return b.riskScore - a.riskScore; }).slice(0,3);
+  document.getElementById('rw-ts').textContent =
+    new Date().toISOString().slice(11,19) + ' UTC';
+  document.getElementById('rw-rows').innerHTML = top3.map(function(n) {
+    var score = Math.round(n.riskScore);
+    var cls   = riskClass(score);
+    var trend = getRiskTrend(n);
+    var arrow = trend === 'up' ? '&#9650;' : trend === 'down' ? '&#9660;' : '&rarr;';
+    var eta   = score > 65
+      ? '~' + Math.max(1, Math.round(12 - (score - 65) * 0.2)) + 'h'
+      : '';
+    return '<div class="rw-row">' +
+      '<span class="rw-name">' + n.name + '</span>' +
+      '<span class="rw-score ' + cls + '">' + score + '</span>' +
+      '<span class="rw-arrow ' + trend + '">' + arrow + '</span>' +
+      '<span class="rw-eta">' + eta + '</span>' +
+      '</div>';
+  }).join('');
+}
+
+// ── KPIs ───────────────────────────────────────────────────
+
+function renderKPIs() {
+  var nonCrit = NODES.filter(function(n){ return n.status !== 'critical'; }).length;
+  var avgLat  = NODES.reduce(function(s,n){ return s + n.latency; }, 0) / NODES.length;
+  var active  = NODES.filter(function(n){ return n.power > 10; }).length;
+  var alerts  = NODES.filter(function(n){ return n.riskScore >= 65; }).length;
+  document.getElementById('kpi-uptime').textContent  = (nonCrit / NODES.length * 100).toFixed(1) + '%';
+  document.getElementById('kpi-latency').textContent = Math.round(avgLat) + ' ms';
+  document.getElementById('kpi-nodes').textContent   = active + '/6';
+  document.getElementById('kpi-alerts').textContent  = alerts;
+}
+
+// ── Node grid ──────────────────────────────────────────────
+
+function renderNodeGrid() {
+  var grid = document.getElementById('node-grid');
+  grid.innerHTML = NODES.map(function(n) {
+    var score = Math.round(n.riskScore);
+    var cls   = riskClass(score);
+    var trend = getRiskTrend(n);
+    var arrow = trend === 'up' ? '&#9650;' : trend === 'down' ? '&#9660;' : '';
+    return '<div class="node-card" onclick="openModal(\'' + n.id + '\')">' +
+      '<div class="nc-hdr">' +
+        '<div class="status-dot ' + n.status + '"></div>' +
+        '<div class="nc-name">' + n.name + '</div>' +
+        '<div class="nc-type">' + n.type + '</div>' +
+      '</div>' +
+      '<div class="nc-metrics">' +
+        '<div class="nc-m"><div class="nc-m-val">' + Math.round(n.latency) + '</div><div class="nc-m-lbl">ms</div></div>' +
+        '<div class="nc-m"><div class="nc-m-val">' + Math.round(n.fuel)    + '%</div><div class="nc-m-lbl">Fuel</div></div>' +
+        '<div class="nc-m"><div class="nc-m-val">' + Math.round(n.power)   + '%</div><div class="nc-m-lbl">Power</div></div>' +
+      '</div>' +
+      '<canvas class="nc-spark" id="spk-' + n.id + '" width="260" height="30"></canvas>' +
+      '<div class="nc-footer">' +
+        '<span class="risk-badge-sm ' + cls + '">RISK ' + score + ' ' + arrow + '</span>' +
+        '<span class="nc-coord">' + n.coord + '</span>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+
+  // Draw mini sparklines on node cards
+  NODES.forEach(function(n) {
+    var vals = historyGetLast(n.history, 24).map(function(h){ return h.latency; });
+    if (vals.length > 1) {
+      var cv = document.getElementById('spk-' + n.id);
+      if (cv) drawSparkline(cv, vals, statusColor(n.status), false);
+    }
+  });
+}
+
+function renderAll() {
+  updateClock();
+  renderRiskWatch();
+  renderKPIs();
+  renderNodeGrid();
+}
+
+// ═══════════════════════════════════════════════════════════
+//  SPARKLINE DRAWING  (with risk-zone overlay)
+// ═══════════════════════════════════════════════════════════
+
+var HEX_RGBA = {
+  '#ef4444':'239,68,68',  '#f59e0b':'245,158,11',
+  '#22c55e':'34,197,94',  '#3b82f6':'59,130,246',
+  '#06b6d4':'6,182,212',  '#a855f7':'168,85,247',
+};
+
+function hexToRgba(hex, alpha) {
+  var rgb = HEX_RGBA[hex];
+  if (!rgb) {
+    var r = parseInt(hex.slice(1,3),16);
+    var g = parseInt(hex.slice(3,5),16);
+    var b = parseInt(hex.slice(5,7),16);
+    rgb = r + ',' + g + ',' + b;
+  }
+  return 'rgba(' + rgb + ',' + alpha + ')';
+}
+
+function drawSparkline(canvas, values, color, showRiskZone) {
+  // Sync drawing buffer to rendered size
+  var rect = canvas.getBoundingClientRect();
+  if (rect.width  > 0) canvas.width  = Math.round(rect.width);
+  if (rect.height > 0) canvas.height = Math.round(rect.height);
+
+  var ctx = canvas.getContext('2d');
+  var W = canvas.width, H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+  if (values.length < 2) return;
+
+  var min = Math.min.apply(null, values);
+  var max = Math.max.apply(null, values);
+  var range = max - min || 1;
+  var pad = 3;
+  function toY(v) { return H - pad - ((v - min) / range) * (H - pad * 2); }
+  function toX(i) { return (i / (values.length - 1)) * W; }
+
+  // Risk-zone overlay: semi-transparent red band above p75 threshold
+  if (showRiskZone) {
+    var sorted = values.slice().sort(function(a,b){ return a-b; });
+    var p75    = sorted[Math.floor(sorted.length * 0.75)];
+    var p75Y   = toY(p75);
+
+    ctx.fillStyle = 'rgba(239,68,68,0.12)';
+    ctx.fillRect(0, 0, W, p75Y);
+
+    ctx.save();
+    ctx.strokeStyle = 'rgba(239,68,68,0.45)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([4, 4]);
+    ctx.beginPath();
+    ctx.moveTo(0, p75Y);
+    ctx.lineTo(W, p75Y);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.restore();
+  }
+
+  // Area fill
+  ctx.beginPath();
+  ctx.moveTo(toX(0), H);
+  values.forEach(function(v, i) { ctx.lineTo(toX(i), toY(v)); });
+  ctx.lineTo(toX(values.length - 1), H);
+  ctx.closePath();
+  ctx.fillStyle = hexToRgba(color, 0.1);
+  ctx.fill();
+
+  // Line
+  ctx.strokeStyle = color;
+  ctx.lineWidth   = showRiskZone ? 1.5 : 1;
+  ctx.lineJoin    = 'round';
+  ctx.lineCap     = 'round';
+  ctx.beginPath();
+  values.forEach(function(v, i) {
+    if (i === 0) ctx.moveTo(toX(i), toY(v));
+    else         ctx.lineTo(toX(i), toY(v));
+  });
+  ctx.stroke();
+}
+
+// ═══════════════════════════════════════════════════════════
+//  MODAL (drill-down with sparklines + events log)
+// ═══════════════════════════════════════════════════════════
+
+var activeModalNode = null;
+
+function openModal(nodeId) {
+  activeModalNode = nodeId;
+  renderModal(nodeId);
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function closeModal(e) {
+  if (e && e.target !== document.getElementById('modal-overlay')) return;
+  closeModalDirect();
+}
+
+function closeModalDirect() {
+  activeModalNode = null;
+  document.getElementById('modal-overlay').classList.remove('open');
+}
+
+function updateModalIfOpen() {
+  if (activeModalNode) renderModal(activeModalNode);
+}
+
+var SPARK_METRICS = [
+  { key:'latency',    label:'Latency (ms)',        color:'#3b82f6', wide:false },
+  { key:'packetLoss', label:'Packet Loss',          color:'#a855f7', wide:false },
+  { key:'power',      label:'Power (%)',             color:'#22c55e', wide:false },
+  { key:'fuel',       label:'Fuel Level (%)',        color:'#f59e0b', wide:false },
+  { key:'flow',       label:'Flow Rate (units/h)',   color:'#06b6d4', wide:true  },
+];
+
+function renderModal(nodeId) {
+  var node = NODES.filter(function(n){ return n.id === nodeId; })[0];
+  if (!node) return;
+
+  var score = Math.round(node.riskScore);
+  var cls   = riskClass(score);
+  var scoreColor = cls === 'red' ? 'var(--red)' : cls === 'amber' ? 'var(--amber)' : 'var(--green)';
+
+  document.getElementById('modal-title').textContent =
+    node.name + ' — ' + node.type + ' · ' + node.coord;
+
+  document.getElementById('modal-meta').innerHTML =
+    '<div class="mm"><div class="mm-val">' + Math.round(node.latency)               + ' ms</div><div class="mm-lbl">Latency</div></div>'  +
+    '<div class="mm"><div class="mm-val">' + (node.packetLoss*100).toFixed(1)       + '%</div><div class="mm-lbl">Pkt Loss</div></div>'  +
+    '<div class="mm"><div class="mm-val">' + Math.round(node.power)                 + '%</div><div class="mm-lbl">Power</div></div>'     +
+    '<div class="mm"><div class="mm-val">' + Math.round(node.fuel)                  + '%</div><div class="mm-lbl">Fuel</div></div>'      +
+    '<div class="mm"><div class="mm-val" style="color:' + scoreColor + '">' + score + '</div><div class="mm-lbl">Risk / 100</div></div>';
+
+  var hist = historyGetLast(node.history, 48);
+
+  document.getElementById('sparks-grid').innerHTML = SPARK_METRICS.map(function(m) {
+    return '<div class="spark-block' + (m.wide ? ' wide' : '') + '">' +
+      '<div class="spark-lbl">' + m.label + '</div>' +
+      '<canvas class="spark-cv" id="scv-' + nodeId + '-' + m.key + '" width="280" height="58"></canvas>' +
+    '</div>';
+  }).join('');
+
+  // Draw sparklines with risk-zone overlay
+  SPARK_METRICS.forEach(function(m) {
+    var vals = hist.map(function(h){ return h[m.key]; });
+    var cv   = document.getElementById('scv-' + nodeId + '-' + m.key);
+    if (cv && vals.length > 1) drawSparkline(cv, vals, m.color, true);
+  });
+
+  // Events log
+  var cutoff72 = Date.now() - 72 * 3600000;
+  var recent   = node.outageEvents.filter(function(t){ return t > cutoff72; }).slice(-8).reverse();
+  var evtHtml  = '<div class="evt-title">Recent Events (72 h)</div>';
+  if (recent.length === 0) {
+    evtHtml += '<div class="evt-row"><span class="evt-desc" style="color:var(--text-3)">No outage events recorded</span></div>';
+  } else {
+    evtHtml += recent.map(function(t) {
+      var ago    = Math.round((Date.now() - t) / 60000);
+      var agoStr = ago < 60 ? ago + 'm ago' : Math.round(ago/60) + 'h ago';
+      return '<div class="evt-row">' +
+        '<span class="evt-time">' + agoStr + '</span>' +
+        '<span class="evt-sev crit">OUTAGE</span>' +
+        '<span class="evt-desc">Link interruption on ' + node.name + '</span>' +
+      '</div>';
+    }).join('');
+  }
+  document.getElementById('evt-log').innerHTML = evtHtml;
+}
+
+// ═══════════════════════════════════════════════════════════
+//  AI CHAT
+// ═══════════════════════════════════════════════════════════
+
+var AI_HISTORY = [];
+
+function buildRiskWatchContext() {
+  return NODES.slice()
+    .sort(function(a,b){ return b.riskScore - a.riskScore; })
+    .slice(0,3)
+    .map(function(n) {
+      return '[' + n.name + '] score=' + Math.round(n.riskScore) + '/100 trend=' + getRiskTrend(n);
+    })
+    .join(', ');
+}
+
+function buildSystemPrompt() {
+  var nodeStatus = NODES.map(function(n) {
+    return n.name + ': latency=' + Math.round(n.latency) + 'ms fuel=' +
+      Math.round(n.fuel) + '% power=' + Math.round(n.power) + '% status=' + n.status;
+  }).join('\n');
+
+  return 'You are ARIA (Aid & Relief Infrastructure Analyst), an AI assistant embedded in a humanitarian operations dashboard. ' +
+    'You monitor infrastructure nodes across crisis zones in East Africa and Yemen.\n\n' +
+    'CURRENT NODE STATUS:\n' + nodeStatus + '\n\n' +
+    'RISK WATCH: ' + buildRiskWatchContext() + '\n\n' +
+    'Provide concise, actionable analysis. Highlight nodes at risk and suggest mitigation. Keep responses under 150 words unless detail is requested.';
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+}
+
+function addAIMessage(role, text) {
+  AI_HISTORY.push({ role: role, content: text });
+  var msgs = document.getElementById('ai-msgs');
+  var div  = document.createElement('div');
+  div.className = 'ai-msg ' + role;
+  div.innerHTML = '<div class="ai-role">' + (role === 'user' ? 'YOU' : 'ARIA') + '</div>' +
+                  '<div class="ai-body">'  + escHtml(text) + '</div>';
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+async function aiSend() {
+  var input = document.getElementById('ai-input');
+  var text  = input.value.trim();
+  if (!text) return;
+
+  var key = document.getElementById('ai-key').value.trim();
+  addAIMessage('user', text);
+  input.value = '';
+
+  var btn = document.getElementById('ai-send');
+  btn.disabled = true;
+  btn.textContent = '…';
+
+  if (key) {
+    try {
+      var msgs = AI_HISTORY
+        .filter(function(m){ return m.role === 'user' || m.role === 'assistant'; })
+        .slice(-8)
+        .map(function(m){ return { role: m.role, content: m.content }; });
+
+      var resp = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type':    'application/json',
+          'x-api-key':       key,
+          'anthropic-version': '2023-06-01',
+        },
+        body: JSON.stringify({
+          model:      'claude-haiku-4-5-20251001',
+          max_tokens: 300,
+          system:     buildSystemPrompt(),
+          messages:   msgs,
+        }),
+      });
+      var data  = await resp.json();
+      var reply = (data.content && data.content[0] && data.content[0].text)
+        ? data.content[0].text
+        : 'Unable to parse response.';
+      addAIMessage('assistant', reply);
+    } catch (err) {
+      addAIMessage('assistant', 'API error: ' + err.message);
+    }
+  } else {
+    // Demo fallback — cycles through canned but data-aware responses
+    await new Promise(function(r){ setTimeout(r, 700); });
+    var top = NODES.slice().sort(function(a,b){ return b.riskScore - a.riskScore; })[0];
+    var pool = [
+      'Highest-risk node: ' + top.name + ' (score ' + Math.round(top.riskScore) + '/100). ' +
+        (top.fuel < 30 ? 'Fuel critically low — resupply within 12 h.' : 'Monitoring trending metrics.') +
+        ' RISK WATCH: ' + buildRiskWatchContext(),
+      'Pipeline overview: ' + NODES.filter(function(n){ return n.status==='nominal'; }).length + ' nodes nominal, ' +
+        NODES.filter(function(n){ return n.status==='critical'; }).length + ' critical. ' +
+        'Avg latency ' + Math.round(NODES.reduce(function(s,n){ return s+n.latency; },0)/NODES.length) + ' ms.',
+      'Risk summary — ' + buildRiskWatchContext() + '. Prioritise fuel logistics to low-reserve nodes.',
+    ];
+    addAIMessage('assistant', pool[tickCount % pool.length]);
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Send ↑';
+}
+
+document.getElementById('ai-input').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); aiSend(); }
+});
+
+// ═══════════════════════════════════════════════════════════
+//  BOOT — pre-fill 40 history ticks so charts render immediately
+// ═══════════════════════════════════════════════════════════
+
+(function preFillHistory() {
+  NODES.forEach(function(node) {
+    for (var i = 0; i < 40; i++) {
+      historyPush(node.history, {
+        latency:    Math.max(5, node.latency    + (Math.random()-0.5)*35 + Math.sin(i*0.4+node._seed)*12),
+        packetLoss: Math.max(0, node.packetLoss + (Math.random()-0.5)*0.04),
+        power:      Math.max(0, Math.min(100, node.power  + (Math.random()-0.5)*6)),
+        fuel:       Math.max(0, node.fuel       + (40-i)*0.2),  // slightly higher in the past
+        flow:       Math.max(0, node.flow       + (Math.random()-0.5)*70),
+        t:          Date.now() - (40-i)*TICK_MS,
+      });
+      computeRiskScore(node);
+    }
+  });
+  renderAll();
+}());
+</script>
+</body>
+</html>
