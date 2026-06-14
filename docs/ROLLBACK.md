@@ -1,5 +1,17 @@
 # Rollback Manifest
 
+## 5827c38 — 2026-06-14 08:22 UTC
+
+- **SHA**: `5827c38a1f23963525596184886fbfa70abc382a`
+- **Author**: GadgetAI
+- **Message**: chore: add upper-bound pins to CI-impacting dependencies
+- **Files changed**: 1 file(s)
+
+**Changed files:**
+- `requirements.txt`
+
+---
+
 ## 54f8e75 — 2026-06-14 07:37 UTC
 
 - **SHA**: `54f8e75cf9298f5826903c0eeadb88b260d69cae`
