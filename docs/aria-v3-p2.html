@@ -147,6 +147,34 @@ canvas { display: block; }
 .alert-msg  { font-size: 12.5px; color: var(--t1); }
 .alert-meta { font-size: 11px; color: var(--t3); margin-top: 2px; }
 
+/* ── ESCALATION ──────────────────────────────────────────────────────── */
+.esc-card { background: var(--bg3); border-radius: 8px; padding: 12px 14px; margin-bottom: 8px; border-left: 3px solid transparent; }
+.esc-card.esc-new    { border-left-color: var(--red); }
+.esc-card.esc-acked  { border-left-color: var(--amber); }
+.esc-card.esc-escalated { border-left-color: var(--purple); background: rgba(168,85,247,0.06); }
+.esc-card.esc-resolved  { border-left-color: var(--green); opacity: .6; }
+.esc-row { display: flex; align-items: flex-start; gap: 10px; }
+.esc-badge { font-size: 9px; font-weight: 700; padding: 2px 7px; border-radius: 4px; flex-shrink: 0; margin-top: 2px; }
+.esc-badge.state-new       { background: var(--red-dim);   color: var(--red); }
+.esc-badge.state-acked     { background: var(--amber-dim); color: var(--amber); }
+.esc-badge.state-escalated { background: rgba(168,85,247,.2); color: var(--purple); }
+.esc-badge.state-resolved  { background: var(--green-dim); color: var(--green); }
+.esc-body { flex: 1; }
+.esc-msg  { font-size: 12.5px; color: var(--t1); margin-bottom: 4px; }
+.esc-meta { font-size: 11px; color: var(--t3); margin-bottom: 6px; }
+.esc-memo { font-size: 11.5px; color: var(--t2); background: var(--bg2); border-radius: 5px; padding: 7px 10px; margin: 6px 0; border-left: 2px solid var(--purple); font-style: italic; }
+.esc-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+.esc-btn { font-size: 11px; padding: 4px 10px; border-radius: 5px; border: 1px solid var(--border2); background: var(--bg2); color: var(--t2); cursor: pointer; transition: all .15s; }
+.esc-btn:hover { color: var(--t1); border-color: var(--teal2); }
+.esc-btn.esc-btn-ack  { border-color: var(--amber); color: var(--amber); }
+.esc-btn.esc-btn-esc  { border-color: var(--purple); color: var(--purple); }
+.esc-btn.esc-btn-res  { border-color: var(--green); color: var(--green); }
+.esc-timer { font-size: 10px; color: var(--red); font-family: var(--mono); margin-left: auto; flex-shrink: 0; }
+.esc-stats { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-bottom: 14px; }
+.esc-stat  { background: var(--bg3); border-radius: 8px; padding: 12px; text-align: center; }
+.esc-stat-val { font-size: 22px; font-weight: 700; margin-bottom: 2px; }
+.esc-stat-lbl { font-size: 10px; color: var(--t3); text-transform: uppercase; letter-spacing: .6px; }
+
 /* ── MAP ─────────────────────────────────────────────────────────────── */
 #map-svg { width: 100%; height: 420px; background: var(--bg3); border-radius: var(--radius); border: 1px solid var(--border); }
 
@@ -332,6 +360,7 @@ canvas { display: block; }
   <div class="nav-item" onclick="showView('actions',this)">🤖 <span>ARIA Actions</span></div>
   <div class="nav-item" onclick="showView('sources',this)">🌐 <span>Data Sources</span></div>
   <div class="nav-item" onclick="showView('sitrep',this)">📄 <span>SitRep</span></div>
+  <div class="nav-item" onclick="showView('escalations',this)">📢 <span>Escalations</span> <span class="nav-badge" id="esc-badge" style="display:none">0</span></div>
 
   <div class="sb-region">
     <label>ACTIVE REGION</label>
@@ -341,7 +370,7 @@ canvas { display: block; }
       <option value="middle-east">Middle East</option>
     </select>
   </div>
-  <div class="sb-status">System: <span>OPERATIONAL</span> · v3.5.0-sitrep</div>
+  <div class="sb-status">System: <span>OPERATIONAL</span> · v3.6.0-escalation</div>
 </aside>
 
 <!-- ── MAIN ─────────────────────────────────────────────────────────────── -->
@@ -584,6 +613,17 @@ canvas { display: block; }
           <span style="margin-left:auto;font-size:10px;color:var(--t3);font-weight:400;font-family:var(--mono)" id="sitrep-gen-status">—</span>
         </div>
         <div id="sitrep-narrative" style="color:var(--t3);font-size:12.5px">Click "Generate AI Narrative" to produce an OCHA-format SitRep narrative from live dashboard data.</div>
+      </div>
+    </div>
+
+    <!-- ── ESCALATIONS ──────────────────────────────────────────────────── -->
+    <div class="view" id="view-escalations">
+      <div class="esc-stats" id="esc-stats"></div>
+      <div class="card">
+        <div class="card-title">ALERT ESCALATION QUEUE
+          <span style="margin-left:auto;font-size:10px;color:var(--t3);font-family:var(--mono)" id="esc-last-check">Auto-checks every 60s</span>
+        </div>
+        <div id="esc-list"></div>
       </div>
     </div>
 
@@ -1089,12 +1129,25 @@ function renderOverviewAlerts() {
   el.innerHTML = region().alerts.slice(0, 5).map(a => alertHTML(a)).join('');
 }
 
-function alertHTML(a) {
+function alertHTML(a, showEscActions) {
+  const state = a.ackState || 'new';
+  const stateLabel = { new:'NEW', acked:'ACK\'D', escalated:'ESCALATED', resolved:'RESOLVED' }[state] || state;
+  const actionsHTML = showEscActions ? `
+    <div class="esc-actions" style="margin-top:6px">
+      ${state === 'new' ? `<button class="esc-btn esc-btn-ack" onclick="event.stopPropagation();ackAlert('${a.id}')">✓ Acknowledge</button>` : ''}
+      ${state !== 'escalated' && state !== 'resolved' ? `<button class="esc-btn esc-btn-esc" onclick="event.stopPropagation();escalateAlert('${a.id}')">↑ Escalate</button>` : ''}
+      ${state !== 'resolved' ? `<button class="esc-btn esc-btn-res" onclick="event.stopPropagation();resolveAlert('${a.id}')">✓ Resolve</button>` : ''}
+    </div>` : '';
+  const stateBg  = { new:'var(--red-dim)', acked:'var(--amber-dim)', escalated:'rgba(168,85,247,.2)', resolved:'var(--green-dim)' }[state] || 'var(--bg3)';
+  const stateCol = { new:'var(--red)', acked:'var(--amber)', escalated:'var(--purple)', resolved:'var(--green)' }[state] || 'var(--t2)';
+  const stateTag = showEscActions ? `<span class="alert-sev" style="font-size:9px;margin-left:6px;background:${stateBg};color:${stateCol}">${stateLabel}</span>` : '';
   return `<div class="alert-item alert-${a.sev}" onclick="alertClick('${a.id}')">
     <span class="alert-sev sev-${a.sev}">${a.sev.toUpperCase()}</span>
     <div class="alert-body">
-      <div class="alert-msg">${a.msg}</div>
-      <div class="alert-meta">${a.ts || '--'}</div>
+      <div class="alert-msg">${a.msg}${stateTag}</div>
+      <div class="alert-meta">${a.ts || '--'}${a.ackBy ? ` · ACK'd by ${a.ackBy}` : ''}${a.ackAt ? ` at ${a.ackAt}` : ''}</div>
+      ${a.escMemo ? `<div class="esc-memo" style="margin-top:5px">${escHtml(a.escMemo)}</div>` : ''}
+      ${actionsHTML}
     </div>
   </div>`;
 }
@@ -1279,8 +1332,9 @@ function renderBeneficiaries() {
 function renderAlertsFull() {
   const el = document.getElementById('alerts-full');
   if (!el) return;
-  el.innerHTML = region().alerts.length
-    ? region().alerts.map(a => alertHTML(a)).join('')
+  const active = region().alerts.filter(a => (a.ackState || 'new') !== 'resolved');
+  el.innerHTML = active.length
+    ? active.map(a => alertHTML(a, true)).join('')
     : '<div style="color:var(--t3);padding:20px;text-align:center">No active alerts</div>';
 }
 
@@ -2319,7 +2373,8 @@ function showView(id, el) {
     overview:'Dashboard', map:'Live Map', nodes:'Nodes', sectors:'Sectors',
     connectivity:'Connectivity', power:'Power & Water', logistics:'Logistics',
     beneficiaries:'Beneficiaries', alerts:'Alerts', history:'Event History',
-    actions:'ARIA Actions Log', sources:'Data Sources', sitrep:'SitRep Generator'
+    actions:'ARIA Actions Log', sources:'Data Sources', sitrep:'SitRep Generator',
+    escalations:'Alert Escalation Engine'
   };
   set('view-title', titles[id] || id);
   // Re-draw canvas-based views on show
@@ -2327,6 +2382,7 @@ function showView(id, el) {
   if (id === 'map') drawMap();
   if (id === 'nodes') renderNodeListFull();
   if (id === 'sitrep') renderSitRepView();
+  if (id === 'escalations') renderEscalations();
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
@@ -2364,13 +2420,248 @@ function showView(id, el) {
     { ts:'09:03', sev:'warn', msg:'Convoy KE-07 delayed — road closure' },
   ].forEach(e => eventHistory.push(e));
 
-  addIngestLog('SYSTEM', 'ARIA v3.5.0-sitrep initialised with Risk Scoring + Offline + Multi-Analyst + Live Field Reports + SitRep Generator');
+  addIngestLog('SYSTEM', 'ARIA v3.6.0-escalation initialised with Risk Scoring + Offline + Multi-Analyst + Live Field Reports + SitRep + Escalation Engine');
   addIngestLog('RISK', 'Phase 1 predictive scoring active — monitoring ' + REGIONS['east-africa'].nodes.length + ' nodes');
 
   if (demoMode) startDemo();
+  startEscalationEngine();
 
   window.addEventListener('resize', () => { drawTopology(); drawMap(); });
 })();
+
+/* ══════════════════════════════════════════════════════════════════════════
+   PHASE 6 — ALERT ESCALATION ENGINE
+══════════════════════════════════════════════════════════════════════════ */
+
+// Escalation thresholds (minutes before auto-escalation if unacknowledged)
+const ESC_THRESHOLDS = { crit: 15, warn: 45 };
+
+// Track escalation log entries across all regions
+const escalationLog = [];
+
+let _escInterval = null;
+
+function ackAlert(id) {
+  const a = region().alerts.find(x => x.id === id);
+  if (!a || a.ackState === 'resolved') return;
+  a.ackState = 'acked';
+  a.ackBy = 'Ops Officer';
+  a.ackAt = new Date().toTimeString().slice(0,5);
+  a.ackedAt = Date.now();
+  escalationLog.push({ ts: a.ackAt, id, sev: a.sev, state: 'acked', msg: a.msg });
+  addIngestLog('ESC', `Alert acknowledged: ${a.msg.slice(0,60)}`);
+  toast('Alert acknowledged', 'ok');
+  renderAlertsFull();
+  renderEscalations();
+  updateEscBadge();
+}
+
+function escalateAlert(id) {
+  const a = region().alerts.find(x => x.id === id);
+  if (!a || a.ackState === 'resolved' || a.ackState === 'escalated') return;
+  if (!a.ackState || a.ackState === 'new') a.ackState = 'acked'; // auto-ack first
+  a.ackState = 'escalated';
+  a.escalatedAt = Date.now();
+  const ts = new Date().toTimeString().slice(0,5);
+  escalationLog.push({ ts, id, sev: a.sev, state: 'escalated', msg: a.msg });
+  addIngestLog('ESC', `Alert escalated: ${a.msg.slice(0,60)}`);
+  toast(`Escalating: ${a.msg.slice(0,40)}…`, 'warn');
+  renderAlertsFull();
+  renderEscalations();
+  updateEscBadge();
+  genEscalationMemo(a);
+}
+
+function resolveAlert(id) {
+  const a = region().alerts.find(x => x.id === id);
+  if (!a || a.ackState === 'resolved') return;
+  a.ackState = 'resolved';
+  a.resolvedAt = Date.now();
+  const ts = new Date().toTimeString().slice(0,5);
+  escalationLog.push({ ts, id, sev: a.sev, state: 'resolved', msg: a.msg });
+  addIngestLog('ESC', `Alert resolved: ${a.msg.slice(0,60)}`);
+  toast('Alert resolved', 'ok');
+  eventHistory.push({ ts, sev: 'info', msg: `Resolved: ${a.msg.slice(0,60)}` });
+  renderAlertsFull();
+  renderEscalations();
+  updateEscBadge();
+}
+
+function checkAutoEscalation() {
+  const now = Date.now();
+  let changed = false;
+  Object.values(REGIONS).forEach(r => {
+    r.alerts.forEach(a => {
+      if (a.ackState === 'resolved' || a.ackState === 'escalated') return;
+      const threshMin = ESC_THRESHOLDS[a.sev];
+      if (!threshMin) return;
+      // Use alert age from ts, or track when it was first seen
+      if (!a._firstSeen) a._firstSeen = now - ((a._ageMin || 5) * 60000);
+      const ageMin = (now - a._firstSeen) / 60000;
+      const ackedAgeMin = a.ackedAt ? (now - a.ackedAt) / 60000 : 0;
+      const relevant = a.ackState === 'acked' ? ackedAgeMin : ageMin;
+      if (relevant >= threshMin) {
+        a.ackState = 'escalated';
+        a.escalatedAt = now;
+        a._autoEscalated = true;
+        const ts = new Date().toTimeString().slice(0,5);
+        escalationLog.push({ ts, id: a.id, sev: a.sev, state: 'auto-escalated', msg: a.msg });
+        addIngestLog('ESC', `AUTO-ESCALATED (${threshMin}m threshold): ${a.msg.slice(0,55)}`);
+        toast(`Auto-escalated: ${a.msg.slice(0,35)}…`, 'warn');
+        genEscalationMemo(a);
+        changed = true;
+      }
+    });
+  });
+  const el = document.getElementById('esc-last-check');
+  if (el) el.textContent = `Last check: ${new Date().toTimeString().slice(0,5)}`;
+  if (changed) { renderAlertsFull(); renderEscalations(); updateEscBadge(); }
+}
+
+async function genEscalationMemo(alertObj) {
+  const apiKey = document.getElementById('api-key')?.value?.trim();
+  if (!apiKey) {
+    alertObj.escMemo = '[API key not set — escalation memo unavailable]';
+    renderEscalations();
+    return;
+  }
+  const ctx = buildOpsContext();
+  const prompt = `You are an emergency ops analyst. Write a 2-sentence escalation memo for the following alert in a humanitarian operations context. Be direct and action-oriented.
+
+Alert: ${alertObj.msg}
+Severity: ${alertObj.sev.toUpperCase()}
+Region: ${ctx.region}
+Active critical alerts: ${ctx.critCount}
+Network nodes offline: ${ctx.offlineCount}
+
+Escalation memo (2 sentences, plain text, no headers):`;
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-calls': 'true',
+        'content-type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 120,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const data = await resp.json();
+    trackLLMCost('claude-haiku-4-5-20251001', data.usage);
+    alertObj.escMemo = data.content?.[0]?.text?.trim() || 'Escalation memo generation failed.';
+  } catch (e) {
+    alertObj.escMemo = `Escalation memo unavailable (${e.message}).`;
+  }
+  renderAlertsFull();
+  renderEscalations();
+}
+
+function updateEscBadge() {
+  const allAlerts = Object.values(REGIONS).flatMap(r => r.alerts);
+  const pending = allAlerts.filter(a => a.ackState === 'escalated').length;
+  const badge = document.getElementById('esc-badge');
+  const alertBadge = document.getElementById('alert-badge');
+  if (badge) {
+    badge.textContent = pending;
+    badge.style.display = pending > 0 ? '' : 'none';
+    if (pending > 0) badge.style.background = 'var(--purple)';
+  }
+  // Also update main alert badge with unacknowledged count
+  const unacked = allAlerts.filter(a => !a.ackState || a.ackState === 'new').length;
+  if (alertBadge) alertBadge.textContent = unacked;
+}
+
+function renderEscalations() {
+  const allAlerts = Object.values(REGIONS).flatMap(r => r.alerts);
+  const byState = { new: 0, acked: 0, escalated: 0, resolved: 0 };
+  allAlerts.forEach(a => { const s = a.ackState || 'new'; if (s in byState) byState[s]++; });
+
+  const statsEl = document.getElementById('esc-stats');
+  if (statsEl) {
+    statsEl.innerHTML = [
+      { val: byState.new,       lbl: 'Unacknowledged', col: 'var(--red)' },
+      { val: byState.acked,     lbl: 'Acknowledged',   col: 'var(--amber)' },
+      { val: byState.escalated, lbl: 'Escalated',      col: 'var(--purple)' },
+      { val: byState.resolved,  lbl: 'Resolved',       col: 'var(--green)' },
+    ].map(s => `<div class="esc-stat">
+      <div class="esc-stat-val" style="color:${s.col}">${s.val}</div>
+      <div class="esc-stat-lbl">${s.lbl}</div>
+    </div>`).join('');
+  }
+
+  const el = document.getElementById('esc-list');
+  if (!el) return;
+
+  // Show all non-resolved alerts across ALL regions, sorted: escalated first, then new, then acked
+  const order = { escalated: 0, new: 1, acked: 2, resolved: 3 };
+  const sorted = allAlerts
+    .filter(a => (a.ackState || 'new') !== 'resolved')
+    .sort((a, b) => (order[a.ackState||'new'] - order[b.ackState||'new']) || 0);
+
+  if (!sorted.length) {
+    el.innerHTML = '<div style="color:var(--green);padding:20px;text-align:center;font-size:13px">✓ All alerts resolved — no active escalations</div>';
+    return;
+  }
+
+  el.innerHTML = sorted.map(a => {
+    const state = a.ackState || 'new';
+    const stateLabel = { new:'NEW', acked:"ACK'D", escalated:'ESCALATED' }[state] || state;
+    const autoTag = a._autoEscalated ? ' · auto' : '';
+    const ageMins = a._firstSeen ? Math.round((Date.now() - a._firstSeen) / 60000) : null;
+    const ageStr = ageMins !== null ? `${ageMins}m ago` : (a.ts || '--');
+    const thresh = ESC_THRESHOLDS[a.sev];
+    const remainMins = thresh && state !== 'escalated' && state !== 'acked'
+      ? Math.max(0, thresh - (ageMins || 0))
+      : null;
+    const timerStr = remainMins !== null && remainMins <= thresh
+      ? `<span class="esc-timer">${remainMins > 0 ? `escalates in ${remainMins}m` : 'auto-escalation due'}</span>`
+      : '';
+
+    return `<div class="esc-card esc-${state}">
+      <div class="esc-row">
+        <span class="esc-badge state-${state}">${stateLabel}${autoTag}</span>
+        <div class="esc-body">
+          <div class="esc-msg">${escHtml(a.msg)}</div>
+          <div class="esc-meta">${a.sev.toUpperCase()} · ${ageStr}${a.ackBy ? ` · ACK: ${a.ackBy} ${a.ackAt||''}` : ''}</div>
+          ${a.escMemo ? `<div class="esc-memo">${escHtml(a.escMemo)}</div>` : (state === 'escalated' ? '<div class="esc-memo" style="color:var(--t3)">⏳ Generating AI escalation memo…</div>' : '')}
+          <div class="esc-actions">
+            ${state === 'new' ? `<button class="esc-btn esc-btn-ack" onclick="ackAlert('${a.id}')">✓ Acknowledge</button>` : ''}
+            ${state !== 'escalated' ? `<button class="esc-btn esc-btn-esc" onclick="escalateAlert('${a.id}')">↑ Escalate</button>` : ''}
+            <button class="esc-btn esc-btn-res" onclick="resolveAlert('${a.id}')">✓ Resolve</button>
+          </div>
+        </div>
+        ${timerStr}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function startEscalationEngine() {
+  // Stamp first-seen times on existing alerts (simulate partial age from their ts offsets)
+  Object.values(REGIONS).forEach(r => {
+    r.alerts.forEach(a => {
+      if (!a._firstSeen) {
+        // Approximate first-seen from the relTime offset embedded in ts
+        // Use a small random age so CRIT alerts are already close to threshold in demo
+        const demoAgeMin = a.sev === 'crit' ? 12 + Math.random() * 5 : 3 + Math.random() * 8;
+        a._firstSeen = Date.now() - demoAgeMin * 60000;
+        a._ageMin = demoAgeMin;
+      }
+    });
+  });
+  updateEscBadge();
+  checkAutoEscalation();
+  _escInterval = setInterval(() => {
+    checkAutoEscalation();
+    updateEscBadge();
+  }, 60000);
+}
 
 /* ══════════════════════════════════════════════════════════════════════════
    PHASE 2 — PWA / OFFLINE-FIRST
