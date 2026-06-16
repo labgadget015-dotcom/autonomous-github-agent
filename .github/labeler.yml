@@ -35,5 +35,5 @@ maintenance:
 dependencies:
   - changed-files:
       - any-glob-to-any-file: 'requirements*.txt'
-      - any-glob-to-any-file: 'pyproject.toml'
-      - any-glob-to-any-file: 'setup.py'
+      - any-glob-to-any-file: 'package*.json'
+      - any-glob-to-any-file: 'poetry.lock'
