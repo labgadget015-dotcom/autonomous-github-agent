@@ -370,7 +370,7 @@ canvas { display: block; }
       <option value="middle-east">Middle East</option>
     </select>
   </div>
-  <div class="sb-status">System: <span>OPERATIONAL</span> · v3.6.0-escalation</div>
+  <div class="sb-status">System: <span>OPERATIONAL</span> · v3.7.0-costgate</div>
 </aside>
 
 <!-- ── MAIN ─────────────────────────────────────────────────────────────── -->
@@ -385,6 +385,7 @@ canvas { display: block; }
     <button class="tb-btn" id="install-btn" onclick="installApp()">⬇ Install App</button>
     <button class="tb-btn demo-badge" id="demo-btn" onclick="toggleDemo()">● LIVE DEMO</button>
     <button class="tb-btn" onclick="fetchAllSources()">↻ Refresh Data</button>
+    <span id="llm-cost-widget" title="Estimated LLM spend this calendar month" style="font-size:11px;font-family:var(--mono);color:var(--t3);padding:0 4px;cursor:default">$0.00</span>
     <button class="tb-btn" id="btn-ai" onclick="toggleAI()">🛰 ARIA Analyst</button>
   </div>
 
@@ -1920,6 +1921,13 @@ async function aiSend() {
   document.getElementById('ai-send').disabled = true;
   aiHistory.push({ role:'user', content: q });
 
+  if (!checkLLMCostGate()) {
+    thinkEl.innerHTML = `<span style="color:var(--red)">LLM calls blocked — monthly spend limit reached. Check cost widget.</span>`;
+    aiThinking = false;
+    document.getElementById('ai-send').disabled = false;
+    return;
+  }
+
   const systemPrompt = buildFullSystemPrompt(activeAnalyst);
 
   try {
@@ -2032,6 +2040,7 @@ Respond concisely and actionably. Prioritise the highest-impact actions.`;
 
 async function launchBriefing() {
   const btn = document.getElementById('brief-btn');
+  if (!checkLLMCostGate()) return;
   btn.disabled = true;
   btn.textContent = '⏳ Briefing…';
 
@@ -2072,8 +2081,8 @@ async function launchBriefing() {
     <div class="brief-card-body" id="brief-body-synth"><div class="typing-dots"><span></span><span></span><span></span></div></div>`;
   cardsEl.appendChild(synthCard);
 
-  // Fire all 3 analysts in parallel
-  await Promise.all(order.map(async id => {
+  // Fire all 3 analysts in parallel — allSettled so one failure doesn't abort the rest
+  await Promise.allSettled(order.map(async id => {
     try {
       const resp = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
@@ -2191,6 +2200,8 @@ async function generateSitRep() {
   const narrativeEl = document.getElementById('sitrep-narrative');
   if (!btn || !narrativeEl) return;
 
+  if (!checkLLMCostGate()) return;
+
   btn.disabled = true;
   btn.textContent = '⏳ Generating…';
   if (statusEl) statusEl.textContent = 'requesting…';
@@ -2304,24 +2315,68 @@ const LLM_PRICES = {
   'claude-sonnet-4-6':        { in: 3.00, out: 15.00 }, // $/MTok
   'claude-haiku-4-5-20251001': { in: 0.80, out:  4.00 },
 };
-function trackLLMCost(model, usage) {
-  if (!usage) return;
-  const month = new Date().toISOString().slice(0, 7); // "YYYY-MM"
+const LLM_WARN_USD  = 30;
+const LLM_BLOCK_USD = 50;
+
+function _calcLLMCost(rec) {
+  let cost = 0;
+  for (const [k, t] of Object.entries(rec.toks || {})) {
+    const p = k === 'haiku' ? LLM_PRICES['claude-haiku-4-5-20251001'] : LLM_PRICES['claude-sonnet-4-6'];
+    cost += (t.in / 1e6) * p.in + (t.out / 1e6) * p.out;
+  }
+  return cost;
+}
+
+function _loadCostRec() {
+  const month = new Date().toISOString().slice(0, 7);
   let rec;
   try { rec = JSON.parse(localStorage.getItem(LLM_COST_KEY) || 'null'); } catch { rec = null; }
   if (!rec || rec.month !== month) rec = { month, toks: {} };
+  return rec;
+}
+
+function _updateCostWidget(cost) {
+  const el = document.getElementById('llm-cost-widget');
+  if (!el) return;
+  el.textContent = `$${cost.toFixed(2)}`;
+  if (cost >= LLM_BLOCK_USD) {
+    el.style.color = 'var(--red)';
+    el.style.fontWeight = '700';
+    el.title = `LLM spend blocked at $${LLM_BLOCK_USD} — reset monthly`;
+  } else if (cost >= LLM_WARN_USD) {
+    el.style.color = 'var(--amber)';
+    el.style.fontWeight = '600';
+    el.title = `Warning: $${cost.toFixed(2)} estimated this month (limit $${LLM_BLOCK_USD})`;
+  } else {
+    el.style.color = 'var(--t3)';
+    el.style.fontWeight = 'normal';
+    el.title = `Estimated LLM spend this month: $${cost.toFixed(2)}`;
+  }
+}
+
+function checkLLMCostGate() {
+  const rec = _loadCostRec();
+  const cost = _calcLLMCost(rec);
+  _updateCostWidget(cost);
+  if (cost >= LLM_BLOCK_USD) {
+    toast(`LLM calls blocked — estimated monthly spend $${cost.toFixed(2)} exceeds $${LLM_BLOCK_USD} limit`, 'warn');
+    return false;
+  }
+  return true;
+}
+
+function trackLLMCost(model, usage) {
+  if (!usage) return;
+  const rec = _loadCostRec();
   const key = model.includes('haiku') ? 'haiku' : 'sonnet';
   if (!rec.toks[key]) rec.toks[key] = { in: 0, out: 0 };
   rec.toks[key].in  += usage.input_tokens  || 0;
   rec.toks[key].out += usage.output_tokens || 0;
   try { localStorage.setItem(LLM_COST_KEY, JSON.stringify(rec)); } catch {}
-  let cost = 0;
-  for (const [k, t] of Object.entries(rec.toks)) {
-    const p = k === 'haiku' ? LLM_PRICES['claude-haiku-4-5-20251001'] : LLM_PRICES['claude-sonnet-4-6'];
-    cost += (t.in / 1e6) * p.in + (t.out / 1e6) * p.out;
-  }
-  if (cost > 30) {
-    console.warn(`[ARIA] Estimated LLM spend this month: $${cost.toFixed(2)} — exceeds $30 threshold. Review usage.`);
+  const cost = _calcLLMCost(rec);
+  _updateCostWidget(cost);
+  if (cost > LLM_WARN_USD && cost < LLM_BLOCK_USD) {
+    console.warn(`[ARIA] Estimated LLM spend this month: $${cost.toFixed(2)} — approaching $${LLM_BLOCK_USD} limit.`);
   }
 }
 
@@ -2420,11 +2475,13 @@ function showView(id, el) {
     { ts:'09:03', sev:'warn', msg:'Convoy KE-07 delayed — road closure' },
   ].forEach(e => eventHistory.push(e));
 
-  addIngestLog('SYSTEM', 'ARIA v3.6.0-escalation initialised with Risk Scoring + Offline + Multi-Analyst + Live Field Reports + SitRep + Escalation Engine');
+  addIngestLog('SYSTEM', 'ARIA v3.7.0-costgate initialised with Risk Scoring + Offline + Multi-Analyst + Live Field Reports + SitRep + Escalation + LLM Cost Gate');
   addIngestLog('RISK', 'Phase 1 predictive scoring active — monitoring ' + REGIONS['east-africa'].nodes.length + ' nodes');
 
   if (demoMode) startDemo();
   startEscalationEngine();
+  // Initialise cost widget from stored data
+  { const rec = _loadCostRec(); _updateCostWidget(_calcLLMCost(rec)); }
 
   window.addEventListener('resize', () => { drawTopology(); drawMap(); });
 })();
@@ -2519,6 +2576,11 @@ function checkAutoEscalation() {
 }
 
 async function genEscalationMemo(alertObj) {
+  if (!checkLLMCostGate()) {
+    alertObj.escMemo = '[LLM spend limit reached — escalation memo blocked]';
+    renderEscalations();
+    return;
+  }
   const apiKey = document.getElementById('api-key')?.value?.trim();
   if (!apiKey) {
     alertObj.escMemo = '[API key not set — escalation memo unavailable]';
