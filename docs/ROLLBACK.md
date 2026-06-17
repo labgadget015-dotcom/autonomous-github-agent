@@ -1,5 +1,17 @@
 # Rollback Manifest
 
+## 323452b — 2026-06-17 05:45 UTC
+
+- **SHA**: `323452b2743448aa29b4716cc6d11b60c8c18d4f`
+- **Author**: GadgetAI
+- **Message**: fix: initialize Stripe lazily to avoid build-time crash
+- **Files changed**: 1 file(s)
+
+**Changed files:**
+- `landing/app/api/stripe/webhook/route.ts`
+
+---
+
 ## f85f494 — 2026-06-17 05:44 UTC
 
 - **SHA**: `f85f4941df48175d5b4f3c7ab98b475a95abf902`
