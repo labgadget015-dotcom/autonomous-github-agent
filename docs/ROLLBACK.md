@@ -1,5 +1,18 @@
 # Rollback Manifest
 
+## 1497c06 — 2026-06-17 03:41 UTC
+
+- **SHA**: `1497c062be3bc42feefa15c2c5cda7a9e76e011a`
+- **Author**: GadgetAI
+- **Message**: fix: harden gitleaks config and downgrade action to v2
+- **Files changed**: 2 file(s)
+
+**Changed files:**
+- `.github/workflows/security_scan.yml`
+- `.gitleaks.toml`
+
+---
+
 ## a6ba365 — 2026-06-17 03:39 UTC
 
 - **SHA**: `a6ba365553917da6cbde60b5b7fc05270e31c0a9`
