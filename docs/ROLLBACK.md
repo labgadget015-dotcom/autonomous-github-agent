@@ -1,5 +1,17 @@
 # Rollback Manifest
 
+## 1ab640b — 2026-06-17 05:42 UTC
+
+- **SHA**: `1ab640b2dfdb2ba0fa30808099b63fc85d125d37`
+- **Author**: GadgetAI
+- **Message**: fix: add .eslintrc.json to skip interactive ESLint setup in CI
+- **Files changed**: 1 file(s)
+
+**Changed files:**
+- `landing/.eslintrc.json`
+
+---
+
 ## 24831fc — 2026-06-17 05:41 UTC
 
 - **SHA**: `24831fc483d68829cfc5863ade31d65c72a27d6f`
