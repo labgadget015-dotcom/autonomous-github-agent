@@ -1,5 +1,17 @@
 # Rollback Manifest
 
+## f85f494 — 2026-06-17 05:44 UTC
+
+- **SHA**: `f85f4941df48175d5b4f3c7ab98b475a95abf902`
+- **Author**: GadgetAI
+- **Message**: fix: use stripe API version supported by stripe@17.7.0
+- **Files changed**: 1 file(s)
+
+**Changed files:**
+- `landing/app/api/stripe/webhook/route.ts`
+
+---
+
 ## 1ab640b — 2026-06-17 05:42 UTC
 
 - **SHA**: `1ab640b2dfdb2ba0fa30808099b63fc85d125d37`
