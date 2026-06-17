@@ -1,5 +1,17 @@
 # Rollback Manifest
 
+## 8de8b7b — 2026-06-17 03:59 UTC
+
+- **SHA**: `8de8b7b9daa67d312d5e0867ac2a12c9c907c959`
+- **Author**: GadgetAI
+- **Message**: fix: remove .github/scripts from pytest coverage scope
+- **Files changed**: 1 file(s)
+
+**Changed files:**
+- `pytest.ini`
+
+---
+
 ## 1497c06 — 2026-06-17 03:41 UTC
 
 - **SHA**: `1497c062be3bc42feefa15c2c5cda7a9e76e011a`
