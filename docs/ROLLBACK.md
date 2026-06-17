@@ -1,5 +1,29 @@
 # Rollback Manifest
 
+## 8a6563a — 2026-06-17 05:39 UTC
+
+- **SHA**: `8a6563a308deaa475055c8497eacf6796bdf2831`
+- **Author**: GadgetAI
+- **Message**: feat: scaffold SaaS landing page, Stripe webhook handler, and Vercel deploy pipeline
+- **Files changed**: 13 file(s)
+
+**Changed files:**
+- `.github/copilot-instructions.md`
+- `.github/workflows/deploy-landing.yml`
+- `docs/REVENUE_ROADMAP.md`
+- `landing/.env.example`
+- `landing/app/api/stripe/webhook/route.ts`
+- `landing/app/globals.css`
+- `landing/app/layout.tsx`
+- `landing/app/page.tsx`
+- `landing/package.json`
+- `landing/postcss.config.js`
+- `landing/tailwind.config.ts`
+- `landing/tsconfig.json`
+- `landing/vercel.json`
+
+---
+
 ## 8de8b7b — 2026-06-17 03:59 UTC
 
 - **SHA**: `8de8b7b9daa67d312d5e0867ac2a12c9c907c959`
