@@ -1,6 +1,11 @@
+title = "Repository gitleaks overrides"
+
+[extend]
+useDefault = true
+
 [allowlist]
-  description = "Known false positives"
-  paths = [
-    '''.secrets.baseline''',
-    '''docs/API_EXAMPLES.md''',
-  ]
+description = "Ignore known false positives in baseline and API docs examples"
+paths = [
+  '''^\.secrets\.baseline$''',
+  '''(^|.*/)API_EXAMPLES\.md$''',
+]
