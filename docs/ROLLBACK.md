@@ -1,5 +1,17 @@
 # Rollback Manifest
 
+## 3f5f47b — 2026-06-17 06:08 UTC
+
+- **SHA**: `3f5f47b9947828a34ad8e42eea219789f0435603`
+- **Author**: GadgetAI
+- **Message**: fix: allow workflow_dispatch to trigger production deploy
+- **Files changed**: 1 file(s)
+
+**Changed files:**
+- `.github/workflows/deploy-landing.yml`
+
+---
+
 ## 323452b — 2026-06-17 05:45 UTC
 
 - **SHA**: `323452b2743448aa29b4716cc6d11b60c8c18d4f`
