@@ -1,5 +1,17 @@
 # Rollback Manifest
 
+## eb36d1f — 2026-06-17 03:32 UTC
+
+- **SHA**: `eb36d1f0495c47e1b2c3cd4e4d26ca30c9ff6e59`
+- **Author**: GadgetAI
+- **Message**: chore: align pytest coverage threshold with pyproject.toml
+- **Files changed**: 1 file(s)
+
+**Changed files:**
+- `pytest.ini`
+
+---
+
 ## 5827c38 — 2026-06-14 08:22 UTC
 
 - **SHA**: `5827c38a1f23963525596184886fbfa70abc382a`
