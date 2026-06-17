@@ -1,5 +1,17 @@
 # Rollback Manifest
 
+## 24831fc — 2026-06-17 05:41 UTC
+
+- **SHA**: `24831fc483d68829cfc5863ade31d65c72a27d6f`
+- **Author**: GadgetAI
+- **Message**: fix: add package-lock.json for landing page CI cache
+- **Files changed**: 1 file(s)
+
+**Changed files:**
+- `landing/package-lock.json`
+
+---
+
 ## 8a6563a — 2026-06-17 05:39 UTC
 
 - **SHA**: `8a6563a308deaa475055c8497eacf6796bdf2831`
