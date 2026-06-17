@@ -1,5 +1,17 @@
 # Rollback Manifest
 
+## a6ba365 — 2026-06-17 03:39 UTC
+
+- **SHA**: `a6ba365553917da6cbde60b5b7fc05270e31c0a9`
+- **Author**: Claude
+- **Message**: feat(aria): DRC follow-up — LLM cost gate, visible spend widget, Promise.allSettled
+- **Files changed**: 1 file(s)
+
+**Changed files:**
+- `docs/aria-v3-p2.html`
+
+---
+
 ## eb36d1f — 2026-06-17 03:32 UTC
 
 - **SHA**: `eb36d1f0495c47e1b2c3cd4e4d26ca30c9ff6e59`
