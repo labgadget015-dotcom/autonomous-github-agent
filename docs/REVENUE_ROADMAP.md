@@ -55,9 +55,9 @@ This document outlines the concrete, executable path to generate significant rec
 ### Critical Dependencies
 - ✅ Pricing model defined (MONETIZATION_GUIDE.md)
 - ✅ Landing page config ready (LANDING_PAGE_CONFIG.json)
-- ⚠️ TODO: Deploy landing page
-- ⚠️ TODO: Stripe integration
-- ⚠️ TODO: AWS/GCP SaaS infrastructure
+- 🔄 IN PROGRESS: Deploy landing page (`landing/` — Next.js 14 + Tailwind, Vercel via deploy-landing.yml)
+- 🔄 IN PROGRESS: Stripe integration (`landing/app/api/stripe/webhook/route.ts` — needs Stripe account + Payment Link URL)
+- 🔄 IN PROGRESS: SaaS infrastructure (Vercel for landing + Next.js API routes; full cloud infra deferred to Phase 3)
 
 ### Launch Strategy
 **Free Trial Model**:
