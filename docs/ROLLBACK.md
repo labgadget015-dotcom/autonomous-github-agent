@@ -1,5 +1,22 @@
 # Rollback Manifest
 
+## b3d06e8 — 2026-06-19 08:25 UTC
+
+- **SHA**: `b3d06e824185a010282ba3d6089c91a6e831d09a`
+- **Author**: GadgetAI
+- **Message**: feat(landing): wire Stripe + Postgres into webhook handler
+- **Files changed**: 6 file(s)
+
+**Changed files:**
+- `landing/.env.example`
+- `landing/.gitignore`
+- `landing/app/api/stripe/webhook/route.ts`
+- `landing/app/dashboard/page.tsx`
+- `landing/app/success/page.tsx`
+- `landing/package.json`
+
+---
+
 ## c992edd — 2026-06-19 06:32 UTC
 
 - **SHA**: `c992eddca525defd9ad5b293864635e887df1c06`
