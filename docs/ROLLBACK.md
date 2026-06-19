@@ -1,5 +1,17 @@
 # Rollback Manifest
 
+## c944766 — 2026-06-19 08:27 UTC
+
+- **SHA**: `c9447663abad26bfc5bb18319f4f51709ae30560`
+- **Author**: GadgetAI
+- **Message**: fix(landing): regenerate package-lock.json with @vercel/postgres deps
+- **Files changed**: 1 file(s)
+
+**Changed files:**
+- `landing/package-lock.json`
+
+---
+
 ## b3d06e8 — 2026-06-19 08:25 UTC
 
 - **SHA**: `b3d06e824185a010282ba3d6089c91a6e831d09a`
