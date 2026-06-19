@@ -1,76 +1,304 @@
-# Contributing Guide
+# Contributing to Autonomous GitHub Agent
 
-Thank you for your interest in contributing to the Autonomous GitHub Agent!
+Thank you for your interest in contributing! This guide will help you get started.
 
-## Getting Started
+## 🚀 Quick Start for Contributors
 
-1. Fork the repository
-2. Clone your fork: `git clone https://github.com/yourusername/autonomous-github-agent.git`
-3. Create a branch: `git checkout -b feature/your-feature-name`
-4. Make your changes
-5. Run tests: `pytest`
-6. Commit: `git commit -m "Add your feature"`
-7. Push: `git push origin feature/your-feature-name`
-8. Create a Pull Request
-
-## Development Setup
+### 1. Setup Development Environment
 
 ```bash
-# Install in development mode
-pip install -e ".[dev]"
+# Clone the repository
+git clone https://github.com/your-username/autonomous-github-agent.git
+cd autonomous-github-agent
 
-# Run tests
-pytest
+# Create virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
 
-# Run tests with coverage
-pytest --cov=autonomous_agent
+# Install dependencies
+pip install -r requirements.txt
 
-# Format code
-black .
-ruff check .
-
-# Type checking
-mypy .
+# Install pre-commit hooks
+pre-commit install
 ```
 
-## Adding a New Agent
+### 2. Configure Environment
 
-1. Create `autonomous_agent/agents/your_agent.py`
-2. Inherit from `BaseAgent`
-3. Implement `execute()` method
-4. Add tests in `tests/test_your_agent.py`
-5. Update documentation
+```bash
+# Copy environment template
+cp .env.example .env
 
-Example:
+# Edit .env with your settings
+# At minimum, set GITHUB_TOKEN and OPENAI_API_KEY
+```
+
+### 3. Run Local Tests
+
+Before committing, always run local tests:
+
+```bash
+# Full test suite
+python scripts/test-local.py
+
+# Fast checks only (recommended during development)
+python scripts/test-local.py --fast
+
+# Auto-fix formatting issues
+python scripts/test-local.py --fix
+
+# Verbose output for debugging
+python scripts/test-local.py -v
+```
+
+## 📋 Development Workflow
+
+### Creating a New Feature
+
+1. **Create a feature branch**
+   ```bash
+   git checkout -b feature/your-feature-name
+   ```
+
+2. **Make your changes**
+   - Write clean, well-documented code
+   - Follow PEP 8 style guidelines
+   - Add docstrings to all functions and classes
+   - Keep functions focused and under 50 lines
+
+3. **Write tests**
+   - Add unit tests for new functionality
+   - Aim for 80%+ code coverage
+   - Test edge cases and error conditions
+
+4. **Run quality checks**
+   ```bash
+   # Auto-fix formatting
+   black .
+   isort .
+
+   # Run linters
+   flake8 .
+   pylint .github/scripts
+
+   # Run security scan
+   bandit -r .github/scripts
+
+   # Run tests with coverage
+   pytest --cov=.github/scripts --cov-report=html
+   ```
+
+5. **Commit your changes**
+   ```bash
+   git add .
+   git commit -m "feat: add awesome new feature"
+   ```
+
+   **Commit Message Format:**
+   - `feat:` New feature
+   - `fix:` Bug fix
+   - `docs:` Documentation changes
+   - `test:` Adding tests
+   - `refactor:` Code refactoring
+   - `perf:` Performance improvements
+   - `chore:` Maintenance tasks
+
+6. **Push and create Pull Request**
+   ```bash
+   git push origin feature/your-feature-name
+   ```
+
+## 🔍 Code Quality Standards
+
+### Required Standards
+
+- ✅ **Test Coverage:** Minimum 80%
+- ✅ **Pylint Score:** Minimum 8.0/10
+- ✅ **Complexity:** Maximum cyclomatic complexity of 10
+- ✅ **Security:** No medium or high severity issues
+- ✅ **Formatting:** Black and isort compliant
+- ✅ **Type Hints:** All functions should have type annotations
+
+### Code Style
 
 ```python
-from autonomous_agent.core.base_agent import BaseAgent
+# Good example
+def process_data(input_data: List[Dict], threshold: float = 0.8) -> Dict[str, Any]:
+    """
+    Process input data and return aggregated results.
 
-class YourAgent(BaseAgent):
-    async def execute(self, repository: str, **kwargs):
-        # Your logic here
-        return {"status": "success"}
+    Args:
+        input_data: List of data dictionaries to process
+        threshold: Minimum confidence threshold (default: 0.8)
+
+    Returns:
+        Dictionary containing processed results
+
+    Raises:
+        ValueError: If input_data is empty
+    """
+    if not input_data:
+        raise ValueError("Input data cannot be empty")
+
+    results = {}
+    # ... processing logic ...
+    return results
 ```
 
-## Code Style
+## 🧪 Testing Guidelines
 
-- Follow PEP 8
-- Use type hints
-- Write docstrings for all public methods
-- Keep functions focused and small
-- Add comments for complex logic
+### Writing Tests
 
-## Testing
+```python
+# tests/test_my_feature.py
+import pytest
+from my_module import my_function
 
-- Write tests for all new features
-- Maintain >80% code coverage
-- Use pytest fixtures for common setups
-- Mock external API calls
 
-## Pull Request Guidelines
+class TestMyFunction:
+    """Test suite for my_function"""
 
-- Clear description of changes
-- Link related issues
-- Include tests
-- Update documentation
-- Pass all CI checks
+    def test_basic_functionality(self):
+        """Test basic use case"""
+        result = my_function(input_data="test")
+        assert result == "expected_output"
+
+    def test_edge_case(self):
+        """Test edge case handling"""
+        result = my_function(input_data="")
+        assert result is None
+
+    def test_error_handling(self):
+        """Test error conditions"""
+        with pytest.raises(ValueError):
+            my_function(input_data=None)
+```
+
+### Running Tests
+
+```bash
+# Run all tests
+pytest
+
+# Run specific test file
+pytest tests/test_my_feature.py
+
+# Run with coverage
+pytest --cov=.github/scripts --cov-report=html
+
+# Run only fast tests
+pytest -m "not slow"
+
+# Run in parallel
+pytest -n auto
+```
+
+## 📚 Documentation
+
+### Docstring Format
+
+We use Google-style docstrings:
+
+```python
+def example_function(param1: str, param2: int) -> bool:
+    """
+    Short description of function.
+
+    Longer description with more details about what the function does,
+    its behavior, and any important notes.
+
+    Args:
+        param1: Description of first parameter
+        param2: Description of second parameter
+
+    Returns:
+        Description of return value
+
+    Raises:
+        ValueError: When param1 is empty
+        TypeError: When param2 is negative
+
+    Example:
+        >>> example_function("test", 42)
+        True
+    """
+```
+
+### Adding Documentation
+
+- Update README.md for user-facing changes
+- Add technical details to docs/ folder
+- Include code examples in docstrings
+- Create diagrams for complex workflows
+
+## 🐛 Bug Reports
+
+### Before Submitting
+
+1. Check existing issues
+2. Verify bug in latest version
+3. Try to reproduce in clean environment
+
+### Bug Report Template
+
+```markdown
+**Describe the bug**
+A clear description of what the bug is.
+
+**To Reproduce**
+Steps to reproduce the behavior:
+1. Run command '...'
+2. With config '...'
+3. See error
+
+**Expected behavior**
+What you expected to happen.
+
+**Environment:**
+- OS: [e.g., Ubuntu 22.04]
+- Python version: [e.g., 3.11.5]
+- Package version: [e.g., 1.2.3]
+
+**Additional context**
+Any other relevant information.
+```
+
+## 💡 Feature Requests
+
+We welcome feature requests! Please:
+
+1. Check if feature already requested
+2. Describe the use case
+3. Explain the expected behavior
+4. Provide examples if possible
+
+## 🔒 Security
+
+Found a security vulnerability? Please **do not** open a public issue. Instead:
+
+1. Email security concerns privately
+2. Include detailed description
+3. Wait for acknowledgment before disclosure
+
+## 📞 Getting Help
+
+- **GitHub Discussions:** Ask questions and discuss ideas
+- **Discord:** Join our community server
+- **Documentation:** Check docs/ folder
+- **Issues:** Search existing issues
+
+## 🎯 Good First Issues
+
+Look for issues labeled `good-first-issue` - these are great for new contributors!
+
+## 📜 Code of Conduct
+
+Be respectful, inclusive, and professional. We're all here to build something great together.
+
+## 🙏 Recognition
+
+Contributors are recognized in:
+- README.md contributors section
+- Release notes
+- Project documentation
+
+Thank you for contributing! 🚀
