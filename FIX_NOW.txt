@@ -1,0 +1,24 @@
+================================================================================
+                    QUICK FIX - INSTALL THE PACKAGE
+================================================================================
+
+You're in the right place, but the package isn't installed yet.
+
+Just run these commands in PowerShell:
+
+================================================================================
+
+# Install the package
+pip install -e .
+
+# Then verify it worked
+autonomous-agent --version
+
+================================================================================
+
+Copy and paste each line above into your PowerShell window.
+
+After the first command finishes (takes 30-120 seconds), you should be able to
+run autonomous-agent commands!
+
+================================================================================

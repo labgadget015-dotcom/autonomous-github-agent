@@ -1,0 +1,31 @@
+================================================================================
+                    CORRECT INSTALLATION COMMANDS
+================================================================================
+
+You're currently in: C:\Users\aw789
+You need to be in: C:\Users\aw789\autonomous-github-agent
+
+Run these commands IN ORDER:
+
+================================================================================
+
+# Step 1: Navigate to the correct directory
+cd C:\Users\aw789\autonomous-github-agent
+
+# Step 2: Install the package (note the DOT at the end!)
+pip install -e .
+
+# Step 3: Verify it worked
+autonomous-agent --version
+
+# Step 4: Check configuration
+autonomous-agent config-check
+
+================================================================================
+
+IMPORTANT: Notice the DOT (.) at the end of "pip install -e ."
+The dot means "install from the current directory"
+
+Copy each line above and paste into PowerShell, one at a time.
+
+================================================================================

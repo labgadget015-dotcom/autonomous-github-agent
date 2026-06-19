@@ -1,0 +1,125 @@
+================================================================================
+                    SIMPLE STEP-BY-STEP TESTING
+================================================================================
+
+Let's figure out what's happening. Follow these steps EXACTLY:
+
+================================================================================
+STEP 1: Open Command Prompt
+================================================================================
+
+Press: Windows Key + R
+Type: cmd
+Press: Enter
+
+You should see a black window that says: C:\Users\aw789>
+
+================================================================================
+STEP 2: Navigate to the Project Folder
+================================================================================
+
+In the black window, type EXACTLY this (then press Enter):
+
+cd C:\Users\aw789\autonomous-github-agent
+
+You should now see: C:\Users\aw789\autonomous-github-agent>
+
+================================================================================
+STEP 3: Try the Config Check
+================================================================================
+
+Type this (then press Enter):
+
+autonomous-agent config-check
+
+WHAT SHOULD HAPPEN:
+You should see a table showing:
+  ✓ GitHub Token: Set
+  ✓ LLM Provider: openai
+  ✓ LLM API Key: Set
+
+WHAT MIGHT HAPPEN INSTEAD:
+
+Scenario A: "autonomous-agent is not recognized..."
+  → Solution: Type: pip install -e .
+  → Wait for it to finish
+  → Try autonomous-agent config-check again
+
+Scenario B: Shows "GitHub Token: ✗ Missing" or "LLM API Key: ✗ Missing"  
+  → Solution: Your tokens aren't configured correctly
+  → Type: notepad .env
+  → Check your tokens are pasted correctly (no quotes, no spaces)
+  → Save and try again
+
+Scenario C: It works! Shows ✓ for everything
+  → Great! Continue to Step 4
+
+================================================================================
+STEP 4: List the Agents
+================================================================================
+
+Type this (then press Enter):
+
+autonomous-agent list-agents
+
+WHAT SHOULD HAPPEN:
+You should see a nice table with 7 agents:
+  - health_monitor
+  - code_reviewer
+  - issue_manager
+  - branch_manager
+  - security_scanner
+  - workflow_optimizer
+  - documentation_generator
+
+================================================================================
+STEP 5: Run a Test Command
+================================================================================
+
+Type this (then press Enter):
+
+autonomous-agent health-check --repo octocat/Hello-World
+
+WHAT SHOULD HAPPEN:
+  - It says "Running health check on octocat/Hello-World..."
+  - Shows some output about the repository
+  - Says "Health check complete!"
+
+This tests your GitHub token and the agent functionality.
+
+WHAT MIGHT HAPPEN:
+  - "401 Unauthorized" → GitHub token is wrong
+  - "Rate limit" → Token is fine but you hit API limits (wait an hour)
+  - Python errors → Something went wrong with installation
+
+================================================================================
+STEP 6: Check the Logs
+================================================================================
+
+Type this (then press Enter):
+
+autonomous-agent logs --limit 5
+
+WHAT SHOULD HAPPEN:
+Shows a table of recent actions the agents have taken.
+
+================================================================================
+
+IF NOTHING WORKS - RUN THE DIAGNOSTIC:
+
+Just double-click this file:
+  DIAGNOSE.bat
+
+It will check everything step-by-step and tell you exactly what's wrong.
+
+================================================================================
+TELL ME WHAT HAPPENED:
+
+After trying these steps, tell me:
+1. Which step did you get to?
+2. What error did you see (if any)?
+3. What was the exact error message?
+
+Then I can help you fix it!
+
+================================================================================

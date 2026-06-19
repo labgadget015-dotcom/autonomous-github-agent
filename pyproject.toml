@@ -1,0 +1,92 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "autonomous-github-agent"
+version = "0.1.0"
+description = "Autonomous AI system for end-to-end GitHub repository management"
+readme = "README.md"
+requires-python = ">=3.11"
+license = {text = "MIT"}
+authors = [
+    {name = "Autonomous Agent Team"}
+]
+keywords = ["github", "automation", "ai", "agent", "devops", "ci-cd"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Version Control :: Git",
+]
+
+dependencies = [
+    "PyGithub>=2.1.1",
+    "aiohttp>=3.9.0",
+    "pyyaml>=6.0.1",
+    "click>=8.1.7",
+    "rich>=13.7.0",
+    "python-dotenv>=1.0.0",
+    "pydantic>=2.5.0",
+    "pydantic-settings>=2.1.0",
+    "openai>=1.10.0",
+    "anthropic>=0.18.0",
+    "tiktoken>=0.5.2",
+    "gitpython>=3.1.40",
+    "sqlalchemy>=2.0.25",
+    "alembic>=1.13.1",
+    "tenacity>=8.2.3",
+    "asyncio>=3.4.3",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.3",
+    "pytest-cov>=4.1.0",
+    "pytest-asyncio>=0.23.3",
+    "pytest-mock>=3.12.0",
+    "black>=23.12.1",
+    "ruff>=0.1.11",
+    "mypy>=1.8.0",
+    "types-PyYAML>=6.0.12",
+    "pre-commit>=3.6.0",
+]
+
+[project.scripts]
+autonomous-agent = "autonomous_agent.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/yourusername/autonomous-github-agent"
+Documentation = "https://github.com/yourusername/autonomous-github-agent/docs"
+Repository = "https://github.com/yourusername/autonomous-github-agent"
+Issues = "https://github.com/yourusername/autonomous-github-agent/issues"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["autonomous_agent*"]
+
+[tool.black]
+line-length = 100
+target-version = ['py311']
+include = '\.pyi?$'
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+select = ["E", "F", "I", "N", "W", "UP", "B", "A", "C4", "T20"]
+ignore = ["E501"]
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+addopts = "-v --cov=autonomous_agent --cov-report=term-missing"

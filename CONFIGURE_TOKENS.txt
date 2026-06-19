@@ -1,0 +1,77 @@
+================================================================================
+                    MANUAL CONFIGURATION REQUIRED
+================================================================================
+
+I've created the .env file for you, but you need to add your actual API tokens.
+
+--------------------------------------------------------------------------------
+                    STEP 1: GET YOUR TOKENS
+--------------------------------------------------------------------------------
+
+GITHUB TOKEN:
+  1. Visit: https://github.com/settings/tokens
+  2. Click "Generate new token (classic)"
+  3. Select scopes: repo, workflow
+  4. Click "Generate token"
+  5. Copy the token (starts with ghp_)
+
+OPENAI API KEY:
+  1. Visit: https://platform.openai.com/api-keys
+  2. Click "Create new secret key"
+  3. Copy the key (starts with sk-)
+
+--------------------------------------------------------------------------------
+                    STEP 2: EDIT THE .ENV FILE
+--------------------------------------------------------------------------------
+
+Location: C:\Users\aw789\autonomous-github-agent\.env
+
+Open it with Notepad and replace:
+  PASTE_YOUR_GITHUB_TOKEN_HERE  → Your actual GitHub token
+  PASTE_YOUR_OPENAI_KEY_HERE    → Your actual OpenAI key
+
+Save and close.
+
+--------------------------------------------------------------------------------
+                    STEP 3: VERIFY IT WORKS
+--------------------------------------------------------------------------------
+
+Open Command Prompt and run:
+
+  cd C:\Users\aw789\autonomous-github-agent
+  autonomous-agent config-check
+
+You should see:
+  ✓ GitHub Token: Set
+  ✓ LLM API Key: Set
+
+--------------------------------------------------------------------------------
+                    STEP 4: TEST IT!
+--------------------------------------------------------------------------------
+
+Run your first command:
+
+  autonomous-agent health-check --repo octocat/Hello-World
+
+This will test the Health Monitor agent on a public repository.
+
+--------------------------------------------------------------------------------
+                    NEED HELP GETTING TOKENS?
+--------------------------------------------------------------------------------
+
+GitHub Token Help:
+  - Must have 'repo' scope minimum
+  - For full features, also add 'workflow' scope
+  - Keep it secret! Never share or commit to git
+
+OpenAI API Key Help:
+  - Requires account with credits
+  - Alternative: Use Anthropic (Claude) instead
+  - Set LLM_PROVIDER=anthropic in .env
+
+--------------------------------------------------------------------------------
+
+⚠️  I CANNOT get or generate API tokens for you - you must create them yourself
+    at the links above for security reasons.
+
+================================================================================
