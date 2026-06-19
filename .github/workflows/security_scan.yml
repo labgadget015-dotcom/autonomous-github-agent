@@ -1,0 +1,368 @@
+name: Enhanced Security Scanning
+
+# Fix permissions issue - add security-events write permission
+permissions:
+  contents: read
+  security-events: write
+  issues: write
+  pull-requests: write
+
+on:
+  pull_request:
+    types: [opened, synchronize, ready_for_review]
+  push:
+    branches: [main, develop]
+  schedule:
+    - cron: '0 2 * * *'  # Daily at 2 AM
+  workflow_dispatch:
+
+env:
+  PYTHON_VERSION: '3.11'
+  BANDIT_SEVERITY_THRESHOLD: 'MEDIUM'
+  MAX_CRITICAL_VULNS: 0
+  CACHE_VERSION: v2
+
+jobs:
+  # Job 1: Bandit Security Scanning (now runs as pre-commit hook simulation)
+  bandit-scan:
+    name: Bandit Security Vulnerability Scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Cache Bandit installation
+        uses: actions/cache@v5
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-bandit-${{ env.CACHE_VERSION }}
+          restore-keys: |
+            ${{ runner.os }}-bandit-
+
+      - name: Install Bandit
+        run: |
+          pip install bandit[toml] bandit-sarif-formatter
+
+      - name: Run Bandit scan
+        id: bandit
+        run: |
+          mkdir -p reports
+          bandit -r core/ agents/ autopilot/ .github/scripts -f json -o reports/bandit-report.json --exit-zero
+          bandit -r core/ agents/ autopilot/ .github/scripts -f sarif -o reports/bandit-report.sarif --exit-zero
+          bandit -r core/ agents/ autopilot/ .github/scripts -ll
+        continue-on-error: true
+
+      - name: Upload Bandit SARIF results
+        uses: github/codeql-action/upload-sarif@v4
+        continue-on-error: true
+        if: always()
+        with:
+          sarif_file: reports/bandit-report.sarif
+          category: bandit
+
+      - name: Parse Bandit results and check thresholds
+        id: check-thresholds
+        run: |
+          python3 << 'EOF'
+          import json
+          import sys
+          import os
+
+          try:
+              with open('reports/bandit-report.json') as f:
+                  report = json.load(f)
+
+              results = report.get('results', [])
+
+              # Count by severity
+              severity_counts = {'LOW': 0, 'MEDIUM': 0, 'HIGH': 0}
+              for issue in results:
+                  severity = issue.get('issue_severity', 'LOW')
+                  if severity in severity_counts:
+                      severity_counts[severity] += 1
+
+              print(f"\n🔒 Security Scan Results:")
+              print(f"  HIGH: {severity_counts['HIGH']}")
+              print(f"  MEDIUM: {severity_counts['MEDIUM']}")
+              print(f"  LOW: {severity_counts['LOW']}")
+
+              # Export for next steps
+              with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+                  f.write(f"high_count={severity_counts['HIGH']}\n")
+                  f.write(f"medium_count={severity_counts['MEDIUM']}\n")
+                  f.write(f"low_count={severity_counts['LOW']}\n")
+
+              # Check thresholds
+              max_critical = int(os.getenv('MAX_CRITICAL_VULNS', '0'))
+              if severity_counts['HIGH'] > max_critical:
+                  print(f"\n❌ CRITICAL: {severity_counts['HIGH']} HIGH severity vulnerabilities found!")
+                  print("Blocking release. Please fix these issues before merging.")
+                  sys.exit(1)
+
+              if severity_counts['MEDIUM'] > 5:
+                  print(f"\n⚠️ WARNING: {severity_counts['MEDIUM']} MEDIUM severity vulnerabilities found.")
+                  print("Consider addressing these before release.")
+
+              print("\n✅ Security scan passed thresholds.")
+
+          except FileNotFoundError:
+              print("No Bandit report found.")
+              sys.exit(0)
+          except Exception as e:
+              print(f"Error parsing Bandit report: {e}")
+              sys.exit(0)
+          EOF
+
+      - name: Upload Bandit artifacts
+        uses: actions/upload-artifact@v6
+        if: always()
+        with:
+          name: bandit-security-reports
+          path: reports/
+          retention-days: 30
+
+  # Job 2: Dependency Vulnerability Scanning with pip-audit (better than safety)
+  dependency-scan:
+    name: Dependency Vulnerability Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install pip-audit
+        run: pip install pip-audit
+
+      - name: Run pip-audit check
+        run: |
+          mkdir -p reports
+          # Scan requirements.txt directly (no install needed, faster)
+          pip-audit -r requirements.txt --format json --output reports/pip-audit-report.json || true
+          pip-audit -r requirements.txt --desc || true
+        continue-on-error: true
+
+      - name: Upload pip-audit reports
+        uses: actions/upload-artifact@v6
+        if: always()
+        with:
+          name: pip-audit-reports
+          path: reports/
+          retention-days: 30
+
+  # Job 3: Secret Scanning with Gitleaks
+  secret-scan:
+    name: Secret Detection (Gitleaks)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Gitleaks report
+        uses: actions/upload-artifact@v6
+        if: always()
+        with:
+          name: gitleaks-report
+          path: results.sarif
+          retention-days: 30
+
+  # Job 4: Comment Security Issues on PR (Inline PR Comments)
+  comment-security-issues:
+    name: Comment Security Issues on PR
+    runs-on: ubuntu-latest
+    needs: [bandit-scan, dependency-scan, secret-scan]
+    if: always() && github.event_name == 'pull_request'
+
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v7
+        with:
+          path: all-reports/
+
+      - name: Generate security summary comment
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+
+            let comment = '## 🔒 Security Scan Results\n\n';
+
+            // Parse Bandit report
+            try {
+              const banditReport = JSON.parse(
+                fs.readFileSync('all-reports/bandit-security-reports/bandit-report.json', 'utf8')
+              );
+              const results = banditReport.results || [];
+
+              const highSev = results.filter(r => r.issue_severity === 'HIGH').length;
+              const medSev = results.filter(r => r.issue_severity === 'MEDIUM').length;
+              const lowSev = results.filter(r => r.issue_severity === 'LOW').length;
+
+              comment += '### 🛡️ Bandit Security Scan\n';
+              comment += `- 🔴 **HIGH:** ${highSev}\n`;
+              comment += `- 🟡 **MEDIUM:** ${medSev}\n`;
+              comment += `- 🟢 **LOW:** ${lowSev}\n\n`;
+
+              if (highSev > 0) {
+                comment += '**❌ Action Required:** Critical security issues found. Please address HIGH severity issues before merging.\n\n';
+
+                // Add inline issue details
+                comment += '#### Critical Issues:\n';
+                results.filter(r => r.issue_severity === 'HIGH').forEach((issue, idx) => {
+                  comment += `${idx + 1}. **${issue.test_name}** in \`${issue.filename}:${issue.line_number}\`\n`;
+                  comment += `   - ${issue.issue_text}\n`;
+                });
+                comment += '\n';
+              }
+            } catch (e) {
+              comment += '### 🛡️ Bandit Security Scan\n';
+              comment += 'ℹ️ Report not available\n\n';
+            }
+
+            // Parse pip-audit report
+            try {
+              const pipAuditReport = JSON.parse(
+                fs.readFileSync('all-reports/pip-audit-reports/pip-audit-report.json', 'utf8')
+              );
+              const vulns = pipAuditReport.dependencies || [];
+
+              comment += '### 📦 Dependency Vulnerabilities\n';
+              comment += `- **Total vulnerable dependencies:** ${vulns.length}\n\n`;
+
+              if (vulns.length > 0) {
+                comment += '#### Vulnerable Dependencies:\n';
+                vulns.slice(0, 5).forEach(dep => {
+                  comment += `- \`${dep.name}\` ${dep.version}\n`;
+                });
+                if (vulns.length > 5) {
+                  comment += `- ... and ${vulns.length - 5} more\n`;
+                }
+                comment += '\n';
+              }
+            } catch (e) {
+              comment += '### 📦 Dependency Vulnerabilities\n';
+              comment += 'ℹ️ Report not available\n\n';
+            }
+
+            // Add footer
+            comment += '---\n';
+            comment += '*Security scans run automatically on every PR. View detailed reports in the [Actions tab](' + context.payload.repository.html_url + '/actions/runs/' + context.runId + ').*';
+
+            // Post comment
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+  # Job 5: Create GitHub Issue for Critical Vulnerabilities
+  create-security-issue:
+    name: Create Issue for Critical Vulnerabilities
+    runs-on: ubuntu-latest
+    needs: [bandit-scan]
+    if: failure() && github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Download Bandit report
+        uses: actions/download-artifact@v7
+        with:
+          name: bandit-security-reports
+          path: reports/
+
+      - name: Create GitHub issue
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const fs = require('fs');
+
+            try {
+              const report = JSON.parse(fs.readFileSync('reports/bandit-report.json', 'utf8'));
+              const highSevIssues = report.results.filter(r => r.issue_severity === 'HIGH');
+
+              if (highSevIssues.length > 0) {
+                let body = '## 🚨 Critical Security Vulnerabilities Detected\n\n';
+                body += `Found ${highSevIssues.length} HIGH severity security issue(s):\n\n`;
+
+                highSevIssues.forEach((issue, idx) => {
+                  body += `### Issue ${idx + 1}: ${issue.test_name}\n`;
+                  body += `**File:** \`${issue.filename}:${issue.line_number}\`\n`;
+                  body += `**Severity:** ${issue.issue_severity}\n`;
+                  body += `**Confidence:** ${issue.issue_confidence}\n`;
+                  body += `**Description:** ${issue.issue_text}\n\n`;
+                  body += '```python\n' + issue.code + '\n```\n\n';
+                });
+
+                body += '\n---\n';
+                body += `**Action Required:** These vulnerabilities were detected in the \`main\` branch. `;
+                body += `Please address them immediately.\n\n`;
+                body += `[View Full Report](${context.payload.repository.html_url}/actions/runs/${context.runId})`;
+
+                await github.rest.issues.create({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  title: `🚨 Critical Security Vulnerabilities - ${new Date().toISOString().split('T')[0]}`,
+                  body: body,
+                  labels: ['security', 'critical', 'automated'],
+                  assignees: [context.payload.repository.owner.login]
+                });
+              }
+            } catch (e) {
+              console.log('Error creating issue:', e);
+            }
+
+  # Job: Rollback Manifest — appends entry to docs/ROLLBACK.md on every push to main
+  generate-rollback-manifest:
+    name: Generate Rollback Manifest
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 2
+
+      - name: Append rollback entry to docs/ROLLBACK.md
+        run: |
+          export SHA=$(git rev-parse HEAD)
+          export SHORT_SHA=$(git rev-parse --short HEAD)
+          export MSG=$(git log -1 --pretty=%s)
+          export AUTHOR=$(git log -1 --pretty=%an)
+          export FILES_CHANGED=$(git diff-tree --no-commit-id -r --name-only HEAD)
+          python3 .github/scripts/generate_rollback_manifest.py
+
+      - name: Commit rollback manifest
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/ROLLBACK.md
+          if git diff --cached --quiet; then
+            echo "No changes."
+          else
+            git commit -m "chore: rollback manifest entry [skip ci]"
+
+            git push
+          fi

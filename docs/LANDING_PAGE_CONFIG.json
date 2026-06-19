@@ -1,0 +1,282 @@
+{
+  "site": {
+    "name": "Autonomous GitHub Agent",
+    "tagline": "AI-Powered GitHub Automation with 90% Token Cost Reduction",
+    "domain": "autonomous-github-agent.com",
+    "favicon": "https://github.com/labgadget015-dotcom/autonomous-github-agent/raw/main/logo.png"
+  },
+  "hero": {
+    "headline": "Automate Your Code Reviews with AI",
+    "subheadline": "AI-powered GitHub automation that reduces token costs by 90% and code review time by 70%",
+    "cta_primary": {
+      "text": "Start Free Trial",
+      "url": "https://app.autonomous-github-agent.com/signup",
+      "color": "#06b6d4"
+    },
+    "cta_secondary": {
+      "text": "View Demo",
+      "url": "https://www.youtube.com/watch?v=autonomous-github-agent-demo",
+      "color": "#64748b"
+    },
+    "background_image": "gradient",
+    "hero_image": "dashboard-screenshot.png"
+  },
+  "value_proposition": {
+    "title": "Why Choose Autonomous GitHub Agent?",
+    "items": [
+      {
+        "icon": "lightning",
+        "title": "90% Cost Reduction",
+        "description": "Smart local LLM routing cuts token costs from $0.50 to $0.01 per analysis",
+        "metric": "$0.01/analysis"
+      },
+      {
+        "icon": "speedometer",
+        "title": "2-3x Faster",
+        "description": "Async parallel analysis processes files simultaneously for maximum speed",
+        "metric": "<5 seconds"
+      },
+      {
+        "icon": "brain",
+        "title": "95% Accurate AI",
+        "description": "Advanced LLM models with 95%+ accuracy on common code issues",
+        "metric": "95% accuracy"
+      },
+      {
+        "icon": "shield",
+        "title": "Enterprise Ready",
+        "description": "SOC 2, GDPR compliant with 99.9% uptime SLA",
+        "metric": "99.9% SLA"
+      }
+    ]
+  },
+  "features": {
+    "title": "Powerful Features for Every Team",
+    "categories": [
+      {
+        "name": "Code Analysis",
+        "features": [
+          "Intelligent PR analysis with contextual insights",
+          "Async parallel processing for speed",
+          "Multi-language support (Python, JS, Java, Go, Rust, etc.)",
+          "Security vulnerability detection",
+          "Code quality metrics and trends"
+        ]
+      },
+      {
+        "name": "Automation",
+        "features": [
+          "Auto-generate PR inline comments",
+          "Automatically create GitHub issues",
+          "Custom workflow integration",
+          "Jira, Slack, Teams sync",
+          "Webhook support for all git platforms"
+        ]
+      },
+      {
+        "name": "Cost Optimization",
+        "features": [
+          "Local LLM routing (100% free)",
+          "Intelligent cloud fallback",
+          "Cost tracking dashboard",
+          "Usage analytics and optimization",
+          "ROI calculator and reports"
+        ]
+      },
+      {
+        "name": "Enterprise",
+        "features": [
+          "Custom LLM training on your codebase",
+          "Dedicated account manager",
+          "Advanced security (SOC 2, GDPR, HIPAA)",
+          "99.9% uptime SLA",
+          "24/7 premium support"
+        ]
+      }
+    ]
+  },
+  "pricing": {
+    "title": "Simple, Transparent Pricing",
+    "subtitle": "Choose the plan that fits your team",
+    "tiers": [
+      {
+        "name": "Open Source",
+        "price": "Free",
+        "period": "forever",
+        "description": "Self-hosted solution for individual developers",
+        "features": [
+          "Unlimited self-hosted repositories",
+          "Local LLM support (100% free)",
+          "Community support",
+          "PR analysis & inline comments",
+          "Auto issue creation"
+        ],
+        "cta": "Get Started",
+        "highlight": false
+      },
+      {
+        "name": "Growth",
+        "price": "$199",
+        "period": "/month",
+        "description": "Cloud-hosted for growing teams",
+        "features": [
+          "Everything in Open Source, plus:",
+          "Cloud hosting (zero setup)",
+          "Advanced analytics dashboard",
+          "Email support (24-hour response)",
+          "99.5% uptime SLA",
+          "50 repositories, 10 team members",
+          "10K analyses/month"
+        ],
+        "cta": "Start Free Trial",
+        "highlight": true,
+        "trial_days": 14
+      },
+      {
+        "name": "Enterprise",
+        "price": "Custom",
+        "period": "",
+        "description": "Custom solution with dedicated support",
+        "features": [
+          "Everything in Growth, plus:",
+          "Unlimited repositories & team members",
+          "Self-hosted or private cloud",
+          "Custom LLM training",
+          "Dedicated account manager",
+          "24/7 phone support",
+          "99.9% uptime SLA",
+          "Professional onboarding"
+        ],
+        "cta": "Contact Sales",
+        "highlight": false
+      }
+    ]
+  },
+  "social_proof": {
+    "title": "Trusted by Developers Worldwide",
+    "metrics": [
+      {
+        "number": "500+",
+        "label": "GitHub Stars",
+        "icon": "star"
+      },
+      {
+        "number": "50+",
+        "label": "Companies Using",
+        "icon": "building"
+      },
+      {
+        "number": "$500K+",
+        "label": "Annual Token Savings",
+        "icon": "trending-up"
+      },
+      {
+        "number": "99.5%",
+        "label": "Uptime",
+        "icon": "check-circle"
+      }
+    ],
+    "testimonials": [
+      {
+        "quote": "Reduced our code review time by 70% and cut LLM costs by 90%. Best tool we've adopted this year.",
+        "author": "Engineering Lead, FinTech Startup",
+        "avatar": "avatar1.jpg"
+      },
+      {
+        "quote": "The local LLM support is game-changing. We're finally getting AI code review without the cloud cost.",
+        "author": "DevOps Manager, Fortune 500 Company",
+        "avatar": "avatar2.jpg"
+      },
+      {
+        "quote": "Setup was trivial, and the insights are incredible. Worth 10x the price.",
+        "author": "CTO, YC-backed SaaS Company",
+        "avatar": "avatar3.jpg"
+      }
+    ]
+  },
+  "faq": {
+    "title": "Frequently Asked Questions",
+    "items": [
+      {
+        "question": "How does the 90% cost reduction work?",
+        "answer": "We intelligently route simple analyses to free local LLMs (Ollama) and only use paid cloud APIs for complex code. This reduces costs from $0.50/analysis to $0.01/analysis."
+      },
+      {
+        "question": "Do you store my code?",
+        "answer": "No. With local LLM enabled, your code never leaves your infrastructure. With cloud LLMs, we use OpenAI/Anthropic APIs but don't retain code after analysis."
+      },
+      {
+        "question": "What programming languages are supported?",
+        "answer": "Python, JavaScript/TypeScript, Java, Go, Rust, C/C++, C#, PHP, Ruby, SQL, and more. Any language your LLM can analyze."
+      },
+      {
+        "question": "Can I use this with my existing GitHub workflows?",
+        "answer": "Yes! We integrate seamlessly with GitHub Actions, GitLab CI, and any webhook-compatible platform."
+      },
+      {
+        "question": "What's included in the Growth tier trial?",
+        "answer": "Full access to all Growth features for 14 days: cloud hosting, advanced analytics, email support, 10K analyses/month, and more. No credit card required."
+      }
+    ]
+  },
+  "cta_section": {
+    "title": "Ready to Transform Your Code Review Process?",
+    "subtitle": "Join 50+ companies saving hundreds of thousands on token costs",
+    "primary_cta": {
+      "text": "Start 14-Day Free Trial",
+      "url": "https://app.autonomous-github-agent.com/signup"
+    },
+    "secondary_cta": {
+      "text": "Schedule Demo",
+      "url": "https://calendly.com/autonomous-agent/demo"
+    }
+  },
+  "footer": {
+    "links": {
+      "Product": [
+        {"text": "Features", "url": "#features"},
+        {"text": "Pricing", "url": "#pricing"},
+        {"text": "GitHub Marketplace", "url": "https://github.com/marketplace/actions/autonomous-github-agent"},
+        {"text": "Documentation", "url": "https://github.com/labgadget015-dotcom/autonomous-github-agent/tree/main/docs"}
+      ],
+      "Company": [
+        {"text": "About", "url": "#"},
+        {"text": "Blog", "url": "#"},
+        {"text": "Security", "url": "#"},
+        {"text": "Contact", "url": "mailto:support@autonomous-github-agent.com"}
+      ],
+      "Legal": [
+        {"text": "Privacy", "url": "#"},
+        {"text": "Terms", "url": "#"},
+        {"text": "License", "url": "https://github.com/labgadget015-dotcom/autonomous-github-agent/blob/main/LICENSE"}
+      ]
+    },
+    "social": {
+      "github": "https://github.com/labgadget015-dotcom/autonomous-github-agent",
+      "twitter": "https://twitter.com/autonomous_agent",
+      "linkedin": "https://linkedin.com/company/autonomous-github-agent"
+    },
+    "copyright": "© 2025 Autonomous GitHub Agent. All rights reserved."
+  },
+  "analytics": {
+    "google_analytics_id": "G-XXXXXXXXXX",
+    "hotjar_id": "XXXXXXXXX",
+    "conversion_tracking": {
+      "signup_event": "lead_signup",
+      "trial_start_event": "trial_start",
+      "conversion_event": "purchase"
+    }
+  },
+  "integrations": {
+    "stripe": {
+      "publishable_key": "pk_live_XXXXXXXXXX",
+      "webhook_secret": "whsec_XXXXXXXXXX"
+    },
+    "sendgrid": {
+      "api_key": "SG.XXXXXXXXXX"
+    },
+    "sentry": {
+      "dsn": "https://XXXXXXXXXX@sentry.io/XXXXXXXXXX"
+    }
+  }
+}

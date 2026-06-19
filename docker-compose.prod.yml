@@ -1,0 +1,256 @@
+﻿version: '3.9'
+
+services:
+  # Main application service (production)
+  agent:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      cache_from:
+        - autonomous-github-agent:latest
+      args:
+        - BUILDKIT_INLINE_CACHE=1
+    image: autonomous-github-agent:${VERSION:-latest}
+    container_name: autonomous-agent-prod
+
+    # Environment configuration
+    env_file:
+      - .env.production
+    environment:
+      - LOG_LEVEL=${LOG_LEVEL:-WARNING}
+      - DEBUG=false
+      - DEV_MODE=false
+      - PYTHONUNBUFFERED=1
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - AGENT_MODEL=${AGENT_MODEL:-gpt-4}
+      - MAX_TOKENS=${MAX_TOKENS:-4000}
+      - AGENT_TEMPERATURE=${AGENT_TEMPERATURE:-0.7}
+
+    # Volume mounts (read-only where possible)
+    volumes:
+      # Persistent data volumes
+      - agent-data:/app/data
+      - agent-logs:/app/logs:rw
+      # Context and results
+      - ${CONTEXT_PATH:-./context.json}:/app/context.json:ro
+      - ./results:/app/results:rw
+
+    # Networking
+    networks:
+      - agent-network
+
+    # Production resource limits
+    deploy:
+      mode: replicated
+      replicas: 1
+      resources:
+        limits:
+          cpus: '4'
+          memory: 4G
+        reservations:
+          cpus: '1'
+          memory: 1G
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+      update_config:
+        parallelism: 1
+        delay: 10s
+        failure_action: rollback
+        order: start-first
+      rollback_config:
+        parallelism: 1
+        delay: 5s
+
+    # Health check
+    healthcheck:
+      test: ["CMD", "python", "-c", "import sys; sys.exit(0)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+
+    # Restart policy
+    restart: always
+
+    # Logging configuration (production)
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "10"
+        compress: "true"
+        labels: "service,environment"
+
+    # Security options
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /tmp:noexec,nosuid,size=100m
+
+    # Labels for monitoring and management
+    labels:
+      - "com.autonomous-agent.environment=production"
+      - "com.autonomous-agent.version=${VERSION:-latest}"
+      - "com.autonomous-agent.service=agent"
+
+  # Prometheus for production metrics
+  prometheus:
+    image: prom/prometheus:v2.48.0
+    container_name: autonomous-agent-prometheus
+    user: "65534:65534"  # nobody user
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=30d'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+      - '--web.enable-lifecycle'
+      - '--web.enable-admin-api'
+    ports:
+      - "127.0.0.1:9090:9090"  # Bind to localhost only
+    networks:
+      - agent-network
+    restart: always
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "5"
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    security_opt:
+      - no-new-privileges:true
+    labels:
+      - "com.autonomous-agent.environment=production"
+      - "com.autonomous-agent.service=prometheus"
+
+  # Grafana for production dashboards
+  grafana:
+    image: grafana/grafana:10.2.2
+    container_name: autonomous-agent-grafana
+    user: "472:472"  # grafana user
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./monitoring/grafana-dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./monitoring/grafana-datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml:ro
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_USER}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_SERVER_ROOT_URL=${GRAFANA_ROOT_URL:-http://localhost:3000}
+      - GF_INSTALL_PLUGINS=${GRAFANA_PLUGINS:-}
+      - GF_SECURITY_COOKIE_SECURE=true
+      - GF_SECURITY_STRICT_TRANSPORT_SECURITY=true
+      - GF_LOG_MODE=console
+    ports:
+      - "127.0.0.1:3000:3000"  # Bind to localhost only
+    networks:
+      - agent-network
+    depends_on:
+      - prometheus
+    restart: always
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "5"
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+    security_opt:
+      - no-new-privileges:true
+    labels:
+      - "com.autonomous-agent.environment=production"
+      - "com.autonomous-agent.service=grafana"
+
+  # Optional: Nginx reverse proxy (production)
+  nginx:
+    image: nginx:1.25-alpine
+    container_name: autonomous-agent-nginx
+    profiles:
+      - proxy
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - nginx-cache:/var/cache/nginx
+      - nginx-logs:/var/log/nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+      - agent-network
+    depends_on:
+      - grafana
+    restart: always
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "5"
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.1'
+          memory: 64M
+    security_opt:
+      - no-new-privileges:true
+    labels:
+      - "com.autonomous-agent.environment=production"
+      - "com.autonomous-agent.service=nginx"
+
+# Named volumes for persistent data (production)
+volumes:
+  agent-data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${DATA_PATH:-./data}
+  agent-logs:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${LOGS_PATH:-./logs}
+  prometheus-data:
+    driver: local
+  grafana-data:
+    driver: local
+  nginx-cache:
+    driver: local
+  nginx-logs:
+    driver: local
+
+# Production network
+networks:
+  agent-network:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.20.0.0/16
+    driver_opts:
+      com.docker.network.bridge.name: br-agent-prod

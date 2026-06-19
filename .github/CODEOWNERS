@@ -1,0 +1,36 @@
+# Code Owners
+# This file defines who is responsible for code in different parts of the repository
+# https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Default owners for everything in the repo
+* @labgadget015-dotcom
+
+# CI/CD Configuration
+/.github/ @labgadget015-dotcom
+/.github/workflows/ @labgadget015-dotcom
+/.github/scripts/ @labgadget015-dotcom
+
+# Documentation
+/docs/ @labgadget015-dotcom
+*.md @labgadget015-dotcom
+
+# Core Scripts
+/scripts/ @labgadget015-dotcom
+
+# Configuration Files
+pytest.ini @labgadget015-dotcom
+.coveragerc @labgadget015-dotcom
+.bandit @labgadget015-dotcom
+.pre-commit-config.yaml @labgadget015-dotcom
+Makefile @labgadget015-dotcom
+
+# Docker Configuration
+Dockerfile @labgadget015-dotcom
+docker-compose*.yml @labgadget015-dotcom
+
+# Monitoring
+/monitoring/ @labgadget015-dotcom
+
+# Dependencies
+requirements.txt @labgadget015-dotcom
+setup.py @labgadget015-dotcom

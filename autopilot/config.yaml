@@ -1,0 +1,73 @@
+# GitHub Autopilot Configuration
+# Target repositories for daily summary generation
+
+repos:
+  # Critical Priority - Core Product Repos
+  - owner: labgadget015-dotcom
+    name: autonomous-github-agent
+    priority: critical
+    notes: "Main autopilot repo + test coverage issues"
+
+  - owner: labgadget015-dotcom
+    name: github-multi-agent-system
+    priority: critical
+    notes: "Multi-agent orchestration system"
+
+  - owner: labgadget015-dotcom
+    name: ai-automation-engine
+    priority: critical
+    notes: "Platform backbone for agent lifecycle"
+
+  # Medium Priority
+  - owner: labgadget015-dotcom
+    name: micro-bot-workflow-template
+    priority: medium
+    notes: "Workflow templates"
+
+  # Low Priority (Paused per consolidation strategy)
+  - owner: labgadget015-dotcom
+    name: AI-crypto-trading-bot
+    priority: low
+    notes: "Paused - focus on core product first"
+
+  - owner: labgadget015-dotcom
+    name: ai-ops-desk
+    priority: low
+    notes: "Paused - focus on core product first"
+
+  - owner: labgadget015-dotcom
+    name: ViralVideo
+    priority: low
+    notes: "Paused - focus on core product first"
+
+# Output configuration
+output:
+  format: markdown
+  file: DAILY_SUMMARY.md
+  console: true  # Also print to stdout
+  include_timestamp: true
+
+# Analysis settings for priority calculation
+analysis:
+  # Weights for priority scoring (higher = more important)
+  priority_weights:
+    urgent_label: 10      # Issues/PRs with "urgent" label
+    enhancement_label: 5  # Issues/PRs with "enhancement" label
+    pr_age_days: 2        # Points per day PR is open
+    issue_count: 1        # Points per open issue
+    recent_activity: 3    # Bonus for activity in last 24h
+    critical_repo: 5      # Bonus for critical priority repos
+
+  # Time windows
+  lookback:
+    commits: 24  # hours
+    activity: 7  # days for "recent activity"
+
+  # Top N priorities to show
+  top_priorities: 3
+
+# API settings
+api:
+  rate_limit_buffer: 100  # Keep this many API calls in reserve
+  timeout: 30  # seconds
+  retry_attempts: 3

@@ -1,0 +1,14 @@
+﻿{
+  "repository": "owner/repository-name",
+  "event_name": "pull_request",
+  "ref": "refs/heads/main",
+  "actor": "github-username",
+  "pull_request": {
+    "number": 1,
+    "title": "Example PR",
+    "base": "main",
+    "head": "feature-branch"
+  },
+  "github_api_url": "https://api.github.com",
+  "timestamp": "2026-01-24T00:00:00Z"
+}

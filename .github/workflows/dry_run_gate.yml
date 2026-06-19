@@ -1,0 +1,228 @@
+name: Dry-Run Gate
+
+# Validates a proposed automated action in dry-run mode before executing.
+# Usage: Trigger via workflow_dispatch with dry_run=true (default).
+# When dry_run=false and the plan is approved (via /approve comment), it proceeds.
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "Action to perform (e.g. 'merge_pr:123', 'close_issue:45', 'delete_branch:feat/old')"
+        required: true
+      dry_run:
+        description: "Dry run only — show plan without executing"
+        required: false
+        default: "true"
+        type: choice
+        options: ["true", "false"]
+      approval_issue:
+        description: "Issue or PR number to check for /approve comment (required when dry_run=false)"
+        required: false
+
+concurrency:
+  group: dry-run-gate-${{ github.event.inputs.action }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+  actions: read
+
+jobs:
+  plan:
+    name: Plan Action
+    runs-on: ubuntu-latest
+    outputs:
+      plan_summary: ${{ steps.plan.outputs.summary }}
+      risk_level: ${{ steps.plan.outputs.risk_level }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -q PyGithub
+
+      - name: Generate action plan
+        id: plan
+        env:
+          ACTION: ${{ github.event.inputs.action }}
+          DRY_RUN: ${{ github.event.inputs.dry_run }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python3 - <<'PYEOF'
+          import os, sys, json, re
+          sys.path.insert(0, ".")
+
+          action = os.environ.get("ACTION", "")
+          dry_run = os.environ.get("DRY_RUN", "true").lower() == "true"
+
+          # Parse action string
+          RISKY_ACTIONS = {"delete_branch", "close_issue", "merge_pr", "force_push"}
+          action_type = action.split(":")[0] if ":" in action else action
+          action_target = action.split(":", 1)[1] if ":" in action else ""
+
+          is_risky = action_type in RISKY_ACTIONS
+          risk_level = "HIGH" if is_risky else "LOW"
+
+          lines = [
+              "## 🤖 Agent Dry-Run Plan",
+              "",
+              f"**Action:** `{action}`",
+              f"**Action type:** `{action_type}`",
+              f"**Target:** `{action_target}`",
+              f"**Risk level:** `{risk_level}`",
+              f"**Dry run:** `{dry_run}`",
+              "",
+          ]
+
+          if is_risky:
+              lines += [
+                  "### ⚠️ This action is classified as HIGH RISK",
+                  "Human approval required. Post `/approve` on the linked issue/PR to proceed.",
+                  "",
+              ]
+
+          if dry_run:
+              lines += [
+                  "### ✅ Dry-run mode — no changes will be made",
+                  "Re-trigger with `dry_run=false` and an `approval_issue` number to execute.",
+              ]
+          else:
+              lines += ["### 🚀 Execution mode — action will be performed if approved."]
+
+          summary = "\n".join(lines)
+          print(summary)
+
+          # Write to GITHUB_OUTPUT (multiline)
+          with open(os.environ.get("GITHUB_OUTPUT", "/dev/null"), "a") as f:
+              f.write(f"summary<<EOFMARKER\n{summary}\nEOFMARKER\n")
+              f.write(f"risk_level={risk_level}\n")
+
+          # Write to step summary
+          with open(os.environ.get("GITHUB_STEP_SUMMARY", "/dev/null"), "a") as f:
+              f.write(summary)
+          PYEOF
+
+  check-approval:
+    name: Check Approval
+    runs-on: ubuntu-latest
+    needs: plan
+    if: github.event.inputs.dry_run == 'false'
+    outputs:
+      approved: ${{ steps.check.outputs.approved }}
+    steps:
+      - name: Check for /approve comment
+        id: check
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          APPROVAL_ISSUE: ${{ github.event.inputs.approval_issue }}
+        run: |
+          python3 - <<'PYEOF'
+          import os, json, urllib.request
+
+          token = os.environ["GITHUB_TOKEN"]
+          repo = os.environ.get("GITHUB_REPOSITORY", "")
+          issue_num = os.environ.get("APPROVAL_ISSUE", "")
+
+          if not issue_num:
+              print("No approval_issue provided — blocking execution.")
+              with open(os.environ.get("GITHUB_OUTPUT", "/dev/null"), "a") as f:
+                  f.write("approved=false\n")
+              exit(0)
+
+          req = urllib.request.Request(
+              f"https://api.github.com/repos/{repo}/issues/{issue_num}/comments",
+              headers={
+                  "Authorization": f"token {token}",
+                  "Accept": "application/vnd.github.v3+json",
+              },
+          )
+          try:
+              with urllib.request.urlopen(req) as resp:
+                  comments = json.loads(resp.read())
+          except Exception as e:
+              print(f"Error fetching comments: {e}")
+              comments = []
+
+          approved = any(
+              "/approve" in c.get("body", "").lower()
+              for c in comments
+          )
+          print(f"Approval status: {approved}")
+          with open(os.environ.get("GITHUB_OUTPUT", "/dev/null"), "a") as f:
+              f.write(f"approved={str(approved).lower()}\n")
+
+          if not approved:
+              print("::error::No /approve comment found. Action blocked.")
+          PYEOF
+
+  execute:
+    name: Execute Action
+    runs-on: ubuntu-latest
+    needs: [plan, check-approval]
+    if: >
+      github.event.inputs.dry_run == 'false' &&
+      needs.check-approval.outputs.approved == 'true'
+    environment: production  # requires environment protection rules if configured
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -q PyGithub
+
+      - name: Execute approved action
+        env:
+          ACTION: ${{ github.event.inputs.action }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python3 - <<'PYEOF'
+          import os, sys, json, urllib.request
+
+          action = os.environ.get("ACTION", "")
+          token = os.environ["GITHUB_TOKEN"]
+          repo = os.environ.get("GITHUB_REPOSITORY", "")
+          action_type = action.split(":")[0] if ":" in action else action
+          action_target = action.split(":", 1)[1] if ":" in action else ""
+
+          def api(method, path, body=None):
+              data = json.dumps(body).encode() if body else None
+              req = urllib.request.Request(
+                  f"https://api.github.com{path}",
+                  data=data,
+                  headers={
+                      "Authorization": f"token {token}",
+                      "Content-Type": "application/json",
+                      "Accept": "application/vnd.github.v3+json",
+                  },
+                  method=method,
+              )
+              with urllib.request.urlopen(req) as resp:
+                  return json.loads(resp.read()) if resp.status not in (204,) else {}
+
+          print(f"Executing: {action}")
+
+          if action_type == "close_issue":
+              result = api("PATCH", f"/repos/{repo}/issues/{action_target}", {"state": "closed"})
+              print(f"Closed issue #{result.get('number')}")
+          elif action_type == "merge_pr":
+              result = api("PUT", f"/repos/{repo}/pulls/{action_target}/merge",
+                           {"merge_method": "squash"})
+              print(f"Merged PR: {result.get('merged')}")
+          elif action_type == "delete_branch":
+              api("DELETE", f"/repos/{repo}/git/refs/heads/{action_target}")
+              print(f"Deleted branch: {action_target}")
+          else:
+              print(f"::error::Unknown action type: {action_type}")
+              sys.exit(1)
+          PYEOF

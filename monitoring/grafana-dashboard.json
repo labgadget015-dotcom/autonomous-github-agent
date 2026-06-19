@@ -1,0 +1,235 @@
+{
+  "dashboard": {
+    "title": "Repository Health Dashboard",
+    "tags": ["github", "ci-cd", "code-quality"],
+    "timezone": "browser",
+    "panels": [
+      {
+        "id": 1,
+        "title": "Health Score",
+        "type": "gauge",
+        "targets": [
+          {
+            "expr": "repo_health_score",
+            "legendFormat": "Health Score"
+          }
+        ],
+        "gridPos": {
+          "x": 0,
+          "y": 0,
+          "w": 6,
+          "h": 8
+        },
+        "options": {
+          "showThresholdLabels": true,
+          "showThresholdMarkers": true
+        },
+        "fieldConfig": {
+          "defaults": {
+            "min": 0,
+            "max": 100,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 60, "color": "orange"},
+                {"value": 75, "color": "yellow"},
+                {"value": 90, "color": "green"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 2,
+        "title": "Test Coverage",
+        "type": "gauge",
+        "targets": [
+          {
+            "expr": "test_coverage_percentage",
+            "legendFormat": "Coverage %"
+          }
+        ],
+        "gridPos": {
+          "x": 6,
+          "y": 0,
+          "w": 6,
+          "h": 8
+        },
+        "fieldConfig": {
+          "defaults": {
+            "min": 0,
+            "max": 100,
+            "unit": "percent",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 70, "color": "orange"},
+                {"value": 80, "color": "green"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 3,
+        "title": "Code Complexity",
+        "type": "gauge",
+        "targets": [
+          {
+            "expr": "code_complexity_average",
+            "legendFormat": "Avg Complexity"
+          }
+        ],
+        "gridPos": {
+          "x": 12,
+          "y": 0,
+          "w": 6,
+          "h": 8
+        },
+        "fieldConfig": {
+          "defaults": {
+            "min": 0,
+            "max": 20,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "green"},
+                {"value": 10, "color": "yellow"},
+                {"value": 15, "color": "red"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 4,
+        "title": "Maintainability Index",
+        "type": "gauge",
+        "targets": [
+          {
+            "expr": "code_maintainability_average",
+            "legendFormat": "Maintainability"
+          }
+        ],
+        "gridPos": {
+          "x": 18,
+          "y": 0,
+          "w": 6,
+          "h": 8
+        },
+        "fieldConfig": {
+          "defaults": {
+            "min": 0,
+            "max": 100,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 50, "color": "orange"},
+                {"value": 65, "color": "yellow"},
+                {"value": 85, "color": "green"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 5,
+        "title": "Workflow Success Rate",
+        "type": "timeseries",
+        "targets": [
+          {
+            "expr": "rate(workflow_runs_total{status=\"success\"}[1h]) / rate(workflow_runs_total[1h]) * 100",
+            "legendFormat": "Success Rate"
+          }
+        ],
+        "gridPos": {
+          "x": 0,
+          "y": 8,
+          "w": 12,
+          "h": 8
+        }
+      },
+      {
+        "id": 6,
+        "title": "Workflow Duration",
+        "type": "timeseries",
+        "targets": [
+          {
+            "expr": "workflow_duration_seconds",
+            "legendFormat": "{{workflow}}"
+          }
+        ],
+        "gridPos": {
+          "x": 12,
+          "y": 8,
+          "w": 12,
+          "h": 8
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "s"
+          }
+        }
+      },
+      {
+        "id": 7,
+        "title": "Security Issues by Severity",
+        "type": "bargauge",
+        "targets": [
+          {
+            "expr": "security_issues_total",
+            "legendFormat": "{{severity}}"
+          }
+        ],
+        "gridPos": {
+          "x": 0,
+          "y": 16,
+          "w": 8,
+          "h": 8
+        }
+      },
+      {
+        "id": 8,
+        "title": "Quality Violations",
+        "type": "piechart",
+        "targets": [
+          {
+            "expr": "quality_violations_total",
+            "legendFormat": "{{type}}"
+          }
+        ],
+        "gridPos": {
+          "x": 8,
+          "y": 16,
+          "w": 8,
+          "h": 8
+        }
+      },
+      {
+        "id": 9,
+        "title": "Code Quality Scores by Tool",
+        "type": "bargauge",
+        "targets": [
+          {
+            "expr": "code_quality_score",
+            "legendFormat": "{{tool}}"
+          }
+        ],
+        "gridPos": {
+          "x": 16,
+          "y": 16,
+          "w": 8,
+          "h": 8
+        }
+      }
+    ],
+    "refresh": "30s",
+    "time": {
+      "from": "now-6h",
+      "to": "now"
+    }
+  }
+}

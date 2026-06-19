@@ -1,0 +1,101 @@
+name: 'Autonomous GitHub Agent'
+description: 'AI-powered GitHub automation with intelligent PR review, async analysis, and cost-optimized LLM routing'
+author: 'labgadget015-dotcom'
+branding:
+  icon: 'cpu'
+  color: 'purple'
+
+inputs:
+  github_token:
+    description: 'GitHub token for API access'
+    required: true
+  openai_api_key:
+    description: 'OpenAI API key for cloud LLM fallback'
+    required: false
+  anthropic_api_key:
+    description: 'Anthropic API key for cloud LLM fallback'
+    required: false
+  analysis_mode:
+    description: 'Analysis mode: parallel, sequential, or auto'
+    required: false
+    default: 'auto'
+  local_llm_enabled:
+    description: 'Enable local LLM for cost optimization'
+    required: false
+    default: 'true'
+  local_llm_endpoint:
+    description: 'Local LLM endpoint URL'
+    required: false
+    default: 'http://localhost:11434'
+  complexity_threshold:
+    description: 'Complexity threshold for LLM routing (low/medium/high)'
+    required: false
+    default: 'medium'
+  issue_creation_enabled:
+    description: 'Auto-create GitHub issues for critical findings'
+    required: false
+    default: 'true'
+  severity_threshold:
+    description: 'Minimum severity for issue creation'
+    required: false
+    default: 'high'
+
+outputs:
+  analysis_summary:
+    description: 'Summary of code analysis results'
+  issues_created:
+    description: 'Number of GitHub issues created'
+  cost_savings:
+    description: 'Estimated cost savings from local LLM usage'
+  execution_time:
+    description: 'Total execution time in seconds'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install Dependencies
+      shell: bash
+      run: |
+        pip install --upgrade pip
+        pip install aiohttp anthropic openai requests pyyaml pylint flake8 bandit pytest
+
+    - name: Run LLM Router Analysis
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.github_token }}
+        OPENAI_API_KEY: ${{ inputs.openai_api_key }}
+        ANTHROPIC_API_KEY: ${{ inputs.anthropic_api_key }}
+      run: |
+        python .github/scripts/llm_router.py \
+          --mode ${{ inputs.analysis_mode }} \
+          --local-llm ${{ inputs.local_llm_enabled }} \
+          --endpoint ${{ inputs.local_llm_endpoint }} \
+          --threshold ${{ inputs.complexity_threshold }}
+
+    - name: Run Async Parallel Analysis
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.github_token }}
+      run: |
+        python .github/scripts/async_parallel_analyzer.py
+
+    - name: Generate PR Inline Comments
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.github_token }}
+      run: |
+        python .github/scripts/pr_inline_commenter.py
+
+    - name: Create Issues for Critical Findings
+      if: inputs.issue_creation_enabled == 'true'
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.github_token }}
+      run: |
+        python .github/scripts/issue_auto_creator.py \
+          --severity ${{ inputs.severity_threshold }}

@@ -1,0 +1,234 @@
+name: Monitoring Metrics Export
+
+on:
+  schedule:
+    # Export metrics hourly (was */15 — 96×/day causing 195+ consecutive failures)
+    - cron: '0 * * * *'
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+concurrency:
+  group: monitoring-export
+  cancel-in-progress: true
+
+permissions:
+  actions: write
+  contents: read
+
+env:
+  RETENTION_DAYS: 90
+
+jobs:
+  export-workflow-metrics:
+    name: Export Workflow Metrics
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install requests python-dateutil
+
+      - name: Fetch workflow metrics
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python3 << 'EOF'
+          import os
+          import json
+          import requests
+          from datetime import datetime, timedelta
+          from dateutil import parser
+
+          token = os.environ['GITHUB_TOKEN']
+          repo = os.environ['GITHUB_REPOSITORY']
+
+          headers = {
+              'Authorization': f'token {token}',
+              'Accept': 'application/vnd.github.v3+json'
+          }
+
+          # Fetch recent workflow runs
+          url = f'https://api.github.com/repos/{repo}/actions/runs'
+          params = {
+              'per_page': 100,
+              'status': 'completed'
+          }
+
+          response = requests.get(url, headers=headers, params=params)
+          runs = response.json().get('workflow_runs', [])
+
+          # Calculate metrics
+          metrics = {
+              'timestamp': datetime.utcnow().isoformat(),
+              'total_runs': len(runs),
+              'successful_runs': 0,
+              'failed_runs': 0,
+              'cancelled_runs': 0,
+              'avg_duration_seconds': 0,
+              'max_duration_seconds': 0,
+              'min_duration_seconds': float('inf'),
+              'workflows': {}
+          }
+
+          total_duration = 0
+
+          for run in runs:
+              conclusion = run.get('conclusion')
+              if conclusion == 'success':
+                  metrics['successful_runs'] += 1
+              elif conclusion == 'failure':
+                  metrics['failed_runs'] += 1
+              elif conclusion == 'cancelled':
+                  metrics['cancelled_runs'] += 1
+
+              # Calculate duration
+              created = parser.parse(run['created_at'])
+              updated = parser.parse(run['updated_at'])
+              duration = (updated - created).total_seconds()
+
+              total_duration += duration
+              metrics['max_duration_seconds'] = max(metrics['max_duration_seconds'], duration)
+              if duration > 0:
+                  metrics['min_duration_seconds'] = min(metrics['min_duration_seconds'], duration)
+
+              # Per-workflow metrics
+              workflow_name = run['name']
+              if workflow_name not in metrics['workflows']:
+                  metrics['workflows'][workflow_name] = {
+                      'runs': 0,
+                      'successes': 0,
+                      'failures': 0,
+                      'avg_duration': 0,
+                      'total_duration': 0
+                  }
+
+              metrics['workflows'][workflow_name]['runs'] += 1
+              metrics['workflows'][workflow_name]['total_duration'] += duration
+              if conclusion == 'success':
+                  metrics['workflows'][workflow_name]['successes'] += 1
+              elif conclusion == 'failure':
+                  metrics['workflows'][workflow_name]['failures'] += 1
+
+          # Calculate averages
+          if metrics['total_runs'] > 0:
+              metrics['avg_duration_seconds'] = total_duration / metrics['total_runs']
+              metrics['success_rate'] = (metrics['successful_runs'] / metrics['total_runs']) * 100
+
+          for workflow_name in metrics['workflows']:
+              wf = metrics['workflows'][workflow_name]
+              if wf['runs'] > 0:
+                  wf['avg_duration'] = wf['total_duration'] / wf['runs']
+                  wf['success_rate'] = (wf['successes'] / wf['runs']) * 100
+              del wf['total_duration']  # Remove temporary field
+
+          # Fix min_duration if no valid durations found
+          if metrics['min_duration_seconds'] == float('inf'):
+              metrics['min_duration_seconds'] = 0
+
+          # Save metrics
+          os.makedirs('monitoring/metrics', exist_ok=True)
+
+          # Save current metrics
+          with open('monitoring/metrics/latest.json', 'w') as f:
+              json.dump(metrics, f, indent=2)
+
+          # Save historical metrics (timestamped)
+          timestamp = datetime.utcnow().strftime('%Y%m%d_%H%M%S')
+          with open(f'monitoring/metrics/{timestamp}.json', 'w') as f:
+              json.dump(metrics, f, indent=2)
+
+          # Generate Prometheus-compatible metrics
+          prom_metrics = []
+          prom_metrics.append(f'# HELP github_workflow_runs_total Total number of workflow runs')
+          prom_metrics.append(f'# TYPE github_workflow_runs_total counter')
+          prom_metrics.append(f'github_workflow_runs_total {metrics["total_runs"]}')
+
+          prom_metrics.append(f'# HELP github_workflow_success_rate Percentage of successful workflow runs')
+          prom_metrics.append(f'# TYPE github_workflow_success_rate gauge')
+          prom_metrics.append(f'github_workflow_success_rate {metrics.get("success_rate", 0)}')
+
+          prom_metrics.append(f'# HELP github_workflow_duration_seconds Average workflow duration in seconds')
+          prom_metrics.append(f'# TYPE github_workflow_duration_seconds gauge')
+          prom_metrics.append(f'github_workflow_duration_seconds {{type="avg"}} {metrics["avg_duration_seconds"]}')
+          prom_metrics.append(f'github_workflow_duration_seconds {{type="max"}} {metrics["max_duration_seconds"]}')
+          prom_metrics.append(f'github_workflow_duration_seconds {{type="min"}} {metrics["min_duration_seconds"]}')
+
+          with open('monitoring/metrics/prometheus.txt', 'w') as f:
+              f.write('\n'.join(prom_metrics))
+
+          print(f"✓ Exported metrics for {metrics['total_runs']} workflow runs")
+          print(f"✓ Success rate: {metrics.get('success_rate', 0):.2f}%")
+          print(f"✓ Average duration: {metrics['avg_duration_seconds']:.2f}s")
+          EOF
+
+      - name: Check API rate limits
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python3 << 'EOF'
+          import os
+          import json
+          import requests
+
+          token = os.environ['GITHUB_TOKEN']
+          headers = {
+              'Authorization': f'token {token}',
+              'Accept': 'application/vnd.github.v3+json'
+          }
+
+          response = requests.get('https://api.github.com/rate_limit', headers=headers)
+          rate_limit = response.json()
+
+          core = rate_limit['resources']['core']
+          print(f"API Rate Limit Status:")
+          print(f"  Limit: {core['limit']}")
+          print(f"  Remaining: {core['remaining']}")
+          print(f"  Used: {core['limit'] - core['remaining']}")
+          print(f"  Usage: {((core['limit'] - core['remaining']) / core['limit'] * 100):.2f}%")
+
+          # Save rate limit metrics
+          os.makedirs('monitoring/metrics', exist_ok=True)
+          with open('monitoring/metrics/rate_limit.json', 'w') as f:
+              json.dump(rate_limit, f, indent=2)
+          EOF
+
+      - name: Upload metrics artifacts
+        uses: actions/upload-artifact@v6
+        with:
+          name: workflow-metrics
+          path: monitoring/metrics/
+          retention-days: ${{ env.RETENTION_DAYS }}
+
+      - name: Generate summary
+        run: |
+          echo "## 📊 Workflow Metrics Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [ -f "monitoring/metrics/latest.json" ]; then
+            python3 << 'EOF' >> $GITHUB_STEP_SUMMARY
+          import json
+
+          with open('monitoring/metrics/latest.json') as f:
+              metrics = json.load(f)
+
+          print(f"**Total Runs:** {metrics['total_runs']}")
+          print(f"**Success Rate:** {metrics.get('success_rate', 0):.2f}%")
+          print(f"**Average Duration:** {metrics['avg_duration_seconds']:.2f}s")
+          print(f"")
+          print(f"### Results Breakdown")
+          print(f"- ✅ Successful: {metrics['successful_runs']}")
+          print(f"- ❌ Failed: {metrics['failed_runs']}")
+          print(f"- ⏸️ Cancelled: {metrics['cancelled_runs']}")
+          EOF
+          fi

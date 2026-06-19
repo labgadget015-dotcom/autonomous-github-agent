@@ -1,0 +1,139 @@
+name: Optimized AI Agent Workflow
+
+on:
+  pull_request:
+    types: [opened, synchronize, ready_for_review]
+  push:
+    branches: [main]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+
+      # Cancel in-progress runs for the same PR
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHON_VERSION: '3.11'
+  CACHE_VERSION: v1
+
+jobs:
+  # Matrix strategy for parallel testing
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.10', '3.11', '3.12']
+        os: [ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Cache dependencies
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.cache/pip
+            ~/.local
+                        .pytest_cache/
+                                    .mypy_cache/
+          key: ${{ runner.os }}-pip-${{ env.CACHE_VERSION }}-${{ hashFiles('requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-${{ env.CACHE_VERSION }}-
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run tests with coverage
+        run: |
+          pytest --cov=core --cov=agents --cov=autopilot --cov=.github/scripts --cov-report=xml --cov-report=term -v
+
+      - name: Upload coverage
+        if: matrix.python-version == '3.11'
+        uses: codecov/codecov-action@v5
+        with:
+          file: ./coverage.xml
+          fail_ci_if_error: false
+
+  code-quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Cache dependencies
+        uses: actions/cache@v5
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-quality-${{ hashFiles('requirements.txt') }}
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run code quality checks
+        run: |
+          black --check . || true
+          flake8 core/ agents/ autopilot/ .github/scripts || true
+          mypy core/ agents/ autopilot/ --ignore-missing-imports || true
+          pylint core/ agents/ autopilot/ --fail-under=6.0 --errors-only || true
+
+  agent-workflow:
+    needs: [test, code-quality]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || !github.event.pull_request.draft
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Cache dependencies
+        uses: actions/cache@v5
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Gather context
+        run: python .github/scripts/gather_context.py
+
+      - name: Select CoT template
+        run: |
+          PYTHONPATH=.github/scripts python -c "from cot_selector import OptimizedCoTSelector; selector = OptimizedCoTSelector(); print(selector.select_template({'files_changed': 5}))"
+
+      - name: Run AI agent
+        run: python .github/scripts/ai_agent_main.py --context context.json
+
+      - name: Enforce policy
+        run: python .github/scripts/check_policy.py
+
+      - name: Generate documentation
+        run: python .github/scripts/docgen.py
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v6
+        if: always()
+        with:
+          name: agent-outputs
+          path: |
+            results.json
+            audit.log
+            diagrams/
+          retention-days: 30

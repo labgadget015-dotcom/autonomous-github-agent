@@ -1,0 +1,148 @@
+# Example Elite Copilot Configuration
+# Copy this file and customize for your needs
+
+# Operating mode
+# Options: assistant, autopilot, guardian, mentor
+mode: assistant
+
+# Enable proactive analysis
+# When true, copilot will continuously monitor and suggest improvements
+enable_proactive_analysis: true
+
+# Enable auto-fix
+# When true, copilot can automatically fix certain issues
+# WARNING: Use with caution, especially in production
+enable_auto_fix: false
+
+# Enable learning from repository patterns
+learning_enabled: true
+
+# Maximum number of parallel tasks
+max_parallel_tasks: 5
+
+# Priority threshold for notifications
+# Options: critical, high, medium, low
+priority_threshold: medium
+
+# Notification channels
+notification_channels:
+  - github_comments  # Comment on PRs and issues
+  - artifacts        # Save as GitHub Actions artifacts
+  # - slack          # Send to Slack (requires configuration)
+  # - email          # Send email notifications (requires configuration)
+
+# Capabilities to enable
+# Remove any you don't want to use
+capabilities:
+  - code_review           # Review code changes
+  - test_generation       # Suggest tests
+  - documentation         # Check and generate docs
+  - security_scan         # Scan for vulnerabilities
+  - performance_analysis  # Analyze performance
+  - dependency_management # Check dependencies
+  - refactoring_suggestions  # Suggest refactorings
+
+# Analysis thresholds
+thresholds:
+  # Code complexity (cyclomatic complexity)
+  complexity:
+    warning: 10
+    error: 20
+
+  # Code coverage
+  coverage:
+    minimum: 80
+
+  # Security severity to report
+  security:
+    minimum_severity: medium
+
+# LLM Routing configuration
+llm_routing:
+  # Enable local LLM for cost savings
+  local_enabled: true
+
+  # Local LLM endpoint (Ollama, LM Studio, etc.)
+  local_endpoint: http://localhost:11434
+
+  # Fall back to cloud LLM when local unavailable
+  cloud_fallback: true
+
+  # Task complexity threshold for routing
+  # low: Use local for most tasks
+  # medium: Balance between local and cloud
+  # high: Prefer cloud for quality
+  complexity_threshold: medium
+
+  # Preferred cloud provider
+  # Options: openai, anthropic
+  cloud_provider: openai
+
+  # Model selection
+  models:
+    local: llama2
+    cloud_simple: gpt-3.5-turbo
+    cloud_complex: gpt-4-turbo
+
+# Performance settings
+performance:
+  # Enable parallel execution
+  parallel_execution: true
+
+  # Maximum workers for parallel tasks
+  max_workers: 8
+
+  # Timeout for individual tasks (seconds)
+  timeout_seconds: 300
+
+  # Cache results to speed up repeated analyses
+  enable_caching: true
+
+# Custom rules (advanced)
+custom_rules:
+  # Example: Enforce specific patterns
+  - name: "No print statements in production"
+    pattern: "^\\s*print\\("
+    severity: warning
+    message: "Use proper logging instead of print()"
+
+  - name: "TODO comments should have issue references"
+    pattern: "TODO(?!.*#\\d+)"
+    severity: info
+    message: "TODO comments should reference a GitHub issue"
+
+# Integration settings
+integrations:
+  github:
+    # Auto-label issues based on content
+    auto_label: true
+
+    # Create issues for critical findings
+    auto_create_issues: true
+
+    # Comment on PRs with analysis
+    pr_comments: true
+
+  # Prometheus metrics (if enabled)
+  prometheus:
+    enabled: false
+    pushgateway_url: http://localhost:9091
+
+  # Slack notifications (if enabled)
+  slack:
+    enabled: false
+    webhook_url: ""  # Set via environment variable
+
+# Reporting
+reporting:
+  # Report format
+  format: markdown
+
+  # Include evidence in reports
+  include_evidence: true
+
+  # Include confidence scores
+  include_confidence: true
+
+  # Generate charts and visualizations
+  generate_charts: false

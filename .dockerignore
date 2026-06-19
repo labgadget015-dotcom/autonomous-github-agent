@@ -1,0 +1,171 @@
+﻿# .dockerignore - Exclude unnecessary files from Docker build context
+
+# Git
+.git
+.gitignore
+.gitattributes
+.github/workflows/
+.github/ISSUE_TEMPLATE/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+.hypothesis/
+*.cover
+*.log
+
+# Virtual Environments
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+.venv/
+
+# IDEs and Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+*.sublime-project
+*.sublime-workspace
+
+# Environment files
+.env
+.env.local
+.env.*.local
+.env.production
+*.env
+
+# Documentation
+docs/
+*.md
+!README.md
+LICENSE
+
+# CI/CD
+.travis.yml
+.circleci/
+.gitlab-ci.yml
+azure-pipelines.yml
+Jenkinsfile
+
+# Docker
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# Testing
+tests/
+test/
+*.test
+*.spec
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.bak
+*.swp
+.cache
+
+# OS files
+Thumbs.db
+.DS_Store
+*.pid
+*.seed
+*.pid.lock
+
+# Monitoring and analytics
+monitoring/
+grafana/
+prometheus/
+
+# Deployment
+deploy/
+k8s/
+kubernetes/
+helm/
+terraform/
+
+# Documentation source
+mkdocs.yml
+site/
+
+# Pre-commit hooks
+.pre-commit-config.yaml
+
+# Business and planning docs
+BUSINESS_MODEL.md
+DEPLOYMENT_GUIDE.md
+EXECUTION_COMPLETE.md
+IMPLEMENTATION_CHECKLIST.md
+API_EXAMPLES.md
+QUICKSTART.md
+
+# Pricing and config (not needed in container)
+pricing-config.yml
+
+# Results and data directories
+results/
+data/
+*.json
+!package.json
+!tsconfig.json
+
+# Node modules (if any)
+node_modules/
+
+# Coverage reports
+coverage/
+.nyc_output/
+
+# Backup files
+*.bak
+*.backup
+*~
+
+# Security
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+secrets/
+.secrets/

@@ -1,0 +1,86 @@
+{
+    "name": "Autonomous GitHub Agent Development",
+    "image": "mcr.microsoft.com/devcontainers/python:3.11",
+
+    "features": {
+        "ghcr.io/devcontainers/features/git:1": {},
+        "ghcr.io/devcontainers/features/github-cli:1": {},
+        "ghcr.io/devcontainers/features/docker-in-docker:2": {}
+    },
+
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-python.python",
+                "ms-python.vscode-pylance",
+                "ms-python.black-formatter",
+                "ms-python.isort",
+                "ms-python.flake8",
+                "ms-python.pylint",
+                "donjayamanne.python-environment-manager",
+                "littlefoxteam.vscode-python-test-adapter",
+                "ryanluker.vscode-coverage-gutters",
+                "redhat.vscode-yaml",
+                "GitHub.vscode-pull-request-github",
+                "GitHub.copilot",
+                "eamodio.gitlens",
+                "davidanson.vscode-markdownlint",
+                "esbenp.prettier-vscode",
+                "streetsidesoftware.code-spell-checker",
+                "mikestead.dotenv",
+                "tamasfe.even-better-toml"
+            ],
+
+            "settings": {
+                "python.defaultInterpreterPath": "/usr/local/bin/python",
+                "python.linting.enabled": true,
+                "python.linting.pylintEnabled": true,
+                "python.linting.flake8Enabled": true,
+                "python.formatting.provider": "black",
+                "editor.formatOnSave": true,
+                "terminal.integrated.defaultProfile.linux": "bash"
+            }
+        }
+    },
+
+    "forwardPorts": [
+        3000,
+        9090
+    ],
+
+    "portsAttributes": {
+        "3000": {
+            "label": "Grafana Dashboard",
+            "onAutoForward": "notify"
+        },
+        "9090": {
+            "label": "Prometheus Metrics",
+            "onAutoForward": "notify"
+        }
+    },
+
+    "postCreateCommand": "bash scripts/setup-dev.sh",
+
+    "postStartCommand": "git config --global --add safe.directory ${containerWorkspaceFolder}",
+
+    "remoteUser": "vscode",
+
+    "mounts": [
+        "source=${localEnv:HOME}/.ssh,target=/home/vscode/.ssh,readonly,type=bind,consistency=cached",
+        "source=${localEnv:HOME}/.gitconfig,target=/home/vscode/.gitconfig,readonly,type=bind,consistency=cached"
+    ],
+
+    "containerEnv": {
+        "DEV_MODE": "true",
+        "DEBUG": "true",
+        "PYTHONUNBUFFERED": "1"
+    },
+
+    "runArgs": [
+        "--name=autonomous-github-agent-dev"
+    ],
+
+    "updateContentCommand": "pip install -r requirements.txt && pip install pytest pytest-cov black isort flake8 pylint bandit radon pre-commit",
+
+    "shutdownAction": "stopContainer"
+}
