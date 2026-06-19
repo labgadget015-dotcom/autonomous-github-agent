@@ -71,3 +71,6 @@ Thumbs.db
 
 # Audit logs
 audit_logs/
+
+# Landing page — un-ignore lib/ for Next.js app (root lib/ rule is Python-only)
+!landing/lib/
