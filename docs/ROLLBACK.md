@@ -1,5 +1,18 @@
 # Rollback Manifest
 
+## 67a3461 — 2026-06-19 08:32 UTC
+
+- **SHA**: `67a3461ebd9470be779b61e8e7fe42c91eeaa23e`
+- **Author**: GadgetAI
+- **Message**: fix(landing): un-ignore landing/lib/ and add db.ts
+- **Files changed**: 2 file(s)
+
+**Changed files:**
+- `.gitignore`
+- `landing/lib/db.ts`
+
+---
+
 ## c944766 — 2026-06-19 08:27 UTC
 
 - **SHA**: `c9447663abad26bfc5bb18319f4f51709ae30560`
