@@ -1,5 +1,17 @@
 # Rollback Manifest
 
+## b9ab983 — 2026-06-20 05:18 UTC
+
+- **SHA**: `b9ab983cadf5a42b40b8f748375a121a4014a8f2`
+- **Author**: Gadget Lab
+- **Message**: fix: add .yamllint.yml to silence pre-commit-ci gate noise
+- **Files changed**: 1 file(s)
+
+**Changed files:**
+- `.yamllint.yml`
+
+---
+
 ## c8aca75 — 2026-06-20 05:14 UTC
 
 - **SHA**: `c8aca7501c3c821cc324cae7d6d9589f63e03547`
