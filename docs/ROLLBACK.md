@@ -1,5 +1,36 @@
 # Rollback Manifest
 
+## 0482496 — 2026-06-20 07:01 UTC
+
+- **SHA**: `0482496720d42195f4a66f0a0d39038be9794b0a`
+- **Author**: GadgetAI
+- **Message**: feat(agents): add subagent fan-out — code review, security, dependency, triage + dispatch
+- **Files changed**: 32 file(s)
+
+**Changed files:**
+- `.github/workflows/ai_agent_workflow.yml`
+- `.github/workflows/subagent-dispatch.yml`
+- `agents/code_review_agent.py`
+- `agents/dependency_agent.py`
+- `agents/security_scan_agent.py`
+- `agents/triage_agent.py`
+- `autonomous_agent/agents/__init__.py`
+- `autonomous_agent/agents/branch_manager.py`
+- `autonomous_agent/agents/code_reviewer.py`
+- `autonomous_agent/agents/documentation_generator.py`
+- `autonomous_agent/agents/health_monitor.py`
+- `autonomous_agent/agents/issue_manager.py`
+- `autonomous_agent/agents/security_scanner.py`
+- `autonomous_agent/agents/workflow_optimizer.py`
+- `autonomous_agent/cli.py`
+- `autonomous_agent/core/__init__.py`
+- `autonomous_agent/core/audit_logger.py`
+- `autonomous_agent/core/base_agent.py`
+- `autonomous_agent/core/config.py`
+- `autonomous_agent/core/github_client.py`
+
+---
+
 ## 3093f4f — 2026-06-20 06:14 UTC
 
 - **SHA**: `3093f4faa2a352811cc516fc2f33cee3799de7d7`
