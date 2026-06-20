@@ -1,5 +1,18 @@
 # Rollback Manifest
 
+## 3093f4f — 2026-06-20 06:14 UTC
+
+- **SHA**: `3093f4faa2a352811cc516fc2f33cee3799de7d7`
+- **Author**: GadgetAI
+- **Message**: fix(ci): resolve yamllint gate and pytest dependency failures
+- **Files changed**: 2 file(s)
+
+**Changed files:**
+- `.github/workflows/code-quality-optimized.yml`
+- `.yamllint`
+
+---
+
 ## b9ab983 — 2026-06-20 05:18 UTC
 
 - **SHA**: `b9ab983cadf5a42b40b8f748375a121a4014a8f2`
