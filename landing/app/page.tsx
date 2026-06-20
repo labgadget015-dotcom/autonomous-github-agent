@@ -81,7 +81,7 @@ function Hero() {
           </a>
         </div>
         <p className="mt-6 text-sm text-gray-400">
-          Open source · Self-host for free · Growth tier from $199/mo
+          Open source · Self-host for free · Growth tier from £199/mo
         </p>
       </div>
     </section>
@@ -196,7 +196,7 @@ function Pricing() {
           />
           <PricingCard
             name="Growth"
-            price="$199"
+            price="£199"
             priceSuffix="/mo"
             desc="Fully managed. Zero setup."
             badge="Most popular"
