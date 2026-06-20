@@ -1,5 +1,17 @@
 # Rollback Manifest
 
+## 5edaadd — 2026-06-20 23:41 UTC
+
+- **SHA**: `5edaadd6b3457b0257a15dd771edaeaf96cb90bf`
+- **Author**: GadgetAI
+- **Message**: fix: show £199 GBP on landing page pricing
+- **Files changed**: 1 file(s)
+
+**Changed files:**
+- `landing/app/page.tsx`
+
+---
+
 ## 0482496 — 2026-06-20 07:01 UTC
 
 - **SHA**: `0482496720d42195f4a66f0a0d39038be9794b0a`
