@@ -1,0 +1,141 @@
+name: Subagent Dispatcher
+
+on:
+  repository_dispatch:
+    types:
+      - subagent-fanout
+      - code-review
+      - security-scan
+      - dependency-check
+      - issue-triage
+      - cost-report
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+jobs:
+  # Fan-out: runs all 4 agents in parallel when triggered by DRC loop
+  fanout:
+    name: "[${{ matrix.agent }}]"
+    if: github.event.action == 'subagent-fanout'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        agent: [code-review, security-scan, dependency-check, issue-triage]
+
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: pip install -r requirements.txt
+
+      - name: code-review
+        if: matrix.agent == 'code-review' && fromJSON(github.event.client_payload.pr_number) > 0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          python agents/code_review_agent.py \
+            --repo "${{ github.event.client_payload.repo }}" \
+            --pr "${{ github.event.client_payload.pr_number }}"
+
+      - name: security-scan
+        if: matrix.agent == 'security-scan'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          python agents/security_scan_agent.py \
+            --repo "${{ github.event.client_payload.repo }}" \
+            --issue "${{ github.event.client_payload.issue_number }}"
+
+      - name: dependency-check
+        if: matrix.agent == 'dependency-check'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          python agents/dependency_agent.py \
+            --repo "${{ github.event.client_payload.repo }}"
+
+      - name: issue-triage
+        if: matrix.agent == 'issue-triage'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          python agents/triage_agent.py \
+            --repo "${{ github.event.client_payload.repo }}" \
+            --issue "${{ github.event.client_payload.issue_number }}" \
+            --action triage_issue
+
+  # Single-agent runs (triggered individually, e.g. from a label or schedule)
+  single:
+    name: "Run ${{ github.event.action }}"
+    if: github.event.action != 'subagent-fanout'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: pip install -r requirements.txt
+
+      - name: code-review
+        if: github.event.action == 'code-review'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          python agents/code_review_agent.py \
+            --repo "${{ github.event.client_payload.repo }}" \
+            --pr "${{ github.event.client_payload.pr_number }}"
+
+      - name: security-scan
+        if: github.event.action == 'security-scan'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          python agents/security_scan_agent.py \
+            --repo "${{ github.event.client_payload.repo }}" \
+            --issue "${{ github.event.client_payload.issue_number || 0 }}"
+
+      - name: dependency-check
+        if: github.event.action == 'dependency-check'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          python agents/dependency_agent.py \
+            --repo "${{ github.event.client_payload.repo }}"
+
+      - name: issue-triage
+        if: github.event.action == 'issue-triage'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          python agents/triage_agent.py \
+            --repo "${{ github.event.client_payload.repo }}" \
+            --issue "${{ github.event.client_payload.issue_number }}" \
+            --action triage_issue
+
+      - name: cost-report
+        if: github.event.action == 'cost-report'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          python agents/triage_agent.py \
+            --repo "${{ github.event.client_payload.repo }}" \
+            --issue 0 \
+            --action cost_report

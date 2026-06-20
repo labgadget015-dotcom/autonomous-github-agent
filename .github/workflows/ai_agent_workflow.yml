@@ -43,8 +43,8 @@ jobs:
           path: |
             ~/.cache/pip
             ~/.local
-                        .pytest_cache/
-                                    .mypy_cache/
+            .pytest_cache/
+            .mypy_cache/
           key: ${{ runner.os }}-pip-${{ env.CACHE_VERSION }}-${{ hashFiles('requirements.txt') }}
           restore-keys: |
             ${{ runner.os }}-pip-${{ env.CACHE_VERSION }}-
@@ -53,6 +53,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+          pip install pytest pytest-cov pytest-xdist
 
       - name: Run tests with coverage
         run: |

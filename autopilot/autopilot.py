@@ -94,10 +94,16 @@ class GitHubAutopilot:
                 "repo_obj": repo,
             }
         except GithubException as e:
-            print(f"[scan] SKIP {owner}/{name}: GitHub API error {e.status}: {e.data}", file=sys.stderr)
+            print(
+                f"[scan] SKIP {owner}/{name}: GitHub API error {e.status}: {e.data}",
+                file=sys.stderr,
+            )
             return None
         except Exception as e:
-            print(f"[scan] SKIP {owner}/{name}: unexpected error: {type(e).__name__}: {e}", file=sys.stderr)
+            print(
+                f"[scan] SKIP {owner}/{name}: unexpected error: {type(e).__name__}: {e}",
+                file=sys.stderr,
+            )
             return None
 
     def fetch_all_repos(self) -> dict[str, dict]:

@@ -7,7 +7,7 @@ from unittest.mock import Mock, MagicMock
 
 
 # Async test support
-pytest_plugins = ('pytest_asyncio',)
+pytest_plugins = ("pytest_asyncio",)
 
 
 @pytest.fixture
@@ -92,36 +92,28 @@ def mock_github_user():
 def sample_config_dict():
     """Sample configuration dictionary."""
     return {
-        "github": {
-            "token": "test_token_12345",
-            "timeout": 30,
-            "max_retries": 3
-        },
+        "github": {"token": "test_token_12345", "timeout": 30, "max_retries": 3},
         "llm": {
             "provider": "openai",
             "api_key": "test_llm_key",
             "model": "gpt-4",
             "temperature": 0.7,
-            "max_tokens": 2000
+            "max_tokens": 2000,
         },
         "automation_level": "semi-auto",
         "logging": {
             "log_dir": "/tmp/test_logs",
             "retention_days": 30,
-            "log_level": "INFO"
+            "log_level": "INFO",
         },
         "policies": {
             "require_approval": [
                 "delete_main_branch",
                 "force_push_protected",
-                "deploy_production"
+                "deploy_production",
             ],
-            "auto_approve": [
-                "update_dependencies",
-                "fix_linting",
-                "label_issue"
-            ]
-        }
+            "auto_approve": ["update_dependencies", "fix_linting", "label_issue"],
+        },
     }
 
 
@@ -150,11 +142,11 @@ def sample_pr_review_data():
                 "additions": 50,
                 "deletions": 10,
                 "changes": 60,
-                "patch": "@@ -1,5 +1,10 @@\n def main():\n+    print('new line')\n"
+                "patch": "@@ -1,5 +1,10 @@\n def main():\n+    print('new line')\n",
             }
         ],
         "comments": [],
-        "commits": 3
+        "commits": 3,
     }
 
 
@@ -167,7 +159,7 @@ def sample_issue_data():
         "body": "Steps to reproduce:\n1. Start app\n2. Crash happens",
         "labels": ["bug", "high-priority"],
         "state": "open",
-        "assignee": None
+        "assignee": None,
     }
 
 
@@ -180,15 +172,9 @@ def mock_audit_log_entry():
         "agent_name": "TestAgent",
         "action": "create_pr",
         "repository": "owner/repo",
-        "details": {
-            "pr_number": 42,
-            "title": "Test PR"
-        },
-        "rollback_instructions": {
-            "type": "close_pr",
-            "pr_number": 42
-        },
-        "status": "success"
+        "details": {"pr_number": 42, "title": "Test PR"},
+        "rollback_instructions": {"type": "close_pr", "pr_number": 42},
+        "status": "success",
     }
 
 
@@ -198,7 +184,7 @@ def reset_environment_variables(monkeypatch):
     test_env = {
         "GITHUB_TOKEN": "test_token",
         "OPENAI_API_KEY": "test_openai_key",
-        "ANTHROPIC_API_KEY": "test_anthropic_key"
+        "ANTHROPIC_API_KEY": "test_anthropic_key",
     }
     for key, value in test_env.items():
         monkeypatch.setenv(key, value)
@@ -211,7 +197,7 @@ def mock_file_content():
         "README.md": "# Test Repository\n\nThis is a test.",
         "src/main.py": "def main():\n    print('Hello, World!')\n",
         "requirements.txt": "requests==2.28.0\npytest==7.2.0\n",
-        ".gitignore": "*.pyc\n__pycache__/\nvenv/\n"
+        ".gitignore": "*.pyc\n__pycache__/\nvenv/\n",
     }
 
 
@@ -221,8 +207,7 @@ def mock_github_search_results():
     results = MagicMock()
     results.total_count = 5
     results.items = [
-        MagicMock(name=f"result_{i}", score=100-i*10) 
-        for i in range(5)
+        MagicMock(name=f"result_{i}", score=100 - i * 10) for i in range(5)
     ]
     return results
 
@@ -230,15 +215,11 @@ def mock_github_search_results():
 # Markers for test categorization
 def pytest_configure(config):
     """Configure custom pytest markers."""
-    config.addinivalue_line(
-        "markers", "unit: Unit tests for individual components"
-    )
+    config.addinivalue_line("markers", "unit: Unit tests for individual components")
     config.addinivalue_line(
         "markers", "integration: Integration tests for component interactions"
     )
-    config.addinivalue_line(
-        "markers", "slow: Tests that take significant time to run"
-    )
+    config.addinivalue_line("markers", "slow: Tests that take significant time to run")
     config.addinivalue_line(
         "markers", "requires_api: Tests that require external API access"
     )

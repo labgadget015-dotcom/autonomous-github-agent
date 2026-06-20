@@ -11,6 +11,6 @@ def test_github_client_initialization(mock_github):
     with patch("autonomous_agent.core.config.get_config") as mock_config:
         mock_config.return_value.github.token = "test_token"
         mock_config.return_value.github.timeout = 30
-        
+
         client = GitHubClient()
         assert client.token == "test_token"
