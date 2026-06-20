@@ -1,5 +1,19 @@
 # Rollback Manifest
 
+## c8aca75 — 2026-06-20 05:14 UTC
+
+- **SHA**: `c8aca7501c3c821cc324cae7d6d9589f63e03547`
+- **Author**: GadgetAI
+- **Message**: fix(autopilot): add preflight diagnostics and zero-repos circuit breaker
+- **Files changed**: 3 file(s)
+
+**Changed files:**
+- `.github/workflows/elite_copilot.yml`
+- `autopilot/autopilot.py`
+- `pyproject.toml`
+
+---
+
 ## d4f602b — 2026-06-20 04:24 UTC
 
 - **SHA**: `d4f602bfc0368e5c18e63c38297b696208036feb`
