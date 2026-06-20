@@ -1,0 +1,24 @@
+---
+# Gadget Lab — org-level yamllint config
+# Generated: 20 Jun 2026 | Cross-AI consensus (Claude + Gemini + Perplexity)
+# Purpose: Silence pre-commit-ci yamllint gate noise across all repos
+# Fixes: ~680 unread CI notifications on autonomous-github-agent
+extends: default
+rules:
+  document-start: disable
+  line-length:
+    max: 120
+    level: warning
+  indentation:
+    spaces: 2
+    indent-sequences: whatever
+    check-multi-line-strings: false
+  truthy:
+    allowed-values: ['true', 'false', 'on', 'off', 'yes', 'no']
+    level: warning
+  comments:
+    min-spaces-from-content: 1
+  braces:
+    max-spaces-inside: 1
+  brackets:
+    max-spaces-inside: 1
