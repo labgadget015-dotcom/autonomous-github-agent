@@ -1,5 +1,17 @@
 # Rollback Manifest
 
+## d4f602b — 2026-06-20 04:24 UTC
+
+- **SHA**: `d4f602bfc0368e5c18e63c38297b696208036feb`
+- **Author**: Gadget Lab
+- **Message**: Update dependencies to include pytest and coverage tools
+- **Files changed**: 1 file(s)
+
+**Changed files:**
+- `.github/workflows/code-quality-optimized.yml`
+
+---
+
 ## 67a3461 — 2026-06-19 08:32 UTC
 
 - **SHA**: `67a3461ebd9470be779b61e8e7fe42c91eeaa23e`
