@@ -148,7 +148,8 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install -r requirements.txt
+                      pip install -r requirements.txt
+                                  pip install pytest pytest-cov pytest-xdist
 
       - name: Run optimized pytest
         run: |
