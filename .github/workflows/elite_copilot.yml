@@ -248,6 +248,7 @@ jobs:
     permissions:
       contents: read
       issues: write
+      pull-requests: read
 
     steps:
       - name: "📥 Checkout Code"
@@ -262,6 +263,36 @@ jobs:
       - name: "📦 Install Dependencies"
         run: |
           pip install -r requirements.txt
+
+      - name: "🔍 Preflight: validate token and repo access"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python3 - <<'EOF'
+          import os, sys
+          from github import Github
+          token = os.getenv("GITHUB_TOKEN")
+          g = Github(token)
+          try:
+              user = g.get_user()
+              print(f"Token authenticates as: {user.login}")
+              rate = g.get_rate_limit().core
+              print(f"Rate limit: {rate.remaining}/{rate.limit}")
+          except Exception as e:
+              print(f"ERROR: token check failed: {e}", file=sys.stderr)
+              sys.exit(1)
+          repos_to_check = [
+              "labgadget015-dotcom/autonomous-github-agent",
+              "labgadget015-dotcom/github-multi-agent-system",
+              "labgadget015-dotcom/ai-automation-engine",
+          ]
+          for r in repos_to_check:
+              try:
+                  repo = g.get_repo(r)
+                  print(f"  OK: {r} ({repo.private and 'private' or 'public'})")
+              except Exception as e:
+                  print(f"  FAIL: {r} — {e}", file=sys.stderr)
+          EOF
 
       - name: "🤖 Generate Daily Summary"
         id: generate_summary

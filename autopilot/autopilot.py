@@ -53,7 +53,19 @@ class GitHubAutopilot:
         token = os.getenv("GITHUB_TOKEN")
         if not token:
             raise ValueError("GITHUB_TOKEN environment variable not set")
-        return Github(token)
+        client = Github(token)
+        self._preflight_check(client)
+        return client
+
+    def _preflight_check(self, client: Github) -> None:
+        """Validate token and log scopes/rate limit before scanning."""
+        try:
+            user = client.get_user()
+            rate = client.get_rate_limit().core
+            print(f"[preflight] authenticated as: {user.login}")
+            print(f"[preflight] rate limit: {rate.remaining}/{rate.limit} remaining")
+        except Exception as e:
+            print(f"[preflight] WARNING: token validation failed: {e}", file=sys.stderr)
 
     def fetch_repo_data(self, owner: str, name: str) -> dict[str, Any] | None:
         """Fetch issues, PRs, and recent commits for a single repository"""
@@ -82,7 +94,10 @@ class GitHubAutopilot:
                 "repo_obj": repo,
             }
         except GithubException as e:
-            print(f"Error fetching {owner}/{name}: {e}", file=sys.stderr)
+            print(f"[scan] SKIP {owner}/{name}: GitHub API error {e.status}: {e.data}", file=sys.stderr)
+            return None
+        except Exception as e:
+            print(f"[scan] SKIP {owner}/{name}: unexpected error: {type(e).__name__}: {e}", file=sys.stderr)
             return None
 
     def fetch_all_repos(self) -> dict[str, dict]:
@@ -280,6 +295,15 @@ class GitHubAutopilot:
 
         # Fetch all repository data
         self.fetch_all_repos()
+
+        if not self.repo_data:
+            msg = (
+                "[autopilot] FATAL: repos_scanned=0 after attempting "
+                f"{len(self.config['repos'])} repos. "
+                "Check GITHUB_TOKEN scopes and repo names in config.yaml."
+            )
+            print(msg, file=sys.stderr)
+            raise RuntimeError(msg)
 
         # Analyze priorities
         print("Analyzing priorities...")
