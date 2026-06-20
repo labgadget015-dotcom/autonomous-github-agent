@@ -2,6 +2,7 @@
 extends: default
 
 rules:
+  document-start: disable
   line-length:
     max: 150
     level: warning
@@ -15,4 +16,6 @@ rules:
   brackets:
     max-spaces-inside: 1
   indentation:
+    spaces: consistent
     indent-sequences: consistent
+    check-multi-line-strings: false
