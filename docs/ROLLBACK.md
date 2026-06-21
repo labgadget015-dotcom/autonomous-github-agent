@@ -1,5 +1,17 @@
 # Rollback Manifest
 
+## 0057f41 — 2026-06-21 05:34 UTC
+
+- **SHA**: `0057f410b9d1fa630bbc7d7baf3c90c035f25dd1`
+- **Author**: GadgetAI
+- **Message**: fix(ci): fix YAML syntax error in code-quality-optimized.yml
+- **Files changed**: 1 file(s)
+
+**Changed files:**
+- `.github/workflows/code-quality-optimized.yml`
+
+---
+
 ## 628374e — 2026-06-21 05:32 UTC
 
 - **SHA**: `628374ee4356f408835be7bab6d739fe72597149`
