@@ -1,5 +1,17 @@
 # Rollback Manifest
 
+## 05abf04 — 2026-06-21 05:30 UTC
+
+- **SHA**: `05abf0480946612010b40307aef47370cea2c6e0`
+- **Author**: GadgetAI
+- **Message**: fix(pre-commit): add types-PyYAML and types-redis to mypy hook deps
+- **Files changed**: 1 file(s)
+
+**Changed files:**
+- `.pre-commit-config.yaml`
+
+---
+
 ## e8db9de — 2026-06-21 05:27 UTC
 
 - **SHA**: `e8db9de7ad65706a4523ee020f5785cbd22de646`
