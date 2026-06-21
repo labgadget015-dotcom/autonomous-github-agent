@@ -33,6 +33,7 @@ RISK_THRESHOLD = 3.0
 
 # ---------- GitHub helpers ----------
 
+
 def gh(method: str, path: str, body: dict | None = None) -> dict | list:
     url = f"https://api.github.com{path}"
     data = json.dumps(body).encode() if body else None
@@ -73,6 +74,7 @@ def create_pr(title: str, head: str, base: str, body: str) -> str:
 
 
 # ---------- LLM helpers ----------
+
 
 def ask_claude(prompt: str) -> str:
     if not ANTHROPIC_API_KEY:
@@ -130,14 +132,16 @@ def estimate_risk(paths: list[str]) -> float:
 
 # ---------- Code generation ----------
 
-SYSTEM_PROMPT = textwrap.dedent("""
+SYSTEM_PROMPT = textwrap.dedent(
+    """
     You are an AI code contributor. Given an issue description and a DRC recommendation,
     produce ONLY a JSON object with two keys:
       "files": list of {"path": str, "content": str} — the full new content of each file to change
       "branch_suffix": str — a short kebab-case label for the branch name (max 30 chars)
     Do not change .github/workflows/, config/, core/policy_engine.py, or core/risk_scorer.py.
     Limit changes to at most 3 files. Keep diffs minimal. Return valid JSON only.
-""").strip()
+"""
+).strip()
 
 
 def generate_fix(issue: dict, recommendation: str) -> dict:
@@ -161,6 +165,7 @@ def generate_fix(issue: dict, recommendation: str) -> dict:
 
 # ---------- Git helpers ----------
 
+
 def git(*args: str, check: bool = True) -> str:
     result = subprocess.run(["git", *args], capture_output=True, text=True, check=check)
     return result.stdout.strip()
@@ -171,6 +176,7 @@ def apply_files(files: list[dict]) -> list[str]:
     for f in files:
         path = f["path"]
         import pathlib
+
         pathlib.Path(path).parent.mkdir(parents=True, exist_ok=True)
         pathlib.Path(path).write_text(f["content"], encoding="utf-8")
         paths.append(path)
@@ -178,6 +184,7 @@ def apply_files(files: list[dict]) -> list[str]:
 
 
 # ---------- Main ----------
+
 
 def main() -> None:
     parser = argparse.ArgumentParser()

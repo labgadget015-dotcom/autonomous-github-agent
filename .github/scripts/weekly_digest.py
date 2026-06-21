@@ -40,9 +40,7 @@ def build_blocks(data: dict) -> list:
     recommendations = data.get("recommendations", [])
     timestamp = data.get("timestamp", datetime.utcnow().isoformat())
     repo = os.getenv("GITHUB_REPOSITORY", "your-repo")
-    run_url = (
-        f"https://github.com/{repo}/actions/runs/{os.getenv('GITHUB_RUN_ID', '')}"
-    )
+    run_url = f"https://github.com/{repo}/actions/runs/{os.getenv('GITHUB_RUN_ID', '')}"
 
     # Compute overall health score from code analysis
     code = analyses.get("code", {})
@@ -91,11 +89,7 @@ def build_blocks(data: dict) -> list:
     if deps:
         outdated = len(deps.get("outdated_packages", []))
         vuln_line = f"⚠️ {len(vulns)} vulnerable" if vulns else "✅ No vulnerabilities"
-        dep_text = (
-            f"*📦 Dependencies*\n"
-            f"• {vuln_line}\n"
-            f"• Outdated packages: {outdated}"
-        )
+        dep_text = f"*📦 Dependencies*\n" f"• {vuln_line}\n" f"• Outdated packages: {outdated}"
         blocks.append({"type": "section", "text": {"type": "mrkdwn", "text": dep_text}})
 
     # Critical findings
@@ -122,7 +116,10 @@ def build_blocks(data: dict) -> list:
         blocks.append(
             {
                 "type": "section",
-                "text": {"type": "mrkdwn", "text": "✅ *No critical or high-priority issues this week.*"},
+                "text": {
+                    "type": "mrkdwn",
+                    "text": "✅ *No critical or high-priority issues this week.*",
+                },
             }
         )
 
