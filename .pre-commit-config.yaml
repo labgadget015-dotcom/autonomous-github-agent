@@ -37,6 +37,9 @@ repos:
       - id: mypy
         args: [--ignore-missing-imports, core, agents, autopilot, overseer]
         pass_filenames: false
+        additional_dependencies:
+          - types-PyYAML
+          - types-redis
 
   # General pre-commit hooks
   - repo: https://github.com/pre-commit/pre-commit-hooks
