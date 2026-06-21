@@ -1,0 +1,61 @@
+name: Set Vercel environment variables
+
+# One-shot admin workflow — run once to push env vars to Vercel, then disable.
+# Uses secrets already stored in GitHub (VERCEL_TOKEN, GH_PAT) so no values
+# need to be typed into the Actions UI.
+on:
+  workflow_dispatch:
+
+jobs:
+  set-env:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_PAT }}
+
+      - name: Set Vercel env vars (create or update)
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          GH_PAT_VALUE: ${{ secrets.GH_PAT }}
+          PROJECT_ID: prj_KtH0nUpBLV3S1XPOj0F60dP92pIq
+          TEAM_ID: team_i31hDbSRdUJKpIuXnbptPdIT
+        run: |
+          set_env() {
+            local KEY="$1"
+            local VALUE="$2"
+            local TYPE="${3:-encrypted}"
+
+            RESULT=$(curl -s -X POST \
+              "https://api.vercel.com/v10/projects/${PROJECT_ID}/env?teamId=${TEAM_ID}" \
+              -H "Authorization: Bearer ${VERCEL_TOKEN}" \
+              -H "Content-Type: application/json" \
+              -d "{\"key\":\"${KEY}\",\"value\":\"${VALUE}\",\"type\":\"${TYPE}\",\"target\":[\"production\",\"preview\"]}")
+
+            if echo "$RESULT" | grep -q "ENV_ALREADY_EXISTS"; then
+              echo "${KEY} already exists — patching..."
+              ENV_ID=$(curl -s \
+                "https://api.vercel.com/v10/projects/${PROJECT_ID}/env?teamId=${TEAM_ID}" \
+                -H "Authorization: Bearer ${VERCEL_TOKEN}" | \
+                python3 -c "import sys,json; d=json.load(sys.stdin); print(next(e['id'] for e in d['envs'] if e['key']=='${KEY}'))")
+              curl -s -X PATCH \
+                "https://api.vercel.com/v10/projects/${PROJECT_ID}/env/${ENV_ID}?teamId=${TEAM_ID}" \
+                -H "Authorization: Bearer ${VERCEL_TOKEN}" \
+                -H "Content-Type: application/json" \
+                -d "{\"value\":\"${VALUE}\",\"type\":\"${TYPE}\",\"target\":[\"production\",\"preview\"]}" | \
+                python3 -c "import sys,json; d=json.load(sys.stdin); print('patched:', d.get('key','?'))"
+            else
+              echo "$RESULT" | python3 -c "import sys,json; d=json.load(sys.stdin); print('created:', d.get('key','?'))"
+            fi
+          }
+
+          set_env "GH_PAT"               "${GH_PAT_VALUE}"          "encrypted"
+          set_env "NEXT_PUBLIC_APP_URL"   "https://gadgetlab.uk"     "plain"
+
+      - name: Trigger Vercel redeploy via empty commit
+        run: |
+          git config user.name "GadgetLab Agent"
+          git config user.email "labgadget015@gmail.com"
+          git commit --allow-empty -m "chore: trigger Vercel redeploy after env var update [skip ci]"
+          git push
