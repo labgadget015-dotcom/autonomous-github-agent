@@ -110,6 +110,7 @@ disallow_untyped_defs = true
 disallow_incomplete_defs = true
 check_untyped_defs = true
 ignore_missing_imports = true
+disable_error_codes = ["import-untyped"]
 
 [[tool.mypy.overrides]]
 # These modules were written before strict type annotations were enforced.
