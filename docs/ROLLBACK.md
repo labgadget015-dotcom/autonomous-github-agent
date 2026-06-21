@@ -1,5 +1,17 @@
 # Rollback Manifest
 
+## 2e44420 — 2026-06-21 05:50 UTC
+
+- **SHA**: `2e444201c984959fabc8db3725cc381c713191be`
+- **Author**: GadgetAI
+- **Message**: style: black-format AuditLogger __init__ signature
+- **Files changed**: 1 file(s)
+
+**Changed files:**
+- `core/audit_logger.py`
+
+---
+
 ## 74ba660 — 2026-06-21 05:48 UTC
 
 - **SHA**: `74ba660cb904a1afdfb3d4c18550cc62d3b7367c`
