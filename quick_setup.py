@@ -3,7 +3,6 @@ Complete setup script for Autonomous GitHub Agent.
 Run this after creating the directory structure.
 """
 
-import os
 from pathlib import Path
 
 # Base directory
@@ -56,7 +55,7 @@ def main():
     for dir_path in dirs:
         (BASE_DIR / dir_path).mkdir(parents=True, exist_ok=True)
 
-    print(f"✓ Created directory structure\n")
+    print("✓ Created directory structure\n")
 
     # Create files
     for file_path, content in FILES.items():

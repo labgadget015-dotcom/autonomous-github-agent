@@ -1,8 +1,7 @@
 # Configuration Management
-import os
-from typing import Optional
-from pydantic_settings import BaseSettings
 from functools import lru_cache
+
+from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
@@ -24,7 +23,7 @@ class Settings(BaseSettings):
     # Logging
     LOG_LEVEL: str = "INFO"
     LOG_FORMAT: str = "json"  # json or standard
-    LOG_FILE: Optional[str] = "logs/revenue_engine.log"
+    LOG_FILE: str | None = "logs/revenue_engine.log"
 
     # API Configuration
     API_TIMEOUT: int = 30
@@ -48,7 +47,7 @@ class Settings(BaseSettings):
 
     # Alerts
     ENABLE_ALERTS: bool = True
-    ALERT_EMAIL: Optional[str] = None
+    ALERT_EMAIL: str | None = None
 
     class Config:
         env_file = ".env"

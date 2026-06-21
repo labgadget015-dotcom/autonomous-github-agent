@@ -5,10 +5,9 @@ Executes autonomous-github-agent setup in correct sequence.
 Handles all steps and continues even on failure.
 """
 import os
-import sys
 import subprocess
+import sys
 from pathlib import Path
-from typing import Tuple, List, Dict
 
 # Configuration
 INSTALL_DIR = Path(r"C:\Users\aw789\autonomous-github-agent")
@@ -21,8 +20,8 @@ class Installer:
     def __init__(self):
         self.success_count = 0
         self.failure_count = 0
-        self.steps: List[Tuple[str, str, callable]] = []
-        self.results: Dict[str, bool] = {}
+        self.steps: list[tuple[str, str, callable]] = []
+        self.results: dict[str, bool] = {}
 
     def header(self, text: str):
         """Print a header."""
@@ -50,7 +49,7 @@ class Installer:
         """Print info message."""
         print(f"ℹ️  {text}")
 
-    def run_command(self, cmd: List[str], description: str) -> bool:
+    def run_command(self, cmd: list[str], description: str) -> bool:
         """Run a shell command and return success status."""
         try:
             print(f"\n   Command: {' '.join(cmd)}")
@@ -77,7 +76,7 @@ class Installer:
         """Import a Python module and run its main() function."""
         try:
             print(f"\n   Module: {module_name}.py")
-            print(f"   Function: main()")
+            print("   Function: main()")
 
             # Change to install directory
             os.chdir(INSTALL_DIR)

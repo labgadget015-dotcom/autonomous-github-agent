@@ -2,10 +2,11 @@
 
 import asyncio
 from typing import Any
-from autonomous_agent.core.github_client import GitHubClient
-from autonomous_agent.core.llm_client import LLMClient
+
 from autonomous_agent.core.audit_logger import AuditLogger
 from autonomous_agent.core.config import get_config
+from autonomous_agent.core.github_client import GitHubClient
+from autonomous_agent.core.llm_client import LLMClient
 
 
 class Orchestrator:

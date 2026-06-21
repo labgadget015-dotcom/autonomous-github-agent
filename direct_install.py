@@ -2,10 +2,9 @@
 """
 Direct installation script that runs everything in sequence.
 """
+import os
 import subprocess
 import sys
-import os
-from pathlib import Path
 
 
 def run_step(step_num, name, command):
@@ -67,7 +66,7 @@ def main():
         success = run_step(step_num, name, command)
         results[f"Step {step_num}: {name}"] = success
         if not success:
-            print(f"\nContinuing with next step despite failure...")
+            print("\nContinuing with next step despite failure...")
 
     # Run verification
     print("\n" + "=" * 70)

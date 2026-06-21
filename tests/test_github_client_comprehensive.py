@@ -1,8 +1,10 @@
 """Comprehensive test suite for GitHubClient."""
 
+from unittest.mock import MagicMock, patch
+
 import pytest
-from unittest.mock import Mock, patch, MagicMock
 from github import GithubException
+
 from autonomous_agent.core.github_client import GitHubClient
 
 

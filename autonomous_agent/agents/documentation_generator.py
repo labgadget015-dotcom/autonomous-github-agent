@@ -1,6 +1,7 @@
 """Documentation generation and maintenance agent."""
 
 from typing import Any
+
 from autonomous_agent.core.base_agent import BaseAgent
 
 

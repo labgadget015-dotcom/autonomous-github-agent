@@ -1,13 +1,14 @@
 """Command-line interface for the autonomous agent."""
 
 import asyncio
+
 import click
+from rich import print as rprint
 from rich.console import Console
 from rich.table import Table
-from rich import print as rprint
-from autonomous_agent.core.orchestrator import Orchestrator
-from autonomous_agent.core.config import get_config
 
+from autonomous_agent.core.config import get_config
+from autonomous_agent.core.orchestrator import Orchestrator
 
 console = Console()
 
@@ -37,7 +38,7 @@ def health_check(repo: str):
         table.add_row(key.replace("_", " ").title(), str(value))
 
     console.print(table)
-    console.print(f"\n[bold green]✓[/bold green] Health check complete!")
+    console.print("\n[bold green]✓[/bold green] Health check complete!")
 
 
 @main.command()
@@ -45,11 +46,11 @@ def health_check(repo: str):
 @click.option("--agent", help="Specific agent to run (optional)")
 def analyze(repo: str, agent: str = None):
     """Analyze repository with all or specific agent."""
-    from autonomous_agent.core.github_client import GitHubClient
-    from autonomous_agent.core.llm_client import LLMClient
-    from autonomous_agent.core.audit_logger import AuditLogger
     from autonomous_agent.agents.health_monitor import HealthMonitorAgent
     from autonomous_agent.agents.security_scanner import SecurityScannerAgent
+    from autonomous_agent.core.audit_logger import AuditLogger
+    from autonomous_agent.core.github_client import GitHubClient
+    from autonomous_agent.core.llm_client import LLMClient
 
     console.print(f"[bold blue]Analyzing {repo}...[/bold blue]\n")
 
@@ -92,10 +93,10 @@ def analyze(repo: str, agent: str = None):
 @click.option("--pr", type=int, help="Specific PR number to review")
 def review(repo: str, pr: int = None):
     """Review pull requests."""
+    from autonomous_agent.agents.code_reviewer import CodeReviewerAgent
+    from autonomous_agent.core.audit_logger import AuditLogger
     from autonomous_agent.core.github_client import GitHubClient
     from autonomous_agent.core.llm_client import LLMClient
-    from autonomous_agent.core.audit_logger import AuditLogger
-    from autonomous_agent.agents.code_reviewer import CodeReviewerAgent
 
     console.print(f"[bold blue]Reviewing PRs in {repo}...[/bold blue]\n")
 

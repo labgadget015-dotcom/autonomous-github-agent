@@ -1,11 +1,13 @@
 """Comprehensive test suite for BaseAgent class."""
 
+from unittest.mock import Mock, patch
+
 import pytest
-from unittest.mock import Mock, MagicMock, patch
+
+from autonomous_agent.core.audit_logger import AuditLogger
 from autonomous_agent.core.base_agent import BaseAgent
 from autonomous_agent.core.github_client import GitHubClient
 from autonomous_agent.core.llm_client import LLMClient
-from autonomous_agent.core.audit_logger import AuditLogger
 
 
 class TestAgentImplementation(BaseAgent):

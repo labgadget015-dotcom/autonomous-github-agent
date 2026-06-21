@@ -1,11 +1,11 @@
 """Audit logging system with rollback support."""
 
-import json
 from datetime import datetime
-from pathlib import Path
 from typing import Any
-from sqlalchemy import create_engine, Column, Integer, String, DateTime, JSON
+
+from sqlalchemy import JSON, Column, DateTime, Integer, String, create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
+
 from autonomous_agent.core.config import get_config
 
 Base = declarative_base()

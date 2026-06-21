@@ -1,7 +1,6 @@
 """Tests for configuration module."""
 
-import pytest
-from autonomous_agent.core.config import Config, get_config
+from autonomous_agent.core.config import Config
 
 
 def test_config_initialization():

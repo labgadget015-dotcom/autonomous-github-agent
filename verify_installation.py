@@ -33,7 +33,7 @@ def verify_installation():
         import autonomous_agent
 
         results["import"] = True
-        print(f"✅ Package imported successfully")
+        print("✅ Package imported successfully")
         print(f"   Version: {autonomous_agent.__version__}")
     except ImportError as e:
         results["import"] = False
@@ -115,7 +115,7 @@ def verify_installation():
             "OPENAI_API_KEY=" in env_content and "sk-your" not in env_content
         ) or ("ANTHROPIC_API_KEY=" in env_content and "sk-ant-your" not in env_content)
 
-        print(f"\n  Configuration status:")
+        print("\n  Configuration status:")
         print(f"  {check_mark(has_github_token)} GITHUB_TOKEN configured")
         print(f"  {check_mark(has_llm_key)} LLM API key configured")
 
@@ -136,8 +136,8 @@ def verify_installation():
         print(f"{check_mark(results['cli'])} CLI command 'autonomous-agent' available")
     except (subprocess.TimeoutExpired, FileNotFoundError):
         results["cli"] = False
-        print(f"❌ CLI command 'autonomous-agent' not available")
-        print(f"   Try: pip install -e . --force-reinstall")
+        print("❌ CLI command 'autonomous-agent' not available")
+        print("   Try: pip install -e . --force-reinstall")
 
     # Summary
     print("\n" + "=" * 60)

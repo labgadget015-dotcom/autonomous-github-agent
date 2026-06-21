@@ -1,8 +1,8 @@
 """LLM client for AI-powered code analysis and generation."""
 
-from typing import Literal
-from openai import OpenAI
 from anthropic import Anthropic
+from openai import OpenAI
+
 from autonomous_agent.core.config import get_config
 
 

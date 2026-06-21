@@ -1,11 +1,12 @@
 """Comprehensive test suite for AuditLogger."""
 
-import pytest
-import json
 import tempfile
-from pathlib import Path
 from datetime import datetime
-from unittest.mock import Mock, patch, MagicMock
+from pathlib import Path
+from unittest.mock import MagicMock, patch
+
+import pytest
+
 from autonomous_agent.core.audit_logger import AuditLogger
 
 

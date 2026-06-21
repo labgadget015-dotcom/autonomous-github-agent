@@ -2,9 +2,8 @@
 Master installation script - Run this to set up everything!
 """
 
-import os
-import sys
 import subprocess
+import sys
 from pathlib import Path
 
 BASE_DIR = Path(r"C:\Users\aw789\autonomous-github-agent")

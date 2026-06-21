@@ -1,8 +1,10 @@
 """Health monitoring agent for repository assessment."""
 
+from datetime import datetime
 from typing import Any
-from datetime import datetime, timedelta
+
 from github.Repository import Repository
+
 from autonomous_agent.core.base_agent import BaseAgent
 
 

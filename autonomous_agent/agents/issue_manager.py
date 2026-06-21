@@ -1,8 +1,10 @@
 """Issue management and triage agent."""
 
 from typing import Any
+
 from github.Issue import Issue
 from github.Repository import Repository
+
 from autonomous_agent.core.base_agent import BaseAgent
 
 

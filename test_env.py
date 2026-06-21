@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """Quick diagnostic script"""
-import sys
 import os
+import sys
 from pathlib import Path
 
 print("Python Information:")
@@ -20,23 +20,21 @@ if Path(target_dir).exists():
     print(f"✓ Changed to: {os.getcwd()}")
 
     # List files
-    print(f"\nFiles in target directory:")
+    print("\nFiles in target directory:")
     for f in Path(".").glob("*.py"):
         print(f"  - {f.name}")
 else:
     print(f"\n✗ Target directory not found: {target_dir}")
 
 # Test import
-print(f"\nTesting imports...")
+print("\nTesting imports...")
 try:
-    import pathlib
 
     print("  ✓ pathlib")
 except:
     print("  ✗ pathlib")
 
 try:
-    import subprocess
 
     print("  ✓ subprocess")
 except:

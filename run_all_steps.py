@@ -2,8 +2,8 @@
 """
 Run all installation steps directly.
 """
-import sys
 import os
+import sys
 from pathlib import Path
 
 # Change to the directory
@@ -35,7 +35,6 @@ print("\n\nStep 2/5: Running create_core_files.py...")
 print("-" * 70)
 try:
     # Reload to get fresh module
-    import importlib
 
     if "create_core_files" in sys.modules:
         del sys.modules["create_core_files"]

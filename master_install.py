@@ -4,8 +4,8 @@ Runs all installation steps in sequence.
 """
 
 import os
-import sys
 import subprocess
+import sys
 from pathlib import Path
 
 # Change to the script directory
@@ -40,7 +40,7 @@ def run_script(script_name, description):
 def run_pip_install():
     """Run pip install."""
     print(f"\n{'='*60}")
-    print(f"  Installing package with pip install -e .")
+    print("  Installing package with pip install -e .")
     print(f"{'='*60}\n")
 
     try:
@@ -68,7 +68,7 @@ def run_pip_install():
 def create_env_file():
     """Create .env file from .env.example."""
     print(f"\n{'='*60}")
-    print(f"  Creating .env file from .env.example")
+    print("  Creating .env file from .env.example")
     print(f"{'='*60}\n")
 
     env_example = Path(".env.example")
@@ -94,7 +94,7 @@ def create_env_file():
 def verify_installation():
     """Verify the installation."""
     print(f"\n{'='*60}")
-    print(f"  Verifying Installation")
+    print("  Verifying Installation")
     print(f"{'='*60}\n")
 
     print(f"Python version: {sys.version}")
@@ -102,7 +102,7 @@ def verify_installation():
     try:
         import autonomous_agent
 
-        print(f"✓ Package imported successfully")
+        print("✓ Package imported successfully")
         print(f"  Version: {autonomous_agent.__version__}")
         return True
     except Exception as e:

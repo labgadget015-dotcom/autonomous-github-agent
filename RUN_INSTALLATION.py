@@ -3,10 +3,10 @@
 DIRECT EXECUTION INSTALLER - Workaround for PowerShell issues
 Executes all installation steps directly without subprocess
 """
-import sys
 import os
-from pathlib import Path
 import subprocess
+import sys
+from pathlib import Path
 
 
 def main():

@@ -1,12 +1,13 @@
 """GitHub API client wrapper with rate limiting and error handling."""
 
-import time
 from typing import Any
-from github import Github, GithubException
-from github.Repository import Repository
-from github.PullRequest import PullRequest
+
+from github import Github
 from github.Issue import Issue
+from github.PullRequest import PullRequest
+from github.Repository import Repository
 from tenacity import retry, stop_after_attempt, wait_exponential
+
 from autonomous_agent.core.config import get_config
 
 

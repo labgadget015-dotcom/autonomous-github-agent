@@ -10,7 +10,7 @@ _scripts_path = str(Path(__file__).parent.parent.parent / ".github" / "scripts")
 if _scripts_path not in sys.path:
     sys.path.insert(0, _scripts_path)
 
-from health_dashboard_generator import HealthDashboardGenerator
+from health_dashboard_generator import HealthDashboardGenerator  # noqa: E402
 
 
 def _make_gen(metrics=None):

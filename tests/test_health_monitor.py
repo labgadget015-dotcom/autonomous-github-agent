@@ -1,7 +1,9 @@
 """Tests for health monitor agent."""
 
+from unittest.mock import Mock
+
 import pytest
-from unittest.mock import Mock, AsyncMock
+
 from autonomous_agent.agents.health_monitor import HealthMonitorAgent
 
 

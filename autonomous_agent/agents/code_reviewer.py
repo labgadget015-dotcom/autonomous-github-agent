@@ -1,7 +1,9 @@
 """Automated code review agent for pull requests."""
 
 from typing import Any
+
 from github.PullRequest import PullRequest
+
 from autonomous_agent.core.base_agent import BaseAgent
 
 
@@ -103,7 +105,7 @@ Return your analysis as structured feedback."""
                 "suggestions": self._extract_suggestions(response),
                 "security_concerns": self._extract_security(response),
             }
-        except Exception as e:
+        except Exception:
             return {"issues": [], "suggestions": [], "security_concerns": []}
 
     def _extract_issues(self, response: str) -> list[str]:

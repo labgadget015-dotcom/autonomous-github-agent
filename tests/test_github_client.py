@@ -1,7 +1,7 @@
 """Tests for GitHub client."""
 
-import pytest
-from unittest.mock import Mock, patch
+from unittest.mock import patch
+
 from autonomous_agent.core.github_client import GitHubClient
 
 

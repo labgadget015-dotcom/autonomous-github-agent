@@ -2,8 +2,8 @@
 """
 Test if we can execute Python at all in this environment
 """
-import sys
 import os
+import sys
 from pathlib import Path
 
 print("=" * 70)
@@ -43,7 +43,7 @@ if target.exists():
 
         traceback.print_exc()
 else:
-    print(f"❌ Directory does not exist!")
+    print("❌ Directory does not exist!")
 
 print("\n" + "=" * 70)
 print("TEST COMPLETE")

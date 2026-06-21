@@ -2,7 +2,6 @@
 """Inline execution of installation steps"""
 import os
 import sys
-from pathlib import Path
 
 # Set up paths
 os.chdir(r"C:\Users\aw789\autonomous-github-agent")

@@ -1,7 +1,7 @@
 """Configuration management for the autonomous agent system."""
 
-from typing import Any, Literal
-from pathlib import Path
+from typing import Literal
+
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 

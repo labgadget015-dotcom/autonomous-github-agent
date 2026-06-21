@@ -143,7 +143,7 @@ class OptimizedCodeAnalyzer:
                 "stdout": stdout.decode("utf-8", errors="ignore"),
                 "stderr": stderr.decode("utf-8", errors="ignore"),
             }
-        except asyncio.TimeoutError:
+        except TimeoutError:
             return {
                 "tool": tool_name,
                 "status": "timeout",

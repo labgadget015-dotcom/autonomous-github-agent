@@ -1,10 +1,10 @@
 """Enhanced pytest configuration with comprehensive fixtures."""
 
-import pytest
 import tempfile
 from pathlib import Path
-from unittest.mock import Mock, MagicMock
+from unittest.mock import MagicMock
 
+import pytest
 
 # Async test support
 pytest_plugins = ("pytest_asyncio",)

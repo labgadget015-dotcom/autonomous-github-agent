@@ -1,7 +1,8 @@
 """Branch management and cleanup agent."""
 
+from datetime import datetime
 from typing import Any
-from datetime import datetime, timedelta
+
 from autonomous_agent.core.base_agent import BaseAgent
 
 

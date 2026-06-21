@@ -1,8 +1,10 @@
 """Comprehensive test suite for Orchestrator."""
 
-import pytest
 import asyncio
-from unittest.mock import Mock, MagicMock, patch, AsyncMock
+from unittest.mock import MagicMock, patch
+
+import pytest
+
 from autonomous_agent.core.orchestrator import Orchestrator
 
 

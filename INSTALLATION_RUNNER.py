@@ -3,12 +3,11 @@
 Master Installation Runner for Autonomous GitHub Agent
 Orchestrates all installation steps in sequence
 """
-import sys
 import os
 import subprocess
-from pathlib import Path
-from io import StringIO
+import sys
 import traceback
+from pathlib import Path
 
 # Ensure we're in the right directory
 INSTALL_DIR = Path(r"C:\Users\aw789\autonomous-github-agent")
