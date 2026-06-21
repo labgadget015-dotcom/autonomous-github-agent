@@ -1,5 +1,36 @@
 # Rollback Manifest
 
+## 0911ff7 — 2026-06-21 05:41 UTC
+
+- **SHA**: `0911ff77c69523574af06b82bf85afff70589ee2`
+- **Author**: GadgetAI
+- **Message**: fix(ci): strip trailing whitespace, add numpy + pytest-asyncio deps
+- **Files changed**: 70 file(s)
+
+**Changed files:**
+- `.env.example`
+- `.env.txt`
+- `.github/workflows/code-quality-optimized.yml`
+- `.github/workflows/repository-overseer.yml`
+- `.gitignore`
+- `00_READ_ME_FIRST.md`
+- `CONFIGURE_TOKENS.txt`
+- `CONFIGURE_WIZARD.bat`
+- `CONTRIBUTING.md`
+- `CORRECT_INSTALL_COMMANDS.txt`
+- `DEPLOYMENT.md`
+- `DIAGNOSE.bat`
+- `DOUBLE_CLICK_ME.bat`
+- `FINAL_INSTALL.py`
+- `FIX_NOW.txt`
+- `HOW_TO_RUN.md`
+- `INLINE_INSTALL.py`
+- `INSTALL.md`
+- `INSTALLATION_RUNNER.py`
+- `INSTALLATION_SETUP_COMPLETE.md`
+
+---
+
 ## fcf0bd3 — 2026-06-21 05:39 UTC
 
 - **SHA**: `fcf0bd3bd54c8913431bb2fc5a2aa2a9e7aff9b8`
