@@ -1,5 +1,18 @@
 # Rollback Manifest
 
+## d663b89 — 2026-06-21 04:54 UTC
+
+- **SHA**: `d663b89f0a4b0e0acacc013bb17cea165e0c206a`
+- **Author**: GadgetAI
+- **Message**: style: black + ruff formatting fixes for pr_triage and health_dashboard
+- **Files changed**: 2 file(s)
+
+**Changed files:**
+- `.github/scripts/health_dashboard_generator.py`
+- `.github/scripts/pr_triage.py`
+
+---
+
 ## 1d9efbb — 2026-06-21 04:52 UTC
 
 - **SHA**: `1d9efbb9b48edcd8b07bb6a8011ea7b05170b698`
