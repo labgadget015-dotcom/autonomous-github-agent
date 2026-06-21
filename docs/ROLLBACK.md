@@ -1,5 +1,26 @@
 # Rollback Manifest
 
+## e99313d — 2026-06-21 05:57 UTC
+
+- **SHA**: `e99313deffdd511777960aa972f06d7f4781e140`
+- **Author**: GadgetAI
+- **Message**: feat: add SaaS growth features — scanner, badge API, auto-PR, weekly digest
+- **Files changed**: 10 file(s)
+
+**Changed files:**
+- `.github/scripts/auto_pr.py`
+- `.github/scripts/weekly_digest.py`
+- `.github/workflows/auto-pr.yml`
+- `.github/workflows/repository-overseer.yml`
+- `README.md`
+- `landing/app/api/badge/[owner]/[repo]/route.ts`
+- `landing/app/api/scan/route.ts`
+- `landing/app/api/slack/command/route.ts`
+- `landing/app/scanner/page.tsx`
+- `landing/lib/scan-types.ts`
+
+---
+
 ## 2e44420 — 2026-06-21 05:50 UTC
 
 - **SHA**: `2e444201c984959fabc8db3725cc381c713191be`
