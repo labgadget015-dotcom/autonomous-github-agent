@@ -1,5 +1,18 @@
 # Rollback Manifest
 
+## 628374e — 2026-06-21 05:32 UTC
+
+- **SHA**: `628374ee4356f408835be7bab6d739fe72597149`
+- **Author**: GadgetAI
+- **Message**: fix(ci): add pytest-asyncio and suppress mypy import-untyped errors
+- **Files changed**: 2 file(s)
+
+**Changed files:**
+- `.github/workflows/ai_agent_workflow.yml`
+- `pyproject.toml`
+
+---
+
 ## ed71e0a — 2026-06-21 05:31 UTC
 
 - **SHA**: `ed71e0a1d3ba9307e40add3dcc59ec23098a264d`
