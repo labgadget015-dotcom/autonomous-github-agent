@@ -12,14 +12,17 @@ sys.path.insert(0, str(agent_dir))
 
 # Change to the directory
 import os
+
 os.chdir(agent_dir)
 
 # Import and run the install module
 try:
     import install
+
     install.main()
 except Exception as e:
     print(f"Error running installation: {e}")
     import traceback
+
     traceback.print_exc()
     sys.exit(1)

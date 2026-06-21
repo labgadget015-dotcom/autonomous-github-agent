@@ -8,9 +8,9 @@ from pathlib import Path
 os.chdir(r"C:\Users\aw789\autonomous-github-agent")
 sys.path.insert(0, r"C:\Users\aw789\autonomous-github-agent")
 
-print("\n" + "="*70)
+print("\n" + "=" * 70)
 print("  AUTONOMOUS GITHUB AGENT - INLINE INSTALLATION")
-print("="*70)
+print("=" * 70)
 
 # Execute each step inline
 print("\nSTEP 1: Running quick_setup.py...")
@@ -43,12 +43,13 @@ except Exception as e:
 
 print("\nSTEP 5: Installing with pip...")
 import subprocess
+
 try:
     result = subprocess.run(
         [sys.executable, "-m", "pip", "install", "-e", "."],
         capture_output=True,
         text=True,
-        cwd=r"C:\Users\aw789\autonomous-github-agent"
+        cwd=r"C:\Users\aw789\autonomous-github-agent",
     )
     if result.returncode == 0:
         print("✅ Step 5 complete")
@@ -64,6 +65,6 @@ try:
 except Exception as e:
     print(f"❌ Step 6 failed: {e}")
 
-print("\n" + "="*70)
+print("\n" + "=" * 70)
 print("  INSTALLATION SEQUENCE COMPLETE")
-print("="*70 + "\n")
+print("=" * 70 + "\n")

@@ -425,16 +425,18 @@ class Orchestrator:
 # Write all files
 # ============================================================================
 
+
 def create_file(path: Path, content: str) -> None:
     """Create a file with content."""
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(content, encoding='utf-8')
+    path.write_text(content, encoding="utf-8")
     print(f"✓ {path.relative_to(BASE_DIR)}")
+
 
 def main():
     """Create all core files."""
     print("Creating core module files...\\n")
-    
+
     files = {
         "autonomous_agent/core/config.py": CONFIG_PY,
         "autonomous_agent/core/github_client.py": GITHUB_CLIENT_PY,
@@ -443,12 +445,13 @@ def main():
         "autonomous_agent/core/base_agent.py": BASE_AGENT_PY,
         "autonomous_agent/core/orchestrator.py": ORCHESTRATOR_PY,
     }
-    
+
     for file_path, content in files.items():
         create_file(BASE_DIR / file_path, content)
-    
+
     print("\\n✅ Core modules created successfully!")
     print("\\nNext: Run create_agents.py to build specialized agents")
+
 
 if __name__ == "__main__":
     main()

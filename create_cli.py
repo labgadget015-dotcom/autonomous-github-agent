@@ -301,7 +301,7 @@ async def test_health_monitor_execute():
 # Documentation
 # ============================================================================
 
-ARCHITECTURE_MD = '''# Architecture Overview
+ARCHITECTURE_MD = """# Architecture Overview
 
 ## System Design
 
@@ -359,9 +359,9 @@ Each agent is independent and focused on a specific domain:
 - **Audit logging**: All actions logged with rollback data
 - **Rate limiting**: Prevents API abuse
 - **Configuration levels**: manual → semi-auto → full-auto
-'''
+"""
 
-CONTRIBUTING_MD = '''# Contributing Guide
+CONTRIBUTING_MD = """# Contributing Guide
 
 Thank you for your interest in contributing to the Autonomous GitHub Agent!
 
@@ -437,9 +437,9 @@ class YourAgent(BaseAgent):
 - Include tests
 - Update documentation
 - Pass all CI checks
-'''
+"""
 
-LICENSE = '''MIT License
+LICENSE = """MIT License
 
 Copyright (c) 2026 Autonomous Agent Team
 
@@ -460,22 +460,24 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-'''
+"""
 
 # ============================================================================
 # Write all files
 # ============================================================================
 
+
 def create_file(path: Path, content: str) -> None:
     """Create a file with content."""
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(content, encoding='utf-8')
+    path.write_text(content, encoding="utf-8")
     print(f"✓ {path.relative_to(BASE_DIR)}")
+
 
 def main():
     """Create CLI and supporting files."""
     print("Creating CLI and supporting files...\\n")
-    
+
     files = {
         "autonomous_agent/cli.py": CLI_PY,
         "tests/__init__.py": "",
@@ -487,10 +489,10 @@ def main():
         "CONTRIBUTING.md": CONTRIBUTING_MD,
         "LICENSE": LICENSE,
     }
-    
+
     for file_path, content in files.items():
         create_file(BASE_DIR / file_path, content)
-    
+
     print("\\n✅ All files created successfully!")
     print("\\nFramework is complete! Next steps:")
     print("1. Run: python quick_setup.py")
@@ -499,6 +501,7 @@ def main():
     print("4. Install: pip install -e .")
     print("5. Configure: Copy .env.example to .env and add your tokens")
     print("6. Test: autonomous-agent health-check --repo owner/repo")
+
 
 if __name__ == "__main__":
     main()

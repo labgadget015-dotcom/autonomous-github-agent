@@ -733,16 +733,18 @@ class DocumentationGeneratorAgent(BaseAgent):
 # Write all agent files
 # ============================================================================
 
+
 def create_file(path: Path, content: str) -> None:
     """Create a file with content."""
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(content, encoding='utf-8')
+    path.write_text(content, encoding="utf-8")
     print(f"✓ {path.relative_to(BASE_DIR)}")
+
 
 def main():
     """Create all agent files."""
     print("Creating specialized agent files...\\n")
-    
+
     files = {
         "autonomous_agent/agents/health_monitor.py": HEALTH_MONITOR_PY,
         "autonomous_agent/agents/code_reviewer.py": CODE_REVIEWER_PY,
@@ -752,12 +754,13 @@ def main():
         "autonomous_agent/agents/workflow_optimizer.py": WORKFLOW_OPTIMIZER_PY,
         "autonomous_agent/agents/documentation_generator.py": DOCUMENTATION_GENERATOR_PY,
     }
-    
+
     for file_path, content in files.items():
         create_file(BASE_DIR / file_path, content)
-    
+
     print("\\n✅ All agents created successfully!")
     print("\\nNext: Run create_cli.py to build the CLI interface")
+
 
 if __name__ == "__main__":
     main()
