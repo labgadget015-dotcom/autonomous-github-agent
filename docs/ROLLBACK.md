@@ -1,5 +1,17 @@
 # Rollback Manifest
 
+## e8db9de — 2026-06-21 05:27 UTC
+
+- **SHA**: `e8db9de7ad65706a4523ee020f5785cbd22de646`
+- **Author**: GadgetAI
+- **Message**: fix(mypy): add ignore_missing_imports = true to suppress import-untyped errors
+- **Files changed**: 1 file(s)
+
+**Changed files:**
+- `pyproject.toml`
+
+---
+
 ## ebdebed — 2026-06-21 05:25 UTC
 
 - **SHA**: `ebdebed7604e498dc54b0e1c68fa0c2c9ad806ee`
