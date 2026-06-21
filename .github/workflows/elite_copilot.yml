@@ -274,8 +274,8 @@ jobs:
           token = os.getenv("GH_PAT")
           g = Github(token)
           try:
-              rate = g.get_rate_limit().core
-              print(f"Token valid. Rate limit: {rate.remaining}/{rate.limit}")
+              g.get_rate_limit()
+              print("Token valid.")
           except Exception as e:
               print(f"ERROR: token check failed: {e}", file=sys.stderr)
               sys.exit(1)
