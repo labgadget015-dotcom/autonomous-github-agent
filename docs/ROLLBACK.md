@@ -1,5 +1,18 @@
 # Rollback Manifest
 
+## daeefe1 — 2026-06-21 03:49 UTC
+
+- **SHA**: `daeefe12fe2b5792c4e582e897e44b886564d5c0`
+- **Author**: GadgetAI
+- **Message**: fix(autopilot): use GH_PAT for cross-repo access; fix GET /user 403
+- **Files changed**: 2 file(s)
+
+**Changed files:**
+- `.github/workflows/elite_copilot.yml`
+- `autopilot/autopilot.py`
+
+---
+
 ## 5edaadd — 2026-06-20 23:41 UTC
 
 - **SHA**: `5edaadd6b3457b0257a15dd771edaeaf96cb90bf`
