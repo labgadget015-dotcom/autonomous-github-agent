@@ -1,5 +1,24 @@
 # Rollback Manifest
 
+## 575d201 — 2026-06-21 05:45 UTC
+
+- **SHA**: `575d20129d11335b83651bf0bdd53a4e97872c03`
+- **Author**: GadgetAI
+- **Message**: fix(pre-commit): remove extra trailing newline from bulletpro.md
+- **Files changed**: 8 file(s)
+
+**Changed files:**
+- `Ai`
+- `docs/create`
+- `a`
+- `autonomous`
+- `fully`
+- `structured`
+- `and`
+- `bulletpro.md`
+
+---
+
 ## 43caa34 — 2026-06-21 05:42 UTC
 
 - **SHA**: `43caa34a986c00c3277b236c3b032a1e3f69bf4f`
