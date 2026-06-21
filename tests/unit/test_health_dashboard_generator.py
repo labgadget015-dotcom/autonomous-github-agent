@@ -306,6 +306,7 @@ class TestGenerateHtmlDashboard:
     def test_reflects_coverage_value(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         import json
+
         coverage_data = {"totals": {"percent_covered": 73.5}}
         (tmp_path / "coverage.json").write_text(json.dumps(coverage_data))
         gen = HealthDashboardGenerator()
@@ -315,11 +316,14 @@ class TestGenerateHtmlDashboard:
     def test_reflects_security_counts(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         import json
-        sec_data = {"results": [
-            {"issue_severity": "HIGH"},
-            {"issue_severity": "HIGH"},
-            {"issue_severity": "MEDIUM"},
-        ]}
+
+        sec_data = {
+            "results": [
+                {"issue_severity": "HIGH"},
+                {"issue_severity": "HIGH"},
+                {"issue_severity": "MEDIUM"},
+            ]
+        }
         (tmp_path / "bandit-report.json").write_text(json.dumps(sec_data))
         gen = HealthDashboardGenerator()
         result = gen.generate_html_dashboard()

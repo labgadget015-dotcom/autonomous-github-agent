@@ -107,7 +107,9 @@ def triage_repos(repos: list[dict], g: Github) -> dict[str, list[dict]]:
                     "title": pr.title,
                     "url": pr.html_url,
                     "days_open": days_open,
-                    "days_since_activity": (now - pr.updated_at.replace(tzinfo=None)).days,
+                    "days_since_activity": (
+                        now - pr.updated_at.replace(tzinfo=None)
+                    ).days,
                     "author": pr.user.login if pr.user else "unknown",
                 }
             )
