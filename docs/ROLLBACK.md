@@ -1,5 +1,22 @@
 # Rollback Manifest
 
+## ebdebed — 2026-06-21 05:25 UTC
+
+- **SHA**: `ebdebed7604e498dc54b0e1c68fa0c2c9ad806ee`
+- **Author**: GadgetAI
+- **Message**: fix(types): resolve all mypy errors — add overrides + targeted fixes
+- **Files changed**: 6 file(s)
+
+**Changed files:**
+- `agents/dependency_agent.py`
+- `agents/triage_agent.py`
+- `autopilot/__init__.py`
+- `autopilot/ai_optimization/ml_priority_scorer.py`
+- `core/github_client.py`
+- `pyproject.toml`
+
+---
+
 ## 2f5d243 — 2026-06-21 05:18 UTC
 
 - **SHA**: `2f5d2436ddd7a40b88703e6d48cca07e2d803f10`
