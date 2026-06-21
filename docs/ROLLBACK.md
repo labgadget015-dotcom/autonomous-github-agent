@@ -1,5 +1,36 @@
 # Rollback Manifest
 
+## fcf0bd3 — 2026-06-21 05:39 UTC
+
+- **SHA**: `fcf0bd3bd54c8913431bb2fc5a2aa2a9e7aff9b8`
+- **Author**: GadgetAI
+- **Message**: fix(pre-commit): strip trailing whitespace from all tracked text files
+- **Files changed**: 28 file(s)
+
+**Changed files:**
+- `Ai`
+- `docs/Perplexity`
+- `buss_files/index-AO5YUTXc.js.download`
+- `Ai`
+- `docs/Perplexity`
+- `github.html`
+- `Ai`
+- `docs/Perplexity`
+- `github_files/index-D_VLSpJ3.js.download`
+- `Ai`
+- `docs/Perplexity`
+- `new_files/index-D_VLSpJ3.js.download`
+- `CLICK_ME_TO_INSTALL.txt`
+- `EXECUTION_REPORT.md`
+- `HOW_TO_GET_TOKENS.txt`
+- `INDEX.txt`
+- `INSTALLATION_COMPLETE_SUMMARY.txt`
+- `INSTALLATION_INSTRUCTIONS.md`
+- `INSTALLATION_REPORT.md`
+- `PRE_INSTALLATION_CHECKLIST.txt`
+
+---
+
 ## fd31a49 — 2026-06-21 05:35 UTC
 
 - **SHA**: `fd31a499d2c39ed83b3dfcbcf611b63d8bc9af42`
