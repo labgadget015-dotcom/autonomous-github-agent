@@ -18,6 +18,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re as _re
 import subprocess
 import sys
 import textwrap
@@ -103,8 +104,6 @@ def ask_claude(prompt: str) -> str:
 
 
 # ---------- Risk scoring (path-based) ----------
-
-import re as _re
 
 _PROTECTED = _re.compile(
     r"(\.github/workflows|\.github/actions|config/|core/policy|core/risk|"
