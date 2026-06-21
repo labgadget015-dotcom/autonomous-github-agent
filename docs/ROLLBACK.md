@@ -1,5 +1,34 @@
 # Rollback Manifest
 
+## 00b8b19 — 2026-06-21 05:07 UTC
+
+- **SHA**: `00b8b1968fd1c3ff5c51ec70883e18975e298aa5`
+- **Author**: GadgetAI
+- **Message**: style: black 24.4.2 formatting on pre-existing setup scripts
+- **Files changed**: 18 file(s)
+
+**Changed files:**
+- `Ai`
+- `docs/config.py`
+- `FINAL_INSTALL.py`
+- `INLINE_INSTALL.py`
+- `INSTALLATION_RUNNER.py`
+- `RUN_INSTALLATION.py`
+- `TEST_ENVIRONMENT.py`
+- `create_agents.py`
+- `create_cli.py`
+- `create_core_files.py`
+- `direct_install.py`
+- `execute_install.py`
+- `install.py`
+- `master_install.py`
+- `quick_setup.py`
+- `run_all_steps.py`
+- `test_env.py`
+- `verify_installation.py`
+
+---
+
 ## 1518faf — 2026-06-21 04:59 UTC
 
 - **SHA**: `1518faf4762cce16e7b772434d21d9f59c0ce386`
