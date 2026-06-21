@@ -1,5 +1,18 @@
 # Rollback Manifest
 
+## 65306b7 — 2026-06-21 03:51 UTC
+
+- **SHA**: `65306b78e7e0047d2c5b7edc8e60c18d7a19dc11`
+- **Author**: GadgetAI
+- **Message**: fix(autopilot): fix rate limit API for PyGithub 2.x
+- **Files changed**: 2 file(s)
+
+**Changed files:**
+- `.github/workflows/elite_copilot.yml`
+- `autopilot/autopilot.py`
+
+---
+
 ## daeefe1 — 2026-06-21 03:49 UTC
 
 - **SHA**: `daeefe12fe2b5792c4e582e897e44b886564d5c0`
