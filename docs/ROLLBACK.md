@@ -1,5 +1,17 @@
 # Rollback Manifest
 
+## ed71e0a — 2026-06-21 05:31 UTC
+
+- **SHA**: `ed71e0a1d3ba9307e40add3dcc59ec23098a264d`
+- **Author**: GadgetAI
+- **Message**: fix(types): suppress Redis assignment type mismatch in message_queue
+- **Files changed**: 1 file(s)
+
+**Changed files:**
+- `core/message_queue.py`
+
+---
+
 ## 05abf04 — 2026-06-21 05:30 UTC
 
 - **SHA**: `05abf0480946612010b40307aef47370cea2c6e0`
