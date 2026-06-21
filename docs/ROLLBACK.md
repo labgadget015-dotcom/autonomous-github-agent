@@ -1,5 +1,18 @@
 # Rollback Manifest
 
+## 7aea7bc — 2026-06-21 06:12 UTC
+
+- **SHA**: `7aea7bc48abcc8e97af66d9a98127124eafcaac4`
+- **Author**: GadgetAI
+- **Message**: fix(lint): move mid-file import to top in auto_pr.py, modernize ruff config
+- **Files changed**: 2 file(s)
+
+**Changed files:**
+- `.github/scripts/auto_pr.py`
+- `pyproject.toml`
+
+---
+
 ## ad2e102 — 2026-06-21 06:07 UTC
 
 - **SHA**: `ad2e102f74a1c554396f8e922ea848776578acd2`
