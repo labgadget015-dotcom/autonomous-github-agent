@@ -344,8 +344,183 @@ class HealthDashboardGenerator:
 
         return section
 
+    def generate_html_dashboard(self) -> str:
+        """Generate a self-contained HTML health dashboard with Chart.js charts."""
+        self.metrics = {
+            "analysis": self.load_analysis_results(),
+            "coverage": self.load_coverage_data(),
+            "complexity": self.load_complexity_data(),
+            "security": self.load_security_data(),
+            "violations": self.load_violations(),
+        }
+
+        health_score = self.calculate_health_score()
+        status, _emoji = self.get_health_status(health_score)
+
+        coverage_pct = round(
+            self.metrics.get("coverage", {})
+            .get("totals", {})
+            .get("percent_covered", 0),
+            1,
+        )
+
+        sec_counts: dict[str, int] = {"HIGH": 0, "MEDIUM": 0, "LOW": 0}
+        for result in self.metrics.get("security", {}).get("results", []):
+            sev = result.get("issue_severity", "LOW")
+            sec_counts[sev] = sec_counts.get(sev, 0) + 1
+
+        tools = self.metrics.get("analysis", {}).get("tools", {})
+        tool_labels = list(tools.keys()) or ["(no data)"]
+        tool_scores = [1 if t.get("status") == "passed" else 0 for t in tools.values()] or [0]
+
+        score_color = (
+            "#22c55e" if health_score >= 90
+            else "#eab308" if health_score >= 75
+            else "#f97316" if health_score >= 60
+            else "#ef4444"
+        )
+
+        return f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Repository Health Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+<style>
+  body {{font-family: system-ui, sans-serif; margin: 0; background: #0f172a; color: #e2e8f0;}}
+  header {{background: #1e293b; padding: 1.5rem 2rem; border-bottom: 1px solid #334155;}}
+  h1 {{margin: 0; font-size: 1.5rem;}}
+  .sub {{color: #94a3b8; font-size: 0.875rem; margin-top: 0.25rem;}}
+  .grid {{display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+          gap: 1.5rem; padding: 1.5rem 2rem; max-width: 1200px; margin: 0 auto;}}
+  .card {{background: #1e293b; border-radius: 0.75rem; padding: 1.25rem;
+          border: 1px solid #334155;}}
+  .card h2 {{margin: 0 0 1rem; font-size: 1rem; color: #94a3b8; text-transform: uppercase;
+             letter-spacing: 0.05em;}}
+  .score-big {{font-size: 3.5rem; font-weight: 700; color: {score_color};
+               text-align: center; padding: 0.5rem 0;}}
+  .score-label {{text-align: center; color: #94a3b8; margin-bottom: 1rem;}}
+  canvas {{max-height: 220px;}}
+  .note {{font-size: 0.75rem; color: #64748b; margin-top: 0.75rem;}}
+</style>
+</head>
+<body>
+<header>
+  <h1>Repository Health Dashboard</h1>
+  <div class="sub">Generated: {self.timestamp} &nbsp;|&nbsp; Score: {health_score}/100 — {status}</div>
+</header>
+<div class="grid">
+
+  <div class="card">
+    <h2>Health Score</h2>
+    <div class="score-big">{health_score}</div>
+    <div class="score-label">out of 100 &mdash; {status}</div>
+    <canvas id="scoreChart"></canvas>
+  </div>
+
+  <div class="card">
+    <h2>Test Coverage</h2>
+    <canvas id="coverageChart"></canvas>
+    <p class="note">Current: {coverage_pct}% &nbsp;|&nbsp; Target: 80%</p>
+  </div>
+
+  <div class="card">
+    <h2>Security Issues</h2>
+    <canvas id="secChart"></canvas>
+    <p class="note">Total: {sum(sec_counts.values())} issues from Bandit scan</p>
+  </div>
+
+  <div class="card">
+    <h2>Quality Tools</h2>
+    <canvas id="qualityChart"></canvas>
+    <p class="note">1 = passed, 0 = failed</p>
+  </div>
+
+</div>
+
+<script>
+const scoreCtx = document.getElementById('scoreChart');
+new Chart(scoreCtx, {{
+  type: 'doughnut',
+  data: {{
+    datasets: [{{
+      data: [{health_score}, {100 - health_score}],
+      backgroundColor: ['{score_color}', '#334155'],
+      borderWidth: 0,
+    }}]
+  }},
+  options: {{plugins: {{legend: {{display: false}}}}, cutout: '75%'}}
+}});
+
+const covCtx = document.getElementById('coverageChart');
+new Chart(covCtx, {{
+  type: 'bar',
+  data: {{
+    labels: ['Coverage', 'Target'],
+    datasets: [{{
+      data: [{coverage_pct}, 80],
+      backgroundColor: [
+        {coverage_pct} >= 80 ? '#22c55e' : '#ef4444',
+        '#334155'
+      ],
+      borderRadius: 4,
+    }}]
+  }},
+  options: {{
+    scales: {{
+      y: {{min: 0, max: 100, ticks: {{color: '#94a3b8'}}, grid: {{color: '#1e293b'}}}},
+      x: {{ticks: {{color: '#94a3b8'}}, grid: {{display: false}}}}
+    }},
+    plugins: {{legend: {{display: false}}}}
+  }}
+}});
+
+const secCtx = document.getElementById('secChart');
+new Chart(secCtx, {{
+  type: 'bar',
+  data: {{
+    labels: ['HIGH', 'MEDIUM', 'LOW'],
+    datasets: [{{
+      data: [{sec_counts['HIGH']}, {sec_counts['MEDIUM']}, {sec_counts['LOW']}],
+      backgroundColor: ['#ef4444', '#eab308', '#22c55e'],
+      borderRadius: 4,
+    }}]
+  }},
+  options: {{
+    scales: {{
+      y: {{ticks: {{color: '#94a3b8', stepSize: 1}}, grid: {{color: '#1e293b'}}}},
+      x: {{ticks: {{color: '#94a3b8'}}, grid: {{display: false}}}}
+    }},
+    plugins: {{legend: {{display: false}}}}
+  }}
+}});
+
+const qualCtx = document.getElementById('qualityChart');
+new Chart(qualCtx, {{
+  type: 'bar',
+  data: {{
+    labels: {tool_labels!r},
+    datasets: [{{
+      data: {tool_scores!r},
+      backgroundColor: {tool_scores!r}.map(v => v === 1 ? '#22c55e' : '#ef4444'),
+      borderRadius: 4,
+    }}]
+  }},
+  options: {{
+    scales: {{
+      y: {{min: 0, max: 1, ticks: {{color: '#94a3b8', stepSize: 1}}, grid: {{color: '#1e293b'}}}},
+      x: {{ticks: {{color: '#94a3b8'}}, grid: {{display: false}}}}
+    }},
+    plugins: {{legend: {{display: false}}}}
+  }}
+}});
+</script>
+</body>
+</html>"""
+
     def save_dashboard(self, content: str, path: str = "docs/HEALTH_DASHBOARD.md"):
-        """Save dashboard to file"""
+        """Save dashboard to file (works for both markdown and HTML content)."""
         dashboard_path = Path(path)
         dashboard_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -366,6 +541,9 @@ def main():
     print("\n" + "=" * 80 + "\n")
 
     generator.save_dashboard(dashboard)
+
+    html = generator.generate_html_dashboard()
+    generator.save_dashboard(html, "docs/HEALTH_DASHBOARD.html")
 
     print("✅ Dashboard generation complete")
 

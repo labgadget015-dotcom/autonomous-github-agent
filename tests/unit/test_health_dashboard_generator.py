@@ -275,3 +275,61 @@ class TestLoadMethods:
         gen = HealthDashboardGenerator()
         result = gen.load_complexity_data()
         assert result == {}
+
+
+class TestGenerateHtmlDashboard:
+    def test_returns_nonempty_html_string(self, tmp_path, monkeypatch):
+        monkeypatch.chdir(tmp_path)
+        gen = HealthDashboardGenerator()
+        result = gen.generate_html_dashboard()
+        assert isinstance(result, str)
+        assert len(result) > 0
+
+    def test_contains_doctype(self, tmp_path, monkeypatch):
+        monkeypatch.chdir(tmp_path)
+        gen = HealthDashboardGenerator()
+        result = gen.generate_html_dashboard()
+        assert "<!DOCTYPE html>" in result
+
+    def test_contains_chart_canvas(self, tmp_path, monkeypatch):
+        monkeypatch.chdir(tmp_path)
+        gen = HealthDashboardGenerator()
+        result = gen.generate_html_dashboard()
+        assert "<canvas" in result
+
+    def test_contains_chartjs_script(self, tmp_path, monkeypatch):
+        monkeypatch.chdir(tmp_path)
+        gen = HealthDashboardGenerator()
+        result = gen.generate_html_dashboard()
+        assert "chart.js" in result.lower()
+
+    def test_reflects_coverage_value(self, tmp_path, monkeypatch):
+        monkeypatch.chdir(tmp_path)
+        import json
+        coverage_data = {"totals": {"percent_covered": 73.5}}
+        (tmp_path / "coverage.json").write_text(json.dumps(coverage_data))
+        gen = HealthDashboardGenerator()
+        result = gen.generate_html_dashboard()
+        assert "73.5" in result
+
+    def test_reflects_security_counts(self, tmp_path, monkeypatch):
+        monkeypatch.chdir(tmp_path)
+        import json
+        sec_data = {"results": [
+            {"issue_severity": "HIGH"},
+            {"issue_severity": "HIGH"},
+            {"issue_severity": "MEDIUM"},
+        ]}
+        (tmp_path / "bandit-report.json").write_text(json.dumps(sec_data))
+        gen = HealthDashboardGenerator()
+        result = gen.generate_html_dashboard()
+        assert "2" in result  # 2 HIGH issues
+
+    def test_save_dashboard_writes_html(self, tmp_path):
+        gen = HealthDashboardGenerator()
+        gen.metrics = {}
+        html = gen.generate_html_dashboard()
+        out = tmp_path / "out.html"
+        gen.save_dashboard(html, str(out))
+        assert out.exists()
+        assert "<!DOCTYPE html>" in out.read_text()
