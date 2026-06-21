@@ -1,5 +1,17 @@
 # Rollback Manifest
 
+## fd31a49 — 2026-06-21 05:35 UTC
+
+- **SHA**: `fd31a499d2c39ed83b3dfcbcf611b63d8bc9af42`
+- **Author**: GadgetAI
+- **Message**: fix(pre-commit): strip trailing whitespace from TEST_COVERAGE_REPORT.md
+- **Files changed**: 1 file(s)
+
+**Changed files:**
+- `TEST_COVERAGE_REPORT.md`
+
+---
+
 ## ce4973a — 2026-06-21 05:34 UTC
 
 - **SHA**: `ce4973a8d67b020b74af668a68c58a2ffe827ae0`
