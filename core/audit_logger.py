@@ -28,7 +28,7 @@ class AuditLogger:
     - S3 archival support (optional)
     """
 
-    def __init__(self, config: dict[str, Any]):
+    def __init__(self, config: dict[str, Any] | None = None, log_dir: str | None = None):
         """
         Initialize audit logger.
 
@@ -37,7 +37,12 @@ class AuditLogger:
                 - audit_log_path: Path to audit log file (default: logs/audit.jsonl)
                 - postgres_config: Optional PostgreSQL configuration
                 - s3_config: Optional S3 configuration for archival
+            log_dir: Shorthand for setting the log directory directly.
         """
+        if config is None:
+            config = {}
+        if log_dir is not None:
+            config.setdefault("audit_log_path", str(Path(log_dir) / "audit.jsonl"))
         self.config = config
 
         # Set up local file logging
