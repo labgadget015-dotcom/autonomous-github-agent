@@ -20,7 +20,7 @@ INSTALL_NOW.bat
 The script will automatically:
 
 1. ✅ Create all directories (1 second)
-2. ✅ Generate core modules (5 seconds)  
+2. ✅ Generate core modules (5 seconds)
 3. ✅ Generate 7 specialized agents (5 seconds)
 4. ✅ Create CLI interface (5 seconds)
 5. ✅ Install with pip (30-120 seconds)
@@ -59,7 +59,7 @@ autonomous-agent list-agents
 # Analyze a repository
 autonomous-agent analyze --repo owner/repo
 
-# Review pull requests  
+# Review pull requests
 autonomous-agent review --repo owner/repo
 
 # Health check

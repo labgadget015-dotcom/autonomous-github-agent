@@ -15,10 +15,10 @@ STEP 2: Click the green button that says "Generate new token"
         → Select "Generate new token (classic)"
 
 STEP 3: You'll see a form. Fill it out:
-        
+
         Note: "Autonomous GitHub Agent"
         Expiration: "No expiration" (or choose 90 days)
-        
+
         Select scopes - CHECK THESE BOXES:
         ✅ repo (this will auto-check all sub-boxes under it)
            ✅ repo:status
@@ -26,14 +26,14 @@ STEP 3: You'll see a form. Fill it out:
            ✅ public_repo
            ✅ repo:invite
            ✅ security_events
-        
+
         ✅ workflow (optional but recommended)
 
 STEP 4: Scroll to the bottom and click "Generate token"
 
 STEP 5: You'll see a green box with a token like:
         ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-        
+
         ⚠️ IMPORTANT: Click the copy button (📋) to copy it
         This token will ONLY be shown ONCE!
 
@@ -45,19 +45,19 @@ STEP 6: Keep this token somewhere safe (you'll paste it in a moment)
 
 STEP 1: Open your web browser and go to:
         https://platform.openai.com/api-keys
-        
+
         (You may need to sign in to your OpenAI account first)
 
 STEP 2: Click the green button "+ Create new secret key"
 
 STEP 3: Give it a name:
         Name: "Autonomous Agent"
-        
+
         Click "Create secret key"
 
 STEP 4: You'll see a key like:
         sk-proj-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-        
+
         ⚠️ IMPORTANT: Click "Copy" to copy it
         This key will ONLY be shown ONCE!
 
@@ -84,31 +84,31 @@ STEP 3: Find the file called: .env
 STEP 4: Right-click on .env → "Open with" → "Notepad"
 
 STEP 5: You'll see this file open. Find line 2:
-        
+
         GITHUB_TOKEN=ghp_your_github_personal_access_token_here
-        
+
         Replace everything after the = with YOUR GitHub token:
-        
+
         GITHUB_TOKEN=ghp_your_actual_token_you_just_copied
-        
+
         (Paste your token that you copied in Part 1)
 
 STEP 6: Find line 8:
-        
+
         OPENAI_API_KEY=sk-your_openai_api_key_here
-        
+
         Replace everything after the = with YOUR OpenAI key:
-        
+
         OPENAI_API_KEY=sk-your_actual_key_you_just_copied
-        
+
         (Paste your key that you copied in Part 2)
 
 STEP 7: The file should now look like:
-        
+
         GITHUB_TOKEN=ghp_1a2b3c4d5e6f7g8h9i0j...
         ...
         OPENAI_API_KEY=sk-proj-xyz123abc456...
-        
+
         ⚠️ Make sure there are NO spaces before or after the tokens!
         ⚠️ Make sure you didn't accidentally delete the = sign!
 
@@ -126,21 +126,21 @@ STEP 1: Open Command Prompt:
         - Press Enter
 
 STEP 2: Navigate to the project folder:
-        
+
         Type: cd C:\Users\aw789\autonomous-github-agent
         Press Enter
 
 STEP 3: Run the config check:
-        
+
         Type: autonomous-agent config-check
         Press Enter
 
 STEP 4: You should see:
-        
+
         ✓ GitHub Token: Set
         ✓ LLM Provider: openai
         ✓ LLM API Key: Set
-        
+
         If you see this, YOU'RE DONE! ✅
 
         If you see errors, double-check:
@@ -155,24 +155,24 @@ STEP 4: You should see:
 Still in Command Prompt, try your first command:
 
 STEP 1: List all available agents:
-        
+
         Type: autonomous-agent list-agents
         Press Enter
-        
+
         You should see a table with 7 agents listed.
 
 STEP 2: Run a health check on a test repository:
-        
+
         Type: autonomous-agent health-check --repo octocat/Hello-World
         Press Enter
-        
+
         You should see:
         - "Running health check on octocat/Hello-World..."
         - A table with repository metrics
         - "Health check complete!"
 
 STEP 3: If that worked, congratulations! 🎉
-        
+
         Your autonomous GitHub agent system is now fully operational!
 
 ================================================================================
@@ -201,7 +201,7 @@ autonomous-agent logs
 ================================================================================
 
 PROBLEM: "Config check fails" or "Token not set"
-SOLUTION: 
+SOLUTION:
   - Make sure you saved the .env file after editing
   - Check there are no quotes around the tokens
   - Verify tokens start with ghp_ and sk- respectively

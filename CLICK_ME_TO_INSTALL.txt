@@ -57,6 +57,6 @@ fine when YOU run it directly.
 
 C:\Users\aw789\autonomous-github-agent\INSTALL_NOW.bat
 
-Just double-click it and everything will be done automatically!  
+Just double-click it and everything will be done automatically!
 
 ================================================================================

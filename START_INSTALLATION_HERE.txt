@@ -75,24 +75,24 @@ AFTER INSTALLATION (3 IMPORTANT STEPS)
 1. CONFIGURE .env FILE
    ━━━━━━━━━━━━━━━━━━━━
    Open the .env file and add your API tokens:
-       
+
        GITHUB_TOKEN=your_github_token_here
        OPENAI_API_KEY=your_openai_key_here
-   
+
    Open file with:
        notepad C:\Users\aw789\autonomous-github-agent\.env
 
 2. VERIFY INSTALLATION
    ━━━━━━━━━━━━━━━━━━━━
    Run these commands:
-       
+
        autonomous-agent --help
        autonomous-agent list-agents
 
 3. TRY IT OUT
    ━━━━━━━━━━━━
    Test the system:
-       
+
        autonomous-agent health-check --repo owner/repo
 
 ═══════════════════════════════════════════════════════════════════════════════

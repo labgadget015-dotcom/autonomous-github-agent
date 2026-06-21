@@ -25,7 +25,7 @@ INSTALLATION TIME: 2-3 minutes
 
 The script will:
   ✓ Create all directories
-  ✓ Generate 30+ Python files  
+  ✓ Generate 30+ Python files
   ✓ Install all dependencies
   ✓ Set up the 7 AI agents
   ✓ Create CLI interface
@@ -62,7 +62,7 @@ HELP & DOCUMENTATION:
 --------------------------------------------------------------------------------
 
 📖 Quick Start: README_INSTALL.md
-📖 Full Guide: START_HERE.md  
+📖 Full Guide: START_HERE.md
 📖 Commands: QUICKSTART.md
 📖 Details: INSTALL.md
 

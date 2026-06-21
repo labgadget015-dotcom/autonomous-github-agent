@@ -202,23 +202,23 @@ It uses Mac system features to connect to Messages. Your Mac will ask for permis
     margin-right: `).concat(i,"px ").concat(r,`;
     `),n==="padding"&&"padding-right: ".concat(i,"px ").concat(r,";")].filter(Boolean).join(""),`
   }
-  
+
   .`).concat(iy,` {
     right: `).concat(i,"px ").concat(r,`;
   }
-  
+
   .`).concat(ly,` {
     margin-right: `).concat(i,"px ").concat(r,`;
   }
-  
+
   .`).concat(iy," .").concat(iy,` {
     right: 0 `).concat(r,`;
   }
-  
+
   .`).concat(ly," .").concat(ly,` {
     margin-right: 0 `).concat(r,`;
   }
-  
+
   body[`).concat(Ed,`] {
     `).concat($3e,": ").concat(i,`px;
   }

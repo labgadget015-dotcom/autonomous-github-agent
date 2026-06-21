@@ -49,7 +49,7 @@ autonomous-agent logs
 ✅ 7 AI Agents:
 - Health Monitor
 - Code Reviewer
-- Issue Manager  
+- Issue Manager
 - Branch Manager
 - Security Scanner
 - Workflow Optimizer

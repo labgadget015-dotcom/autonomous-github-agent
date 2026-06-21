@@ -227,7 +227,7 @@ autonomous-agent config-check
 **Solution:** Ensure Python is in PATH or use full path to python.exe
 
 ### Issue: "pip install -e . fails"
-**Solution:** 
+**Solution:**
 - Ensure you're in the correct directory
 - Try: `python -m pip install -e .`
 - Check requirements.txt for dependency issues

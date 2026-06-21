@@ -106,7 +106,7 @@ After installation completes, you MUST do these three things:
 1. EDIT .env FILE
    Open: C:\Users\aw789\autonomous-github-agent\.env
    Add your API tokens:
-   
+
    GITHUB_TOKEN=ghp_your_github_token_here
    OPENAI_API_KEY=sk-your_openai_key_here
    OPENAI_MODEL=gpt-4-turbo-preview
@@ -238,7 +238,7 @@ Verify your system:
 You'll need AFTER installation:
   • GitHub Personal Access Token
     Get from: https://github.com/settings/tokens
-  
+
   • LLM API Key (choose one):
     OpenAI: https://platform.openai.com/account/api-keys
     Anthropic: https://console.anthropic.com/account/keys
@@ -249,7 +249,7 @@ You'll need AFTER installation:
 ================================================================================
 
 ISSUE: "python: command not found"
-SOLUTION: 
+SOLUTION:
   - Ensure Python 3.11+ is installed
   - Or use full path: C:\Python311\python.exe RUN_INSTALLATION.py
 

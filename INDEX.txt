@@ -166,12 +166,12 @@ SYSTEM REQUIREMENTS
 REQUIRED:
   • Python 3.11 or higher
     Check: python --version
-  
+
   • pip (comes with Python)
     Check: pip --version
-  
+
   • ~500 MB disk space
-  
+
   • Internet connection (for pip install)
 
 OPTIONAL:

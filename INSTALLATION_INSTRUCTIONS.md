@@ -191,7 +191,7 @@ autonomous-agent health-check --repo owner/repo
 ## Troubleshooting
 
 ### Issue: "python: command not found"
-**Solution:** 
+**Solution:**
 - Ensure Python 3.11+ is installed
 - Add Python to PATH
 - Or use full path: `C:\Python311\python.exe RUN_INSTALLATION.py`

@@ -134,7 +134,7 @@ Create `config/config.yaml`:
 ```yaml
 github:
   token: ${GITHUB_TOKEN}
-  
+
 llm:
   provider: openai  # openai, anthropic, or local
   api_key: ${OPENAI_API_KEY}
@@ -149,7 +149,7 @@ agents:
     - security_scanner
     - workflow_optimizer
     - documentation_generator
-    
+
 automation_level: semi-auto  # manual, semi-auto, or full-auto
 
 safety:

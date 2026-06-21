@@ -292,7 +292,7 @@ REM Expected: All checks pass
 ## Troubleshooting
 
 ### Issue: Scripts don't run
-**Solution:** 
+**Solution:**
 - Ensure you're in: `C:\Users\aw789\autonomous-github-agent`
 - Use full Python path if needed: `C:\Python311\python.exe RUN_INSTALLATION.py`
 - Check Python version: `python --version` (need 3.11+)

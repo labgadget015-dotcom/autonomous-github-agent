@@ -139,10 +139,10 @@ Once all tests pass:
 
 ## Success Criteria
 
-✅ Config check passes  
-✅ All 7 agents listed  
-✅ Health check completes without errors  
-✅ Logs show agent activity  
-✅ Can analyze test repository  
+✅ Config check passes
+✅ All 7 agents listed
+✅ Health check completes without errors
+✅ Logs show agent activity
+✅ Can analyze test repository
 
 **If all above work → You're ready to use it on real repos!** 🚀

@@ -18,7 +18,7 @@ try {
         stdio: 'inherit',
         cwd: agentDir
     });
-    
+
     console.log('\n✓ Installation completed successfully!');
 } catch (error) {
     console.error('\n✗ Installation failed:', error.message);
