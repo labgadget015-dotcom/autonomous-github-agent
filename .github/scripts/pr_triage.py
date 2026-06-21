@@ -18,7 +18,7 @@ import argparse
 import os
 import re
 import sys
-from datetime import datetime, timedelta, timezone
+from datetime import datetime
 from pathlib import Path
 
 import yaml
@@ -46,12 +46,12 @@ def _is_dependabot(pr) -> bool:
 
 def _bump_tier(title: str) -> str:
     """Return 'major' or 'minor_patch' by parsing 'from X to Y' in the title."""
-    m = re.search(r'\bfrom\s+(\S+)\s+to\s+(\S+)', title, re.IGNORECASE)
+    m = re.search(r"\bfrom\s+(\S+)\s+to\s+(\S+)", title, re.IGNORECASE)
     if not m:
         return "minor_patch"
     old_ver, new_ver = m.group(1), m.group(2)
-    old_major = re.match(r'(\d+)', old_ver)
-    new_major = re.match(r'(\d+)', new_ver)
+    old_major = re.match(r"(\d+)", old_ver)
+    new_major = re.match(r"(\d+)", new_ver)
     if old_major and new_major and old_major.group(1) != new_major.group(1):
         return "major"
     return "minor_patch"
@@ -100,15 +100,17 @@ def triage_repos(repos: list[dict], g: Github) -> dict[str, list[dict]]:
         for pr in prs:
             tier = _classify_pr(pr, now)
             days_open = (now - pr.created_at.replace(tzinfo=None)).days
-            buckets[tier].append({
-                "repo": full_name,
-                "number": pr.number,
-                "title": pr.title,
-                "url": pr.html_url,
-                "days_open": days_open,
-                "days_since_activity": (now - pr.updated_at.replace(tzinfo=None)).days,
-                "author": pr.user.login if pr.user else "unknown",
-            })
+            buckets[tier].append(
+                {
+                    "repo": full_name,
+                    "number": pr.number,
+                    "title": pr.title,
+                    "url": pr.html_url,
+                    "days_open": days_open,
+                    "days_since_activity": (now - pr.updated_at.replace(tzinfo=None)).days,
+                    "author": pr.user.login if pr.user else "unknown",
+                }
+            )
 
         print(f"  {full_name}: {len(prs)} open PRs")
 
@@ -118,8 +120,10 @@ def triage_repos(repos: list[dict], g: Github) -> dict[str, list[dict]]:
 def _render_table(prs: list[dict]) -> str:
     if not prs:
         return "_None_\n"
-    rows = ["| Repo | PR | Title | Open | Last Activity |",
-            "|------|----|-------|------|---------------|"]
+    rows = [
+        "| Repo | PR | Title | Open | Last Activity |",
+        "|------|----|-------|------|---------------|",
+    ]
     for p in prs:
         short_repo = p["repo"].split("/")[-1]
         title = p["title"][:60] + ("…" if len(p["title"]) > 60 else "")
@@ -181,12 +185,14 @@ def upsert_triage_issue(g: Github, body: str, dry_run: bool) -> None:
             repo.create_label(TRIAGE_LABEL, "0075ca")
 
     all_triage = repo.get_issues(state="open", labels=[TRIAGE_LABEL])
-    existing = [i for i in all_triage][:10]
+    existing = list(all_triage)[:10]
     triage_issues = [i for i in existing if i.title == TRIAGE_ISSUE_TITLE]
 
     if dry_run:
-        print(f"\n[dry-run] Would {'update' if triage_issues else 'create'} "
-              f"issue '{TRIAGE_ISSUE_TITLE}' in {HOME_REPO}")
+        print(
+            f"\n[dry-run] Would {'update' if triage_issues else 'create'} "
+            f"issue '{TRIAGE_ISSUE_TITLE}' in {HOME_REPO}"
+        )
         print("\n--- BODY PREVIEW ---")
         print(body[:1200] + ("…" if len(body) > 1200 else ""))
         return
