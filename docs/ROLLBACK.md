@@ -1,5 +1,18 @@
 # Rollback Manifest
 
+## d57927c — 2026-06-21 05:59 UTC
+
+- **SHA**: `d57927cd7f6de7ddcf057cdec2be81ad2200da91`
+- **Author**: GadgetAI
+- **Message**: style: black-format auto_pr.py and weekly_digest.py
+- **Files changed**: 2 file(s)
+
+**Changed files:**
+- `.github/scripts/auto_pr.py`
+- `.github/scripts/weekly_digest.py`
+
+---
+
 ## 271baa2 — 2026-06-21 05:57 UTC
 
 - **SHA**: `271baa20d7890dd1a4ef6e45f6cba3bc5c61f38f`
