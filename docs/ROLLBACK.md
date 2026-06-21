@@ -1,5 +1,18 @@
 # Rollback Manifest
 
+## ce4973a — 2026-06-21 05:34 UTC
+
+- **SHA**: `ce4973a8d67b020b74af668a68c58a2ffe827ae0`
+- **Author**: GadgetAI
+- **Message**: chore: commit auto-generated changelog workflow and README badge update
+- **Files changed**: 2 file(s)
+
+**Changed files:**
+- `.github/workflows/changelog.yml`
+- `README.md`
+
+---
+
 ## 0057f41 — 2026-06-21 05:34 UTC
 
 - **SHA**: `0057f410b9d1fa630bbc7d7baf3c90c035f25dd1`
