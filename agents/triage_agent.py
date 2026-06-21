@@ -111,7 +111,7 @@ class TriageAgent(BaseAgent):
         """Read .llm_costs.jsonl and return records from the last *days* days."""
         costs_path = project_root / ".llm_costs.jsonl"
         cutoff = datetime.now() - timedelta(days=days)
-        records = []
+        records: list[dict] = []
         if not costs_path.exists():
             return records
         for line in costs_path.read_text().splitlines():

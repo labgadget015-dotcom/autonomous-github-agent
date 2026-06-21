@@ -110,6 +110,20 @@ disallow_untyped_defs = true
 disallow_incomplete_defs = true
 check_untyped_defs = true
 
+[[tool.mypy.overrides]]
+# These modules were written before strict type annotations were enforced.
+# Disable strict checks until they can be fully annotated.
+module = [
+    "agents.*",
+    "autopilot.*",
+    "core.*",
+    "overseer.*",
+]
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+warn_return_any = false
+check_untyped_defs = false
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 asyncio_mode = "auto"

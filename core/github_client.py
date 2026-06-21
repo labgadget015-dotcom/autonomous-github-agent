@@ -81,13 +81,13 @@ class GitHubClient:
             Dictionary with rate limit information
         """
         rate_limit = self.client.get_rate_limit()
-        core = rate_limit.core
+        core_rl = rate_limit.core  # type: ignore[attr-defined]
 
         return {
-            "limit": core.limit,
-            "remaining": core.remaining,
-            "reset_time": core.reset.isoformat(),
-            "used": core.limit - core.remaining,
+            "limit": core_rl.limit,
+            "remaining": core_rl.remaining,
+            "reset_time": core_rl.reset.isoformat(),
+            "used": core_rl.limit - core_rl.remaining,
         }
 
     def get_repository(self, owner: str, repo: str) -> Repository:

@@ -50,7 +50,7 @@ class DependencyAgent(BaseAgent):
 
     def _check_unpinned(self, req_path: Path) -> list[str]:
         """Return package lines without an upper bound pin."""
-        unpinned = []
+        unpinned: list[str] = []
         if not req_path.exists():
             return unpinned
         for line in req_path.read_text().splitlines():
