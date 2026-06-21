@@ -1,5 +1,7 @@
 # Autonomous GitHub Agent 🤖
 
+![CI](https://github.com/labgadget015-dotcom/autonomous-github-agent/workflows/code-quality-optimized.yml/badge.svg) ![Python](https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12-blue) ![License](https://img.shields.io/badge/license-MIT-blue.svg) [![Marketplace](https://img.shields.io/badge/GitHub%20Marketplace-Autonomous%20Agent-purple?logo=github)](https://github.com/marketplace/actions/autonomous-github-agent)
+
 A state-of-the-art, autonomous AI system for end-to-end GitHub repository and project management. Deploy specialized micro-agents to handle code reviews, issue management, CI/CD, security scanning, and documentation—all with minimal human intervention.
 
 ## 🌟 Key Features
@@ -12,6 +14,57 @@ A state-of-the-art, autonomous AI system for end-to-end GitHub repository and pr
 - **CI/CD Optimization**: Workflow analysis and auto-healing
 - **Documentation Generation**: Always up-to-date README, API docs, changelogs
 - **Audit Logging**: Full traceability with rollback support
+
+## ⚡ Use as a GitHub Action
+
+Add autonomous AI code review, issue triage, and security scanning to any repository in seconds:
+
+```yaml
+# .github/workflows/agent.yml
+name: Autonomous Agent
+on: [push, pull_request, issues]
+
+jobs:
+  agent:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: labgadget015-dotcom/autonomous-github-agent@main
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          analysis_mode: auto
+          local_llm_enabled: "true"    # route simple tasks to Ollama at $0
+          severity_threshold: high
+```
+
+| Input | Default | Description |
+|-------|---------|-------------|
+| `github_token` | — | **Required.** GitHub token for API access |
+| `anthropic_api_key` | — | Anthropic API key (recommended) |
+| `openai_api_key` | — | OpenAI API key (alternative) |
+| `analysis_mode` | `auto` | `parallel` / `sequential` / `auto` |
+| `local_llm_enabled` | `true` | Route low-complexity tasks to local Ollama at zero cost |
+| `local_llm_endpoint` | `http://localhost:11434` | Local LLM base URL |
+| `complexity_threshold` | `medium` | LLM routing cutoff: `low` / `medium` / `high` |
+| `issue_creation_enabled` | `true` | Auto-open GitHub issues for critical findings |
+| `severity_threshold` | `high` | Minimum severity to trigger issue creation |
+
+**Outputs:** `analysis_summary` · `issues_created` · `cost_savings` · `execution_time`
+
+---
+
+## 📊 Track Your Repo Health
+
+Embed a live GadgetLab score badge in your README — updates every 5 minutes:
+
+```markdown
+[![GadgetLab Score](https://img.shields.io/endpoint?url=https://gadgetlab.uk/api/badge/YOUR_ORG/YOUR_REPO)](https://gadgetlab.uk)
+```
+
+Replace `YOUR_ORG/YOUR_REPO` with your GitHub repo path. The score reflects CI status, open issue count, and commit recency.
+
+---
 
 ## 🚀 Quick Start
 

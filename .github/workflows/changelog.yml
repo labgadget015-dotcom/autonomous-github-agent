@@ -1,0 +1,35 @@
+name: Generate Changelog
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  changelog:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GH_PAT }}
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Generate CHANGELOG
+        run: python .github/scripts/changelog_generator.py
+
+      - name: Commit if changed
+        run: |
+          git config user.name "GadgetLab Agent"
+          git config user.email "labgadget015@gmail.com"
+          git add CHANGELOG.md
+          if ! git diff --staged --quiet; then
+            git commit -m "chore: update CHANGELOG [skip ci]"
+            git push
+          fi
