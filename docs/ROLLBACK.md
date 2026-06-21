@@ -1,5 +1,18 @@
 # Rollback Manifest
 
+## 72aafb7 — 2026-06-21 04:41 UTC
+
+- **SHA**: `72aafb79e1bfe6841b69409526ba39790d13d94b`
+- **Author**: GadgetAI
+- **Message**: feat(triage): add PR triage pipeline
+- **Files changed**: 2 file(s)
+
+**Changed files:**
+- `.github/scripts/pr_triage.py`
+- `.github/workflows/pr-triage.yml`
+
+---
+
 ## 65306b7 — 2026-06-21 03:51 UTC
 
 - **SHA**: `65306b78e7e0047d2c5b7edc8e60c18d7a19dc11`
