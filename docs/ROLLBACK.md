@@ -1,5 +1,17 @@
 # Rollback Manifest
 
+## 271baa2 — 2026-06-21 05:57 UTC
+
+- **SHA**: `271baa20d7890dd1a4ef6e45f6cba3bc5c61f38f`
+- **Author**: GadgetAI
+- **Message**: chore: ignore landing build artifacts, run artifacts, and mcp_server
+- **Files changed**: 1 file(s)
+
+**Changed files:**
+- `.gitignore`
+
+---
+
 ## e99313d — 2026-06-21 05:57 UTC
 
 - **SHA**: `e99313deffdd511777960aa972f06d7f4781e140`
