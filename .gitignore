@@ -74,3 +74,16 @@ audit_logs/
 
 # Landing page — un-ignore lib/ for Next.js app (root lib/ rule is Python-only)
 !landing/lib/
+
+# Landing page build artifacts
+landing/node_modules/
+landing/.next/
+landing/tsconfig.tsbuildinfo
+
+# Run artifacts
+.llm_costs.jsonl
+coverage.json
+coverage.xml
+
+# MCP server (local tooling, not part of the pipeline)
+mcp_server/
