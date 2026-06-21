@@ -58,12 +58,10 @@ class GitHubAutopilot:
         return client
 
     def _preflight_check(self, client: Github) -> None:
-        """Validate token and log scopes/rate limit before scanning."""
+        """Validate token and log rate limit before scanning."""
         try:
-            user = client.get_user()
             rate = client.get_rate_limit().core
-            print(f"[preflight] authenticated as: {user.login}")
-            print(f"[preflight] rate limit: {rate.remaining}/{rate.limit} remaining")
+            print(f"[preflight] token valid. Rate limit: {rate.remaining}/{rate.limit} remaining")
         except Exception as e:
             print(f"[preflight] WARNING: token validation failed: {e}", file=sys.stderr)
 

@@ -266,18 +266,16 @@ jobs:
 
       - name: "🔍 Preflight: validate token and repo access"
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_PAT: ${{ secrets.GH_PAT }}
         run: |
           python3 - <<'EOF'
           import os, sys
           from github import Github
-          token = os.getenv("GITHUB_TOKEN")
+          token = os.getenv("GH_PAT")
           g = Github(token)
           try:
-              user = g.get_user()
-              print(f"Token authenticates as: {user.login}")
               rate = g.get_rate_limit().core
-              print(f"Rate limit: {rate.remaining}/{rate.limit}")
+              print(f"Token valid. Rate limit: {rate.remaining}/{rate.limit}")
           except Exception as e:
               print(f"ERROR: token check failed: {e}", file=sys.stderr)
               sys.exit(1)
@@ -298,7 +296,7 @@ jobs:
         id: generate_summary
         continue-on-error: true
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
         run: |
           echo "📅 Generating daily repository summary..."
           cd autopilot
