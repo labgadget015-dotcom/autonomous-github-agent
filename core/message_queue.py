@@ -58,7 +58,7 @@ class MessageQueue:
         try:
             import redis
 
-            self._redis_client = redis.Redis(
+            self._redis_client = redis.Redis(  # type: ignore[assignment]
                 host=self.config.get("redis_host", "localhost"),
                 port=self.config.get("redis_port", 6379),
                 db=self.config.get("redis_db", 0),
