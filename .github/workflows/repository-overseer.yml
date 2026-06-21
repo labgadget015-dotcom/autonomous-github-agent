@@ -266,6 +266,14 @@ jobs:
               }
             }
 
+      - name: Send weekly digest to Slack
+        if: always()
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
+        run: python .github/scripts/weekly_digest.py overseer-results.json
+
   dependency-security-scan:
     name: Security Vulnerability Scan
     runs-on: ubuntu-latest

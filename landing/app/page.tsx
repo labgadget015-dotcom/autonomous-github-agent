@@ -27,6 +27,7 @@ function Nav() {
           <a href="#features" className="text-gray-600 hover:text-gray-900">Features</a>
           <a href="#how-it-works" className="text-gray-600 hover:text-gray-900">How it works</a>
           <a href="#pricing" className="text-gray-600 hover:text-gray-900">Pricing</a>
+          <a href="/scanner" className="text-gray-600 hover:text-gray-900">Free scan</a>
           <a
             href="https://github.com/labgadget015-dotcom/autonomous-github-agent"
             target="_blank"
@@ -118,6 +119,16 @@ const features = [
     icon: "🚀",
     title: "12 GitHub Actions workflows",
     desc: "Parallel test matrix (Py 3.10/3.11/3.12), security scanning, overseer, pre-commit CI — all pre-configured out of the box.",
+  },
+  {
+    icon: "🔍",
+    title: "Free repo health scanner",
+    desc: "Instant health score for any public GitHub repo — CI status, open issues, stale PRs, commit activity, and security hygiene. No login required.",
+  },
+  {
+    icon: "📊",
+    title: "Live README health badge",
+    desc: "One-line embed that shows a live A+–D grade in your README, updating every 5 minutes based on real repo data.",
   },
 ];
 

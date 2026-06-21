@@ -149,7 +149,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -r requirements.txt
-          pip install pytest pytest-cov pytest-xdist
+          pip install pytest pytest-cov pytest-xdist pytest-asyncio
 
       - name: Run optimized pytest
         run: |
