@@ -1,0 +1,53 @@
+name: Auto PR (DRC recommendation)
+
+# Triggered manually or by the DRC loop via workflow_dispatch.
+# Dry-run is ON by default — set dry_run input to "false" to create a real PR.
+on:
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: "GitHub issue number to fix"
+        required: true
+        type: string
+      recommendation:
+        description: "DRC Critic recommendation (plain text)"
+        required: true
+        type: string
+      dry_run:
+        description: "Dry run only — comment, don't create PR"
+        required: false
+        default: "true"
+        type: choice
+        options: ["true", "false"]
+
+jobs:
+  auto-pr:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GH_PAT }}
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Install deps
+        run: pip install anthropic requests pyyaml
+
+      - name: Run auto_pr
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          python .github/scripts/auto_pr.py \
+            --issue "${{ inputs.issue_number }}" \
+            --recommendation "${{ inputs.recommendation }}"

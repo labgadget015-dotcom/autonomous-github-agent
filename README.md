@@ -1,6 +1,6 @@
 # Autonomous GitHub Agent 🤖
 
-![CI](https://github.com/labgadget015-dotcom/autonomous-github-agent/workflows/code-quality-optimized.yml/badge.svg) ![Python](https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12-blue) ![License](https://img.shields.io/badge/license-MIT-blue.svg) [![Marketplace](https://img.shields.io/badge/GitHub%20Marketplace-Autonomous%20Agent-purple?logo=github)](https://github.com/marketplace/actions/autonomous-github-agent)
+![CI](https://github.com/labgadget015-dotcom/autonomous-github-agent/workflows/code-quality-optimized.yml/badge.svg) ![Python](https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12-blue) ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 
 A state-of-the-art, autonomous AI system for end-to-end GitHub repository and project management. Deploy specialized micro-agents to handle code reviews, issue management, CI/CD, security scanning, and documentation—all with minimal human intervention.
 
