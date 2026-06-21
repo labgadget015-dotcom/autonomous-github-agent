@@ -74,7 +74,7 @@ class SecurityScannerAgent(BaseAgent):
             # Check for SECURITY.md
             try:
                 repo.get_contents("SECURITY.md")
-            except:
+            except Exception:
                 recommendations.append(
                     "Add SECURITY.md with vulnerability reporting instructions"
                 )
@@ -82,7 +82,7 @@ class SecurityScannerAgent(BaseAgent):
             # Check for dependabot
             try:
                 repo.get_contents(".github/dependabot.yml")
-            except:
+            except Exception:
                 recommendations.append(
                     "Enable Dependabot for automated dependency updates"
                 )

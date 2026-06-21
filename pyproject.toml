@@ -78,6 +78,30 @@ target-version = "py311"
 select = ["E", "F", "I", "N", "W", "UP", "B", "A", "C4"]
 ignore = ["E501"]
 
+[tool.ruff.lint.per-file-ignores]
+# Tests use sys.path manipulation before imports (E402), capture results
+# without always using them (F841), and use pytest.raises broadly (B017)
+"tests/**" = ["E402", "F841", "B007", "B017", "N806", "E741", "E712"]
+"tests/unit/**" = ["E402", "F841", "B007", "B017", "N806", "E741", "E712"]
+# Install scripts have intentional mid-file imports
+"INLINE_INSTALL.py" = ["E402"]
+"FINAL_INSTALL.py" = ["E402"]
+"RUN_INSTALLATION.py" = ["E402"]
+"INSTALLATION_RUNNER.py" = ["E402"]
+# MCP server uses str+Enum pattern and lambda id (intentional)
+"mcp_server/**" = ["UP042", "A006", "E402", "F841"]
+# Integration test scripts with mid-file setup
+"scripts/**" = ["E402", "F841", "B007", "E741"]
+# Example scripts with sys.path manipulation
+"examples/**" = ["E402", "F841"]
+# Install/setup scripts with mid-script imports
+"execute_install.py" = ["E402"]
+# Demo scripts use lambda id pattern and bare-except for import probing intentionally
+"demo_ai_optimization.py" = ["A006"]
+"test_env.py" = ["E402", "F841", "E722"]
+# test_branch_protection probes import availability (F401 is intentional)
+"tests/test_branch_protection.py" = ["F401"]
+
 [tool.mypy]
 python_version = "3.11"
 warn_return_any = true

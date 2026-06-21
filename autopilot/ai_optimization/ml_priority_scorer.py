@@ -377,7 +377,7 @@ class MLPriorityScorer:
 
         try:
             # Extract features and labels
-            X = []
+            X = []  # noqa: N806
             y_reg = []
             y_clf = []
 
@@ -387,12 +387,12 @@ class MLPriorityScorer:
                 y_reg.append(score)
                 y_clf.append(priority_class)
 
-            X = np.array(X)
+            X = np.array(X)  # noqa: N806
             y_reg = np.array(y_reg)
             y_clf = np.array(y_clf)
 
             # Scale features
-            X_scaled = self.scaler.fit_transform(X)
+            X_scaled = self.scaler.fit_transform(X)  # noqa: N806
 
             # Train models
             self.regressor.fit(X_scaled, y_reg)

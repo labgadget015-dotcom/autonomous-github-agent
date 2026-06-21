@@ -111,7 +111,7 @@ class AccessPredictor:
             logger.warning("Insufficient training data for staleness model")
             return
 
-        X = np.vstack([features for features, _ in staleness_data])
+        X = np.vstack([features for features, _ in staleness_data])  # noqa: N806
         y = np.array([label for _, label in staleness_data])
 
         self.staleness_model.fit(X, y)

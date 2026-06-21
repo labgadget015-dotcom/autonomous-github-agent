@@ -67,7 +67,7 @@ Identify:
 2. Performance improvements
 3. Best practice violations"""
 
-            response = self.llm.complete(prompt)
+            self.llm.complete(prompt)
             # Parse response for additional insights
         except Exception:
             pass

@@ -38,7 +38,7 @@ class AuditLogger:
             else "sqlite:///./audit.db"
         )
         Base.metadata.create_all(self.engine)
-        Session = sessionmaker(bind=self.engine)
+        Session = sessionmaker(bind=self.engine)  # noqa: N806
         self.session = Session()
 
     def log_action(

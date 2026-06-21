@@ -26,7 +26,7 @@ from enum import Enum
 from typing import Any
 
 
-class RiskBand(str, Enum):
+class RiskBand(str, Enum):  # noqa: UP042
     LOW = "LOW"
     MEDIUM = "MEDIUM"
     HIGH = "HIGH"

@@ -25,7 +25,7 @@ class Orchestrator:
 
     def _load_agents(self) -> None:
         """Load and initialize all enabled agents."""
-        enabled = self.config.enabled_agents
+        _enabled = self.config.enabled_agents
 
         # Import and initialize agents as they're created
         # This will be expanded as we build each agent
