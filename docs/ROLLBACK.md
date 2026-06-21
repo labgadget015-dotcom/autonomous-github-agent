@@ -1,5 +1,17 @@
 # Rollback Manifest
 
+## 338d287 — 2026-06-21 06:35 UTC
+
+- **SHA**: `338d2872507bdad415cf55663517bee8d21ef0f6`
+- **Author**: GadgetAI
+- **Message**: chore: add one-shot workflow to set Vercel env vars via API
+- **Files changed**: 1 file(s)
+
+**Changed files:**
+- `.github/workflows/set-vercel-env.yml`
+
+---
+
 ## 7e141e1 — 2026-06-21 06:33 UTC
 
 - **SHA**: `7e141e115f3648d66bd630cf81bdff57087773cb`
