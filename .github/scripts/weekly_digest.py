@@ -83,13 +83,17 @@ def build_blocks(data: dict) -> list:
             f"• Architecture improvements: {arch}\n"
             f"• Performance issues: {perf}"
         )
-        blocks.append({"type": "section", "text": {"type": "mrkdwn", "text": code_text}})
+        blocks.append(
+            {"type": "section", "text": {"type": "mrkdwn", "text": code_text}}
+        )
 
     # Security / dependencies
     if deps:
         outdated = len(deps.get("outdated_packages", []))
         vuln_line = f"⚠️ {len(vulns)} vulnerable" if vulns else "✅ No vulnerabilities"
-        dep_text = f"*📦 Dependencies*\n" f"• {vuln_line}\n" f"• Outdated packages: {outdated}"
+        dep_text = (
+            f"*📦 Dependencies*\n" f"• {vuln_line}\n" f"• Outdated packages: {outdated}"
+        )
         blocks.append({"type": "section", "text": {"type": "mrkdwn", "text": dep_text}})
 
     # Critical findings
@@ -98,7 +102,10 @@ def build_blocks(data: dict) -> list:
         blocks.append(
             {
                 "type": "section",
-                "text": {"type": "mrkdwn", "text": f"*🔴 Critical Issues*\n{crit_lines}"},
+                "text": {
+                    "type": "mrkdwn",
+                    "text": f"*🔴 Critical Issues*\n{crit_lines}",
+                },
             }
         )
 

@@ -203,7 +203,9 @@ def main() -> None:
 
     # Gate 1: explicit label required
     if not has_label(issue, AUTO_PR_LABEL):
-        print(f"Issue #{args.issue} does not have the `{AUTO_PR_LABEL}` label — skipping.")
+        print(
+            f"Issue #{args.issue} does not have the `{AUTO_PR_LABEL}` label — skipping."
+        )
         sys.exit(0)
 
     print(f"Generating fix for issue #{args.issue}: {issue['title']}")
@@ -229,7 +231,9 @@ def main() -> None:
     branch = f"agent/auto-pr-{args.issue}-{branch_suffix}"
 
     if DRY_RUN:
-        print(f"DRY RUN: would create branch `{branch}` with changes to {changed_paths}")
+        print(
+            f"DRY RUN: would create branch `{branch}` with changes to {changed_paths}"
+        )
         for f in files:
             print(f"  {f['path']} ({len(f['content'])} chars)")
         post_comment(
