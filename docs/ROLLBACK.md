@@ -1,5 +1,18 @@
 # Rollback Manifest
 
+## 74ba660 — 2026-06-21 05:48 UTC
+
+- **SHA**: `74ba660cb904a1afdfb3d4c18550cc62d3b7367c`
+- **Author**: GadgetAI
+- **Message**: fix(ci): add scikit-learn + psutil deps, fix AuditLogger log_dir signature
+- **Files changed**: 2 file(s)
+
+**Changed files:**
+- `core/audit_logger.py`
+- `requirements.txt`
+
+---
+
 ## 575d201 — 2026-06-21 05:45 UTC
 
 - **SHA**: `575d20129d11335b83651bf0bdd53a4e97872c03`
