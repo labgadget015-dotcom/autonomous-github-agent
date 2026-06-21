@@ -1,5 +1,24 @@
 # Rollback Manifest
 
+## 2f5d243 — 2026-06-21 05:18 UTC
+
+- **SHA**: `2f5d2436ddd7a40b88703e6d48cca07e2d803f10`
+- **Author**: GadgetAI
+- **Message**: fix(lint): resolve all remaining ruff errors across repo
+- **Files changed**: 8 file(s)
+
+**Changed files:**
+- `autonomous_agent/agents/security_scanner.py`
+- `autonomous_agent/agents/workflow_optimizer.py`
+- `autonomous_agent/core/audit_logger.py`
+- `autonomous_agent/core/orchestrator.py`
+- `autopilot/ai_optimization/intelligent_cache.py`
+- `autopilot/ai_optimization/ml_priority_scorer.py`
+- `core/risk_scorer.py`
+- `pyproject.toml`
+
+---
+
 ## f3fdc52 — 2026-06-21 05:13 UTC
 
 - **SHA**: `f3fdc522f0397cbd4e211b4719ad6a9d1cfdd28a`
