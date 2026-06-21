@@ -1,5 +1,18 @@
 # Rollback Manifest
 
+## 1d9efbb — 2026-06-21 04:52 UTC
+
+- **SHA**: `1d9efbb9b48edcd8b07bb6a8011ea7b05170b698`
+- **Author**: GadgetAI
+- **Message**: feat(dashboard): implement generate_html_dashboard() with Chart.js
+- **Files changed**: 2 file(s)
+
+**Changed files:**
+- `.github/scripts/health_dashboard_generator.py`
+- `tests/unit/test_health_dashboard_generator.py`
+
+---
+
 ## 72aafb7 — 2026-06-21 04:41 UTC
 
 - **SHA**: `72aafb79e1bfe6841b69409526ba39790d13d94b`
