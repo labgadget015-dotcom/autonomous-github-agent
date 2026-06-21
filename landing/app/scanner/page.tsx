@@ -147,6 +147,24 @@ export default function ScannerPage() {
               </div>
             </div>
 
+            {/* Share + permanent link */}
+            <div className="flex gap-3">
+              <a
+                href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`🤖 ${report.fullName} scored ${report.grade} (${report.score}/100) on GadgetLab's free repo health scanner`)}&url=${encodeURIComponent(`https://gadgetlab.uk/scan/${report.owner}/${report.repo}`)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 flex items-center justify-center bg-black text-white rounded-xl py-3 text-sm font-medium hover:bg-gray-800 transition-colors"
+              >
+                Share on X
+              </a>
+              <a
+                href={`/scan/${report.owner}/${report.repo}`}
+                className="flex-1 flex items-center justify-center bg-white border border-gray-200 text-gray-700 rounded-xl py-3 text-sm font-medium hover:bg-gray-50 transition-colors"
+              >
+                Permanent link
+              </a>
+            </div>
+
             {/* CTA */}
             <div className="bg-brand-600 rounded-2xl p-6 text-white text-center">
               <p className="font-bold text-lg mb-1">Want the full DRC deep analysis?</p>
