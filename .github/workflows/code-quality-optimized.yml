@@ -126,11 +126,7 @@ jobs:
         continue-on-error: true
         run: |
           if [ -f analysis-results.json ]; then
-            python3 -c "
-import json, sys
-d = json.load(open('analysis-results.json'))
-sys.exit(1) if not d.get('passed') else print('All quality checks passed!')
-"
+            python3 -c "import json,sys; d=json.load(open('analysis-results.json')); sys.exit(1) if not d.get('passed') else print('All quality checks passed!')"
           fi
 
   # Optimized pytest with targeted coverageh
