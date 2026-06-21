@@ -28,7 +28,9 @@ class AuditLogger:
     - S3 archival support (optional)
     """
 
-    def __init__(self, config: dict[str, Any] | None = None, log_dir: str | None = None):
+    def __init__(
+        self, config: dict[str, Any] | None = None, log_dir: str | None = None
+    ):
         """
         Initialize audit logger.
 
