@@ -1,5 +1,20 @@
 # Rollback Manifest
 
+## 7e141e1 — 2026-06-21 06:33 UTC
+
+- **SHA**: `7e141e115f3648d66bd630cf81bdff57087773cb`
+- **Author**: GadgetAI
+- **Message**: feat: persistent scan pages, share button, shared scan lib
+- **Files changed**: 4 file(s)
+
+**Changed files:**
+- `landing/app/api/scan/route.ts`
+- `landing/app/scan/[owner]/[repo]/page.tsx`
+- `landing/app/scanner/page.tsx`
+- `landing/lib/scan.ts`
+
+---
+
 ## 7aea7bc — 2026-06-21 06:12 UTC
 
 - **SHA**: `7aea7bc48abcc8e97af66d9a98127124eafcaac4`
