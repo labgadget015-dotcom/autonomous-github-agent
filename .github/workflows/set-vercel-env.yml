@@ -50,14 +50,7 @@ jobs:
               echo "Patch response: $PATCH_RESULT"
               echo "$PATCH_RESULT" | python3 -c "import sys,json; d=json.load(sys.stdin); print('patched:', d.get('key') or d.get('created',{}).get('key','?'))"
             else
-              echo "$RESULT" | python3 -c "
-import sys,json
-d=json.load(sys.stdin)
-k = d.get('key') or d.get('created',{}).get('key')
-if k: print('created:', k)
-elif d.get('error'): print('ERROR:', d['error'].get('message','unknown'))
-else: print('response keys:', list(d.keys()))
-"
+              echo "$RESULT" | python3 -c "import sys,json; d=json.load(sys.stdin); k=d.get('key') or d.get('created',{}).get('key'); print('created:',k) if k else (print('ERROR:',d['error'].get('message','?')) if d.get('error') else print('response keys:',list(d.keys())))"
             fi
           }
 
