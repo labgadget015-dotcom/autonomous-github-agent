@@ -1,5 +1,19 @@
 # Rollback Manifest
 
+## 41beabf — 2026-06-22 06:03 UTC
+
+- **SHA**: `41beabf2f006059ccd63884babe8bd1604397751`
+- **Author**: GadgetAI
+- **Message**: feat(dashboard): live pipeline status page
+- **Files changed**: 3 file(s)
+
+**Changed files:**
+- `landing/app/api/dashboard/route.ts`
+- `landing/app/dashboard/page.tsx`
+- `landing/next-env.d.ts`
+
+---
+
 ## 338d287 — 2026-06-21 06:35 UTC
 
 - **SHA**: `338d2872507bdad415cf55663517bee8d21ef0f6`
