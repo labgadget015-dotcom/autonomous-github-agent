@@ -1,5 +1,17 @@
 # Rollback Manifest
 
+## f9a1ffa — 2026-06-22 06:22 UTC
+
+- **SHA**: `f9a1ffa142bb2633dfe2acab50695f447de67e99`
+- **Author**: GadgetAI
+- **Message**: fix(ci): correct noreply email in set-vercel-env, improve Vercel API response parsing
+- **Files changed**: 1 file(s)
+
+**Changed files:**
+- `.github/workflows/set-vercel-env.yml`
+
+---
+
 ## 41beabf — 2026-06-22 06:03 UTC
 
 - **SHA**: `41beabf2f006059ccd63884babe8bd1604397751`
