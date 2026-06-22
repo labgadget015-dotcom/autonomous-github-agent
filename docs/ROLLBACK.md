@@ -1,5 +1,21 @@
 # Rollback Manifest
 
+## cd9ce7d — 2026-06-22 08:48 UTC
+
+- **SHA**: `cd9ce7d12e373c6e5e499c56144d1913a0ff8af4`
+- **Author**: GadgetAI
+- **Message**: fix(ci): resolve all test failures blocking green CI
+- **Files changed**: 5 file(s)
+
+**Changed files:**
+- `.github/scripts/generate_rollback_manifest.py`
+- `autonomous_agent/core/audit_logger.py`
+- `autonomous_agent/core/github_client.py`
+- `pytest.ini`
+- `tests/test_github_client_comprehensive.py`
+
+---
+
 ## 4b135ce — 2026-06-22 06:27 UTC
 
 - **SHA**: `4b135ceaace729bc520702f120db53ee4d9bcfb7`
