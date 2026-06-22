@@ -1,5 +1,17 @@
 # Rollback Manifest
 
+## 4b135ce — 2026-06-22 06:27 UTC
+
+- **SHA**: `4b135ceaace729bc520702f120db53ee4d9bcfb7`
+- **Author**: GadgetAI
+- **Message**: fix(ci): handle ENV_CONFLICT from Vercel API, pull --rebase before push in set-vercel-env
+- **Files changed**: 1 file(s)
+
+**Changed files:**
+- `.github/workflows/set-vercel-env.yml`
+
+---
+
 ## 3fddcab — 2026-06-22 06:26 UTC
 
 - **SHA**: `3fddcabc1b9dae26ec792e9a6ea57f054e337b50`
