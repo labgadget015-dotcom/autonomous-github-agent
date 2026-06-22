@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Repository Health Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+<style>
+  body {font-family: system-ui, sans-serif; margin: 0; background: #0f172a; color: #e2e8f0;}
+  header {background: #1e293b; padding: 1.5rem 2rem; border-bottom: 1px solid #334155;}
+  h1 {margin: 0; font-size: 1.5rem;}
+  .sub {color: #94a3b8; font-size: 0.875rem; margin-top: 0.25rem;}
+  .grid {display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+          gap: 1.5rem; padding: 1.5rem 2rem; max-width: 1200px; margin: 0 auto;}
+  .card {background: #1e293b; border-radius: 0.75rem; padding: 1.25rem;
+          border: 1px solid #334155;}
+  .card h2 {margin: 0 0 1rem; font-size: 1rem; color: #94a3b8; text-transform: uppercase;
+             letter-spacing: 0.05em;}
+  .score-big {font-size: 3.5rem; font-weight: 700; color: #eab308;
+               text-align: center; padding: 0.5rem 0;}
+  .score-label {text-align: center; color: #94a3b8; margin-bottom: 1rem;}
+  canvas {max-height: 220px;}
+  .note {font-size: 0.75rem; color: #64748b; margin-top: 0.75rem;}
+</style>
+</head>
+<body>
+<header>
+  <h1>Repository Health Dashboard</h1>
+  <div class="sub">Generated: 2026-06-21 07:12:56 UTC &nbsp;|&nbsp; Score: 75/100 — Good</div>
+</header>
+<div class="grid">
+
+  <div class="card">
+    <h2>Health Score</h2>
+    <div class="score-big">75</div>
+    <div class="score-label">out of 100 &mdash; Good</div>
+    <canvas id="scoreChart"></canvas>
+  </div>
+
+  <div class="card">
+    <h2>Test Coverage</h2>
+    <canvas id="coverageChart"></canvas>
+    <p class="note">Current: 76.1% &nbsp;|&nbsp; Target: 80%</p>
+  </div>
+
+  <div class="card">
+    <h2>Security Issues</h2>
+    <canvas id="secChart"></canvas>
+    <p class="note">Total: 0 issues from Bandit scan</p>
+  </div>
+
+  <div class="card">
+    <h2>Quality Tools</h2>
+    <canvas id="qualityChart"></canvas>
+    <p class="note">1 = passed, 0 = failed</p>
+  </div>
+
+</div>
+
+<script>
+const scoreCtx = document.getElementById('scoreChart');
+new Chart(scoreCtx, {
+  type: 'doughnut',
+  data: {
+    datasets: [{
+      data: [75, 25],
+      backgroundColor: ['#eab308', '#334155'],
+      borderWidth: 0,
+    }]
+  },
+  options: {plugins: {legend: {display: false}}, cutout: '75%'}
+});
+
+const covCtx = document.getElementById('coverageChart');
+new Chart(covCtx, {
+  type: 'bar',
+  data: {
+    labels: ['Coverage', 'Target'],
+    datasets: [{
+      data: [76.1, 80],
+      backgroundColor: [
+        76.1 >= 80 ? '#22c55e' : '#ef4444',
+        '#334155'
+      ],
+      borderRadius: 4,
+    }]
+  },
+  options: {
+    scales: {
+      y: {min: 0, max: 100, ticks: {color: '#94a3b8'}, grid: {color: '#1e293b'}},
+      x: {ticks: {color: '#94a3b8'}, grid: {display: false}}
+    },
+    plugins: {legend: {display: false}}
+  }
+});
+
+const secCtx = document.getElementById('secChart');
+new Chart(secCtx, {
+  type: 'bar',
+  data: {
+    labels: ['HIGH', 'MEDIUM', 'LOW'],
+    datasets: [{
+      data: [0, 0, 0],
+      backgroundColor: ['#ef4444', '#eab308', '#22c55e'],
+      borderRadius: 4,
+    }]
+  },
+  options: {
+    scales: {
+      y: {ticks: {color: '#94a3b8', stepSize: 1}, grid: {color: '#1e293b'}},
+      x: {ticks: {color: '#94a3b8'}, grid: {display: false}}
+    },
+    plugins: {legend: {display: false}}
+  }
+});
+
+const qualCtx = document.getElementById('qualityChart');
+new Chart(qualCtx, {
+  type: 'bar',
+  data: {
+    labels: ['pylint', 'flake8', 'bandit', 'radon_cc', 'radon_mi'],
+    datasets: [{
+      data: [0, 0, 0, 0, 0],
+      backgroundColor: [0, 0, 0, 0, 0].map(v => v === 1 ? '#22c55e' : '#ef4444'),
+      borderRadius: 4,
+    }]
+  },
+  options: {
+    scales: {
+      y: {min: 0, max: 1, ticks: {color: '#94a3b8', stepSize: 1}, grid: {color: '#1e293b'}},
+      x: {ticks: {color: '#94a3b8'}, grid: {display: false}}
+    },
+    plugins: {legend: {display: false}}
+  }
+});
+</script>
+</body>
+</html>
