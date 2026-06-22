@@ -1,5 +1,17 @@
 # Rollback Manifest
 
+## 3fddcab — 2026-06-22 06:26 UTC
+
+- **SHA**: `3fddcabc1b9dae26ec792e9a6ea57f054e337b50`
+- **Author**: GadgetAI
+- **Message**: fix(ci): fix YAML parse error in set-vercel-env (multiline python in block scalar)
+- **Files changed**: 1 file(s)
+
+**Changed files:**
+- `.github/workflows/set-vercel-env.yml`
+
+---
+
 ## f9a1ffa — 2026-06-22 06:22 UTC
 
 - **SHA**: `f9a1ffa142bb2633dfe2acab50695f447de67e99`
