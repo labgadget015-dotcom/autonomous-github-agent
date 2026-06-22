@@ -1,5 +1,17 @@
 # Rollback Manifest
 
+## 038024a — 2026-06-22 22:29 UTC
+
+- **SHA**: `038024a5b220ced58c954cf90684a97acf23cb54`
+- **Author**: GadgetAI
+- **Message**: Add n8n workflow template index and n8n API key expiry monitor
+- **Files changed**: 1 file(s)
+
+**Changed files:**
+- `n8n-templates/README.md`
+
+---
+
 ## cd9ce7d — 2026-06-22 08:48 UTC
 
 - **SHA**: `cd9ce7d12e373c6e5e499c56144d1913a0ff8af4`
