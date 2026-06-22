@@ -29,14 +29,15 @@ class AuditLog(Base):
 class AuditLogger:
     """Audit logger for tracking all agent actions."""
 
-    def __init__(self):
+    def __init__(self, config: dict | None = None, log_dir: str | None = None):
         """Initialize audit logger."""
         config = get_config()
-        self.engine = create_engine(
-            config.database.url
-            if hasattr(config, "database")
-            else "sqlite:///./audit.db"
-        )
+        db_url = "sqlite:///./audit.db"
+        if log_dir is not None:
+            db_url = f"sqlite:///{log_dir}/audit.db"
+        elif hasattr(config, "database"):
+            db_url = config.database.url
+        self.engine = create_engine(db_url)
         Base.metadata.create_all(self.engine)
         Session = sessionmaker(bind=self.engine)  # noqa: N806
         self.session = Session()

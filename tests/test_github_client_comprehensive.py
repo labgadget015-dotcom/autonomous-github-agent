@@ -94,10 +94,12 @@ class TestGitHubClient:
 
     def test_get_repository_retry_on_failure(self, github_client, mock_github_api):
         """Test retry mechanism on repository fetch failure."""
+        mock_repo = MagicMock()
+        mock_repo.name = "test-repo"
         mock_github_api.get_repo.side_effect = [
             GithubException(500, "Server error"),
             GithubException(500, "Server error"),
-            MagicMock(name="test-repo"),  # Success on third attempt
+            mock_repo,  # Success on third attempt
         ]
 
         repo = github_client.get_repository("owner/test-repo")

@@ -22,7 +22,9 @@ class GitHubClient:
         self.user = self.client.get_user()
 
     @retry(
-        stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10)
+        stop=stop_after_attempt(3),
+        wait=wait_exponential(multiplier=1, min=4, max=10),
+        reraise=True,
     )
     def get_repository(self, repo_name: str) -> Repository:
         """Get a repository by name (owner/repo)."""
