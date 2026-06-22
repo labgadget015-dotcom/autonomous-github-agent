@@ -138,3 +138,16 @@ jobs:
             audit.log
             diagrams/
           retention-days: 30
+
+      - name: Notify DRC of CI result
+        if: always()
+        env:
+          REPO: ${{ github.repository }}
+          CONCLUSION: ${{ job.status }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          WORKFLOW: ${{ github.workflow }}
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          curl -s -X POST https://gadgetlab.app.n8n.cloud/webhook/ci-feedback \
+            -H 'Content-Type: application/json' \
+            -d "{\"repo\":\"${REPO}\",\"conclusion\":\"${CONCLUSION}\",\"run_url\":\"${RUN_URL}\",\"workflow_name\":\"${WORKFLOW}\",\"run_id\":\"${RUN_ID}\"}" || true
