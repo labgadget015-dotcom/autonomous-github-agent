@@ -66,7 +66,9 @@ class InlinePRCommentBot:
                         "path": issue.get("path", ""),
                         "line": issue.get("line", 1),
                         "body": self._format_pylint_comment(issue),
-                        "severity": self._map_pylint_severity(issue.get("type", "convention")),
+                        "severity": self._map_pylint_severity(
+                            issue.get("type", "convention")
+                        ),
                     }
                 )
         except FileNotFoundError:
@@ -253,8 +255,12 @@ Function `{name}` has a cyclomatic complexity of **{complexity}** (threshold: 10
         unique_comments = self._deduplicate_comments(comments)
 
         # Group by severity and limit
-        critical_comments = [c for c in unique_comments if c["severity"] in ["high", "critical"]]
-        other_comments = [c for c in unique_comments if c["severity"] not in ["high", "critical"]]
+        critical_comments = [
+            c for c in unique_comments if c["severity"] in ["high", "critical"]
+        ]
+        other_comments = [
+            c for c in unique_comments if c["severity"] not in ["high", "critical"]
+        ]
 
         # Post critical comments always, limit others
         comments_to_post = critical_comments + other_comments[:10]
@@ -299,7 +305,9 @@ Function `{name}` has a cyclomatic complexity of **{complexity}** (threshold: 10
             payload["commit_id"] = self.commit_sha
 
         try:
-            response = requests.post(url, headers=self.headers, json=payload, timeout=30)
+            response = requests.post(
+                url, headers=self.headers, json=payload, timeout=30
+            )
             response.raise_for_status()
             return True
         except requests.exceptions.RequestException as e:
