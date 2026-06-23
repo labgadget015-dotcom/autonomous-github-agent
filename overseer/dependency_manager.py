@@ -115,7 +115,7 @@ class DependencyManager:
         }
 
         try:
-            with open(package_json) as f:
+            with open(package_json, encoding="utf-8") as f:
                 data = json.load(f)
 
             dependencies = data.get("dependencies", {})
@@ -145,7 +145,7 @@ class DependencyManager:
         dependencies = []
 
         try:
-            with open(requirements_file) as f:
+            with open(requirements_file, encoding="utf-8") as f:
                 for line in f:
                     line = line.strip()
 

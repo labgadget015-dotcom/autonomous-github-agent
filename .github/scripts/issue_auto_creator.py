@@ -43,7 +43,7 @@ class IssueAutoCreator:
         }
 
         try:
-            response = requests.post(url, headers=headers, json=data)
+            response = requests.post(url, headers=headers, json=data, timeout=30)
             response.raise_for_status()
             return response.json()
         except requests.exceptions.RequestException as e:
@@ -59,7 +59,7 @@ class IssueAutoCreator:
             return issues_to_create
 
         try:
-            with open(summary_path) as f:
+            with open(summary_path, encoding="utf-8") as f:
                 data = json.load(f)
 
             # Check quality score

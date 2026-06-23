@@ -44,7 +44,7 @@ class DocumentationGenerator:
 
         content = self._build_readme_content()
 
-        with open(readme_path, "w") as f:
+        with open(readme_path, "w", encoding="utf-8") as f:
             f.write(content)
 
         logger.info(f"Enhanced README generated at {readme_path}")
@@ -63,7 +63,7 @@ class DocumentationGenerator:
 
         content = self._build_contributing_content()
 
-        with open(contrib_path, "w") as f:
+        with open(contrib_path, "w", encoding="utf-8") as f:
             f.write(content)
 
         logger.info(f"CONTRIBUTING guide generated at {contrib_path}")
@@ -113,7 +113,7 @@ class DocumentationGenerator:
             # Check for common Python frameworks
             requirements = self.repo_path / "requirements.txt"
             if requirements.exists():
-                with open(requirements) as f:
+                with open(requirements, encoding="utf-8") as f:
                     content = f.read().lower()
                     if "django" in content:
                         info["frameworks"].append("Django")
@@ -309,7 +309,7 @@ class DocumentationGenerator:
             # Generate documentation
             doc_content = self._extract_module_docs(tree, py_file)
 
-            with open(doc_path, "w") as f:
+            with open(doc_path, "w", encoding="utf-8") as f:
                 f.write(doc_content)
 
             return doc_path

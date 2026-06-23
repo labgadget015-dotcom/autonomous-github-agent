@@ -52,7 +52,7 @@ class GitHubActionsMonitor:
             params["status"] = status
 
         try:
-            response = requests.get(url, headers=self.headers, params=params)
+            response = requests.get(url, headers=self.headers, params=params, timeout=30)
             response.raise_for_status()
             return response.json()["workflow_runs"]
         except requests.RequestException as e:
@@ -64,7 +64,7 @@ class GitHubActionsMonitor:
         url = f"{self.base_url}/actions/runs/{run_id}"
 
         try:
-            response = requests.get(url, headers=self.headers)
+            response = requests.get(url, headers=self.headers, timeout=30)
             response.raise_for_status()
             return response.json()
         except requests.RequestException as e:
@@ -76,7 +76,7 @@ class GitHubActionsMonitor:
         url = f"{self.base_url}/actions/runs/{run_id}/jobs"
 
         try:
-            response = requests.get(url, headers=self.headers)
+            response = requests.get(url, headers=self.headers, timeout=30)
             response.raise_for_status()
             return response.json()["jobs"]
         except requests.RequestException as e:

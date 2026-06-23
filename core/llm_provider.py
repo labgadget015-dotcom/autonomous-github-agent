@@ -283,7 +283,7 @@ class LLMClient:
             self._session_cost_usd,
         )
         try:
-            with open(self._costs_file, "a") as f:
+            with open(self._costs_file, "a", encoding="utf-8") as f:
                 f.write(json.dumps(record) + "\n")
         except Exception as exc:
             logger.warning("Failed to write cost record: %s", exc)

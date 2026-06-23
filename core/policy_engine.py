@@ -64,7 +64,7 @@ class PolicyEngine:
         try:
             path = Path(policy_file)
             if path.exists():
-                with open(path) as f:
+                with open(path, encoding="utf-8") as f:
                     policies = yaml.safe_load(f)
                     logger.info(f"Loaded policies from {policy_file}")
                     return policies
@@ -223,7 +223,7 @@ class PolicyEngine:
             path = Path(policy_file)
             path.parent.mkdir(parents=True, exist_ok=True)
 
-            with open(path, "w") as f:
+            with open(path, "w", encoding="utf-8") as f:
                 yaml.dump(self.policies, f, default_flow_style=False)
 
             logger.info(f"Saved policies to {policy_file}")

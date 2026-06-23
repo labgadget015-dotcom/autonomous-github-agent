@@ -232,7 +232,7 @@ class AsyncParallelAnalyzer:
     def save_summary(self, summary: dict[str, Any]) -> None:
         """Save summary to JSON file."""
         summary_path = self.reports_dir / "analysis-summary.json"
-        with open(summary_path, "w") as f:
+        with open(summary_path, "w", encoding="utf-8") as f:
             json.dump(summary, f, indent=2)
         print(f"\\n💾 Summary saved to {summary_path}")
 

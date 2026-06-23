@@ -17,7 +17,7 @@ def generate_documentation():
     doc_content = """# Automated Documentation\n\n## Overview\nThis documentation was automatically generated.\n\n## Components\n- AI Agent\n- Policy Checker\n- Test Runner\n\n## Workflow\n1. Gather context\n2. Run AI agent\n3. Enforce policy\n4. Run tests\n5. Generate documentation\n"""
 
     doc_file = Path("AUTODOC.md")
-    with open(doc_file, "w") as f:
+    with open(doc_file, "w", encoding="utf-8") as f:
         f.write(doc_content)
 
     # Generate placeholder diagram
@@ -25,7 +25,7 @@ def generate_documentation():
 """
 
     diagram_file = diagrams_dir / "workflow.txt"
-    with open(diagram_file, "w") as f:
+    with open(diagram_file, "w", encoding="utf-8") as f:
         f.write(diagram_content)
 
     print(f"Documentation generated: {doc_file}")

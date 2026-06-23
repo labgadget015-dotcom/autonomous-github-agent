@@ -23,7 +23,7 @@ class ThresholdMonitor:
         """Load configuration file"""
         config_file = Path(path)
         if config_file.exists():
-            with open(config_file) as f:
+            with open(config_file, encoding="utf-8") as f:
                 return yaml.safe_load(f)
         return self._default_config()
 
@@ -58,7 +58,7 @@ class ThresholdMonitor:
             print(f"⚠️  Results file not found: {results_path}")
             return []
 
-        with open(results_file) as f:
+        with open(results_file, encoding="utf-8") as f:
             results = json.load(f)
 
         violations = []
@@ -84,7 +84,7 @@ class ThresholdMonitor:
         if not coverage_file.exists():
             return None
 
-        with open(coverage_file) as f:
+        with open(coverage_file, encoding="utf-8") as f:
             coverage = json.load(f)
 
         total_coverage = coverage.get("totals", {}).get("percent_covered", 0)
@@ -107,7 +107,7 @@ class ThresholdMonitor:
         if not complexity_file.exists():
             return []
 
-        with open(complexity_file) as f:
+        with open(complexity_file, encoding="utf-8") as f:
             complexity = json.load(f)
 
         violations = []
@@ -137,7 +137,7 @@ class ThresholdMonitor:
         if not bandit_file.exists():
             return []
 
-        with open(bandit_file) as f:
+        with open(bandit_file, encoding="utf-8") as f:
             report = json.load(f)
 
         violations = []
@@ -259,7 +259,7 @@ Add tests to improve coverage to meet the required threshold.
             "violations": violations,
         }
 
-        with open(path, "w") as f:
+        with open(path, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=2)
 
         print(f"✅ Saved {len(violations)} violations to {path}")
@@ -342,7 +342,7 @@ def main():
                 if violation["severity"] in ["critical", "high"]:
                     issues.append(monitor.create_github_issue(violation))
 
-            with open("issues-to-create.json", "w") as f:
+            with open("issues-to-create.json", "w", encoding="utf-8") as f:
                 json.dump(issues, f, indent=2)
 
             print(f"\n📝 Created {len(issues)} issue templates")

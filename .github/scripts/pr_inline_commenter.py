@@ -40,9 +40,9 @@ class PRInlineCommenter:
         url = f"{self.api_base}/repos/{self.repo}/{endpoint}"
         try:
             if method == "GET":
-                response = requests.get(url, headers=self._get_headers())
+                response = requests.get(url, headers=self._get_headers(), timeout=30)
             elif method == "POST":
-                response = requests.post(url, headers=self._get_headers(), json=data)
+                response = requests.post(url, headers=self._get_headers(), json=data, timeout=30)
             else:
                 raise ValueError(f"Unsupported method: {method}")
 
@@ -56,7 +56,7 @@ class PRInlineCommenter:
         """Parse Pylint JSON report and extract actionable issues."""
         comments = []
         try:
-            with open(report_path) as f:
+            with open(report_path, encoding="utf-8") as f:
                 data = json.load(f)
 
             for issue in data:
@@ -80,7 +80,7 @@ class PRInlineCommenter:
         """Parse Bandit JSON report and extract security issues."""
         comments = []
         try:
-            with open(report_path) as f:
+            with open(report_path, encoding="utf-8") as f:
                 data = json.load(f)
 
             for issue in data.get("results", []):
@@ -108,7 +108,7 @@ class PRInlineCommenter:
         """Parse Radon complexity report and highlight high complexity."""
         comments = []
         try:
-            with open(report_path) as f:
+            with open(report_path, encoding="utf-8") as f:
                 data = json.load(f)
 
             for file_path, functions in data.items():

@@ -19,7 +19,7 @@ class ComplexityReporter:
     def _load_json(self, filename: str) -> dict:
         """Load JSON data file"""
         try:
-            with open(filename) as f:
+            with open(filename, encoding="utf-8") as f:
                 return json.load(f)
         except FileNotFoundError:
             return {}
@@ -160,7 +160,7 @@ class ComplexityReporter:
 
     def save_report(self, report: str, filename: str = "complexity-report.md"):
         """Save report to file"""
-        with open(filename, "w") as f:
+        with open(filename, "w", encoding="utf-8") as f:
             f.write(report)
         print(f"✅ Report saved to {filename}")
 

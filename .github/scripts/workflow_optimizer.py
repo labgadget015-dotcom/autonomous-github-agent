@@ -199,7 +199,7 @@ def main():
     print(report)
 
     # Save report
-    with open("workflow-optimization-report.md", "w") as f:
+    with open("workflow-optimization-report.md", "w", encoding="utf-8") as f:
         f.write(report)
 
     print("\n✅ Report saved to workflow-optimization-report.md")

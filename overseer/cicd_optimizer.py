@@ -72,7 +72,7 @@ class CICDOptimizer:
     def _analyze_workflow(self, workflow_file: Path, results: dict):
         """Analyze a single workflow file"""
         try:
-            with open(workflow_file) as f:
+            with open(workflow_file, encoding="utf-8") as f:
                 workflow = yaml.safe_load(f)
 
             if not workflow:

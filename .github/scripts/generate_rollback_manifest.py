@@ -24,7 +24,7 @@ def main():
 
     # Read existing content
     if os.path.exists(path):
-        with open(path) as f:
+        with open(path, encoding="utf-8") as f:
             existing = f.read()
     else:
         existing = "# Rollback Manifest\n\nThis file tracks all commits to main for rollback purposes.\n\n"
@@ -58,7 +58,7 @@ def main():
     else:
         new_content = existing + new_entry
 
-    with open(path, "w") as f:
+    with open(path, "w", encoding="utf-8") as f:
         f.write(new_content)
 
     print(f"Rollback manifest updated: {path}")

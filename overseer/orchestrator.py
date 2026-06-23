@@ -465,7 +465,7 @@ class RepositoryOverseer:
             else Path(output_path)
         )
 
-        with open(resolved, "w") as f:
+        with open(resolved, "w", encoding="utf-8") as f:
             json.dump(self.results, f, indent=2, default=str)
 
         logger.info(f"Results saved to: {resolved}")

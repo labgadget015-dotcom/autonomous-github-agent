@@ -26,7 +26,7 @@ class ParallelCodeAnalyzer:
     def _load_config(self) -> dict:
         """Load configuration from YAML file"""
         if self.config_path.exists():
-            with open(self.config_path) as f:
+            with open(self.config_path, encoding="utf-8") as f:
                 return yaml.safe_load(f)
         return self._default_config()
 
@@ -220,7 +220,7 @@ class ParallelCodeAnalyzer:
 
     def save_results(self, results: dict, output_path: str = "analysis-results.json"):
         """Save results to JSON file"""
-        with open(output_path, "w") as f:
+        with open(output_path, "w", encoding="utf-8") as f:
             json.dump(results, f, indent=2)
         print(f"Results saved to {output_path}")
 

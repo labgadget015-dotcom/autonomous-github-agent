@@ -98,7 +98,7 @@ class BadgeGenerator:
 
         # Load data
         try:
-            with open("analysis-results.json") as f:
+            with open("analysis-results.json", encoding="utf-8") as f:
                 _analysis = json.load(f)
 
             # Health badge (calculated from analysis)
@@ -108,7 +108,7 @@ class BadgeGenerator:
             badges["health"] = self.generate_health_badge(85)
 
         try:
-            with open("coverage.json") as f:
+            with open("coverage.json", encoding="utf-8") as f:
                 coverage_data = json.load(f)
                 coverage_pct = coverage_data.get("totals", {}).get("percent_covered", 0)
                 badges["coverage"] = self.generate_coverage_badge(coverage_pct)
@@ -116,7 +116,7 @@ class BadgeGenerator:
             badges["coverage"] = self.generate_coverage_badge(80)
 
         try:
-            with open("bandit-report.json") as f:
+            with open("bandit-report.json", encoding="utf-8") as f:
                 security = json.load(f)
                 issue_count = len(security.get("results", []))
                 badges["security"] = self.generate_security_badge(issue_count)
@@ -124,7 +124,7 @@ class BadgeGenerator:
             badges["security"] = self.generate_security_badge(0)
 
         try:
-            with open("complexity.json") as f:
+            with open("complexity.json", encoding="utf-8") as f:
                 complexity = json.load(f)
                 # Calculate average
                 total = 0
@@ -166,7 +166,7 @@ class BadgeGenerator:
         badge_section = self.generate_badge_section()
 
         try:
-            with open(readme_path) as f:
+            with open(readme_path, encoding="utf-8") as f:
                 content = f.read()
 
             # Replace badge section if it exists
@@ -184,7 +184,7 @@ class BadgeGenerator:
                     lines.insert(2, badge_section)
                     content = "\n".join(lines)
 
-            with open(readme_path, "w") as f:
+            with open(readme_path, "w", encoding="utf-8") as f:
                 f.write(content)
 
             print(f"✅ Updated badges in {readme_path}")
@@ -204,7 +204,7 @@ def main():
         print(f"  {name}: {badge}")
 
     # Save to file
-    with open("badges.md", "w") as f:
+    with open("badges.md", "w", encoding="utf-8") as f:
         f.write("# Status Badges\n\n")
         for name, badge in badges.items():
             f.write(f"**{name.title()}:** {badge}\n\n")

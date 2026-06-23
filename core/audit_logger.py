@@ -142,7 +142,7 @@ class AuditLogger:
     async def _write_to_file(self, log_entry: dict[str, Any]):
         """Write log entry to local file"""
         try:
-            with open(self.log_file, "a") as f:
+            with open(self.log_file, "a", encoding="utf-8") as f:
                 f.write(json.dumps(log_entry) + "\n")
         except Exception as e:
             logger.error(f"Failed to write to audit log file: {str(e)}")
@@ -189,7 +189,7 @@ class AuditLogger:
             return genesis
         last_hash = genesis
         try:
-            with open(self.log_file) as f:
+            with open(self.log_file, encoding="utf-8") as f:
                 for line in f:
                     line = line.strip()
                     if not line:
@@ -212,7 +212,7 @@ class AuditLogger:
             return True, []
         prev_hash = "0" * 64
         try:
-            with open(self.log_file) as f:
+            with open(self.log_file, encoding="utf-8") as f:
                 for lineno, line in enumerate(f, 1):
                     line = line.strip()
                     if not line:
@@ -296,7 +296,7 @@ class AuditLogger:
         logs = []
 
         try:
-            with open(self.log_file) as f:
+            with open(self.log_file, encoding="utf-8") as f:
                 for line in f:
                     entry = json.loads(line.strip())
 

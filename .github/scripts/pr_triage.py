@@ -35,7 +35,7 @@ def _load_repos(config_path: str) -> list[dict]:
     p = Path(config_path)
     if not p.exists():
         sys.exit(f"Config not found: {config_path}")
-    with open(p) as f:
+    with open(p, encoding="utf-8") as f:
         cfg = yaml.safe_load(f)
     return cfg.get("repos", [])
 

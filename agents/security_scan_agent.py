@@ -42,7 +42,7 @@ class SecurityScanAgent(BaseAgent):
             capture_output=True,
         )
         try:
-            with open("/tmp/bandit.json") as f:
+            with open("/tmp/bandit.json", encoding="utf-8") as f:
                 return json.load(f)
         except (FileNotFoundError, json.JSONDecodeError):
             return {}
@@ -54,7 +54,7 @@ class SecurityScanAgent(BaseAgent):
             capture_output=True,
         )
         try:
-            with open("/tmp/pip-audit.json") as f:
+            with open("/tmp/pip-audit.json", encoding="utf-8") as f:
                 data = json.load(f)
             return data if isinstance(data, list) else data.get("dependencies", [])
         except (FileNotFoundError, json.JSONDecodeError):

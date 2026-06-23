@@ -152,7 +152,7 @@ class MetricsCollector:
         # Parse Bandit security reports
         bandit_report = reports_dir / "bandit-report.json"
         if bandit_report.exists():
-            with open(bandit_report) as f:
+            with open(bandit_report, encoding="utf-8") as f:
                 data = json.load(f)
                 results = data.get("results", [])
 
@@ -167,7 +167,7 @@ class MetricsCollector:
         # Parse Radon complexity reports
         radon_cc = reports_dir / "radon-cc.json"
         if radon_cc.exists():
-            with open(radon_cc) as f:
+            with open(radon_cc, encoding="utf-8") as f:
                 data = json.load(f)
                 complexities = []
                 for _filepath, metrics in data.items():
@@ -196,7 +196,7 @@ class MetricsCollector:
         # Parse Pylint reports
         pylint_report = reports_dir / "pylint-report.json"
         if pylint_report.exists():
-            with open(pylint_report) as f:
+            with open(pylint_report, encoding="utf-8") as f:
                 try:
                     data = json.load(f)
                     # Pylint score is typically out of 10
@@ -226,7 +226,7 @@ class MetricsCollector:
             },
         }
 
-        with open(output_file, "w") as f:
+        with open(output_file, "w", encoding="utf-8") as f:
             json.dump(dashboard_data, f, indent=2)
 
         print(f"📊 Dashboard data written to: {output_file}")
