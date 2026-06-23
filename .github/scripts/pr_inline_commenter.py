@@ -116,11 +116,7 @@ class PRInlineCommenter:
                     for func in functions:
                         complexity = func.get("complexity", 0)
                         if complexity > 10:  # High complexity threshold
-                            icon = (
-                                "🔴"
-                                if complexity > 20
-                                else "🟡" if complexity > 15 else "🟠"
-                            )
+                            icon = "🔴" if complexity > 20 else "🟡" if complexity > 15 else "🟠"
                             comments.append(
                                 {
                                     "path": file_path.replace("./", ""),
@@ -181,14 +177,10 @@ class PRInlineCommenter:
             "comments": review_comments,
         }
 
-        result = self._make_request(
-            "POST", f"pulls/{self.pr_number}/reviews", review_data
-        )
+        result = self._make_request("POST", f"pulls/{self.pr_number}/reviews", review_data)
 
         if result:
-            print(
-                f"✅ Posted {len(review_comments)} inline comments on PR #{self.pr_number}"
-            )
+            print(f"✅ Posted {len(review_comments)} inline comments on PR #{self.pr_number}")
         else:
             print("⚠️  Failed to post review comments")
 

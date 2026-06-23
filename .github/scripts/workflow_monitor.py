@@ -131,9 +131,7 @@ class GitHubActionsMonitor:
         print(
             f"   Commit: {run['head_sha'][:7]} - {run['head_commit']['message'].split(chr(10))[0][:50]}"
         )
-        print(
-            f"   Status: {status.title()}" + (f" ({conclusion})" if conclusion else "")
-        )
+        print(f"   Status: {status.title()}" + (f" ({conclusion})" if conclusion else ""))
         print(f"   Duration: {duration_str}")
         print(f"   Started: {created_at.strftime('%Y-%m-%d %H:%M:%S')}")
         print(f"   URL: {run['html_url']}")
@@ -151,12 +149,8 @@ class GitHubActionsMonitor:
             emoji = self.get_status_emoji(job["status"], job.get("conclusion"))
 
             if job.get("started_at") and job.get("completed_at"):
-                started = datetime.fromisoformat(
-                    job["started_at"].replace("Z", "+00:00")
-                )
-                completed = datetime.fromisoformat(
-                    job["completed_at"].replace("Z", "+00:00")
-                )
+                started = datetime.fromisoformat(job["started_at"].replace("Z", "+00:00"))
+                completed = datetime.fromisoformat(job["completed_at"].replace("Z", "+00:00"))
                 duration = (completed - started).total_seconds()
                 duration_str = self.format_duration(int(duration))
             else:
@@ -225,17 +219,9 @@ class GitHubActionsMonitor:
 
         durations = []
         for run in runs:
-            if (
-                run["status"] == "completed"
-                and run.get("created_at")
-                and run.get("updated_at")
-            ):
-                created = datetime.fromisoformat(
-                    run["created_at"].replace("Z", "+00:00")
-                )
-                updated = datetime.fromisoformat(
-                    run["updated_at"].replace("Z", "+00:00")
-                )
+            if run["status"] == "completed" and run.get("created_at") and run.get("updated_at"):
+                created = datetime.fromisoformat(run["created_at"].replace("Z", "+00:00"))
+                updated = datetime.fromisoformat(run["updated_at"].replace("Z", "+00:00"))
                 duration = (updated - created).total_seconds()
                 durations.append(duration)
 
