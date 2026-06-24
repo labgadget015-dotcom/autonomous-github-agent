@@ -227,7 +227,7 @@ class PerformanceBenchmark:
             "benchmarks": [asdict(b) for b in self.current_session],
         }
 
-        with open(results_file, "w") as f:
+        with open(results_file, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=2)
 
         print(f"\n📊 Results saved to {results_file}")
@@ -242,7 +242,7 @@ class PerformanceBenchmark:
                 return {}
             baseline_file = baseline_files[-2]  # Second most recent
 
-        with open(baseline_file) as f:
+        with open(baseline_file, encoding="utf-8") as f:
             baseline_data = json.load(f)
 
         baseline_benchmarks = {
@@ -343,7 +343,7 @@ class PerformanceBenchmark:
             report.append("")
 
         # Save report
-        with open(output_path, "w") as f:
+        with open(output_path, "w", encoding="utf-8") as f:
             f.write("\n".join(report))
 
         print(f"✅ Report saved to {output_path}")

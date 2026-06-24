@@ -19,7 +19,7 @@ class HealthDashboardGenerator:
     def load_analysis_results(self) -> dict:
         """Load code analysis results"""
         try:
-            with open("analysis-results.json") as f:
+            with open("analysis-results.json", encoding="utf-8") as f:
                 return json.load(f)
         except FileNotFoundError:
             return {}
@@ -27,7 +27,7 @@ class HealthDashboardGenerator:
     def load_coverage_data(self) -> dict:
         """Load test coverage data"""
         try:
-            with open("coverage.json") as f:
+            with open("coverage.json", encoding="utf-8") as f:
                 return json.load(f)
         except FileNotFoundError:
             return {}
@@ -36,13 +36,13 @@ class HealthDashboardGenerator:
         """Load complexity metrics"""
         complexity = {}
         try:
-            with open("complexity.json") as f:
+            with open("complexity.json", encoding="utf-8") as f:
                 complexity["cyclomatic"] = json.load(f)
         except FileNotFoundError:
             pass
 
         try:
-            with open("maintainability.json") as f:
+            with open("maintainability.json", encoding="utf-8") as f:
                 complexity["maintainability"] = json.load(f)
         except FileNotFoundError:
             pass
@@ -52,7 +52,7 @@ class HealthDashboardGenerator:
     def load_security_data(self) -> dict:
         """Load security scan results"""
         try:
-            with open("bandit-report.json") as f:
+            with open("bandit-report.json", encoding="utf-8") as f:
                 return json.load(f)
         except FileNotFoundError:
             return {}
@@ -60,7 +60,7 @@ class HealthDashboardGenerator:
     def load_violations(self) -> dict:
         """Load threshold violations"""
         try:
-            with open("threshold-violations.json") as f:
+            with open("threshold-violations.json", encoding="utf-8") as f:
                 return json.load(f)
         except FileNotFoundError:
             return {}
@@ -529,7 +529,7 @@ new Chart(qualCtx, {{
         dashboard_path = Path(path)
         dashboard_path.parent.mkdir(parents=True, exist_ok=True)
 
-        with open(dashboard_path, "w") as f:
+        with open(dashboard_path, "w", encoding="utf-8") as f:
             f.write(content)
 
         print(f"✅ Dashboard saved to {path}")

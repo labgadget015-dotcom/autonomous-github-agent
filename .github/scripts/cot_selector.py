@@ -53,7 +53,7 @@ class OptimizedCoTSelector:
         """Load configuration with fallback defaults."""
         try:
             if self.config_path.exists():
-                with open(self.config_path) as f:
+                with open(self.config_path, encoding="utf-8") as f:
                     return yaml.safe_load(f)
         except Exception as e:
             print(f"Warning: Could not load config: {e}")

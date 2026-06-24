@@ -45,7 +45,7 @@ class GitHubAutopilot:
         if not config_file.exists():
             raise FileNotFoundError(f"Config file not found: {config_file}")
 
-        with open(config_file) as f:
+        with open(config_file, encoding="utf-8") as f:
             return yaml.safe_load(f)
 
     def _init_github_client(self) -> Github:
@@ -342,7 +342,7 @@ class GitHubAutopilot:
             output_file_path = None
 
         if output_file_path is not None:
-            with open(output_file_path, "w") as f:
+            with open(output_file_path, "w", encoding="utf-8") as f:
                 f.write(summary)
             print(f"✅ Summary written to: {output_file_path}")
 

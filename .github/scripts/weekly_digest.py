@@ -13,7 +13,7 @@ from datetime import datetime
 
 def load_results(path: str = "overseer-results.json") -> dict:
     try:
-        with open(path) as f:
+        with open(path, encoding="utf-8") as f:
             return json.load(f)
     except FileNotFoundError:
         print(f"Results file not found: {path}", file=sys.stderr)

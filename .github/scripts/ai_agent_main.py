@@ -10,7 +10,7 @@ from pathlib import Path
 def load_context(context_file):
     """Load context from JSON file."""
     try:
-        with open(context_file) as f:
+        with open(context_file, encoding="utf-8") as f:
             return json.load(f)
     except Exception as e:
         print(f"Error loading context: {e}")
@@ -31,7 +31,7 @@ def run_ai_agent(context):
 
     # Save results
     results_file = Path("results.json")
-    with open(results_file, "w") as f:
+    with open(results_file, "w", encoding="utf-8") as f:
         json.dump(results, f, indent=2)
 
     print(f"Results saved to {results_file}")

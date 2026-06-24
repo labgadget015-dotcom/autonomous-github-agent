@@ -115,7 +115,7 @@ class RepositoryMonitor:
         # Count dependencies
         requirements = self.repo_path / "requirements.txt"
         if requirements.exists():
-            with open(requirements) as f:
+            with open(requirements, encoding="utf-8") as f:
                 deps = [
                     line.strip()
                     for line in f
@@ -128,7 +128,7 @@ class RepositoryMonitor:
             import json
 
             try:
-                with open(package_json) as f:
+                with open(package_json, encoding="utf-8") as f:
                     data = json.load(f)
                     npm_deps = len(data.get("dependencies", {})) + len(
                         data.get("devDependencies", {})

@@ -128,7 +128,7 @@ class EliteCopilot:
         }
 
         if config_path and Path(config_path).exists():
-            with open(config_path) as f:
+            with open(config_path, encoding="utf-8") as f:
                 user_config = yaml.safe_load(f)
                 default_config.update(user_config)
 
@@ -407,7 +407,7 @@ How else can I assist you?
             report.append("No specific insights generated.")
 
         # Save report
-        with open(output_path, "w") as f:
+        with open(output_path, "w", encoding="utf-8") as f:
             f.write("\n".join(report))
 
         print(f"✅ Report saved to {output_path}")

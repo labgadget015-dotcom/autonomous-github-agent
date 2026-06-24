@@ -154,7 +154,7 @@ class WorkflowMetricsExporter:
     def _load_json(self, filename: str) -> dict:
         """Load JSON file"""
         try:
-            with open(filename) as f:
+            with open(filename, encoding="utf-8") as f:
                 return json.load(f)
         except (FileNotFoundError, json.JSONDecodeError):
             return {}

@@ -132,3 +132,8 @@ check_untyped_defs = false
 testpaths = ["tests"]
 asyncio_mode = "auto"
 addopts = "-v --cov=autonomous_agent --cov-report=term-missing"
+
+[tool.pylint.typecheck]
+# orjson is a compiled C extension; pylint can't introspect its members and
+# falsely reports E1101 (no-member) on orjson.dumps/loads. Allow-list it.
+extension-pkg-allow-list = ["orjson"]

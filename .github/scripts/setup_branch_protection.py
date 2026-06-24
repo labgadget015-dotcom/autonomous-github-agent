@@ -133,7 +133,7 @@ def setup_branch_protection(
             contexts=config["require_status_checks"]["contexts"],
             # Enforcement and restrictions
             enforce_admins=config["enforce_admins"],
-            require_linear_history=config["require_linear_history"],
+            required_linear_history=config["require_linear_history"],
             allow_force_pushes=config["allow_force_pushes"],
             allow_deletions=config["allow_deletions"],
             required_conversation_resolution=config["required_conversation_resolution"],

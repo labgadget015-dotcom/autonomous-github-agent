@@ -102,7 +102,7 @@ fi
 echo "All formatting checks complete!"
 """
 
-            with open(script_path, "w") as f:
+            with open(script_path, "w", encoding="utf-8") as f:
                 f.write(content)
 
             # Make executable
@@ -140,7 +140,7 @@ fi
 echo "All formatting checks complete!"
 """
 
-            with open(script_path, "w") as f:
+            with open(script_path, "w", encoding="utf-8") as f:
                 f.write(content)
 
             os.chmod(script_path, 0o755)
@@ -192,7 +192,7 @@ echo "✓ Release v$VERSION created successfully!"
 echo "GitHub will automatically create a release from the tag."
 """
 
-        with open(script_path, "w") as f:
+        with open(script_path, "w", encoding="utf-8") as f:
             f.write(content)
 
         os.chmod(script_path, 0o755)
@@ -262,7 +262,7 @@ echo "Setup complete! To activate the environment, run:"
 echo "  source venv/bin/activate"
 """
 
-            with open(script_path, "w") as f:
+            with open(script_path, "w", encoding="utf-8") as f:
                 f.write(content)
 
             os.chmod(script_path, 0o755)
@@ -303,7 +303,7 @@ echo ""
 echo "Setup complete!"
 """
 
-            with open(script_path, "w") as f:
+            with open(script_path, "w", encoding="utf-8") as f:
                 f.write(content)
 
             os.chmod(script_path, 0o755)

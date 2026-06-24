@@ -424,7 +424,7 @@ class AICodeSuggestor:
                 report.append("\n---\n")
 
         # Save report
-        with open(output_path, "w") as f:
+        with open(output_path, "w", encoding="utf-8") as f:
             f.write("\n".join(report))
 
         print(f"✅ Report saved to {output_path}")
@@ -440,7 +440,7 @@ class AICodeSuggestor:
             "suggestions": [asdict(s) for s in self.suggestions],
         }
 
-        with open(output_path, "w") as f:
+        with open(output_path, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=2)
 
         print(f"✅ JSON export saved to {output_path}")

@@ -140,7 +140,7 @@ class SmartContextGatherer:
 
         # Save context
         output_file = self.workspace / "context.json"
-        with open(output_file, "w") as f:
+        with open(output_file, "w", encoding="utf-8") as f:
             json.dump(context, f, indent=2)
 
         print(f"✅ Context gathered in {mode.value} mode")

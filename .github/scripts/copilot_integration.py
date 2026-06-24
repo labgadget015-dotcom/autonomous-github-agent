@@ -296,14 +296,14 @@ class CopilotHub:
 
         # Save report
         report_path = Path("COPILOT_INTEGRATION_REPORT.md")
-        with open(report_path, "w") as f:
+        with open(report_path, "w", encoding="utf-8") as f:
             f.write(report)
 
         print(f"\n✅ Integration report saved to: {report_path}")
 
         # Also save JSON results
         results_path = Path("copilot_integration_results.json")
-        with open(results_path, "w") as f:
+        with open(results_path, "w", encoding="utf-8") as f:
             json.dump(self.results, f, indent=2)
 
         print(f"✅ JSON results saved to: {results_path}")

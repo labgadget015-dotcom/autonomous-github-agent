@@ -23,7 +23,7 @@ def check_policies():
     # Check if results.json exists
     results_file = Path("results.json")
     if results_file.exists():
-        with open(results_file) as f:
+        with open(results_file, encoding="utf-8") as f:
             results = json.load(f)
             print(f"Found results: {results.get('status', 'unknown')}")
     else:
@@ -40,7 +40,7 @@ def check_policies():
 
     # Save audit log
     audit_file = Path("audit.log")
-    with open(audit_file, "w") as f:
+    with open(audit_file, "w", encoding="utf-8") as f:
         f.write(json.dumps(audit, indent=2))
 
     print(f"Policy check status: {audit['status']}")

@@ -1,0 +1,352 @@
+# GadgetLab Service Inventory
+# Ground truth as of 2026-06-24. Update last_verified_at when you confirm a service is still live.
+# Fields marked unknown need an owner to fill in — do not delete them.
+
+services:
+
+  # ── Core pipeline ──────────────────────────────────────────────────────────
+
+  - name: n8n-cloud
+    description: "Workflow orchestration — hosts all active GadgetLab automations"
+    host: gadgetlab.app.n8n.cloud
+    port: 443
+    container_name: null  # SaaS — not self-hosted
+    repo: autonomous-github-agent  # n8n-templates/ directory
+    owner: platform
+    criticality: critical
+    healthcheck_url: https://gadgetlab.app.n8n.cloud/healthz
+    creds_location: "n8n UI → Settings → n8n API  |  GitHub secret: n8n API key"
+    depends_on: []
+    backup_source: "n8n workflow export (JSON) — manual"
+    restore_order: 10
+    exposed_to:
+      - internet  # webhook endpoints
+      - github-actions
+    observability_source:
+      - n8n execution history
+      - workflow: Gadget Lab — Ops Health Check (4vFBQOwaB7enaopA)
+    notes: "API key expires ~2026-07-01. Renew in n8n UI → Settings → n8n API."
+    last_verified_at: 2026-06-24T00:00:00Z
+
+  - name: drc-agent-loop
+    description: "Primary AI pipeline — Dreamer/Realist/Critic over GitHub issues"
+    host: gadgetlab.app.n8n.cloud
+    port: 443
+    container_name: null
+    repo: autonomous-github-agent
+    owner: platform
+    criticality: high
+    healthcheck_url: https://gadgetlab.app.n8n.cloud/webhook/github-agent-loop
+    creds_location: "n8n credential: Anthropic account (w2rayAhinr0AJcMf) | GitHub (gkB38oHT6IAyupz8) | Perplexity (I5Z1BiVIUsLHi3Mk — UNBOUND)"
+    depends_on:
+      - n8n-cloud
+      - tim-postgres
+      - anthropic-api
+      - perplexity-api
+      - slack-webhook
+      - google-drive
+    backup_source: "n8n workflow export"
+    restore_order: 30
+    exposed_to:
+      - github-event-router
+    n8n_workflow_id: Wlfhgk4sUfXJcU4D
+    notes: "Perplexity credential not yet bound — research_context falls back to placeholder. versionId ≠ activeVersionId (unpublished draft exists)."
+    last_verified_at: 2026-06-24T00:00:00Z
+
+  - name: github-event-router
+    description: "Ingress — validates HMAC, filters issues/PRs, forwards to DRC loop"
+    host: gadgetlab.app.n8n.cloud
+    port: 443
+    container_name: null
+    repo: autonomous-github-agent
+    owner: platform
+    criticality: high
+    healthcheck_url: null
+    creds_location: "GitHub webhook secret (HMAC) stored in GitHub repo secrets"
+    depends_on:
+      - n8n-cloud
+      - drc-agent-loop
+    backup_source: "n8n workflow export"
+    restore_order: 20
+    exposed_to:
+      - internet  # receives GitHub webhook POSTs
+    n8n_workflow_id: oijizIGJtRzBG94Z
+    last_verified_at: 2026-06-24T00:00:00Z
+
+  - name: tim-postgres
+    description: "Persistent store — agent_runs table, DRC output history"
+    host: unknown  # managed external Postgres; check n8n credential gndQWH8pCjbtieRf
+    port: 5432
+    container_name: null  # not self-hosted
+    repo: null
+    owner: platform
+    criticality: high
+    healthcheck_url: null
+    creds_location: "n8n credential: gndQWH8pCjbtieRf (Postgres TIM)"
+    depends_on: []
+    backup_source: unknown
+    restore_order: 5
+    exposed_to:
+      - n8n-cloud
+    observability_source:
+      - n8n execution history
+    notes: "Schema: tim.agent_runs. Host details in n8n credential — not stored here."
+    last_verified_at: 2026-06-24T00:00:00Z
+
+  # ── Supporting n8n workflows (active) ──────────────────────────────────────
+
+  - name: n8n-api-key-expiry-monitor
+    description: "Daily 09:00 BST — alerts Slack when n8n API key ≤14 days from expiry"
+    host: gadgetlab.app.n8n.cloud
+    criticality: medium
+    owner: platform
+    depends_on:
+      - n8n-cloud
+      - slack-webhook
+    n8n_workflow_id: igKdZJUr5NiUmRei
+    notes: "Key expires ~2026-07-01. This workflow is the only automated alert for that."
+    last_verified_at: 2026-06-24T00:00:00Z
+
+  - name: daily-drc-digest
+    description: "Daily 08:00 — reads tim.agent_runs, summarises via Claude, posts to Slack"
+    host: gadgetlab.app.n8n.cloud
+    criticality: low
+    owner: platform
+    depends_on:
+      - n8n-cloud
+      - tim-postgres
+      - anthropic-api
+      - slack-webhook
+      - google-drive
+    n8n_workflow_id: shhwyRRdoEdedYLa
+    last_verified_at: 2026-06-24T00:00:00Z
+
+  - name: ci-feedback-slack-alerter
+    description: "Receives CI result webhooks from GitHub Actions; alerts Slack on failure"
+    host: gadgetlab.app.n8n.cloud
+    criticality: low
+    owner: platform
+    depends_on:
+      - n8n-cloud
+      - slack-webhook
+    n8n_workflow_id: 1QPMbpEuY1MAKMSp
+    webhook_url: https://gadgetlab.app.n8n.cloud/webhook/ci-feedback
+    last_verified_at: 2026-06-24T00:00:00Z
+
+  - name: ops-health-check
+    description: "Every 6h — checks active workflow status via n8n API, emails on degraded state"
+    host: gadgetlab.app.n8n.cloud
+    criticality: medium
+    owner: platform
+    depends_on:
+      - n8n-cloud
+    n8n_workflow_id: 4vFBQOwaB7enaopA
+    last_verified_at: 2026-06-24T00:00:00Z
+
+  - name: github-token-expiry-monitor
+    description: "Daily 09:00 BST — checks GitHub PAT expiry, fires DRC alert at ≤7 days"
+    host: gadgetlab.app.n8n.cloud
+    criticality: medium
+    owner: platform
+    depends_on:
+      - n8n-cloud
+      - drc-agent-loop
+    n8n_workflow_id: WnqiaE0kYQKSo4I0
+    notes: "Monitoring PAT that expires 2027-05-07. The hardcoded date in the workflow (2026-05-21) may be stale — verify."
+    last_verified_at: 2026-06-24T00:00:00Z
+
+  - name: issue-classifier
+    description: "Auto-labels GitHub issues on open/edit"
+    host: gadgetlab.app.n8n.cloud
+    criticality: low
+    owner: platform
+    depends_on:
+      - n8n-cloud
+      - anthropic-api
+    n8n_workflow_id: KBndjvrbHEqxyixe
+    last_verified_at: 2026-06-24T00:00:00Z
+
+  - name: iterative-ai-feedback-loop
+    description: "Full iterative DRC with Gemini — proper loop_count, Hard Loop Guard (max 5), Confidence Gate (≥0.7), Token Budget Gate, re-queue via self-POST"
+    host: gadgetlab.app.n8n.cloud
+    criticality: low
+    owner: platform
+    webhook_url: https://gadgetlab.app.n8n.cloud/webhook/iterative-loop
+    depends_on:
+      - n8n-cloud
+      - google-drive
+      - gemini-api  # UNBOUND — googlePalmApi credential needed
+      - slack-api-oauth  # UNBOUND — uses slackApi OAuth, NOT webhook URL like DRC
+    n8n_workflow_id: MRLyf7VpwE0Qc8Xp
+    notes: |
+      ARCHIVED 2026-06-24. Blockers at time of archive:
+      1. Gemini credential (googlePalmApi) not bound
+      2. Slack API OAuth (slackApi) not bound
+      3. localhost:6000 Nexus memory backend doesn't exist — loop would not iterate to
+         convergence without it (each pass starts cold, defeating the purpose)
+      To restore: un-archive, bind Gemini + Slack OAuth, stand up localhost:6000 memory service.
+      loop_count increments correctly in this workflow — it was the origin of strategy-doc
+      references to 'loop_count bug'. The active DRC loop (Wlfhgk4sUfXJcU4D) is separate and linear.
+    last_verified_at: 2026-06-24T00:00:00Z
+
+  # ── External APIs / SaaS dependencies ─────────────────────────────────────
+
+  - name: anthropic-api
+    description: "LLM provider — claude-sonnet-4-6 for DREAMER, REALIST, CRITIC, Daily Digest"
+    host: api.anthropic.com
+    port: 443
+    owner: platform
+    criticality: critical
+    creds_location: "GitHub secret: ANTHROPIC_API_KEY (updated 2026-04-27) | n8n credential: w2rayAhinr0AJcMf"
+    depends_on: []
+    notes: "Cost cap: $1.00/run (pyproject.toml). Budget: <$50/month total."
+    last_verified_at: 2026-06-24T00:00:00Z
+
+  - name: perplexity-api
+    description: "Research enrichment — sonar-pro model, provides research_context to DREAMER"
+    host: api.perplexity.ai
+    port: 443
+    owner: platform
+    criticality: low
+    creds_location: "n8n credential: I5Z1BiVIUsLHi3Mk — NOT YET BOUND to Perplexity Research node"
+    depends_on: []
+    notes: "BLOCKER: credential unbound. DRC runs but with empty research_context."
+    last_verified_at: 2026-06-24T00:00:00Z
+
+  - name: slack-webhook
+    description: "Outbound notifications to #drc-recommendations (gadgetai.slack.com)"
+    host: hooks.slack.com
+    port: 443
+    owner: platform
+    criticality: low  # degraded observability if broken, not execution blocker
+    creds_location: "Hardcoded webhook URL in n8n nodes | GitHub secret: SLACK_WEBHOOK_URL"
+    depends_on: []
+    notes: "Channel: #drc-recommendations (C0B7JUMHT46). Slack app not yet created — /gadgetlab slash command blocked on this."
+    last_verified_at: 2026-06-24T00:00:00Z
+
+  - name: google-drive
+    description: "DRC run log storage — markdown files per run in My Drive root"
+    host: drive.google.com
+    port: 443
+    owner: platform
+    criticality: low
+    creds_location: "n8n credential: jg6k7UC6E82TJAoy (Google Drive)"
+    depends_on: []
+    notes: "2 unfixable validator warnings on Iterative AI Feedback Loop (multipart body issue). DRC loop uses createFromText which works."
+    last_verified_at: 2026-06-24T00:00:00Z
+
+  # ── GitHub ─────────────────────────────────────────────────────────────────
+
+  - name: github-repo
+    description: "Primary code repo — Python agent, GitHub Actions workflows, landing page"
+    host: github.com
+    owner: platform
+    criticality: critical
+    repo: labgadget015-dotcom/autonomous-github-agent
+    creds_location: "GitHub PAT expires 2027-05-07 | GitHub secret: GH_PAT | n8n credential: gkB38oHT6IAyupz8"
+    depends_on: []
+    notes: "Repo is private (no GHAS). SARIF upload steps use continue-on-error:true. 12+ GitHub Actions workflows."
+    last_verified_at: 2026-06-24T00:00:00Z
+
+  # ── Landing page ───────────────────────────────────────────────────────────
+
+  - name: landing-page
+    description: "gadgetlab.uk — SaaS landing page with Stripe billing"
+    host: gadgetlab.uk
+    port: 443
+    container_name: null  # Vercel hosted
+    repo: autonomous-github-agent  # landing/ subdirectory
+    owner: product
+    criticality: medium
+    healthcheck_url: https://gadgetlab.uk
+    creds_location: "Vercel project prj_KtH0nUpBLV3S1XPOj0F60dP92pIq | GitHub secrets: VERCEL_TOKEN, VERCEL_ORG_ID, VERCEL_PROJECT_ID, STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET"
+    depends_on:
+      - vercel
+      - stripe
+      - tim-postgres
+    backup_source: git
+    restore_order: 50
+    exposed_to:
+      - internet
+    notes: "GH_PAT, NEXT_PUBLIC_APP_URL, SLACK_SIGNING_SECRET must be set in Vercel dashboard (not yet done)."
+    last_verified_at: 2026-06-24T00:00:00Z
+
+  - name: vercel
+    description: "Hosting platform for gadgetlab.uk landing page"
+    host: vercel.com
+    port: 443
+    owner: platform
+    criticality: medium
+    creds_location: "GitHub secret: VERCEL_TOKEN | org: team_i31hDbSRdUJKpIuXnbptPdIT"
+    depends_on: []
+    last_verified_at: 2026-06-24T00:00:00Z
+
+  - name: stripe
+    description: "Payment processing for GadgetLab SaaS subscriptions"
+    host: stripe.com
+    port: 443
+    owner: product
+    criticality: medium
+    creds_location: "GitHub secret: STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET | Vercel env vars"
+    depends_on: []
+    notes: "Webhook registered at https://gadgetlab.uk/api/stripe/webhook"
+    last_verified_at: 2026-06-24T00:00:00Z
+
+  # ── Local / homelab ────────────────────────────────────────────────────────
+
+  - name: python-agent
+    description: "autonomous-github-agent Python container — runs scripts invoked by GitHub Actions"
+    host: unknown  # runs in GitHub Actions runners, not a persistent host
+    container_name: autonomous-agent-prod
+    repo: autonomous-github-agent
+    owner: platform
+    criticality: medium
+    healthcheck_url: null
+    creds_location: "GitHub secrets: ANTHROPIC_API_KEY, OPENAI_API_KEY, GITHUB_TOKEN"
+    depends_on:
+      - github-repo
+      - anthropic-api
+    backup_source: git
+    restore_order: 40
+    notes: "Not running persistently. Invoked per GitHub Actions job. docker-compose.yml exists for local dev."
+    last_verified_at: 2026-06-24T00:00:00Z
+
+  - name: home-assistant
+    description: "Home automation — HAOS VM on homelab"
+    host: 192.168.122.244
+    port: 8123
+    container_name: null  # VM
+    repo: null
+    owner: homelab
+    criticality: low  # independent of GadgetLab pipeline
+    healthcheck_url: http://192.168.122.244:8123
+    creds_location: unknown
+    depends_on: []
+    notes: "Facial recognition handover complete 2026-06-23. See /home/ai/smart_home/facial_recognition/."
+    last_verified_at: 2026-06-23T00:00:00Z
+
+  - name: obsidian-vault
+    description: "Local knowledge base / project notes"
+    host: localhost  # /home/ai/obsidian-ai-architect-vault/
+    port: null
+    owner: platform
+    criticality: low
+    creds_location: null
+    depends_on: []
+    backup_source: "Nightly sync to Google Drive 'Obsidian Vault Sync' folder (CronCreate, 01:47 daily)"
+    notes: "Not a Quartz KB — plain Obsidian markdown vault. Sync is local cron."
+    last_verified_at: 2026-06-24T00:00:00Z
+
+  - name: prometheus
+    description: "Metrics collection — optional Docker profile, not confirmed running"
+    host: localhost
+    port: 9090
+    container_name: autonomous-agent-prometheus
+    repo: autonomous-github-agent
+    owner: platform
+    criticality: low
+    healthcheck_url: http://localhost:9090
+    creds_location: null
+    depends_on: []
+    notes: "Defined in docker-compose.yml under 'monitoring' profile. Not confirmed running in production."
+    last_verified_at: 2026-06-24T00:00:00Z

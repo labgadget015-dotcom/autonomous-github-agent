@@ -57,7 +57,7 @@ class InlinePRCommentBot:
         comments = []
 
         try:
-            with open("pylint-report.json") as f:
+            with open("pylint-report.json", encoding="utf-8") as f:
                 results = json.load(f)
 
             for issue in results:
@@ -81,7 +81,7 @@ class InlinePRCommentBot:
         comments = []
 
         try:
-            with open("bandit-report.json") as f:
+            with open("bandit-report.json", encoding="utf-8") as f:
                 report = json.load(f)
 
             for issue in report.get("results", []):
@@ -103,7 +103,7 @@ class InlinePRCommentBot:
         comments = []
 
         try:
-            with open("complexity.json") as f:
+            with open("complexity.json", encoding="utf-8") as f:
                 data = json.load(f)
 
             for filepath, functions in data.items():
@@ -305,7 +305,9 @@ Function `{name}` has a cyclomatic complexity of **{complexity}** (threshold: 10
             payload["commit_id"] = self.commit_sha
 
         try:
-            response = requests.post(url, headers=self.headers, json=payload)
+            response = requests.post(
+                url, headers=self.headers, json=payload, timeout=30
+            )
             response.raise_for_status()
             return True
         except requests.exceptions.RequestException as e:
@@ -328,7 +330,7 @@ To see all issues, check the workflow artifacts.
 """
 
         try:
-            requests.post(url, headers=self.headers, json={"body": body})
+            requests.post(url, headers=self.headers, json={"body": body}, timeout=30)
         except requests.exceptions.RequestException:
             pass
 
@@ -348,7 +350,7 @@ def main():
     print(f"✅ Posted {posted} inline comments")
 
     # Save comment data for reference
-    with open("pr-comments.json", "w") as f:
+    with open("pr-comments.json", "w", encoding="utf-8") as f:
         json.dump(comments, f, indent=2)
 
     print("✅ Inline comment bot complete")
