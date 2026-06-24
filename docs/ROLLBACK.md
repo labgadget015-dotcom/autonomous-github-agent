@@ -1,5 +1,36 @@
 # Rollback Manifest
 
+## 8e2cd74 — 2026-06-24 05:31 UTC
+
+- **SHA**: `8e2cd7439e3abefe4fdf418e268715c0059c7e96`
+- **Author**: Gadget Lab
+- **Message**: fix: resolve PR #153 lint blockers (E1123, E1101, W1514, W3101) (#167)
+- **Files changed**: 45 file(s)
+
+**Changed files:**
+- `.github/scripts/ai_agent_main.py`
+- `.github/scripts/ai_code_suggestor.py`
+- `.github/scripts/async_parallel_analyzer.py`
+- `.github/scripts/badge_generator.py`
+- `.github/scripts/check_policy.py`
+- `.github/scripts/complexity_reporter.py`
+- `.github/scripts/copilot_integration.py`
+- `.github/scripts/cot_selector.py`
+- `.github/scripts/docgen.py`
+- `.github/scripts/elite_copilot.py`
+- `.github/scripts/error_handler.py`
+- `.github/scripts/gather_context.py`
+- `.github/scripts/generate_rollback_manifest.py`
+- `.github/scripts/health_dashboard_generator.py`
+- `.github/scripts/inline_pr_commenter.py`
+- `.github/scripts/issue_auto_creator.py`
+- `.github/scripts/metrics_collector.py`
+- `.github/scripts/parallel_code_analyzer.py`
+- `.github/scripts/performance_benchmark.py`
+- `.github/scripts/pr_inline_commenter.py`
+
+---
+
 ## 038024a — 2026-06-22 22:29 UTC
 
 - **SHA**: `038024a5b220ced58c954cf90684a97acf23cb54`
