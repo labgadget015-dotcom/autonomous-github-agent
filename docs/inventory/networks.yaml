@@ -1,0 +1,86 @@
+# GadgetLab Network Topology
+# last_verified_at: 2026-06-24
+
+networks:
+
+  - name: internet-ingress
+    description: "Public-facing endpoints that receive inbound connections"
+    type: public
+    endpoints:
+      - service: github-event-router
+        url: https://gadgetlab.app.n8n.cloud/webhook/github-agent-loop
+        auth: HMAC signature validation (GitHub webhook secret)
+        callers:
+          - github.com (webhook POST on issue/PR events)
+      - service: ci-feedback-slack-alerter
+        url: https://gadgetlab.app.n8n.cloud/webhook/ci-feedback
+        auth: none  # internal GitHub Actions caller only
+        callers:
+          - github-actions
+      - service: landing-page
+        url: https://gadgetlab.uk
+        auth: none (public)
+        callers:
+          - end users
+      - service: stripe-webhook
+        url: https://gadgetlab.uk/api/stripe/webhook
+        auth: Stripe webhook signature
+        callers:
+          - stripe.com
+
+  - name: n8n-to-apis
+    description: "Outbound calls from n8n cloud to external APIs"
+    type: egress
+    flows:
+      - from: n8n-cloud
+        to: anthropic-api (api.anthropic.com)
+        auth: ANTHROPIC_API_KEY
+      - from: n8n-cloud
+        to: perplexity-api (api.perplexity.ai)
+        auth: Perplexity API Key (n8n credential I5Z1BiVIUsLHi3Mk — NOT YET BOUND)
+      - from: n8n-cloud
+        to: slack-webhook (hooks.slack.com)
+        auth: webhook URL (contains secret in URL)
+      - from: n8n-cloud
+        to: google-drive (drive.google.com)
+        auth: Google OAuth (n8n credential jg6k7UC6E82TJAoy)
+      - from: n8n-cloud
+        to: github-api (api.github.com)
+        auth: GitHub PAT (n8n credential gkB38oHT6IAyupz8)
+      - from: n8n-cloud
+        to: tim-postgres
+        auth: Postgres credentials (n8n credential gndQWH8pCjbtieRf)
+
+  - name: github-actions-egress
+    description: "GitHub Actions runners calling external services"
+    type: egress
+    flows:
+      - from: github-actions
+        to: n8n-cloud (ci-feedback webhook)
+        auth: none
+      - from: github-actions
+        to: vercel (deploy)
+        auth: VERCEL_TOKEN
+      - from: github-actions
+        to: anthropic-api
+        auth: ANTHROPIC_API_KEY (GitHub secret)
+
+  - name: homelab-internal
+    description: "Local homelab network — not directly reachable from cloud"
+    type: private
+    cidr: 192.168.122.0/24  # KVM virtual network (inferred from HA IP)
+    hosts:
+      - home-assistant (192.168.122.244:8123)
+      - m900-homelab (IP unknown)
+    access:
+      - tailscale: unknown — verify if configured
+      - vpn: unknown
+
+  - name: obsidian-sync
+    description: "Nightly local→Drive sync for Obsidian vault"
+    type: egress
+    flows:
+      - from: localhost-dev (/home/ai/obsidian-ai-architect-vault/)
+        to: google-drive (Obsidian Vault Sync folder)
+        auth: Google credentials (local)
+        schedule: "01:47 daily (CronCreate)"

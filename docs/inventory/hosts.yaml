@@ -1,0 +1,98 @@
+# GadgetLab Host Inventory
+# Covers known compute endpoints. SaaS platforms listed for dependency mapping.
+# last_verified_at: 2026-06-24
+
+hosts:
+
+  - name: n8n-cloud
+    type: saas
+    provider: n8n.cloud
+    fqdn: gadgetlab.app.n8n.cloud
+    ip: null  # cloud-managed
+    os: null
+    services_hosted:
+      - n8n-cloud
+      - drc-agent-loop
+      - github-event-router
+      - all n8n workflows
+    access:
+      - method: browser (UI)
+        url: https://gadgetlab.app.n8n.cloud
+      - method: n8n MCP / REST API
+        auth: n8n API key (expires ~2026-07-01)
+    notes: "Session expires after ~30–60 min inactivity. Autosave silently fails with 401 after expiry. Agent cannot re-authenticate — requires manual login."
+
+  - name: github
+    type: saas
+    provider: GitHub
+    fqdn: github.com
+    services_hosted:
+      - github-repo
+      - github-actions
+    access:
+      - method: git + PAT
+        auth: PAT expires 2027-05-07
+      - method: REST API
+        auth: PAT / GITHUB_TOKEN in Actions
+
+  - name: vercel
+    type: saas
+    provider: Vercel
+    fqdn: gadgetlab.uk
+    services_hosted:
+      - landing-page
+    access:
+      - method: Vercel CLI / dashboard
+        auth: VERCEL_TOKEN (stored as GitHub secret)
+
+  - name: anthropic-api
+    type: saas
+    provider: Anthropic
+    fqdn: api.anthropic.com
+    services_hosted:
+      - anthropic-api
+    access:
+      - method: REST API
+        auth: ANTHROPIC_API_KEY (GitHub secret, updated 2026-04-27)
+
+  - name: homelab-vm-ha
+    type: vm
+    provider: local KVM
+    fqdn: null
+    ip: 192.168.122.244
+    os: Home Assistant OS
+    services_hosted:
+      - home-assistant
+    access:
+      - method: browser
+        url: http://192.168.122.244:8123
+      - method: tailscale
+        notes: unknown — verify
+    notes: "VM on homelab host (M900). Host IP unknown from this environment."
+
+  - name: m900-homelab
+    type: physical
+    provider: self-hosted
+    hardware: "Lenovo ThinkCentre M900"
+    fqdn: unknown
+    ip: unknown
+    os: unknown  # likely Ubuntu
+    services_hosted:
+      - homelab-vm-ha
+      - prometheus  # not confirmed running
+    access:
+      - method: SSH
+        notes: "SSH access not confirmed from current environment"
+      - method: tailscale
+        notes: unknown
+    notes: "Homelab host. Referenced in prior sessions but not directly reachable from cloud shell."
+
+  - name: localhost-dev
+    type: local
+    fqdn: localhost
+    services_hosted:
+      - obsidian-vault
+      - python-agent (dev only — docker-compose up)
+    access:
+      - method: local filesystem
+        path: /home/ai/
