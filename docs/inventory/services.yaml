@@ -179,14 +179,14 @@ services:
       - slack-api-oauth  # UNBOUND — uses slackApi OAuth, NOT webhook URL like DRC
     n8n_workflow_id: MRLyf7VpwE0Qc8Xp
     notes: |
-      active:true but NOT processing live traffic — two hard blockers:
-      1. Gemini credential (googlePalmApi) not bound on DREAMER, REALIST, CRITIC nodes
-      2. Slack API OAuth credential (slackApi) not bound — different from DRC's incoming webhook
-      Soft failures (silent): Nexus memory + Postgres calls hit localhost:6000 which doesn't exist,
-      but both have continueRegularOutput so they won't block the flow.
-      This is the workflow referenced in strategy docs as 'loop_count bug' — loop_count is
-      actually correct here (increments per iteration). DRC loop is separate and linear.
-      Decision needed: bind Gemini + Slack OAuth to activate, or archive.
+      ARCHIVED 2026-06-24. Blockers at time of archive:
+      1. Gemini credential (googlePalmApi) not bound
+      2. Slack API OAuth (slackApi) not bound
+      3. localhost:6000 Nexus memory backend doesn't exist — loop would not iterate to
+         convergence without it (each pass starts cold, defeating the purpose)
+      To restore: un-archive, bind Gemini + Slack OAuth, stand up localhost:6000 memory service.
+      loop_count increments correctly in this workflow — it was the origin of strategy-doc
+      references to 'loop_count bug'. The active DRC loop (Wlfhgk4sUfXJcU4D) is separate and linear.
     last_verified_at: 2026-06-24T00:00:00Z
 
   # ── External APIs / SaaS dependencies ─────────────────────────────────────
