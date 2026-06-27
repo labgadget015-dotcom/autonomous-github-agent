@@ -87,3 +87,5 @@ coverage.xml
 
 # MCP server (local tooling, not part of the pipeline)
 mcp_server/
+.vercel
+.env*

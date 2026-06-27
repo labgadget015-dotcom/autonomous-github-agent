@@ -25,8 +25,8 @@ services:
     observability_source:
       - n8n execution history
       - workflow: Gadget Lab — Ops Health Check (4vFBQOwaB7enaopA)
-    notes: "API key expires ~2026-07-01. Renew in n8n UI → Settings → n8n API."
-    last_verified_at: 2026-06-24T00:00:00Z
+    notes: "API key expires 2026-07-01 (4 days — WARNING). Renew in n8n UI → Settings → n8n API. After renewal: update expiry_date in the Config node of workflow igKdZJUr5NiUmRei."
+    last_verified_at: 2026-06-27T00:00:00Z
 
   - name: drc-agent-loop
     description: "Primary AI pipeline — Dreamer/Realist/Critic over GitHub issues"
@@ -82,7 +82,7 @@ services:
     owner: platform
     criticality: high
     healthcheck_url: null
-    creds_location: "n8n credential: gndQWH8pCjbtieRf (Postgres TIM)"
+    creds_location: "n8n credentials: gndQWH8pCjbtieRf (Postgres account) + yzbjlFaqm3pBpc62 (Postgres account 2) — two credentials exist; purpose of second unclear"
     depends_on: []
     backup_source: unknown
     restore_order: 5
@@ -90,8 +90,8 @@ services:
       - n8n-cloud
     observability_source:
       - n8n execution history
-    notes: "Schema: tim.agent_runs. Host details in n8n credential — not stored here."
-    last_verified_at: 2026-06-24T00:00:00Z
+    notes: "Schema: tim.agent_runs. Host details in n8n credentials only (not stored here). Second credential yzbjlFaqm3pBpc62 discovered 2026-06-27 — confirm if same host or separate DB."
+    last_verified_at: 2026-06-27T00:00:00Z
 
   # ── Supporting n8n workflows (active) ──────────────────────────────────────
 
@@ -268,8 +268,8 @@ services:
     restore_order: 50
     exposed_to:
       - internet
-    notes: "GH_PAT, NEXT_PUBLIC_APP_URL, SLACK_SIGNING_SECRET must be set in Vercel dashboard (not yet done)."
-    last_verified_at: 2026-06-24T00:00:00Z
+    notes: "GH_PAT and NEXT_PUBLIC_APP_URL already set in Vercel (confirmed 2026-06-27). SLACK_SIGNING_SECRET still missing — blocked on Slack app creation (use slack-app-manifest.yaml)."
+    last_verified_at: 2026-06-27T00:00:00Z
 
   - name: vercel
     description: "Hosting platform for gadgetlab.uk landing page"

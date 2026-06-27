@@ -125,7 +125,7 @@ At runtime the agent reads a `context.json` file (see `context.json.example`). S
 
 ### GitHub Actions constraints
 
-- Repo is private without GHAS; SARIF upload steps use `continue-on-error: true`.
+- Repo is public (made public 2026-06-27). GHAS features (CodeQL, SARIF uploads) are now fully available.
 - Webhook edits require GitHub sudo re-auth — escalate to Gadget.
 
 ## Critical Deadline
