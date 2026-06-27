@@ -1,5 +1,22 @@
 # Rollback Manifest
 
+## f782cc6 — 2026-06-27 09:00 UTC
+
+- **SHA**: `f782cc6a4792af9c968c2fe2420f481b158230ba`
+- **Author**: GadgetAI
+- **Message**: make repo public + SARIF cleanup + inventory update
+- **Files changed**: 6 file(s)
+
+**Changed files:**
+- `.github/workflows/security_scan.yml`
+- `.gitignore`
+- `CLAUDE.md`
+- `autonomous_agent/core/audit_logger.py`
+- `docs/inventory/services.yaml`
+- `tests/test_audit_logger.py`
+
+---
+
 ## 8e2cd74 — 2026-06-24 05:31 UTC
 
 - **SHA**: `8e2cd7439e3abefe4fdf418e268715c0059c7e96`
