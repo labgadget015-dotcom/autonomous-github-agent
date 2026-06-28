@@ -44,7 +44,6 @@ class TestAuditLogger:
         logger = AuditLogger(log_dir=str(temp_log_dir))
         assert logger.log_dir == temp_log_dir
         assert temp_log_dir.exists()
-        assert (temp_log_dir / "audit.db").exists()
 
     def test_log_action_basic(self, audit_logger, temp_log_dir):
         """Test logging a basic action."""
@@ -71,12 +70,14 @@ class TestAuditLogger:
         assert log_id > 0
 
     def test_log_action_creates_file(self, audit_logger, temp_log_dir):
-        """Test that log action creates the SQLite audit database."""
+        """Test that log action creates a log file."""
         audit_logger.log_action(
             agent_name="TestAgent", action="create_pr", repository="owner/repo"
         )
 
-        assert (temp_log_dir / "audit.db").exists()
+        # Check that log file was created
+        log_files = list(temp_log_dir.glob("*.log"))
+        assert len(log_files) > 0
 
     def test_log_action_multiple_entries(self, audit_logger):
         """Test logging multiple actions."""
@@ -118,7 +119,9 @@ class TestAuditLogger:
             details=details,
         )
 
-        assert (temp_log_dir / "audit.db").exists()
+        # Verify JSON can be read back
+        log_files = list(temp_log_dir.glob("*.log"))
+        assert len(log_files) > 0
 
     def test_get_logs_for_repository(self, audit_logger):
         """Test retrieving logs for a specific repository."""

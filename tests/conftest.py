@@ -202,6 +202,22 @@ def mock_file_content():
 
 
 @pytest.fixture
+def sample_policy_file(tmp_path):
+    """Create a temporary policy file for policy engine tests."""
+    policy_path = tmp_path / "policies.yaml"
+    policy_path.write_text(
+        """
+requires_approval:
+  - delete_repository
+auto_approved:
+  - label_issue
+""".lstrip(),
+        encoding="utf-8",
+    )
+    return str(policy_path)
+
+
+@pytest.fixture
 def mock_github_search_results():
     """Mock GitHub search results."""
     results = MagicMock()
