@@ -1,5 +1,18 @@
 # Rollback Manifest
 
+## c515a21 — 2026-06-29 06:20 UTC
+
+- **SHA**: `c515a212be4dd45a73bc1bc3405ff60367e5a3a9`
+- **Author**: GadgetAI
+- **Message**: fix(ci): fix IndexError on empty aliases + add autonomous_agent coverage
+- **Files changed**: 2 file(s)
+
+**Changed files:**
+- `agents/dependency_agent.py`
+- `tests/test_autonomous_agents.py`
+
+---
+
 ## f782cc6 — 2026-06-27 09:00 UTC
 
 - **SHA**: `f782cc6a4792af9c968c2fe2420f481b158230ba`
