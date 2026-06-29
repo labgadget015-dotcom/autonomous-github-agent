@@ -84,7 +84,8 @@ class DependencyAgent(BaseAgent):
             ver = dep.get("version", "?")
             for v in dep.get("vulns", []):
                 vid = v.get("id", "?")
-                sev = v.get("aliases", [vid])[0]
+                aliases = v.get("aliases") or [vid]
+                sev = aliases[0]
                 fix = ", ".join(v.get("fix_versions", [])) or "none"
                 lines.append(f"| {pkg} | {ver} | {vid} | {sev} | {fix} |")
 
