@@ -1,5 +1,17 @@
 # Rollback Manifest
 
+## f2492bc — 2026-06-30 05:24 UTC
+
+- **SHA**: `f2492bcdabab87c2f73bf569b8c93a367514a414`
+- **Author**: GadgetAI
+- **Message**: fix(changelog): git pull --rebase before push to handle concurrent workflow collisions
+- **Files changed**: 1 file(s)
+
+**Changed files:**
+- `.github/workflows/changelog.yml`
+
+---
+
 ## 9cb29a6 — 2026-06-30 05:21 UTC
 
 - **SHA**: `9cb29a65836ffc5eb1969149dd5ed123d06221e0`
