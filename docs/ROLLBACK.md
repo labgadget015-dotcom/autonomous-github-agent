@@ -1,5 +1,17 @@
 # Rollback Manifest
 
+## 9cb29a6 — 2026-06-30 05:21 UTC
+
+- **SHA**: `9cb29a65836ffc5eb1969149dd5ed123d06221e0`
+- **Author**: GadgetAI
+- **Message**: fix(test): update llm_router complexity thresholds to match new routing logic
+- **Files changed**: 1 file(s)
+
+**Changed files:**
+- `tests/unit/test_llm_router.py`
+
+---
+
 ## d4257f8 — 2026-06-30 05:18 UTC
 
 - **SHA**: `d4257f8ba65ea5b51e57dbb61371393557de1243`
