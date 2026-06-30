@@ -32,6 +32,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 🐛 Bug Fixes
 
+- black format 6 test files + retry push loop in all 4 commit workflows (a45ba72)
+- **workflows**: git pull --rebase before push in security_scan, test_metrics, pre-commit-ci (ba1a987)
 - black formatting + changelog email privacy (4ebc23d)
 - **changelog**: git pull --rebase before push to handle concurrent workflow collisions (f2492bc)
 - **test**: update llm_router complexity thresholds to match new routing logic (9cb29a6)
@@ -146,6 +148,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 🔨 Chores
 
+- rollback manifest entry [skip ci] (b4d428f)
+- update CHANGELOG [skip ci] (6b11e02)
 - rollback manifest entry [skip ci] (cfcfa3a)
 - rollback manifest entry [skip ci] (6c297b1)
 - rollback manifest entry [skip ci] (f9c7d33)
