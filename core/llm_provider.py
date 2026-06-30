@@ -56,6 +56,7 @@ class LLMClient:
         self._initialize_client()
 
         self.total_tokens = 0
+        self._max_cost_usd: float = float(config.get("llm_max_cost_usd", 1.0))
 
         # Cost tracking — prices per 1k tokens (input, output) in USD
         self._PRICING: dict[str, tuple[float, float]] = {
@@ -138,6 +139,13 @@ class LLMClient:
         Returns:
             Dictionary with 'content' and 'usage' keys
         """
+        if self.cost_limit_exceeded(self._max_cost_usd):
+            raise LLMError(
+                f"LLM cost cap of ${self._max_cost_usd:.2f} reached "
+                f"(session total: ${self._session_cost_usd:.4f}). "
+                "Increase llm_max_cost_usd in config or start a new session."
+            )
+
         try:
             if self.provider == "openai":
                 return await self._generate_openai(

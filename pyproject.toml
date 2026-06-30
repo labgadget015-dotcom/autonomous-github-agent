@@ -131,7 +131,22 @@ check_untyped_defs = false
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 asyncio_mode = "auto"
-addopts = "-v --cov=autonomous_agent --cov-report=term-missing"
+addopts = "-v --cov=autonomous_agent --cov=core --cov=agents --cov=overseer --cov=autopilot --cov-report=term-missing"
+
+[tool.coverage.report]
+fail_under = 70
+precision = 2
+show_missing = true
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+    "@abstractmethod",
+    "@abc.abstractmethod",
+]
 
 [tool.pylint.typecheck]
 # orjson is a compiled C extension; pylint can't introspect its members and

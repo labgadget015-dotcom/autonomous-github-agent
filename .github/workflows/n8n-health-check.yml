@@ -1,0 +1,133 @@
+name: n8n Pipeline Health Check
+
+on:
+  schedule:
+    # Every 6 hours
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
+
+jobs:
+  health-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping n8n DRC webhook
+        id: drc_ping
+        env:
+          N8N_WEBHOOK_URL: https://gadgetlab.app.n8n.cloud/webhook/github-agent-loop
+        run: |
+          # Send a lightweight health-check probe to the DRC webhook.
+          # The DRC workflow will ignore events with source=health-check.
+          HTTP_STATUS=$(curl -s -o /tmp/n8n_response.txt -w "%{http_code}" \
+            --max-time 15 \
+            -X POST "$N8N_WEBHOOK_URL" \
+            -H 'Content-Type: application/json' \
+            -d '{"source":"health-check","event":"ping","repository":"health-monitor"}')
+
+          echo "http_status=$HTTP_STATUS" >> "$GITHUB_OUTPUT"
+          echo "n8n DRC responded: HTTP $HTTP_STATUS"
+          cat /tmp/n8n_response.txt || true
+
+          if [[ "$HTTP_STATUS" -ge 200 && "$HTTP_STATUS" -lt 300 ]]; then
+            echo "alive=true" >> "$GITHUB_OUTPUT"
+          elif [[ "$HTTP_STATUS" -eq 404 ]]; then
+            # 404 from n8n means workflow is inactive/disabled, not that n8n is down
+            echo "alive=true" >> "$GITHUB_OUTPUT"
+            echo "::warning::n8n DRC webhook returned 404 — workflow may be inactive"
+          else
+            echo "alive=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Ping n8n GitHub Event Router
+        id: router_ping
+        env:
+          # The Event Router webhook is the GitHub-facing endpoint; we probe n8n host directly
+          N8N_HOST: https://gadgetlab.app.n8n.cloud
+        run: |
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            --max-time 10 \
+            "$N8N_HOST")
+          echo "http_status=$HTTP_STATUS" >> "$GITHUB_OUTPUT"
+          echo "n8n host responded: HTTP $HTTP_STATUS"
+
+          if [[ "$HTTP_STATUS" -ge 200 && "$HTTP_STATUS" -lt 500 ]]; then
+            echo "alive=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "alive=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Alert Slack if n8n is down
+        if: steps.drc_ping.outputs.alive == 'false' || steps.router_ping.outputs.alive == 'false'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          DRC_STATUS: ${{ steps.drc_ping.outputs.http_status }}
+          HOST_STATUS: ${{ steps.router_ping.outputs.http_status }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          if [ -z "$SLACK_WEBHOOK_URL" ]; then
+            echo "SLACK_WEBHOOK_URL not set — skipping Slack alert"
+            exit 0
+          fi
+          curl -s -X POST "$SLACK_WEBHOOK_URL" \
+            -H 'Content-Type: application/json' \
+            -d "{
+              \"text\": \"🔴 *n8n Pipeline Health Alert*\",
+              \"blocks\": [
+                {
+                  \"type\": \"header\",
+                  \"text\": {\"type\": \"plain_text\", \"text\": \"🔴 n8n Pipeline Unreachable\"}
+                },
+                {
+                  \"type\": \"section\",
+                  \"fields\": [
+                    {\"type\": \"mrkdwn\", \"text\": \"*DRC Webhook:* HTTP ${DRC_STATUS}\"},
+                    {\"type\": \"mrkdwn\", \"text\": \"*n8n Host:* HTTP ${HOST_STATUS}\"},
+                    {\"type\": \"mrkdwn\", \"text\": \"*Impact:* GitHub events are not being routed through the DRC loop\"},
+                    {\"type\": \"mrkdwn\", \"text\": \"*Action:* Check n8n.cloud status and verify workflows are active\"}
+                  ]
+                },
+                {
+                  \"type\": \"actions\",
+                  \"elements\": [
+                    {
+                      \"type\": \"button\",
+                      \"text\": {\"type\": \"plain_text\", \"text\": \"View Workflow Run\"},
+                      \"url\": \"${RUN_URL}\"
+                    },
+                    {
+                      \"type\": \"button\",
+                      \"text\": {\"type\": \"plain_text\", \"text\": \"n8n Dashboard\"},
+                      \"url\": \"https://gadgetlab.app.n8n.cloud\"
+                    }
+                  ]
+                }
+              ]
+            }" || echo "Slack alert failed (non-fatal)"
+
+      - name: Write job summary
+        if: always()
+        run: |
+          DRC_ALIVE=${{ steps.drc_ping.outputs.alive }}
+          HOST_ALIVE=${{ steps.router_ping.outputs.alive }}
+          DRC_STATUS=${{ steps.drc_ping.outputs.http_status }}
+          HOST_STATUS=${{ steps.router_ping.outputs.http_status }}
+
+          echo "## n8n Pipeline Health" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Endpoint | HTTP Status | Status |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|----------|-------------|--------|" >> "$GITHUB_STEP_SUMMARY"
+          if [ "$DRC_ALIVE" = "true" ]; then
+            echo "| DRC Webhook | \`${DRC_STATUS}\` | ✅ Reachable |" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "| DRC Webhook | \`${DRC_STATUS}\` | 🔴 Unreachable |" >> "$GITHUB_STEP_SUMMARY"
+          fi
+          if [ "$HOST_ALIVE" = "true" ]; then
+            echo "| n8n Host | \`${HOST_STATUS}\` | ✅ Up |" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "| n8n Host | \`${HOST_STATUS}\` | 🔴 Down |" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Fail if n8n is confirmed down
+        if: steps.drc_ping.outputs.alive == 'false' && steps.router_ping.outputs.alive == 'false'
+        run: |
+          echo "::error::n8n appears to be completely unreachable"
+          exit 1

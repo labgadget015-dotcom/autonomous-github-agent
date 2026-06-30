@@ -1,0 +1,116 @@
+name: PAT Rotation Alert
+
+on:
+  schedule:
+    # Run on the 1st of every month at 09:00 UTC
+    - cron: '0 9 1 * *'
+  workflow_dispatch:
+
+jobs:
+  check-pat-expiry:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Calculate days until PAT expires
+        id: expiry
+        run: |
+          EXPIRY_DATE="2027-05-07"
+          EXPIRY_TS=$(date -d "$EXPIRY_DATE" +%s)
+          NOW_TS=$(date +%s)
+          DAYS_LEFT=$(( (EXPIRY_TS - NOW_TS) / 86400 ))
+          echo "days_left=$DAYS_LEFT" >> "$GITHUB_OUTPUT"
+          echo "expiry_date=$EXPIRY_DATE" >> "$GITHUB_OUTPUT"
+          echo "PAT expires $EXPIRY_DATE — $DAYS_LEFT days remaining"
+
+      - name: Determine urgency level
+        id: urgency
+        run: |
+          DAYS=${{ steps.expiry.outputs.days_left }}
+          if [ "$DAYS" -le 7 ]; then
+            echo "level=CRITICAL" >> "$GITHUB_OUTPUT"
+            echo "emoji=🚨" >> "$GITHUB_OUTPUT"
+          elif [ "$DAYS" -le 14 ]; then
+            echo "level=HIGH" >> "$GITHUB_OUTPUT"
+            echo "emoji=⚠️" >> "$GITHUB_OUTPUT"
+          elif [ "$DAYS" -le 30 ]; then
+            echo "level=MEDIUM" >> "$GITHUB_OUTPUT"
+            echo "emoji=🔔" >> "$GITHUB_OUTPUT"
+          elif [ "$DAYS" -le 90 ]; then
+            echo "level=LOW" >> "$GITHUB_OUTPUT"
+            echo "emoji=ℹ️" >> "$GITHUB_OUTPUT"
+          else
+            echo "level=OK" >> "$GITHUB_OUTPUT"
+            echo "emoji=✅" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Post Slack alert (if within 90-day window)
+        if: ${{ steps.expiry.outputs.days_left <= 90 || github.event_name == 'workflow_dispatch' }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          DAYS: ${{ steps.expiry.outputs.days_left }}
+          EXPIRY: ${{ steps.expiry.outputs.expiry_date }}
+          LEVEL: ${{ steps.urgency.outputs.level }}
+          EMOJI: ${{ steps.urgency.outputs.emoji }}
+          REPO: ${{ github.repository }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          if [ -z "$SLACK_WEBHOOK_URL" ]; then
+            echo "SLACK_WEBHOOK_URL not set — skipping Slack notification"
+            exit 0
+          fi
+          curl -s -X POST "$SLACK_WEBHOOK_URL" \
+            -H 'Content-Type: application/json' \
+            -d "{
+              \"text\": \"${EMOJI} *GitHub PAT Rotation Required — ${LEVEL}*\",
+              \"blocks\": [
+                {
+                  \"type\": \"header\",
+                  \"text\": {\"type\": \"plain_text\", \"text\": \"${EMOJI} PAT Expiry Warning — ${LEVEL}\"}
+                },
+                {
+                  \"type\": \"section\",
+                  \"fields\": [
+                    {\"type\": \"mrkdwn\", \"text\": \"*Repository:*\n${REPO}\"},
+                    {\"type\": \"mrkdwn\", \"text\": \"*PAT Expires:*\n${EXPIRY}\"},
+                    {\"type\": \"mrkdwn\", \"text\": \"*Days Remaining:*\n${DAYS}\"},
+                    {\"type\": \"mrkdwn\", \"text\": \"*Action Required:*\nRotate PAT before expiry or the entire pipeline goes offline\"}
+                  ]
+                },
+                {
+                  \"type\": \"actions\",
+                  \"elements\": [
+                    {
+                      \"type\": \"button\",
+                      \"text\": {\"type\": \"plain_text\", \"text\": \"View Workflow Run\"},
+                      \"url\": \"${RUN_URL}\"
+                    },
+                    {
+                      \"type\": \"button\",
+                      \"text\": {\"type\": \"plain_text\", \"text\": \"GitHub Token Settings\"},
+                      \"url\": \"https://github.com/settings/tokens\"
+                    }
+                  ]
+                }
+              ]
+            }" || echo "Slack notification failed (non-fatal)"
+
+      - name: Write job summary
+        run: |
+          DAYS=${{ steps.expiry.outputs.days_left }}
+          EXPIRY=${{ steps.expiry.outputs.expiry_date }}
+          LEVEL=${{ steps.urgency.outputs.level }}
+          EMOJI=${{ steps.urgency.outputs.emoji }}
+          echo "## ${EMOJI} PAT Rotation Status: ${LEVEL}" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Field | Value |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|-------|-------|" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Expiry date | \`${EXPIRY}\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Days remaining | **${DAYS}** |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Alert level | ${LEVEL} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "**Action:** Rotate the PAT at [github.com/settings/tokens](https://github.com/settings/tokens) and update the \`GITHUB_PAT\` secret in this repo before expiry." >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Fail on critical expiry
+        if: ${{ steps.expiry.outputs.days_left <= 7 }}
+        run: |
+          echo "::error::PAT expires in ${{ steps.expiry.outputs.days_left }} days — ROTATE IMMEDIATELY"
+          exit 1

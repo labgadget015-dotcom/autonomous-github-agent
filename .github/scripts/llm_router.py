@@ -34,10 +34,11 @@ class LLMRouter:
     Intelligent LLM routing: 70-80% tasks → Local (FREE), 20-30% → Cloud
 
     Decision Matrix:
-    - Formatting, simple lint → Local (Llama-70B)
-    - Security LOW/MED → Local
-    - Security HIGH/CRITICAL → Cloud (GPT-4)
-    - Complex refactoring → Cloud
+    - format, lint, doc, triage, changelog, summarize, label, classify,
+      rename, comment_simple, security LOW → Local (Llama-70B)
+    - security MEDIUM, review/test_generation <200 lines, complexity 10-20 → Moderate (try local, fall back to cloud)
+    - refactor, architecture, multi_file, review >200 lines → Cloud (GPT-4-Turbo)
+    - security HIGH/CRITICAL → Cloud (GPT-4)
     """
 
     def __init__(self):
@@ -54,21 +55,48 @@ class LLMRouter:
 
         self.stats = {"total": 0, "local": 0, "cloud": 0, "cost": 0.0, "tokens": 0}
 
+    # Task types cheap enough to always serve locally.
+    # Criteria: short output, low-stakes errors, no multi-step reasoning needed.
+    _LOCAL_TASK_TYPES = frozenset([
+        "format",
+        "lint_simple",
+        "doc",
+        "doc_simple",
+        "triage",          # issue label suggestion
+        "changelog",       # changelog entry generation
+        "summarize",       # short text summaries
+        "label",           # PR / issue label selection
+        "classify",        # single-dimension classification
+        "rename",          # identifier / file rename suggestion
+        "comment_simple",  # short inline code comments
+    ])
+
     def classify(self, task_type: str, context: dict) -> TaskComplexity:
-        if task_type in ["format", "lint_simple", "doc"]:
+        if task_type in self._LOCAL_TASK_TYPES:
             return TaskComplexity.SIMPLE
 
         if task_type == "security":
             severity = context.get("severity", "LOW")
-            return (
-                TaskComplexity.CRITICAL
-                if severity in ["HIGH", "CRITICAL"]
-                else TaskComplexity.SIMPLE
-            )
+            if severity in ["HIGH", "CRITICAL"]:
+                return TaskComplexity.CRITICAL
+            if severity == "MEDIUM":
+                return TaskComplexity.MODERATE
+            return TaskComplexity.SIMPLE  # LOW → local
 
         if task_type == "complexity":
             score = context.get("score", 0)
-            return TaskComplexity.COMPLEX if score > 20 else TaskComplexity.MODERATE
+            if score > 20:
+                return TaskComplexity.COMPLEX
+            if score > 10:
+                return TaskComplexity.MODERATE
+            return TaskComplexity.SIMPLE  # simple functions → local
+
+        if task_type in ["refactor", "architecture", "multi_file"]:
+            return TaskComplexity.COMPLEX
+
+        if task_type in ["review", "test_generation"]:
+            lines = context.get("lines_changed", 0)
+            return TaskComplexity.COMPLEX if lines > 200 else TaskComplexity.MODERATE
 
         return TaskComplexity.MODERATE
 
@@ -170,9 +198,14 @@ if __name__ == "__main__":
     router = LLMRouter()
     print("🚀 Testing LLM Router\n")
 
-    # Test cases
     router.route("Fix formatting", "format")
-    router.route("High security vuln", "security", {"severity": "HIGH"})
-    router.route("Generate doc", "doc")
+    router.route("Suggest issue labels", "triage")
+    router.route("Generate changelog entry", "changelog")
+    router.route("Security LOW vuln", "security", {"severity": "LOW"})
+    router.route("Security MEDIUM vuln", "security", {"severity": "MEDIUM"})
+    router.route("Security HIGH vuln", "security", {"severity": "HIGH"})
+    router.route("Small review", "review", {"lines_changed": 50})
+    router.route("Large review", "review", {"lines_changed": 300})
+    router.route("Architecture redesign", "architecture")
 
     router.report()
