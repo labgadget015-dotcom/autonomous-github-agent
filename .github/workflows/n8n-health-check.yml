@@ -12,29 +12,34 @@ jobs:
     steps:
       - name: Ping n8n DRC webhook
         id: drc_ping
+        continue-on-error: true
         env:
           N8N_WEBHOOK_URL: https://gadgetlab.app.n8n.cloud/webhook/github-agent-loop
         run: |
-          # Send a lightweight health-check probe to the DRC webhook.
-          # The DRC workflow will ignore events with source=health-check.
+          # Probe the DRC webhook with a 30s timeout.
+          # n8n may take a moment to respond on cold start; timeout is non-fatal —
+          # the host check in the next step is the authoritative liveness signal.
           HTTP_STATUS=$(curl -s -o /tmp/n8n_response.txt -w "%{http_code}" \
-            --max-time 15 \
+            --max-time 30 \
             -X POST "$N8N_WEBHOOK_URL" \
             -H 'Content-Type: application/json' \
-            -d '{"source":"health-check","event":"ping","repository":"health-monitor"}')
+            -d '{"source":"health-check","event":"ping","repository":"health-monitor"}') \
+            || HTTP_STATUS="timeout"
 
           echo "http_status=$HTTP_STATUS" >> "$GITHUB_OUTPUT"
           echo "n8n DRC responded: HTTP $HTTP_STATUS"
-          cat /tmp/n8n_response.txt || true
+          cat /tmp/n8n_response.txt 2>/dev/null || true
 
-          if [[ "$HTTP_STATUS" -ge 200 && "$HTTP_STATUS" -lt 300 ]]; then
+          if [[ "$HTTP_STATUS" =~ ^[0-9]+$ ]] && [[ "$HTTP_STATUS" -ge 200 && "$HTTP_STATUS" -lt 300 ]]; then
             echo "alive=true" >> "$GITHUB_OUTPUT"
           elif [[ "$HTTP_STATUS" -eq 404 ]]; then
-            # 404 from n8n means workflow is inactive/disabled, not that n8n is down
+            # 404 = n8n is up but workflow is inactive/disabled
             echo "alive=true" >> "$GITHUB_OUTPUT"
             echo "::warning::n8n DRC webhook returned 404 — workflow may be inactive"
           else
+            # timeout or 5xx — not necessarily fatal; host check decides
             echo "alive=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::DRC webhook probe returned '$HTTP_STATUS' — host check is authoritative"
           fi
 
       - name: Ping n8n GitHub Event Router
