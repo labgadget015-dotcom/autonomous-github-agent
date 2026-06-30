@@ -1,5 +1,17 @@
 # Rollback Manifest
 
+## 70bc0ca — 2026-06-30 05:14 UTC
+
+- **SHA**: `70bc0cabc4e76a8b29deb4d9860db6433baf6faf`
+- **Author**: GadgetAI
+- **Message**: fix(n8n-health-check): continue-on-error + 30s timeout for DRC probe
+- **Files changed**: 1 file(s)
+
+**Changed files:**
+- `.github/workflows/n8n-health-check.yml`
+
+---
+
 ## 7eb4212 — 2026-06-30 05:11 UTC
 
 - **SHA**: `7eb4212fd82a83d4d4e38abc63e2162650faea17`
