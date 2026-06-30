@@ -1,5 +1,19 @@
 # Rollback Manifest
 
+## ba1a987 — 2026-06-30 05:29 UTC
+
+- **SHA**: `ba1a9877fd85a4c416c0f0115b29c1538c6843e7`
+- **Author**: GadgetAI
+- **Message**: fix(workflows): git pull --rebase before push in security_scan, test_metrics, pre-commit-ci
+- **Files changed**: 3 file(s)
+
+**Changed files:**
+- `.github/workflows/pre-commit-ci.yml`
+- `.github/workflows/security_scan.yml`
+- `.github/workflows/test_metrics.yml`
+
+---
+
 ## f90c4de — 2026-06-30 05:25 UTC
 
 - **SHA**: `f90c4dec919dd1b52b3b7c669106e34418eacf82`
