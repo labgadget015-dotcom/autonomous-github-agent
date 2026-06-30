@@ -39,12 +39,15 @@ class TestExecuteDispatch:
 
     def test_unsupported_action_raises(self):
         import pytest
+
         with pytest.raises(ValueError, match="Unsupported action"):
             run(self.agent._execute({"action": "bad_action"}))
 
     def test_review_pr_dispatches(self):
         self.agent._review_pr = AsyncMock(return_value={"pr_number": 7, "review_length": 100})
-        result = run(self.agent._execute({"action": "review_pr", "params": {"repo": "o/r", "pr_number": 7}}))
+        result = run(
+            self.agent._execute({"action": "review_pr", "params": {"repo": "o/r", "pr_number": 7}})
+        )
         self.agent._review_pr.assert_called_once_with({"repo": "o/r", "pr_number": 7})
         assert result["pr_number"] == 7
 
@@ -68,10 +71,12 @@ class TestReviewPr:
         mock_repo.get_pull.return_value = mock_pr
         self.agent.github.client.get_repo.return_value = mock_repo
 
-        self.agent.llm.generate = AsyncMock(return_value={
-            "content": "Looks good!",
-            "usage": {"total_tokens": 42},
-        })
+        self.agent.llm.generate = AsyncMock(
+            return_value={
+                "content": "Looks good!",
+                "usage": {"total_tokens": 42},
+            }
+        )
 
         result = run(self.agent._review_pr({"repo": "o/r", "pr_number": 3}))
         mock_pr.create_review.assert_called_once()

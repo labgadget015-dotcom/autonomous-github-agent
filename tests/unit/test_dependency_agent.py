@@ -92,9 +92,15 @@ class TestBuildReport:
         assert "0 found" in report
 
     def test_report_with_vulnerability(self):
-        audit_data = [{"name": "flask", "version": "1.0", "vulns": [
-            {"id": "CVE-2021-1234", "aliases": ["GHSA-abc"], "fix_versions": ["2.0"]}
-        ]}]
+        audit_data = [
+            {
+                "name": "flask",
+                "version": "1.0",
+                "vulns": [
+                    {"id": "CVE-2021-1234", "aliases": ["GHSA-abc"], "fix_versions": ["2.0"]}
+                ],
+            }
+        ]
         report = self.agent._build_report(audit_data, [])
         assert "flask" in report
         assert "CVE-2021-1234" in report
@@ -106,9 +112,13 @@ class TestBuildReport:
         assert "flask>=1.0" in report
 
     def test_vuln_with_no_fix(self):
-        audit_data = [{"name": "pkg", "version": "0.1", "vulns": [
-            {"id": "CVE-x", "aliases": [], "fix_versions": []}
-        ]}]
+        audit_data = [
+            {
+                "name": "pkg",
+                "version": "0.1",
+                "vulns": [{"id": "CVE-x", "aliases": [], "fix_versions": []}],
+            }
+        ]
         report = self.agent._build_report(audit_data, [])
         assert "none" in report
 
@@ -149,6 +159,7 @@ class TestCheckDependencies:
 
     def test_creates_issue_when_none_exists(self, tmp_path, monkeypatch):
         import agents.dependency_agent as mod
+
         monkeypatch.setattr(mod, "project_root", tmp_path)
         (tmp_path / "requirements.txt").write_text("requests==2.28.0\n")
 
@@ -165,6 +176,7 @@ class TestCheckDependencies:
 
     def test_updates_existing_issue(self, tmp_path, monkeypatch):
         import agents.dependency_agent as mod
+
         monkeypatch.setattr(mod, "project_root", tmp_path)
         (tmp_path / "requirements.txt").write_text("requests==2.28.0\n")
 
@@ -186,11 +198,14 @@ class TestExecuteDispatch:
 
     def test_unsupported_action_raises(self):
         import pytest
+
         with pytest.raises(ValueError, match="Unsupported action"):
             run(self.agent._execute({"action": "fly"}))
 
     def test_check_dependencies_dispatches(self):
         self.agent._check_dependencies = AsyncMock(return_value={"created_issue": 1})
-        result = run(self.agent._execute({"action": "check_dependencies", "params": {"repo": "o/r"}}))
+        result = run(
+            self.agent._execute({"action": "check_dependencies", "params": {"repo": "o/r"}})
+        )
         self.agent._check_dependencies.assert_called_once()
         assert result["created_issue"] == 1

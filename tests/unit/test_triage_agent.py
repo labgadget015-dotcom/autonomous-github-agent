@@ -88,6 +88,7 @@ class TestLoadCosts:
 
     def test_returns_empty_when_file_missing(self, tmp_path, monkeypatch):
         import agents.triage_agent as mod
+
         monkeypatch.setattr(mod, "project_root", tmp_path)
         result = self.agent._load_costs(30)
         assert result == []
@@ -101,8 +102,10 @@ class TestLoadCosts:
         recent = (datetime.now() - timedelta(days=1)).isoformat()
         old = (datetime.now() - timedelta(days=60)).isoformat()
         costs_path.write_text(
-            json.dumps({"timestamp": recent, "cost_usd": 0.5, "model": "claude"}) + "\n"
-            + json.dumps({"timestamp": old, "cost_usd": 1.0, "model": "gpt4"}) + "\n"
+            json.dumps({"timestamp": recent, "cost_usd": 0.5, "model": "claude"})
+            + "\n"
+            + json.dumps({"timestamp": old, "cost_usd": 1.0, "model": "gpt4"})
+            + "\n"
         )
         result = self.agent._load_costs(30)
         assert len(result) == 1
@@ -143,8 +146,16 @@ class TestCostReport:
 
         recent = (datetime.now() - timedelta(days=1)).isoformat()
         (tmp_path / ".llm_costs.jsonl").write_text(
-            json.dumps({"timestamp": recent, "cost_usd": 0.25, "input_tokens": 100,
-                        "output_tokens": 50, "model": "claude"}) + "\n"
+            json.dumps(
+                {
+                    "timestamp": recent,
+                    "cost_usd": 0.25,
+                    "input_tokens": 100,
+                    "output_tokens": 50,
+                    "model": "claude",
+                }
+            )
+            + "\n"
         )
         result = run(self.agent._cost_report({}))
         assert result["total_cost_usd"] == 0.25
@@ -170,12 +181,28 @@ class TestCostReport:
         monkeypatch.delenv("SLACK_WEBHOOK_URL", raising=False)
 
         recent = (datetime.now() - timedelta(hours=1)).isoformat()
-        lines = "\n".join([
-            json.dumps({"timestamp": recent, "cost_usd": 0.10, "input_tokens": 10,
-                        "output_tokens": 5, "model": "claude"}),
-            json.dumps({"timestamp": recent, "cost_usd": 0.20, "input_tokens": 20,
-                        "output_tokens": 10, "model": "gpt4"}),
-        ])
+        lines = "\n".join(
+            [
+                json.dumps(
+                    {
+                        "timestamp": recent,
+                        "cost_usd": 0.10,
+                        "input_tokens": 10,
+                        "output_tokens": 5,
+                        "model": "claude",
+                    }
+                ),
+                json.dumps(
+                    {
+                        "timestamp": recent,
+                        "cost_usd": 0.20,
+                        "input_tokens": 20,
+                        "output_tokens": 10,
+                        "model": "gpt4",
+                    }
+                ),
+            ]
+        )
         (tmp_path / ".llm_costs.jsonl").write_text(lines)
         result = run(self.agent._cost_report({}))
         assert abs(result["total_cost_usd"] - 0.30) < 0.001
@@ -188,12 +215,17 @@ class TestExecuteDispatch:
 
     def test_unsupported_action_raises(self):
         import pytest
+
         with pytest.raises(ValueError, match="Unsupported action"):
             run(self.agent._execute({"action": "unknown"}))
 
     def test_triage_issue_dispatches(self):
         self.agent._triage_issue = AsyncMock(return_value={"issue": 1})
-        result = run(self.agent._execute({"action": "triage_issue", "params": {"repo": "o/r", "issue_number": 1}}))
+        result = run(
+            self.agent._execute(
+                {"action": "triage_issue", "params": {"repo": "o/r", "issue_number": 1}}
+            )
+        )
         self.agent._triage_issue.assert_called_once()
         assert result == {"issue": 1}
 

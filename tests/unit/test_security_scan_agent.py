@@ -130,9 +130,7 @@ class TestFormatSummary:
     def test_bandit_metrics_used_for_count(self):
         bandit_data = {
             "results": [],
-            "metrics": {
-                "_totals": {"SEVERITY.HIGH": 2, "SEVERITY.MEDIUM": 1, "SEVERITY.LOW": 0}
-            },
+            "metrics": {"_totals": {"SEVERITY.HIGH": 2, "SEVERITY.MEDIUM": 1, "SEVERITY.LOW": 0}},
         }
         report = self.agent._format_summary(bandit_data, [])
         assert "3 issue(s)" in report
@@ -164,8 +162,13 @@ class TestFormatSummary:
 
     def test_bandit_truncates_at_20_results(self):
         results = [
-            {"issue_severity": "LOW", "issue_confidence": "LOW",
-             "issue_text": f"issue {i}", "filename": "f.py", "line_number": i}
+            {
+                "issue_severity": "LOW",
+                "issue_confidence": "LOW",
+                "issue_text": f"issue {i}",
+                "filename": "f.py",
+                "line_number": i,
+            }
             for i in range(25)
         ]
         report = self.agent._format_summary({"results": results, "metrics": {}}, [])
@@ -212,6 +215,7 @@ class TestExecuteDispatch:
 
     def test_unsupported_action_raises(self):
         import pytest
+
         with pytest.raises(ValueError, match="Unsupported action"):
             run(self.agent._execute({"action": "hack"}))
 

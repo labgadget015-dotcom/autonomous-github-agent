@@ -199,7 +199,7 @@ class TestAnalyzePriorities:
         issue.updated_at = MagicMock()
         issue.updated_at.replace.return_value = datetime.now() - timedelta(days=days_old)
         lbl_objs = []
-        for name in (labels or []):
+        for name in labels or []:
             lbl = MagicMock()
             lbl.name = name
             lbl_objs.append(lbl)
@@ -216,7 +216,7 @@ class TestAnalyzePriorities:
         pr.created_at.replace.return_value = datetime.now() - timedelta(days=days_old)
         pr.updated_at.replace.return_value = datetime.now() - timedelta(days=days_old)
         lbl_objs = []
-        for name in (labels or []):
+        for name in labels or []:
             lbl = MagicMock()
             lbl.name = name
             lbl_objs.append(lbl)
@@ -234,7 +234,12 @@ class TestAnalyzePriorities:
         normal = self._mock_issue(labels=[], days_old=5)
         normal.number = 2
         ap.repo_data = {
-            "acme/repo": {"priority": "medium", "issues": [urgent, normal], "pulls": [], "commits": []}
+            "acme/repo": {
+                "priority": "medium",
+                "issues": [urgent, normal],
+                "pulls": [],
+                "commits": [],
+            }
         }
         results = ap.analyze_priorities()
         assert results[0]["number"] == urgent.number
@@ -279,15 +284,17 @@ class TestGenerateSummary:
     def test_priority_items_listed(self, tmp_path):
         ap = self._make(tmp_path)
         ap.repo_data = {}
-        priorities = [{
-            "type": "issue",
-            "repo": "acme/api",
-            "number": 42,
-            "title": "Fix the bug",
-            "url": "http://example.com/42",
-            "labels": ["urgent"],
-            "age_days": None,
-        }]
+        priorities = [
+            {
+                "type": "issue",
+                "repo": "acme/api",
+                "number": 42,
+                "title": "Fix the bug",
+                "url": "http://example.com/42",
+                "labels": ["urgent"],
+                "age_days": None,
+            }
+        ]
         summary = ap.generate_summary(priorities)
         assert "Fix the bug" in summary
         assert "#42" in summary
@@ -296,15 +303,17 @@ class TestGenerateSummary:
     def test_pr_shows_age(self, tmp_path):
         ap = self._make(tmp_path)
         ap.repo_data = {}
-        priorities = [{
-            "type": "pr",
-            "repo": "acme/api",
-            "number": 7,
-            "title": "My PR",
-            "url": "http://example.com/pr/7",
-            "labels": [],
-            "age_days": 14,
-        }]
+        priorities = [
+            {
+                "type": "pr",
+                "repo": "acme/api",
+                "number": 7,
+                "title": "My PR",
+                "url": "http://example.com/pr/7",
+                "labels": [],
+                "age_days": 14,
+            }
+        ]
         summary = ap.generate_summary(priorities)
         assert "14 days" in summary
 
@@ -373,9 +382,15 @@ class TestRun:
 
     def test_writes_to_output_file(self, tmp_path):
         ap = self._make(tmp_path)
-        ap.repo_data = {"acme/repo": {
-            "priority": "medium", "issues": [], "pulls": [], "commits": [], "config": {}
-        }}
+        ap.repo_data = {
+            "acme/repo": {
+                "priority": "medium",
+                "issues": [],
+                "pulls": [],
+                "commits": [],
+                "config": {},
+            }
+        }
         ap.fetch_all_repos = MagicMock(return_value=ap.repo_data)
         ap.analyze_priorities = MagicMock(return_value=[])
         ap.generate_summary = MagicMock(return_value="## Summary")
@@ -386,9 +401,15 @@ class TestRun:
 
     def test_returns_summary_string(self, tmp_path):
         ap = self._make(tmp_path)
-        ap.repo_data = {"acme/repo": {
-            "priority": "medium", "issues": [], "pulls": [], "commits": [], "config": {}
-        }}
+        ap.repo_data = {
+            "acme/repo": {
+                "priority": "medium",
+                "issues": [],
+                "pulls": [],
+                "commits": [],
+                "config": {},
+            }
+        }
         ap.fetch_all_repos = MagicMock(return_value=ap.repo_data)
         ap.analyze_priorities = MagicMock(return_value=[])
         ap.generate_summary = MagicMock(return_value="## Generated")
