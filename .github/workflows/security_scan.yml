@@ -362,6 +362,5 @@ jobs:
             echo "No changes."
           else
             git commit -m "chore: rollback manifest entry [skip ci]"
-
-            git push
+            git pull --rebase && git push
           fi

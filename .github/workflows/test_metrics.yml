@@ -211,6 +211,5 @@ jobs:
             echo "No changes to commit."
           else
             git commit -m "chore: update test metrics [skip ci]"
-
-            git push
+            git pull --rebase && git push
           fi
