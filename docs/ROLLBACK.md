@@ -1,5 +1,24 @@
 # Rollback Manifest
 
+## 7eb4212 — 2026-06-30 05:11 UTC
+
+- **SHA**: `7eb4212fd82a83d4d4e38abc63e2162650faea17`
+- **Author**: GadgetAI
+- **Message**: feat: pipeline enchantments — coverage, cost cap, PAT alert, n8n health, Grafana, LLM routing
+- **Files changed**: 8 file(s)
+
+**Changed files:**
+- `.github/scripts/llm_router.py`
+- `.github/workflows/n8n-health-check.yml`
+- `.github/workflows/pat-rotation-alert.yml`
+- `core/llm_provider.py`
+- `monitoring/grafana-dashboards/dashboards.yml`
+- `monitoring/grafana-dashboards/repository-health.json`
+- `pyproject.toml`
+- `pytest.ini`
+
+---
+
 ## c515a21 — 2026-06-29 06:20 UTC
 
 - **SHA**: `c515a212be4dd45a73bc1bc3405ff60367e5a3a9`
