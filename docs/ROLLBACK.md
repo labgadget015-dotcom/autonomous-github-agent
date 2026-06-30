@@ -1,5 +1,21 @@
 # Rollback Manifest
 
+## f90c4de — 2026-06-30 05:25 UTC
+
+- **SHA**: `f90c4dec919dd1b52b3b7c669106e34418eacf82`
+- **Author**: GadgetAI
+- **Message**: test: add 97 unit tests for autopilot, code_review, dependency, security_scan, triage agents
+- **Files changed**: 5 file(s)
+
+**Changed files:**
+- `tests/unit/test_autopilot.py`
+- `tests/unit/test_code_review_agent.py`
+- `tests/unit/test_dependency_agent.py`
+- `tests/unit/test_security_scan_agent.py`
+- `tests/unit/test_triage_agent.py`
+
+---
+
 ## f2492bc — 2026-06-30 05:24 UTC
 
 - **SHA**: `f2492bcdabab87c2f73bf569b8c93a367514a414`
