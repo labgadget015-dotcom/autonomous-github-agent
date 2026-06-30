@@ -83,9 +83,14 @@ class TestClassify:
         complexity = router.classify("complexity", {"score": 25})
         assert complexity == TaskComplexity.COMPLEX
 
-    def test_complexity_low_score_is_moderate(self):
+    def test_complexity_low_score_is_simple(self):
         router = self._router()
         complexity = router.classify("complexity", {"score": 5})
+        assert complexity == TaskComplexity.SIMPLE
+
+    def test_complexity_mid_score_is_moderate(self):
+        router = self._router()
+        complexity = router.classify("complexity", {"score": 15})
         assert complexity == TaskComplexity.MODERATE
 
     def test_unknown_task_defaults_to_moderate(self):
