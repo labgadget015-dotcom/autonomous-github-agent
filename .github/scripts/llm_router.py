@@ -57,19 +57,21 @@ class LLMRouter:
 
     # Task types cheap enough to always serve locally.
     # Criteria: short output, low-stakes errors, no multi-step reasoning needed.
-    _LOCAL_TASK_TYPES = frozenset([
-        "format",
-        "lint_simple",
-        "doc",
-        "doc_simple",
-        "triage",          # issue label suggestion
-        "changelog",       # changelog entry generation
-        "summarize",       # short text summaries
-        "label",           # PR / issue label selection
-        "classify",        # single-dimension classification
-        "rename",          # identifier / file rename suggestion
-        "comment_simple",  # short inline code comments
-    ])
+    _LOCAL_TASK_TYPES = frozenset(
+        [
+            "format",
+            "lint_simple",
+            "doc",
+            "doc_simple",
+            "triage",  # issue label suggestion
+            "changelog",  # changelog entry generation
+            "summarize",  # short text summaries
+            "label",  # PR / issue label selection
+            "classify",  # single-dimension classification
+            "rename",  # identifier / file rename suggestion
+            "comment_simple",  # short inline code comments
+        ]
+    )
 
     def classify(self, task_type: str, context: dict) -> TaskComplexity:
         if task_type in self._LOCAL_TASK_TYPES:
@@ -148,9 +150,7 @@ class LLMRouter:
         except Exception:
             return LLMResponse("", model, 0, 0.0, 0, False)
 
-    def route(
-        self, prompt: str, task_type: str, context: dict | None = None
-    ) -> LLMResponse:
+    def route(self, prompt: str, task_type: str, context: dict | None = None) -> LLMResponse:
         context = context or {}
         complexity = self.classify(task_type, context)
         self.stats["total"] += 1
@@ -184,9 +184,7 @@ class LLMRouter:
         print("\n" + "=" * 60)
         print("💰 LLM ROUTING REPORT")
         print("=" * 60)
-        print(
-            f"Requests: {t} ({self.stats['local']} local, {self.stats['cloud']} cloud)"
-        )
+        print(f"Requests: {t} ({self.stats['local']} local, {self.stats['cloud']} cloud)")
         print(f"Local: {l_pct:.1f}% (FREE)")
         print(f"Actual: ${self.stats['cost']:.2f}")
         print(f"Would be: ${cloud_cost:.2f}")

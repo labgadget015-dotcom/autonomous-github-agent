@@ -40,17 +40,17 @@ class AuditLogger:
 
         if log_dir is not None:
             self.log_dir = Path(log_dir)
-        elif hasattr(effective_config, "logging") and hasattr(
-            effective_config.logging, "log_dir"
-        ):
+        elif hasattr(effective_config, "logging") and hasattr(effective_config.logging, "log_dir"):
             self.log_dir = Path(effective_config.logging.log_dir)
         else:
             self.log_dir = Path("logs")
         self.log_dir.mkdir(parents=True, exist_ok=True)
 
         db_url = f"sqlite:///{self.log_dir / 'audit.db'}"
-        if log_dir is None and hasattr(effective_config, "database") and hasattr(
-            effective_config.database, "url"
+        if (
+            log_dir is None
+            and hasattr(effective_config, "database")
+            and hasattr(effective_config.database, "url")
         ):
             db_url = effective_config.database.url
 
