@@ -1,5 +1,17 @@
 # Rollback Manifest
 
+## d4257f8 — 2026-06-30 05:18 UTC
+
+- **SHA**: `d4257f8ba65ea5b51e57dbb61371393557de1243`
+- **Author**: GadgetAI
+- **Message**: fix(n8n-health-check): only alert on host down, not DRC timeout
+- **Files changed**: 1 file(s)
+
+**Changed files:**
+- `.github/workflows/n8n-health-check.yml`
+
+---
+
 ## 70bc0ca — 2026-06-30 05:14 UTC
 
 - **SHA**: `70bc0cabc4e76a8b29deb4d9860db6433baf6faf`
