@@ -31,5 +31,5 @@ jobs:
           git add CHANGELOG.md
           if ! git diff --staged --quiet; then
             git commit -m "chore: update CHANGELOG [skip ci]"
-            git push
+            git pull --rebase && git push
           fi
