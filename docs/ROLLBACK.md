@@ -1,5 +1,17 @@
 # Rollback Manifest
 
+## ac7d664 — 2026-07-01 05:07 UTC
+
+- **SHA**: `ac7d6648d381ebab64cf23442e25b47c0aeaef51`
+- **Author**: Gadget Lab
+- **Message**: docs: add Work With Gadget Lab CTA section to README
+- **Files changed**: 1 file(s)
+
+**Changed files:**
+- `README.md`
+
+---
+
 ## a45ba72 — 2026-06-30 05:38 UTC
 
 - **SHA**: `a45ba72e472bcc7d3b7ef8ea85bc6db85fa390b7`
