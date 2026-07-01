@@ -1,5 +1,17 @@
 # Rollback Manifest
 
+## ce5dbd9 — 2026-07-01 05:18 UTC
+
+- **SHA**: `ce5dbd94c82e7eee8dd459d0f64543df1a46235d`
+- **Author**: Gadget Lab
+- **Message**: docs: update contact email to labgadget015@gmail.com
+- **Files changed**: 1 file(s)
+
+**Changed files:**
+- `README.md`
+
+---
+
 ## ac7d664 — 2026-07-01 05:07 UTC
 
 - **SHA**: `ac7d6648d381ebab64cf23442e25b47c0aeaef51`
