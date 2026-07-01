@@ -352,7 +352,6 @@ class StalenessEngine:
                 actions.append({**pr_info, "action": "dry_run", "comment": comment})
             else:
                 try:
-                    owner, repo_name = pr_info["repo_full_name"].split("/", 1)
                     repo_obj = self._github.get_repo(pr_info["repo_full_name"])
                     pr_obj = repo_obj.get_pull(pr_info["pr_number"])
                     pr_obj.create_issue_comment(comment)

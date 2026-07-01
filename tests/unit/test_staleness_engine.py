@@ -316,7 +316,7 @@ class TestProcessStalePRs:
 
     def test_dry_run_previews_comment_on_tier_advance(self, tmp_path):
         engine = _make_engine(tmp_path, dry_run=True)
-        # Pre-populate state at tier 1
+        # PR is now tier 2 but only a tier-1 comment has been posted — expect a preview
         engine.save_state(
             {
                 "acme/repo#1": {
@@ -351,7 +351,7 @@ class TestProcessStalePRs:
 
     def test_posts_comment_in_live_mode(self, tmp_path):
         engine = _make_engine(tmp_path, dry_run=False)
-        # Pre-populate with tier 1 comment already posted
+        # PR has advanced to tier 2 but only a tier-1 comment was posted — expect a new comment
         engine.save_state(
             {
                 "acme/repo#1": {
