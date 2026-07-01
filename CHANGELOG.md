@@ -123,6 +123,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 📚 Documentation
 
+- update contact email to labgadget015@gmail.com (ce5dbd9)
 - add Work With Gadget Lab CTA section to README (ac7d664)
 - add health dashboard HTML and Slack app manifest (c8074e1)
 - improve CLAUDE.md with venv setup, test layout, and coverage clarifications (2b5eb86)
@@ -149,6 +150,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 🔨 Chores
 
+- update CHANGELOG [skip ci] (a6461a2)
+- rollback manifest entry [skip ci] (16c8037)
 - rollback manifest entry [skip ci] (60099b7)
 - update CHANGELOG [skip ci] (161fb4b)
 - rollback manifest entry [skip ci] (b4d428f)
