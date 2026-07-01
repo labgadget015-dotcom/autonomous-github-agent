@@ -11,7 +11,7 @@ A state-of-the-art, autonomous AI system for end-to-end GitHub repository and pr
 - **Issue Management**: Auto-triage, label, assign, and link related issues
 - **Branch Operations**: Automated merge, rebase, conflict resolution
 - **Security First**: Dependency scanning, secret detection, OWASP compliance
-- **CI/CD Optimization**: Workflow analysis and auto-healing
+- **CI/CD Optimization**: Workflow analysis and auto-healingh
 - **Documentation Generation**: Always up-to-date README, API docs, changelogs
 - **Audit Logging**: Full traceability with rollback support
 
@@ -227,7 +227,7 @@ This agent is part of a broader stack we run in production — including autonom
 
 **If you want this kind of automation working in your business:**
 
-- 📧 **Get in touch:** [hello@gadgetlab.uk](mailto:hello@gadgetlab.uk)
+- 📧 **Get in touch:** [labgadget015@gmail.com](mailto:labgadget015@gmail.com)
 - - 💼 **What we build:** Custom AI agents, workflow automation, GitHub CI/CD intelligence, and ops dashboards
   - - 🎯 **Who we work with:** UK SMBs and technical teams who want real automation, not just demos
    
