@@ -70,7 +70,9 @@ class TestStalenessEngineInit:
         mock_gh = MagicMock()
         with (
             patch("autopilot.staleness_engine.Github", return_value=mock_gh),
-            patch.dict("os.environ", {"GITHUB_TOKEN": "tok", "ENABLE_LIVE_MODE": "true"}),
+            patch.dict(
+                "os.environ", {"GITHUB_TOKEN": "tok", "ENABLE_LIVE_MODE": "true"}
+            ),
         ):
             engine = StalenessEngine(
                 config={},
@@ -196,7 +198,11 @@ class TestGenerateComment:
             return_value={"content": "LLM comment", "usage": {"total_tokens": 100}}
         )
         comment = engine.generate_comment(
-            age_days=10, tier=1, llm_client=mock_llm, pr_title="My PR", repo_full_name="a/b"
+            age_days=10,
+            tier=1,
+            llm_client=mock_llm,
+            pr_title="My PR",
+            repo_full_name="a/b",
         )
         assert comment == "LLM comment"
         assert engine._llm_calls_used == 1
@@ -214,9 +220,7 @@ class TestGenerateComment:
         engine = _make_engine(tmp_path, max_llm_calls=5)
         mock_llm = MagicMock()
         mock_llm.generate = AsyncMock(side_effect=Exception("network error"))
-        comment = engine.generate_comment(
-            age_days=20, tier=1, llm_client=mock_llm
-        )
+        comment = engine.generate_comment(age_days=20, tier=1, llm_client=mock_llm)
         assert "👋" in comment  # template fallback
 
 
@@ -252,7 +256,9 @@ class TestScanRepos:
         from github import GithubException
 
         engine = _make_engine(tmp_path)
-        engine._github.get_repo.side_effect = GithubException(403, {"message": "Forbidden"})
+        engine._github.get_repo.side_effect = GithubException(
+            403, {"message": "Forbidden"}
+        )
 
         import logging
 
@@ -388,7 +394,9 @@ class TestProcessStalePRs:
                 }
             }
         )
-        engine._github.get_repo.side_effect = GithubException(404, {"message": "Not Found"})
+        engine._github.get_repo.side_effect = GithubException(
+            404, {"message": "Not Found"}
+        )
 
         stale = [self._make_stale_pr(tier=2)]
         summary = engine.process_stale_prs(stale)
@@ -428,7 +436,9 @@ class TestProcessStalePRs:
 class TestRun:
     def test_run_uses_config_repos_by_default(self, tmp_path):
         engine = _make_engine(tmp_path, dry_run=True)
-        engine._github.get_repo.side_effect = Exception("should not be called with no stale")
+        engine._github.get_repo.side_effect = Exception(
+            "should not be called with no stale"
+        )
         # Override scan to avoid real GitHub calls
         engine.scan_repos = MagicMock(return_value=[])
         engine.process_stale_prs = MagicMock(
