@@ -71,3 +71,26 @@ api:
   rate_limit_buffer: 100  # Keep this many API calls in reserve
   timeout: 30  # seconds
   retry_attempts: 3
+
+# Staleness Sentinel — PR Aging & Escalation
+# Set ENABLE_LIVE_MODE=true in the environment to post real GitHub comments.
+# Dry-run mode is the default: actions are logged but no comments are posted.
+staleness:
+  enabled: true
+
+  # Maximum number of Claude LLM calls per run for comment generation.
+  # Override with MAX_CLAUDE_CALLS_PER_RUN env var.
+  max_claude_calls_per_run: 20
+
+  # Tier thresholds (days open).  Matches TIERS in staleness_engine.py.
+  # T0 (0-6d): fresh     — no action
+  # T1 (7-29d): aging    — informational comment
+  # T2 (30-89d): stale   — escalation comment
+  # T3 (90+d): critical  — urgent escalation comment
+  tiers:
+    T1_days: 7
+    T2_days: 30
+    T3_days: 90
+
+  # Path to the state file that persists per-PR tier assignments.
+  state_file: autopilot/staleness_state.json

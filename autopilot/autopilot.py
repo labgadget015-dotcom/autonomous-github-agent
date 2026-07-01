@@ -291,6 +291,33 @@ class GitHubAutopilot:
 
         return "\n".join(summary)
 
+    def _run_staleness_check(self, staleness_cfg: dict) -> None:
+        """Invoke StalenessEngine as part of the daily run."""
+        try:
+            from autopilot.staleness_engine import StalenessEngine
+
+            state_file = staleness_cfg.get("state_file")
+            engine = StalenessEngine(config=staleness_cfg, state_file=state_file)
+
+            # On very first run the state file won't exist — seed it silently.
+            if not engine.state_file.exists():
+                print("[staleness] First run detected — seeding state (no comments posted).")
+                engine.init_state_from_prs(self.repo_data)
+                return
+
+            actions = engine.process_prs(self.repo_data)
+            posted = sum(1 for a in actions if a.get("posted"))
+            dry_run_count = sum(1 for a in actions if a.get("dry_run"))
+            print(
+                f"[staleness] {len(actions)} escalation(s) processed "
+                f"(posted={posted}, dry_run={dry_run_count})"
+            )
+        except Exception as exc:
+            print(
+                f"[staleness] WARNING: staleness check failed (non-fatal, daily run continues): {exc}",
+                file=sys.stderr,
+            )
+
     def run(self, output_file: str | None = None) -> str:
         """Main execution: fetch data, analyze, generate summary"""
         print("=" * 60)
@@ -345,6 +372,11 @@ class GitHubAutopilot:
             with open(output_file_path, "w", encoding="utf-8") as f:
                 f.write(summary)
             print(f"✅ Summary written to: {output_file_path}")
+
+        # Optional: run staleness sentinel if enabled in config
+        staleness_cfg = self.config.get("staleness", {})
+        if staleness_cfg.get("enabled", False):
+            self._run_staleness_check(staleness_cfg)
 
         runtime = time.time() - self.start_time
         print(f"\n✅ Complete in {runtime:.1f}s")

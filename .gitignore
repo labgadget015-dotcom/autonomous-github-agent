@@ -84,6 +84,7 @@ landing/tsconfig.tsbuildinfo
 .llm_costs.jsonl
 coverage.json
 coverage.xml
+autopilot/staleness_state.json
 
 # MCP server (local tooling, not part of the pipeline)
 mcp_server/
