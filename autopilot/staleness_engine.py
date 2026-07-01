@@ -474,6 +474,12 @@ def main(argv: list[str] | None = None) -> None:
     staleness_cfg = full_config.get("staleness", {})
     staleness_cfg["repos"] = full_config.get("repos", [])
 
+    max_llm_calls = (
+        args.max_llm_calls
+        if args.max_llm_calls is not None
+        else int(staleness_cfg.get("max_llm_calls_per_run", 20))
+    )
+
     state_file = (
         Path(args.state_file)
         if args.state_file
@@ -483,7 +489,7 @@ def main(argv: list[str] | None = None) -> None:
     engine = StalenessEngine(
         config=staleness_cfg,
         dry_run=not args.live,
-        max_llm_calls=args.max_llm_calls,
+        max_llm_calls=max_llm_calls,
         state_file=state_file,
     )
     summary = engine.run()
