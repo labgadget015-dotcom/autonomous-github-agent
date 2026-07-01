@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
-## [Unreleased] - 2026-06-30
+## [Unreleased] - 2026-07-01
 
 
 ### ✨ Features
@@ -123,6 +123,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 📚 Documentation
 
+- add Work With Gadget Lab CTA section to README (ac7d664)
 - add health dashboard HTML and Slack app manifest (c8074e1)
 - improve CLAUDE.md with venv setup, test layout, and coverage clarifications (2b5eb86)
 - update CLAUDE.md with action.yml, context.json, and Slack node fix (c2eb0de)
@@ -148,6 +149,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 🔨 Chores
 
+- rollback manifest entry [skip ci] (60099b7)
+- update CHANGELOG [skip ci] (161fb4b)
 - rollback manifest entry [skip ci] (b4d428f)
 - update CHANGELOG [skip ci] (6b11e02)
 - rollback manifest entry [skip ci] (cfcfa3a)
