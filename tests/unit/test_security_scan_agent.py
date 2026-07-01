@@ -139,9 +139,7 @@ class TestFormatSummary:
     def test_bandit_metrics_used_for_count(self):
         bandit_data = {
             "results": [],
-            "metrics": {
-                "_totals": {"SEVERITY.HIGH": 2, "SEVERITY.MEDIUM": 1, "SEVERITY.LOW": 0}
-            },
+            "metrics": {"_totals": {"SEVERITY.HIGH": 2, "SEVERITY.MEDIUM": 1, "SEVERITY.LOW": 0}},
         }
         report = self.agent._format_summary(bandit_data, [])
         assert "3 issue(s)" in report
@@ -236,8 +234,6 @@ class TestExecuteDispatch:
 
     def test_scan_repo_dispatches(self):
         self.agent._scan_repo = AsyncMock(return_value={"created_issue": 1})
-        result = run(
-            self.agent._execute({"action": "scan_repo", "params": {"repo": "o/r"}})
-        )
+        result = run(self.agent._execute({"action": "scan_repo", "params": {"repo": "o/r"}}))
         self.agent._scan_repo.assert_called_once()
         assert result["created_issue"] == 1

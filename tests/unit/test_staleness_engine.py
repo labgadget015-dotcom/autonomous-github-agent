@@ -9,7 +9,6 @@ from unittest.mock import MagicMock, patch, AsyncMock
 
 import pytest
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
@@ -70,9 +69,7 @@ class TestStalenessEngineInit:
         mock_gh = MagicMock()
         with (
             patch("autopilot.staleness_engine.Github", return_value=mock_gh),
-            patch.dict(
-                "os.environ", {"GITHUB_TOKEN": "tok", "ENABLE_LIVE_MODE": "true"}
-            ),
+            patch.dict("os.environ", {"GITHUB_TOKEN": "tok", "ENABLE_LIVE_MODE": "true"}),
         ):
             engine = StalenessEngine(
                 config={},
@@ -160,9 +157,7 @@ class TestAssignTier:
             patch("autopilot.staleness_engine.Github", return_value=mock_gh),
             patch.dict("os.environ", {"GITHUB_TOKEN": "t"}),
         ):
-            engine = StalenessEngine(
-                config=config, dry_run=True, state_file=tmp_path / "s.json"
-            )
+            engine = StalenessEngine(config=config, dry_run=True, state_file=tmp_path / "s.json")
         assert engine.assign_tier(13) == 0
         assert engine.assign_tier(14) == 1
 
@@ -256,9 +251,7 @@ class TestScanRepos:
         from github import GithubException
 
         engine = _make_engine(tmp_path)
-        engine._github.get_repo.side_effect = GithubException(
-            403, {"message": "Forbidden"}
-        )
+        engine._github.get_repo.side_effect = GithubException(403, {"message": "Forbidden"})
 
         import logging
 
@@ -288,9 +281,7 @@ class TestScanRepos:
         mock_repo_b.get_pulls.return_value = [pr_fresh]
         engine._github.get_repo.side_effect = [mock_repo_a, mock_repo_b]
 
-        stale = engine.scan_repos(
-            [{"owner": "acme", "name": "a"}, {"owner": "acme", "name": "b"}]
-        )
+        stale = engine.scan_repos([{"owner": "acme", "name": "a"}, {"owner": "acme", "name": "b"}])
         assert len(stale) == 1
         assert stale[0]["pr_number"] == 1
 
@@ -394,9 +385,7 @@ class TestProcessStalePRs:
                 }
             }
         )
-        engine._github.get_repo.side_effect = GithubException(
-            404, {"message": "Not Found"}
-        )
+        engine._github.get_repo.side_effect = GithubException(404, {"message": "Not Found"})
 
         stale = [self._make_stale_pr(tier=2)]
         summary = engine.process_stale_prs(stale)
@@ -436,9 +425,7 @@ class TestProcessStalePRs:
 class TestRun:
     def test_run_uses_config_repos_by_default(self, tmp_path):
         engine = _make_engine(tmp_path, dry_run=True)
-        engine._github.get_repo.side_effect = Exception(
-            "should not be called with no stale"
-        )
+        engine._github.get_repo.side_effect = Exception("should not be called with no stale")
         # Override scan to avoid real GitHub calls
         engine.scan_repos = MagicMock(return_value=[])
         engine.process_stale_prs = MagicMock(
