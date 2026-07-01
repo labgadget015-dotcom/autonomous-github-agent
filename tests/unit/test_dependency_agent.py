@@ -97,7 +97,11 @@ class TestBuildReport:
                 "name": "flask",
                 "version": "1.0",
                 "vulns": [
-                    {"id": "CVE-2021-1234", "aliases": ["GHSA-abc"], "fix_versions": ["2.0"]}
+                    {
+                        "id": "CVE-2021-1234",
+                        "aliases": ["GHSA-abc"],
+                        "fix_versions": ["2.0"],
+                    }
                 ],
             }
         ]
@@ -205,7 +209,9 @@ class TestExecuteDispatch:
     def test_check_dependencies_dispatches(self):
         self.agent._check_dependencies = AsyncMock(return_value={"created_issue": 1})
         result = run(
-            self.agent._execute({"action": "check_dependencies", "params": {"repo": "o/r"}})
+            self.agent._execute(
+                {"action": "check_dependencies", "params": {"repo": "o/r"}}
+            )
         )
         self.agent._check_dependencies.assert_called_once()
         assert result["created_issue"] == 1

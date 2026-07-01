@@ -40,7 +40,9 @@ class AuditLogger:
 
         if log_dir is not None:
             self.log_dir = Path(log_dir)
-        elif hasattr(effective_config, "logging") and hasattr(effective_config.logging, "log_dir"):
+        elif hasattr(effective_config, "logging") and hasattr(
+            effective_config.logging, "log_dir"
+        ):
             self.log_dir = Path(effective_config.logging.log_dir)
         else:
             self.log_dir = Path("logs")

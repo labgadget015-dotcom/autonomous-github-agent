@@ -150,7 +150,9 @@ class LLMRouter:
         except Exception:
             return LLMResponse("", model, 0, 0.0, 0, False)
 
-    def route(self, prompt: str, task_type: str, context: dict | None = None) -> LLMResponse:
+    def route(
+        self, prompt: str, task_type: str, context: dict | None = None
+    ) -> LLMResponse:
         context = context or {}
         complexity = self.classify(task_type, context)
         self.stats["total"] += 1
@@ -184,7 +186,9 @@ class LLMRouter:
         print("\n" + "=" * 60)
         print("💰 LLM ROUTING REPORT")
         print("=" * 60)
-        print(f"Requests: {t} ({self.stats['local']} local, {self.stats['cloud']} cloud)")
+        print(
+            f"Requests: {t} ({self.stats['local']} local, {self.stats['cloud']} cloud)"
+        )
         print(f"Local: {l_pct:.1f}% (FREE)")
         print(f"Actual: ${self.stats['cost']:.2f}")
         print(f"Would be: ${cloud_cost:.2f}")

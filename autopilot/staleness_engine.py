@@ -39,9 +39,9 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 DEFAULT_TIERS: list[dict[str, Any]] = [
-    {"tier": 1, "min_days": 7,  "label": "stale",           "template": "tier1"},
-    {"tier": 2, "min_days": 31, "label": "stale-escalated",  "template": "tier2"},
-    {"tier": 3, "min_days": 61, "label": "stale-critical",   "template": "tier3"},
+    {"tier": 1, "min_days": 7, "label": "stale", "template": "tier1"},
+    {"tier": 2, "min_days": 31, "label": "stale-escalated", "template": "tier2"},
+    {"tier": 3, "min_days": 61, "label": "stale-critical", "template": "tier3"},
 ]
 
 COMMENT_TEMPLATES: dict[str, str] = {
@@ -224,9 +224,7 @@ class StalenessEngine:
     # Repo scanning
     # ------------------------------------------------------------------
 
-    def scan_repos(
-        self, repos: list[dict[str, Any]]
-    ) -> list[dict[str, Any]]:
+    def scan_repos(self, repos: list[dict[str, Any]]) -> list[dict[str, Any]]:
         """Scan *repos* and return a list of stale PR descriptors.
 
         Each descriptor contains:
@@ -364,9 +362,7 @@ class StalenessEngine:
                         {**pr_info, "action": "comment_posted", "comment": comment}
                     )
                 except GithubException as exc:
-                    logger.error(
-                        "Failed to post comment on %s: %s", key, exc
-                    )
+                    logger.error("Failed to post comment on %s: %s", key, exc)
                     actions.append({**pr_info, "action": "error", "error": str(exc)})
 
         self.save_state(state)
@@ -377,9 +373,7 @@ class StalenessEngine:
             "comments_posted": sum(
                 1 for a in actions if a["action"] == "comment_posted"
             ),
-            "dry_run_previews": sum(
-                1 for a in actions if a["action"] == "dry_run"
-            ),
+            "dry_run_previews": sum(1 for a in actions if a["action"] == "dry_run"),
             "state_initialized": sum(
                 1 for a in actions if a["action"] == "state_initialized"
             ),
@@ -414,10 +408,14 @@ class StalenessEngine:
             repos = self.config.get("repos", [])
 
         mode = "DRY-RUN" if self.dry_run else "LIVE"
-        logger.info("[staleness] Starting scan (%s, max_llm_calls=%d)", mode, self.max_llm_calls)
+        logger.info(
+            "[staleness] Starting scan (%s, max_llm_calls=%d)", mode, self.max_llm_calls
+        )
 
         stale_prs = self.scan_repos(repos)
-        logger.info("[staleness] Found %d stale PRs across %d repos", len(stale_prs), len(repos))
+        logger.info(
+            "[staleness] Found %d stale PRs across %d repos", len(stale_prs), len(repos)
+        )
 
         summary = self.process_stale_prs(stale_prs, llm_client=llm_client)
 
@@ -441,8 +439,12 @@ def main(argv: list[str] | None = None) -> None:
 
     import yaml
 
-    parser = argparse.ArgumentParser(description="Staleness Sentinel — PR escalation pipeline")
-    parser.add_argument("--config", default="config.yaml", help="Path to autopilot config.yaml")
+    parser = argparse.ArgumentParser(
+        description="Staleness Sentinel — PR escalation pipeline"
+    )
+    parser.add_argument(
+        "--config", default="config.yaml", help="Path to autopilot config.yaml"
+    )
     parser.add_argument(
         "--state-file",
         default=None,
