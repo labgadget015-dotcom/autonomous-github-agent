@@ -71,3 +71,45 @@ api:
   rate_limit_buffer: 100  # Keep this many API calls in reserve
   timeout: 30  # seconds
   retry_attempts: 3
+
+# Staleness Sentinel configuration
+# Controls the automated PR aging & escalation pipeline (autopilot/staleness_engine.py).
+# Enable live writes by setting ENABLE_LIVE_MODE=true (dry-run is the safe default).
+staleness:
+  max_llm_calls_per_run: 20  # Hard cap on Claude calls per scan run
+
+  # Tier thresholds — a PR is assigned the highest tier whose min_days it meets.
+  tiers:
+    - tier: 1
+      min_days: 7
+      label: stale
+      template: tier1
+    - tier: 2
+      min_days: 31
+      label: stale-escalated
+      template: tier2
+    - tier: 3
+      min_days: 61
+      label: stale-critical
+      template: tier3
+
+  # Comment templates (use {age_days}, {pr_title}, {repo} as placeholders).
+  templates:
+    tier1: |
+      👋 **Staleness Sentinel** — This PR has been open for **{age_days} days**.
+      Would you like any help moving it forward? If it is blocked, please add a
+      `blocked` label so it can be tracked.
+    tier2: |
+      ⚠️ **Staleness Sentinel** — This PR has been open for **{age_days} days** without merging. Please consider:
+      - Rebasing / resolving conflicts
+      - Requesting a review
+      - Closing it if the work has been superseded
+
+      If this PR is still relevant, please leave a status update.
+    tier3: |
+      🚨 **Staleness Sentinel** — This PR has been open for **{age_days} days**. It is now critically stale. Action required:
+      - **Merge** if ready
+      - **Close** if no longer needed
+      - **Add a comment** explaining why it must stay open
+
+      This PR will continue to be flagged until resolved.
