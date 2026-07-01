@@ -456,8 +456,8 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument(
         "--max-llm-calls",
         type=int,
-        default=20,
-        help="Hard cap on LLM calls per run (default: 20)",
+        default=None,
+        help="Hard cap on LLM calls per run (default: staleness.max_llm_calls_per_run or 20)",
     )
     args = parser.parse_args(argv)
 
