@@ -176,11 +176,11 @@ class StalenessEngine:
         Uses an LLM when *llm_client* is supplied and the call budget has not
         been exhausted; otherwise falls back to the built-in template.
         """
-        # Find the template key for this tier
-        template_key = f"tier{tier}"
+        # Find the template key for this tier (allow config-defined template mapping)
+        tier_def = next((t for t in self.tiers if int(t.get("tier", 0)) == tier), {})
+        template_key = str(tier_def.get("template") or f"tier{tier}")
         templates: dict[str, str] = self.config.get("templates", COMMENT_TEMPLATES)
         template = templates.get(template_key, COMMENT_TEMPLATES.get(template_key, ""))
-
         base_comment = template.format(
             age_days=age_days,
             pr_title=pr_title,
