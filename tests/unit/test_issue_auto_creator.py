@@ -182,3 +182,65 @@ class TestMakeRequest:
         ):
             result = creator._make_request("issues", {"title": "test"})
         assert result is None
+
+
+class TestCreateIssuesDedup:
+    def test_updates_existing_issue_instead_of_creating(self, monkeypatch):
+        creator = _make_creator(monkeypatch)
+        mock_get = MagicMock()
+        mock_get.json.return_value = [{"number": 7, "title": "old"}]
+        mock_get.raise_for_status.return_value = None
+        mock_patch = MagicMock()
+        mock_patch.json.return_value = {"number": 7}
+        mock_patch.raise_for_status.return_value = None
+
+        with (
+            patch("requests.get", return_value=mock_get) as get,
+            patch("requests.patch", return_value=mock_patch) as patch_call,
+            patch("requests.post") as post_call,
+        ):
+            issue_data = {
+                "title": "⚠️ Code Quality Below Threshold",
+                "body": "x",
+                "labels": ["code-quality", "automated", "urgent"],
+            }
+            creator.create_issues([issue_data])
+
+        get.assert_called_once()
+        patch_call.assert_called_once()
+        post_call.assert_not_called()
+
+    def test_creates_new_issue_when_none_exists(self, monkeypatch):
+        creator = _make_creator(monkeypatch)
+        mock_get = MagicMock()
+        mock_get.json.return_value = []
+        mock_get.raise_for_status.return_value = None
+        mock_post = MagicMock()
+        mock_post.json.return_value = {"number": 9}
+        mock_post.raise_for_status.return_value = None
+
+        with (
+            patch("requests.get", return_value=mock_get),
+            patch("requests.post", return_value=mock_post) as post_call,
+            patch("requests.patch") as patch_call,
+        ):
+            issue_data = {
+                "title": "🔴 1 High-Severity Security Vulnerabilities Detected",
+                "body": "x",
+                "labels": ["security", "automated", "critical"],
+            }
+            creator.create_issues([issue_data])
+
+        post_call.assert_called_once()
+        patch_call.assert_not_called()
+
+    def test_find_open_issue_skips_pull_requests(self, monkeypatch):
+        creator = _make_creator(monkeypatch)
+        mock_get = MagicMock()
+        mock_get.json.return_value = [{"number": 1, "pull_request": {}}, {"number": 2}]
+        mock_get.raise_for_status.return_value = None
+
+        with patch("requests.get", return_value=mock_get):
+            result = creator._find_open_issue(["automated"])
+
+        assert result["number"] == 2
