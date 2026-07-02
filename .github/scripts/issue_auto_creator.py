@@ -45,7 +45,9 @@ class IssueAutoCreator:
         url = f"{self.api_base}/repos/{self.repo}/{endpoint}"
 
         try:
-            response = requests.post(url, headers=self._headers(), json=data, timeout=30)
+            response = requests.post(
+                url, headers=self._headers(), json=data, timeout=30
+            )
             response.raise_for_status()
             return response.json()
         except requests.exceptions.RequestException as e:
@@ -58,7 +60,9 @@ class IssueAutoCreator:
         params = {"state": "open", "labels": ",".join(labels)}
 
         try:
-            response = requests.get(url, headers=self._headers(), params=params, timeout=30)
+            response = requests.get(
+                url, headers=self._headers(), params=params, timeout=30
+            )
             response.raise_for_status()
             for issue in response.json():
                 if "pull_request" not in issue:
@@ -72,7 +76,9 @@ class IssueAutoCreator:
         url = f"{self.api_base}/repos/{self.repo}/issues/{issue_number}"
 
         try:
-            response = requests.patch(url, headers=self._headers(), json=data, timeout=30)
+            response = requests.patch(
+                url, headers=self._headers(), json=data, timeout=30
+            )
             response.raise_for_status()
             return response.json()
         except requests.exceptions.RequestException as e:
@@ -260,9 +266,13 @@ Code quality has fallen below the acceptable threshold. This requires immediate 
                     {"title": issue_data["title"], "body": issue_data["body"]},
                 )
                 if result:
-                    print(f"🔄 Updated existing issue #{existing['number']}: {issue_data['title']}")
+                    print(
+                        f"🔄 Updated existing issue #{existing['number']}: {issue_data['title']}"
+                    )
                 else:
-                    print(f"❌ Failed to update issue #{existing['number']}: {issue_data['title']}")
+                    print(
+                        f"❌ Failed to update issue #{existing['number']}: {issue_data['title']}"
+                    )
                 continue
 
             result = self._make_request("issues", issue_data)
