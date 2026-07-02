@@ -9,6 +9,7 @@ match exists inside its debounce window, the post is suppressed (logged).
 Status transitions (open -> assigned -> inflight -> done|dropped) are written
 by the executor agent, NOT the recommender — keeps concerns separate.
 """
+
 from __future__ import annotations
 
 import json
@@ -28,8 +29,8 @@ DEBOUNCE_HOURS = {
     "open": 72,
     "assigned": 168,
     "inflight": 168,
-    "done": None,        # never repost
-    "dropped": None,     # never repost (superseded/rejected)
+    "done": None,  # never repost
+    "dropped": None,  # never repost (superseded/rejected)
 }
 
 
@@ -69,9 +70,13 @@ def latest_match(sig: str, path: str = DEFAULT_LEDGER_PATH) -> Optional[dict]:
     matches = [e for e in _load(path) if e.get("sig") == sig]
     if not matches:
         return None
-    return max(matches, key=lambda e: (max(e.get("first_raised_ts", 0),
-                                         e.get("transitioned_ts", 0)),
-                                       e.get("seq", 0)))
+    return max(
+        matches,
+        key=lambda e: (
+            max(e.get("first_raised_ts", 0), e.get("transitioned_ts", 0)),
+            e.get("seq", 0),
+        ),
+    )
 
 
 def should_post(r: Recommendation, path: str = DEFAULT_LEDGER_PATH) -> tuple[bool, str]:
@@ -122,8 +127,11 @@ def record(r: Recommendation, path: str = DEFAULT_LEDGER_PATH) -> dict:
 
 
 def transition(
-    sig: str, new_status: str, owner: Optional[str] = None,
-    due: Optional[str] = None, path: str = DEFAULT_LEDGER_PATH,
+    sig: str,
+    new_status: str,
+    owner: Optional[str] = None,
+    due: Optional[str] = None,
+    path: str = DEFAULT_LEDGER_PATH,
 ) -> dict:
     """Append a status transition for an existing work item.
 
