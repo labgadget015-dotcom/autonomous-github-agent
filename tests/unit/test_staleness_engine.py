@@ -223,6 +223,91 @@ class TestGenerateComment:
         comment = engine.generate_comment(age_days=20, tier=1, llm_client=mock_llm)
         assert "👋" in comment  # template fallback
 
+    def test_custom_template_key_from_tier_config(self, tmp_path):
+        """Tier config `template` field overrides the default `tierN` key lookup."""
+        from autopilot.staleness_engine import StalenessEngine
+
+        mock_gh = MagicMock()
+        config = {
+            "tiers": [
+                {
+                    "tier": 1,
+                    "min_days": 7,
+                    "label": "old",
+                    "template": "gentle_nudge",
+                }
+            ],
+            "templates": {
+                "gentle_nudge": "Hey, this PR is {age_days} days old — any updates?",
+            },
+        }
+        with (
+            patch("autopilot.staleness_engine.Github", return_value=mock_gh),
+            patch.dict("os.environ", {"GITHUB_TOKEN": "tok"}),
+        ):
+            engine = StalenessEngine(
+                config=config, dry_run=True, state_file=tmp_path / "s.json"
+            )
+        comment = engine.generate_comment(age_days=10, tier=1)
+        assert "10 days old" in comment
+        assert "any updates" in comment
+
+    def test_unknown_tier_falls_back_to_empty_string(self, tmp_path):
+        """generate_comment returns an empty string for a tier with no matching template."""
+        engine = _make_engine(tmp_path)
+        comment = engine.generate_comment(age_days=10, tier=99)
+        assert comment == ""
+
+    def test_tier_template_field_none_falls_back_to_tier_key(self, tmp_path):
+        """When tier `template` field is None/falsy the default `tierN` key is used."""
+        from autopilot.staleness_engine import StalenessEngine
+
+        mock_gh = MagicMock()
+        # tier entry with `template` explicitly set to None
+        config = {
+            "tiers": [
+                {"tier": 1, "min_days": 7, "label": "old", "template": None},
+            ],
+        }
+        with (
+            patch("autopilot.staleness_engine.Github", return_value=mock_gh),
+            patch.dict("os.environ", {"GITHUB_TOKEN": "tok"}),
+        ):
+            engine = StalenessEngine(
+                config=config, dry_run=True, state_file=tmp_path / "s.json"
+            )
+        comment = engine.generate_comment(age_days=10, tier=1)
+        # Should fall back to built-in tier1 template
+        assert "👋" in comment
+        assert "10 days" in comment
+
+    def test_custom_templates_dict_in_config_used_for_builtin_keys(self, tmp_path):
+        """config['templates'] completely replaces the built-in lookup for primary hits."""
+        from autopilot.staleness_engine import StalenessEngine
+
+        mock_gh = MagicMock()
+        config = {
+            "tiers": [
+                {"tier": 2, "min_days": 31, "label": "old", "template": "tier2"},
+            ],
+            "templates": {
+                "tier2": "Custom tier2: PR open {age_days} days in {repo}.",
+            },
+        }
+        with (
+            patch("autopilot.staleness_engine.Github", return_value=mock_gh),
+            patch.dict("os.environ", {"GITHUB_TOKEN": "tok"}),
+        ):
+            engine = StalenessEngine(
+                config=config, dry_run=True, state_file=tmp_path / "s.json"
+            )
+        comment = engine.generate_comment(
+            age_days=40, tier=2, repo_full_name="acme/widget"
+        )
+        assert "Custom tier2" in comment
+        assert "40 days" in comment
+        assert "acme/widget" in comment
+
 
 # ---------------------------------------------------------------------------
 # scan_repos
