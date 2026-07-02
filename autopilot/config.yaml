@@ -113,3 +113,47 @@ staleness:
       - **Add a comment** explaining why it must stay open
 
       This PR will continue to be flagged until resolved.
+
+# autopilot/config.yaml  —  append this block to the existing config.
+#
+# Drives the recommendation de-dup + closure loop. The DRC recommender
+# reads these values before deciding whether to post to Slack.
+
+recommendation_debounce:
+  enabled: true
+  ledger_path: autopilot/decisions/recommendations.jsonl
+
+  # Normalised signature of a work item — two items with the same sig
+  # are treated as the same recommendation.
+  signature_fields:
+    - action_verb            # create | configure | rotate | ...
+    - target_repo
+    - file_or_workflow_path  # e.g. ".github/workflows/smoke-test.yml"
+
+  repost_policy:
+    open:     {min_hours_between: 72,  require_status_change: true}
+    assigned: {min_hours_between: 168, require_owner_change: false}
+    inflight: {min_hours_between: 168, require_owner_change: false}
+    done:     {never_repost: true}
+    dropped:  {never_repost: true}
+
+  # Before emitting, query the decision ledger for a matching signature.
+  check_ledger_first: true
+
+  # P0/P1 without owner + due are withheld and escalated here instead.
+  escalate_unowned_to: "#morning-digest"
+
+# Status lifecycle surfaced in-channel via emoji tags.
+status_tags:
+  open:     "🟡 Open"
+  assigned: "🔵 Assigned"
+  inflight: "🟠 In-flight"
+  done:     "✅ Done"
+  dropped:  "❌ Dropped"
+
+message_contract:
+  max_step_len: 120
+  headline_is_outcome: true   # run_id lives in Ref: footer, never headline
+  require_impact_for: ["P0", "P1"]
+  require_due_for: ["P0", "P1"]
+  require_owner_for: ["P0"]
