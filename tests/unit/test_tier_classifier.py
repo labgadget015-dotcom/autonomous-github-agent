@@ -6,20 +6,15 @@ import os
 import sys
 from pathlib import Path
 
-import pytest
-
 # Add scripts directory to path
 _scripts_path = str(Path(__file__).parent.parent.parent / ".github" / "scripts")
 if _scripts_path not in sys.path:
     sys.path.insert(0, _scripts_path)
 
-import importlib
-import types
 
 # We import the module but test its helpers directly to avoid needing
 # GITHUB_OUTPUT / GITHUB_STEP_SUMMARY in the environment.
 import tier_classifier
-
 
 # ---------------------------------------------------------------------------
 # _load_exceptions
@@ -44,6 +39,15 @@ class TestLoadExceptions:
         result = tier_classifier._load_exceptions(str(cfg))
         assert "stripe" in result["pip"]
         assert "cryptography" in result["pip"]
+
+    def test_normalises_keys_to_lowercase(self, tmp_path):
+        cfg = tmp_path / "exc.yml"
+        cfg.write_text("Pip:\n  - stripe\nActions:\n  - actions/checkout\n")
+        result = tier_classifier._load_exceptions(str(cfg))
+        assert "pip" in result
+        assert "actions" in result
+        assert "Pip" not in result
+        assert "Actions" not in result
 
 
 # ---------------------------------------------------------------------------
@@ -76,6 +80,21 @@ class TestIsBlocklisted:
     def test_case_insensitive_match(self):
         blocked = tier_classifier._is_blocklisted(["Stripe"], "pip", self._exceptions)
         assert blocked == ["Stripe"]
+
+    def test_github_actions_ecosystem_alias(self):
+        exceptions = {"actions": ["actions/checkout", "actions/upload-artifact"]}
+        # Dependabot fetch-metadata reports "github_actions"; must map to "actions"
+        blocked = tier_classifier._is_blocklisted(
+            ["actions/checkout"], "github_actions", exceptions
+        )
+        assert blocked == ["actions/checkout"]
+
+    def test_github_actions_safe_package_not_flagged(self):
+        exceptions = {"actions": ["actions/checkout"]}
+        blocked = tier_classifier._is_blocklisted(
+            ["actions/setup-python"], "github_actions", exceptions
+        )
+        assert blocked == []
 
 
 # ---------------------------------------------------------------------------
