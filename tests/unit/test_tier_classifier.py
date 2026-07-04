@@ -12,8 +12,9 @@ if _scripts_path not in sys.path:
     sys.path.insert(0, _scripts_path)
 
 
-# We import the module but test its helpers directly to avoid needing
-# GITHUB_OUTPUT / GITHUB_STEP_SUMMARY in the environment.
+# We import the module and call its helpers directly.
+# Helper tests (TestLoadExceptions, TestIsBlocklisted) need no GitHub env vars.
+# TestClassify supplies GITHUB_OUTPUT / GITHUB_STEP_SUMMARY via tmp_path.
 import tier_classifier
 
 # ---------------------------------------------------------------------------
