@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import argparse
 import collections
+import datetime
 import json
 import os
 import subprocess
@@ -76,8 +77,6 @@ def compare(current: dict[str, int], baseline: dict[str, int]) -> tuple[list[str
 
 def update_baseline(repo_root: Path, baseline_path: Path) -> None:
     """Regenerate the baseline from the current ruff output and write it."""
-    import datetime
-
     result = subprocess.run(
         ["ruff", "--version"], capture_output=True, text=True
     )
