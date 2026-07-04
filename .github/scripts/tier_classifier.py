@@ -165,6 +165,6 @@ def classify() -> None:
 if __name__ == "__main__":
     try:
         classify()
-    except Exception as exc:  # noqa: BLE001
-        print(f"::error::tier_classifier.py failed: {exc}", file=sys.stderr)
+    except (OSError, yaml.YAMLError) as exc:
+        print(f"::error::tier_classifier.py I/O or YAML error: {exc}", file=sys.stderr)
         sys.exit(1)
