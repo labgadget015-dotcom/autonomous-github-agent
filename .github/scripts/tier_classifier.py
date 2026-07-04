@@ -38,13 +38,18 @@ import yaml
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _load_exceptions(path: str) -> dict[str, list[str]]:
     p = Path(path)
     if not p.exists():
         return {}
     with open(p, encoding="utf-8") as f:
         data = yaml.safe_load(f) or {}
-    return {k: [str(v).lower() for v in vs] for k, vs in data.items() if isinstance(vs, list)}
+    return {
+        k: [str(v).lower() for v in vs]
+        for k, vs in data.items()
+        if isinstance(vs, list)
+    }
 
 
 def _is_blocklisted(
@@ -84,6 +89,7 @@ def _write_summary(lines: list[str]) -> None:
 # Main classification logic
 # ---------------------------------------------------------------------------
 
+
 def classify() -> None:
     pr_title = os.environ.get("PR_TITLE", "")
     update_type = os.environ.get("UPDATE_TYPE", "")
@@ -109,8 +115,7 @@ def classify() -> None:
         tier = "2"
         merge_decision = "needs-review"
         reason = (
-            f"Blocklisted package(s) require human review: "
-            f"{', '.join(blocklisted)}"
+            f"Blocklisted package(s) require human review: " f"{', '.join(blocklisted)}"
         )
     elif is_major:
         tier = "2"

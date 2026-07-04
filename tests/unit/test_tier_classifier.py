@@ -25,6 +25,7 @@ import tier_classifier
 # _load_exceptions
 # ---------------------------------------------------------------------------
 
+
 class TestLoadExceptions:
     def test_loads_pip_blocklist(self, tmp_path):
         cfg = tmp_path / "exc.yml"
@@ -48,6 +49,7 @@ class TestLoadExceptions:
 # ---------------------------------------------------------------------------
 # _is_blocklisted
 # ---------------------------------------------------------------------------
+
 
 class TestIsBlocklisted:
     _exceptions = {"pip": ["stripe", "cryptography", "scipy"]}
@@ -80,10 +82,13 @@ class TestIsBlocklisted:
 # classify() via environment variable injection
 # ---------------------------------------------------------------------------
 
+
 class TestClassify:
     """Run classify() with a mocked environment and capture GITHUB_OUTPUT."""
 
-    def _run(self, env_overrides: dict, tmp_path: Path, exceptions_content: str = "") -> dict:
+    def _run(
+        self, env_overrides: dict, tmp_path: Path, exceptions_content: str = ""
+    ) -> dict:
         exc_file = tmp_path / "exc.yml"
         if exceptions_content:
             exc_file.write_text(exceptions_content)
