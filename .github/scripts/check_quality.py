@@ -48,13 +48,18 @@ def load_baseline(path: Path) -> dict[str, int]:
     """Load the committed baseline file."""
     if not path.exists():
         print(f"❌ Baseline file not found: {path}", file=sys.stderr)
-        print("   Run: python .github/scripts/check_quality.py --update-baseline", file=sys.stderr)
+        print(
+            "   Run: python .github/scripts/check_quality.py --update-baseline",
+            file=sys.stderr,
+        )
         sys.exit(1)
     data = json.loads(path.read_text())
     return data.get("per_file", {})
 
 
-def compare(current: dict[str, int], baseline: dict[str, int]) -> tuple[list[str], list[str]]:
+def compare(
+    current: dict[str, int], baseline: dict[str, int]
+) -> tuple[list[str], list[str]]:
     """Return (regressions, improvements).
 
     A regression is any file whose current count exceeds its baseline count.
@@ -77,20 +82,22 @@ def compare(current: dict[str, int], baseline: dict[str, int]) -> tuple[list[str
 
 def update_baseline(repo_root: Path, baseline_path: Path) -> None:
     """Regenerate the baseline from the current ruff output and write it."""
-    result = subprocess.run(
-        ["ruff", "--version"], capture_output=True, text=True
-    )
+    result = subprocess.run(["ruff", "--version"], capture_output=True, text=True)
     ruff_version = result.stdout.strip().replace("ruff ", "")
 
     current = run_ruff(repo_root)
     data = {
-        "generated_at": datetime.datetime.now(datetime.UTC).isoformat(timespec="seconds"),
+        "generated_at": datetime.datetime.now(datetime.UTC).isoformat(
+            timespec="seconds"
+        ),
         "ruff_version": ruff_version,
         "total_violations": sum(current.values()),
         "per_file": dict(sorted(current.items())),
     }
     baseline_path.write_text(json.dumps(data, indent=2) + "\n")
-    print(f"✅ Baseline updated: {sum(current.values())} violations across {len(current)} files")
+    print(
+        f"✅ Baseline updated: {sum(current.values())} violations across {len(current)} files"
+    )
     print(f"   Written to {baseline_path}")
 
 
