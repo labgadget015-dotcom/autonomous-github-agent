@@ -73,8 +73,19 @@ def load_baseline(path: Path) -> dict[str, int]:
             file=sys.stderr,
         )
         sys.exit(1)
-    data = json.loads(path.read_text())
-    return data.get("per_file", {})
+
+    try:
+        data = json.loads(path.read_text())
+    except json.JSONDecodeError as e:
+        print(f"❌ Failed to parse baseline JSON: {path} ({e})", file=sys.stderr)
+        sys.exit(1)
+
+    per_file = data.get("per_file", {})
+    if not isinstance(per_file, dict):
+        print(f"❌ Baseline file has invalid 'per_file' shape: {path}", file=sys.stderr)
+        sys.exit(1)
+
+    return per_file
 
 
 def compare(
