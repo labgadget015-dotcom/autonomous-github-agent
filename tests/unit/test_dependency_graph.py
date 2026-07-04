@@ -278,18 +278,17 @@ class TestBuildDag:
         assert dag.has_edge("o/r#1", "o/r#2")
 
     def test_llm_not_called_when_regex_matches(self):
-        nodes = self._nodes([(1, "o/r", "Depends on #2"), (2, "o/r", "")])
+        # Node 1 has an explicit "Depends on #2" — regex resolves this without LLM.
+        # Build the DAG with an LLM client that fails loudly if called for node 1.
         llm = MagicMock()
         llm.generate = AsyncMock(return_value={"content": "{}"})
-        self.engine.build_dag(nodes, llm_client=llm)
-        # Node 1 has a regex match so LLM is NOT called for it.
-        # Node 2 has no body — LLM may be called for it, which is fine.
-        # Verify node 1 → 2 edge was established via regex (not LLM)
-        dag = self.engine.build_dag(
-            self._nodes([(1, "o/r", "Depends on #2"), (2, "o/r", "")]),
-            llm_client=None,  # no LLM needed for regex match
-        )
+        nodes = self._nodes([(1, "o/r", "Depends on #2"), (2, "o/r", "")])
+        dag = self.engine.build_dag(nodes, llm_client=llm)
+        # The edge must exist even though LLM returned no dependencies for node 2
         assert dag.has_edge("o/r#1", "o/r#2")
+        # LLM was NOT called for node 1 (the one with the regex match)
+        for call_args in llm.generate.call_args_list:
+            assert "PR #1 in repo o/r" not in call_args[0][0]
 
     def test_llm_budget_respected(self):
         self.engine.max_llm_calls = 1
@@ -384,9 +383,8 @@ class TestApplyLabelsDryRun:
 
     def test_dry_run_multiple_nodes(self):
         engine = _make_engine(dry_run=True)
-        nodes = [
-            _make_pr_node(pr_id=i, repo="o/r") for i in range(1, 4)
-        ]
+        node_ids = [1, 2, 3]
+        nodes = [_make_pr_node(pr_id=i, repo="o/r") for i in node_ids]
         tier_map = {"o/r#1": 0, "o/r#2": 1, "o/r#3": 2}
 
         import networkx as nx

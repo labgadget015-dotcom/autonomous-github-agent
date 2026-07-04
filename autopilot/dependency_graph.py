@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Dependency Graph Resolver — Block-Chain of PR Dependencies.
+Dependency Graph Resolver — PR Dependency Chain Analyser.
 
 Scans open PRs in the three active repos for explicit or implicit dependency
 references, builds a NetworkX DAG, and applies tier labels via the GitHub API.
