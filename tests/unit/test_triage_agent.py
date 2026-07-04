@@ -4,9 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import json
-import tempfile
-from pathlib import Path
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, patch
 
 
 def run(coro):
@@ -94,8 +92,9 @@ class TestLoadCosts:
         assert result == []
 
     def test_returns_records_within_window(self, tmp_path, monkeypatch):
-        import agents.triage_agent as mod
         from datetime import datetime, timedelta
+
+        import agents.triage_agent as mod
 
         monkeypatch.setattr(mod, "project_root", tmp_path)
         costs_path = tmp_path / ".llm_costs.jsonl"
@@ -138,8 +137,9 @@ class TestCostReport:
         self.agent = _make_agent()
 
     def test_no_slack_url_prints_and_returns(self, tmp_path, monkeypatch, capsys):
-        import agents.triage_agent as mod
         from datetime import datetime, timedelta
+
+        import agents.triage_agent as mod
 
         monkeypatch.setattr(mod, "project_root", tmp_path)
         monkeypatch.delenv("SLACK_WEBHOOK_URL", raising=False)
@@ -174,8 +174,9 @@ class TestCostReport:
         assert result["records"] == 0
 
     def test_multiple_models_aggregated(self, tmp_path, monkeypatch):
-        import agents.triage_agent as mod
         from datetime import datetime, timedelta
+
+        import agents.triage_agent as mod
 
         monkeypatch.setattr(mod, "project_root", tmp_path)
         monkeypatch.delenv("SLACK_WEBHOOK_URL", raising=False)

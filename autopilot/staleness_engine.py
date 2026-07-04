@@ -26,7 +26,7 @@ import json
 import logging
 import os
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -204,7 +204,7 @@ class StalenessEngine:
                 cost = result.get("usage", {})
                 self._cost_log.append(
                     {
-                        "timestamp": datetime.now(timezone.utc).isoformat(),
+                        "timestamp": datetime.now(UTC).isoformat(),
                         "repo": repo_full_name,
                         "tier": tier,
                         "usage": cost,
@@ -231,7 +231,7 @@ class StalenessEngine:
             repo_full_name, pr_number, pr_title, pr_url, age_days, tier
         """
         stale: list[dict[str, Any]] = []
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
 
         for repo_cfg in repos:
             owner = repo_cfg["owner"]
@@ -243,7 +243,7 @@ class StalenessEngine:
                 for pr in pulls:
                     created = pr.created_at
                     if created.tzinfo is None:
-                        created = created.replace(tzinfo=timezone.utc)
+                        created = created.replace(tzinfo=UTC)
                     age_days = (now - created).days
                     tier = self.assign_tier(age_days)
                     if tier > 0:
@@ -291,7 +291,7 @@ class StalenessEngine:
         Returns a summary dict with counts and per-PR actions taken.
         """
         state = self.load_state()
-        now_iso = datetime.now(timezone.utc).isoformat()
+        now_iso = datetime.now(UTC).isoformat()
         actions: list[dict[str, Any]] = []
 
         for pr_info in stale_prs:
