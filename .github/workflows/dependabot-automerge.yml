@@ -1,0 +1,396 @@
+name: Dependabot Auto-Merge
+
+# Automatically merges Tier 1 (patch/minor) Dependabot PRs once all CI
+# checks pass.  Major version bumps and blocklisted packages are routed
+# to Tier 2 (needs human review).
+#
+# Triggers
+# --------
+#   pull_request_target  — fires for every Dependabot PR event in this repo
+#   workflow_dispatch    — manual trigger with dry_run flag for testing
+#
+# Safety gates
+# ------------
+#   • Only acts on PRs authored by dependabot[bot]
+#   • Reads .github/dependabot-exceptions.yml for per-package overrides
+#   • dry_run=true logs all decisions but never calls `gh pr merge`
+#   • Concurrency group prevents parallel merges (race-condition guard)
+#
+# Required secrets / permissions
+# --------------------------------
+#   GITHUB_TOKEN with pull-requests:write + contents:write (granted below)
+#   GH_PAT         — used for cross-repo operations; falls back to GITHUB_TOKEN
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: "PR number to evaluate (leave blank to scan all open Dependabot PRs)"
+        required: false
+        type: string
+      dry_run:
+        description: "Dry-run mode — log decisions without merging"
+        required: false
+        default: "true"
+        type: choice
+        options: ["true", "false"]
+
+concurrency:
+  group: dependabot-automerge-${{ github.event.pull_request.number || inputs.pr_number || 'batch' }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  pull-requests: write
+  checks: read
+
+env:
+  PYTHON_VERSION: "3.11"
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+  # Default dry_run for pull_request_target events
+  DEFAULT_DRY_RUN: "false"
+
+jobs:
+  # -----------------------------------------------------------------------
+  # Job 1 — guard: abort early if the PR is not from dependabot[bot]
+  # -----------------------------------------------------------------------
+  guard:
+    name: "Guard — Dependabot only"
+    runs-on: ubuntu-latest
+    if: >
+      github.actor == 'dependabot[bot]' ||
+      github.event_name == 'workflow_dispatch'
+    outputs:
+      is_dependabot: ${{ steps.check.outputs.is_dependabot }}
+    steps:
+      - name: Check actor
+        id: check
+        run: |
+          if [[ "${{ github.actor }}" == "dependabot[bot]" ]] || \
+             [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "is_dependabot=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "is_dependabot=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  # -----------------------------------------------------------------------
+  # Job 2 — classify: fetch metadata and run tier_classifier.py
+  # -----------------------------------------------------------------------
+  classify:
+    name: "Classify PR"
+    runs-on: ubuntu-latest
+    needs: guard
+    if: needs.guard.outputs.is_dependabot == 'true'
+    outputs:
+      tier: ${{ steps.classify.outputs.tier }}
+      merge_decision: ${{ steps.classify.outputs.merge_decision }}
+      reason: ${{ steps.classify.outputs.reason }}
+      blocklisted_names: ${{ steps.classify.outputs.blocklisted_names }}
+      dry_run: ${{ steps.resolve_dry_run.outputs.dry_run }}
+      update_type: ${{ steps.meta.outputs.update-type }}
+      dependency_names: ${{ steps.meta.outputs.dependency-names }}
+      package_ecosystem: ${{ steps.meta.outputs.package-ecosystem }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Resolve dry_run flag
+        id: resolve_dry_run
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "dry_run=${{ inputs.dry_run }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "dry_run=${{ env.DEFAULT_DRY_RUN }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Fetch Dependabot metadata
+        id: meta
+        if: github.event_name == 'pull_request_target'
+        uses: dependabot/fetch-metadata@v2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install PyYAML
+        run: pip install -q pyyaml
+
+      - name: Run tier classifier
+        id: classify
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title || '' }}
+          UPDATE_TYPE: ${{ steps.meta.outputs.update-type || '' }}
+          DEPENDENCY_NAMES: ${{ steps.meta.outputs.dependency-names || '' }}
+          PACKAGE_ECOSYSTEM: ${{ steps.meta.outputs.package-ecosystem || 'pip' }}
+          EXCEPTIONS_FILE: .github/dependabot-exceptions.yml
+          DRY_RUN: ${{ steps.resolve_dry_run.outputs.dry_run }}
+        run: python .github/scripts/tier_classifier.py
+
+  # -----------------------------------------------------------------------
+  # Job 3 — auto-merge: squash-merge Tier 1 PRs once all checks pass
+  # -----------------------------------------------------------------------
+  auto-merge:
+    name: "Auto-merge Tier 1"
+    runs-on: ubuntu-latest
+    needs: classify
+    if: >
+      needs.classify.outputs.tier == '1' &&
+      needs.classify.outputs.merge_decision == 'auto-merge' &&
+      github.event_name == 'pull_request_target'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Approve and enable auto-merge (dry_run=false)
+        if: needs.classify.outputs.dry_run == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT || secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REASON: ${{ needs.classify.outputs.reason }}
+        run: |
+          gh pr review "$PR_NUMBER" --approve \
+            --body "✅ **Auto-merge approved** (Tier 1 — patch/minor bump, no blocklisted packages).
+
+          > $REASON
+
+          *Merged by dependabot-automerge workflow.*"
+
+          gh pr merge "$PR_NUMBER" \
+            --auto \
+            --squash \
+            --delete-branch
+
+          echo "::notice::Auto-merge enabled for PR #$PR_NUMBER"
+
+      - name: Log decision (dry_run=true)
+        if: needs.classify.outputs.dry_run == 'true'
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REASON: ${{ needs.classify.outputs.reason }}
+        run: |
+          echo "::notice::DRY-RUN — would auto-merge PR #$PR_NUMBER"
+          echo "Reason: $REASON"
+          cat >> "$GITHUB_STEP_SUMMARY" <<'EOF'
+          ## ⚠️ Dry-Run — No merge executed
+
+          PR **#${{ github.event.pull_request.number }}** qualifies for auto-merge (Tier 1).
+          Re-trigger with `dry_run=false` to execute.
+
+          **Reason:** ${{ needs.classify.outputs.reason }}
+          EOF
+
+      - name: Post audit comment
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT || secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          TIER: ${{ needs.classify.outputs.tier }}
+          DECISION: ${{ needs.classify.outputs.merge_decision }}
+          REASON: ${{ needs.classify.outputs.reason }}
+          UPDATE_TYPE: ${{ needs.classify.outputs.update_type }}
+          DRY_RUN: ${{ needs.classify.outputs.dry_run }}
+        run: |
+          if [[ "$DRY_RUN" == "true" ]]; then
+            BADGE="🔍 Dry-run"
+            ACTION_TAKEN="No action taken (dry-run mode)."
+          else
+            BADGE="✅ Auto-merged"
+            ACTION_TAKEN="PR has been approved and queued for squash-merge."
+          fi
+
+          gh pr comment "$PR_NUMBER" --body "## 🤖 Dependabot Auto-Merge — Tier ${TIER} ${BADGE}
+
+          | Field | Value |
+          |-------|-------|
+          | **Tier** | ${TIER} |
+          | **Decision** | \`${DECISION}\` |
+          | **Update type** | \`${UPDATE_TYPE}\` |
+          | **Dry-run** | ${DRY_RUN} |
+
+          **Reason:** ${REASON}
+
+          ${ACTION_TAKEN}
+
+          *Processed by [dependabot-automerge](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) workflow.*"
+
+  # -----------------------------------------------------------------------
+  # Job 4 — needs-review: label + comment Tier 2 PRs
+  # -----------------------------------------------------------------------
+  needs-review:
+    name: "Flag Tier 2 for review"
+    runs-on: ubuntu-latest
+    needs: classify
+    if: >
+      needs.classify.outputs.tier == '2' &&
+      github.event_name == 'pull_request_target'
+
+    steps:
+      - name: Apply needs-human-review label
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT || secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          # Create label if it doesn't exist yet (idempotent)
+          gh label create "needs-human-review" \
+            --color "e11d48" \
+            --description "Requires manual review before merge" \
+            --repo "${{ github.repository }}" \
+            2>/dev/null || true
+
+          gh pr edit "$PR_NUMBER" \
+            --add-label "needs-human-review"
+
+      - name: Post review-request comment
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT || secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REASON: ${{ needs.classify.outputs.reason }}
+          BLOCKLISTED: ${{ needs.classify.outputs.blocklisted_names }}
+          UPDATE_TYPE: ${{ needs.classify.outputs.update_type }}
+        run: |
+          BLOCKLIST_NOTE=""
+          if [[ -n "$BLOCKLISTED" ]]; then
+            BLOCKLIST_NOTE="
+          > ⚠️ **Blocklisted package(s):** \`${BLOCKLISTED}\` — these packages are on the exception list and always require human review."
+          fi
+
+          gh pr comment "$PR_NUMBER" --body "## 🤖 Dependabot Auto-Merge — Tier 2: Needs Review
+
+          This PR has been classified as **Tier 2** and will **not** be auto-merged.
+          ${BLOCKLIST_NOTE}
+
+          | Field | Value |
+          |-------|-------|
+          | **Tier** | 2 |
+          | **Decision** | \`needs-review\` |
+          | **Update type** | \`${UPDATE_TYPE}\` |
+
+          **Reason:** ${REASON}
+
+          ### Review checklist
+          - [ ] Check the package CHANGELOG for breaking changes
+          - [ ] Verify no deprecation warnings in CI logs
+          - [ ] If safe, remove the \`needs-human-review\` label and merge manually
+
+          *Processed by [dependabot-automerge](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) workflow.*"
+
+  # -----------------------------------------------------------------------
+  # Job 5 — batch-scan: workflow_dispatch without a PR number scans all
+  #          open Dependabot PRs and posts a summary to GITHUB_STEP_SUMMARY
+  # -----------------------------------------------------------------------
+  batch-scan:
+    name: "Batch scan (workflow_dispatch)"
+    runs-on: ubuntu-latest
+    if: >
+      github.event_name == 'workflow_dispatch' &&
+      (inputs.pr_number == '' || inputs.pr_number == null)
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -q pyyaml PyGithub
+
+      - name: Scan open Dependabot PRs
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_PAT || secrets.GITHUB_TOKEN }}
+          DRY_RUN: ${{ inputs.dry_run }}
+          EXCEPTIONS_FILE: .github/dependabot-exceptions.yml
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: |
+          python3 - <<'PYEOF'
+          import os, sys, re
+          sys.path.insert(0, ".")
+
+          import yaml
+          from github import Github, GithubException
+
+          token = os.environ["GITHUB_TOKEN"]
+          repo_name = os.environ["GITHUB_REPOSITORY"]
+          dry_run = os.environ.get("DRY_RUN", "true").lower() == "true"
+          exceptions_file = os.environ.get("EXCEPTIONS_FILE", ".github/dependabot-exceptions.yml")
+
+          # Load exceptions
+          exc_data = {}
+          try:
+              with open(exceptions_file, encoding="utf-8") as f:
+                  exc_data = yaml.safe_load(f) or {}
+          except FileNotFoundError:
+              pass
+          blocklist_pip = [str(v).lower() for v in exc_data.get("pip", [])]
+
+          g = Github(token)
+          repo = g.get_repo(repo_name)
+
+          def bump_tier(title):
+              m = re.search(r"\bfrom\s+(\S+)\s+to\s+(\S+)", title, re.IGNORECASE)
+              if not m:
+                  return "unknown"
+              old_major = re.match(r"(\d+)", m.group(1))
+              new_major = re.match(r"(\d+)", m.group(2))
+              if old_major and new_major and old_major.group(1) != new_major.group(1):
+                  return "major"
+              old_minor = re.match(r"\d+\.(\d+)", m.group(1))
+              new_minor = re.match(r"\d+\.(\d+)", m.group(2))
+              if old_minor and new_minor and old_minor.group(1) != new_minor.group(1):
+                  return "minor"
+              return "patch"
+
+          def is_blocklisted(title):
+              # Extract package name heuristically from "bump X from..."
+              m = re.search(r"bump\s+(\S+)\s+from", title, re.IGNORECASE)
+              if m:
+                  return m.group(1).lower() in blocklist_pip
+              return False
+
+          prs = list(repo.get_pulls(state="open"))
+          dep_prs = [p for p in prs if p.user and p.user.login == "dependabot[bot]" and not p.draft]
+
+          rows = []
+          for pr in dep_prs:
+              bump = bump_tier(pr.title)
+              blocked = is_blocklisted(pr.title)
+              if blocked or bump == "major":
+                  tier, decision = "2", "needs-review"
+              elif bump in ("minor", "patch"):
+                  tier, decision = "1", "auto-merge" if not dry_run else "would-auto-merge"
+              else:
+                  tier, decision = "2", "needs-review"
+              rows.append((pr.number, tier, decision, bump, pr.title[:60]))
+
+          # Write step summary
+          summary_lines = [
+              "## 🤖 Dependabot Auto-Merge — Batch Scan",
+              "",
+              f"**Dry-run:** {dry_run}",
+              f"**Open Dependabot PRs found:** {len(dep_prs)}",
+              "",
+              "| PR | Tier | Decision | Bump | Title |",
+              "|----|------|----------|------|-------|",
+          ]
+          for num, tier, decision, bump, title in rows:
+              summary_lines.append(f"| #{num} | {tier} | `{decision}` | {bump} | {title} |")
+
+          output = "\n".join(summary_lines)
+          print(output)
+
+          summary_file = os.environ.get("GITHUB_STEP_SUMMARY")
+          if summary_file:
+              with open(summary_file, "a") as f:
+                  f.write(output + "\n")
+          PYEOF
