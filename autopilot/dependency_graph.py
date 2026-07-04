@@ -76,9 +76,7 @@ LABEL_DESCRIPTIONS: dict[int, str] = {
 _UNSET = object()
 
 # Regex pre-pass — matches "Depends on #123", "depends-on #45", "Depends on owner/repo#67"
-_DEPENDS_ON_LOCAL_RE = re.compile(
-    r"depends[\s_-]+on\s+#(\d+)", re.IGNORECASE
-)
+_DEPENDS_ON_LOCAL_RE = re.compile(r"depends[\s_-]+on\s+#(\d+)", re.IGNORECASE)
 _DEPENDS_ON_QUALIFIED_RE = re.compile(
     r"depends[\s_-]+on\s+[\w.\-]+/[\w.\-]+#(\d+)", re.IGNORECASE
 )
@@ -278,9 +276,7 @@ class DependencyGraph:
     # Repo scanning
     # ------------------------------------------------------------------
 
-    def scan_repos(
-        self, repos: list[dict[str, str]] | None = None
-    ) -> list[PRNode]:
+    def scan_repos(self, repos: list[dict[str, str]] | None = None) -> list[PRNode]:
         """Fetch all open PRs from *repos* and return a list of PRNode objects.
 
         Args:
@@ -314,7 +310,9 @@ class DependencyGraph:
                     full_name,
                 )
             except Exception as exc:
-                logger.error("[dep-graph] Failed to fetch PRs from %s: %s", full_name, exc)
+                logger.error(
+                    "[dep-graph] Failed to fetch PRs from %s: %s", full_name, exc
+                )
 
         return nodes
 
@@ -335,7 +333,11 @@ class DependencyGraph:
         """
         deps = extract_deps_regex(node.body)
 
-        if not deps and llm_client is not None and self._llm_calls_used < self.max_llm_calls:
+        if (
+            not deps
+            and llm_client is not None
+            and self._llm_calls_used < self.max_llm_calls
+        ):
             result = extract_deps_llm(node, llm_client)
             self._llm_calls_used += 1
             if result.confidence_score >= 0.5:
@@ -390,9 +392,7 @@ class DependencyGraph:
             node.depends_on = deps
             for dep_id in deps:
                 # Find the dep's repo (assume same repo if not qualified)
-                dep_node = next(
-                    (n for n in nodes if n.pr_id == dep_id), None
-                )
+                dep_node = next((n for n in nodes if n.pr_id == dep_id), None)
                 dep_repo = dep_node.repo if dep_node else node.repo
                 dep_key = f"{dep_repo}#{dep_id}"
                 dag.add_edge(key, dep_key)
@@ -446,7 +446,9 @@ class DependencyGraph:
                 )
                 logger.info("[dep-graph] Created label '%s'", label_name)
             except GithubException as exc:
-                logger.warning("[dep-graph] Could not create label '%s': %s", label_name, exc)
+                logger.warning(
+                    "[dep-graph] Could not create label '%s': %s", label_name, exc
+                )
 
     def apply_labels(
         self,
@@ -488,8 +490,7 @@ class DependencyGraph:
 
                 pr_obj = repo_obj.get_pull(node.pr_id)
                 existing_tier_labels = [
-                    lbl for lbl in pr_obj.labels
-                    if lbl.name in TIER_LABELS.values()
+                    lbl for lbl in pr_obj.labels if lbl.name in TIER_LABELS.values()
                 ]
                 # Remove stale tier labels before applying new one
                 for lbl in existing_tier_labels:
@@ -532,18 +533,25 @@ class DependencyGraph:
             llm_client = self._make_llm_client()
 
         mode = "DRY-RUN" if self.dry_run else "LIVE"
-        logger.info("[dep-graph] Starting (%s, max_llm_calls=%d)", mode, self.max_llm_calls)
+        logger.info(
+            "[dep-graph] Starting (%s, max_llm_calls=%d)", mode, self.max_llm_calls
+        )
 
         nodes = self.scan_repos(repos)
         logger.info("[dep-graph] Scanned %d open PRs", len(nodes))
 
         dag = self.build_dag(nodes, llm_client=llm_client)
         logger.info(
-            "[dep-graph] DAG: %d nodes, %d edges", dag.number_of_nodes(), dag.number_of_edges()
+            "[dep-graph] DAG: %d nodes, %d edges",
+            dag.number_of_nodes(),
+            dag.number_of_edges(),
         )
 
         tier_map = self.assign_tiers(dag)
-        tier_counts = {TIER_LABELS[t]: sum(1 for v in tier_map.values() if v == t) for t in TIER_LABELS}
+        tier_counts = {
+            TIER_LABELS[t]: sum(1 for v in tier_map.values() if v == t)
+            for t in TIER_LABELS
+        }
         logger.info("[dep-graph] Tier distribution: %s", tier_counts)
 
         label_summary = self.apply_labels(nodes, tier_map, dag)
@@ -637,9 +645,7 @@ def main(argv: list[str] | None = None) -> None:
     llm_client = None if args.no_llm else engine._make_llm_client()
     summary = engine.run(llm_client=llm_client)
 
-    print(
-        f"LLM calls used: {summary['llm_calls_used']} / {args.max_llm_calls}"
-    )
+    print(f"LLM calls used: {summary['llm_calls_used']} / {args.max_llm_calls}")
 
 
 if __name__ == "__main__":

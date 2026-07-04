@@ -21,7 +21,10 @@ def _make_engine(dry_run=True, max_llm_calls=30, token="tok", anthropic_key=None
         patch("autopilot.dependency_graph.Github", return_value=mock_gh),
         patch.dict(
             "os.environ",
-            {"GITHUB_TOKEN": token, **({"ANTHROPIC_API_KEY": anthropic_key} if anthropic_key else {})},
+            {
+                "GITHUB_TOKEN": token,
+                **({"ANTHROPIC_API_KEY": anthropic_key} if anthropic_key else {}),
+            },
         ),
     ):
         engine = DependencyGraph(
@@ -72,7 +75,9 @@ class TestDependencyGraphInit:
         mock_gh = MagicMock()
         with (
             patch("autopilot.dependency_graph.Github", return_value=mock_gh),
-            patch.dict("os.environ", {"GITHUB_TOKEN": "tok", "ENABLE_LIVE_MODE": "true"}),
+            patch.dict(
+                "os.environ", {"GITHUB_TOKEN": "tok", "ENABLE_LIVE_MODE": "true"}
+            ),
         ):
             engine = DependencyGraph()
         assert engine.dry_run is False
@@ -180,7 +185,7 @@ class TestExtractDepsLlm:
         from autopilot.dependency_graph import extract_deps_llm
 
         node = _make_pr_node(pr_id=1, repo="o/r")
-        raw = "```json\n{\"pr_id\": 1, \"repo\": \"o/r\", \"depends_on\": [2], \"confidence_score\": 0.7}\n```"
+        raw = '```json\n{"pr_id": 1, "repo": "o/r", "depends_on": [2], "confidence_score": 0.7}\n```'
         llm = MagicMock()
         llm.generate = AsyncMock(return_value={"content": raw})
         result = extract_deps_llm(node, llm)
@@ -217,7 +222,10 @@ class TestBuildDag:
 
     def _nodes(self, specs):
         """Build PRNode list from (pr_id, repo, body) tuples."""
-        return [_make_pr_node(pr_id=s[0], repo=s[1], body=s[2] if len(s) > 2 else "") for s in specs]
+        return [
+            _make_pr_node(pr_id=s[0], repo=s[1], body=s[2] if len(s) > 2 else "")
+            for s in specs
+        ]
 
     def test_empty_nodes_returns_empty_dag(self):
         dag = self.engine.build_dag([], llm_client=None)
@@ -231,10 +239,12 @@ class TestBuildDag:
         assert dag.number_of_edges() == 0
 
     def test_explicit_dep_creates_edge(self):
-        nodes = self._nodes([
-            (1, "o/r", "Depends on #2"),
-            (2, "o/r", ""),
-        ])
+        nodes = self._nodes(
+            [
+                (1, "o/r", "Depends on #2"),
+                (2, "o/r", ""),
+            ]
+        )
         dag = self.engine.build_dag(nodes, llm_client=None)
         assert dag.has_edge("o/r#1", "o/r#2")
 
@@ -244,11 +254,13 @@ class TestBuildDag:
         assert dag.number_of_edges() == 0
 
     def test_chain_a_depends_on_b_depends_on_c(self):
-        nodes = self._nodes([
-            (1, "o/r", "Depends on #2"),
-            (2, "o/r", "Depends on #3"),
-            (3, "o/r", ""),
-        ])
+        nodes = self._nodes(
+            [
+                (1, "o/r", "Depends on #2"),
+                (2, "o/r", "Depends on #3"),
+                (3, "o/r", ""),
+            ]
+        )
         dag = self.engine.build_dag(nodes, llm_client=None)
         assert dag.has_edge("o/r#1", "o/r#2")
         assert dag.has_edge("o/r#2", "o/r#3")
@@ -270,7 +282,12 @@ class TestBuildDag:
         llm.generate = AsyncMock(
             return_value={
                 "content": json.dumps(
-                    {"pr_id": 1, "repo": "o/r", "depends_on": [2], "confidence_score": 0.9}
+                    {
+                        "pr_id": 1,
+                        "repo": "o/r",
+                        "depends_on": [2],
+                        "confidence_score": 0.9,
+                    }
                 )
             }
         )
@@ -292,14 +309,25 @@ class TestBuildDag:
 
     def test_llm_budget_respected(self):
         self.engine.max_llm_calls = 1
-        nodes = self._nodes([
-            (1, "o/r", "No dep"),
-            (2, "o/r", "No dep"),
-            (3, "o/r", "No dep"),
-        ])
+        nodes = self._nodes(
+            [
+                (1, "o/r", "No dep"),
+                (2, "o/r", "No dep"),
+                (3, "o/r", "No dep"),
+            ]
+        )
         llm = MagicMock()
         llm.generate = AsyncMock(
-            return_value={"content": json.dumps({"pr_id": 1, "repo": "o/r", "depends_on": [], "confidence_score": 0.8})}
+            return_value={
+                "content": json.dumps(
+                    {
+                        "pr_id": 1,
+                        "repo": "o/r",
+                        "depends_on": [],
+                        "confidence_score": 0.8,
+                    }
+                )
+            }
         )
         self.engine.build_dag(nodes, llm_client=llm)
         assert llm.generate.call_count == 1
