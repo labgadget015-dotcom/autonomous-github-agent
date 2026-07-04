@@ -22,25 +22,45 @@ from pathlib import Path
 
 def run_ruff(repo_root: Path) -> dict[str, int]:
     """Run ruff and return per-file violation counts (relative paths)."""
-    result = subprocess.run(
-        ["ruff", "check", ".", "--output-format=json"],
-        cwd=repo_root,
-        capture_output=True,
-        text=True,
-    )
+    try:
+        result = subprocess.run(
+            ["ruff", "check", ".", "--output-format=json"],
+            cwd=repo_root,
+            capture_output=True,
+            text=True,
+        )
+    except FileNotFoundError:
+        print(
+            "❌ ruff is not installed or not on PATH. Install it with: pip install ruff",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
     # ruff exits 1 when violations found; that is expected
     try:
         data = json.loads(result.stdout)
     except json.JSONDecodeError:
         print("❌ Failed to parse ruff JSON output.", file=sys.stderr)
-        print(result.stderr, file=sys.stderr)
+        if result.stdout.strip():
+            print(result.stdout, file=sys.stderr)
+        if result.stderr.strip():
+            print(result.stderr, file=sys.stderr)
         sys.exit(1)
 
-    root_prefix = str(repo_root) + os.sep
     counts: dict[str, int] = collections.Counter()
+    repo_root_resolved = repo_root.resolve()
     for item in data:
-        rel = item["filename"].replace(root_prefix, "")
+        filename = item.get("filename", "")
+        p = Path(filename)
+        if p.is_absolute():
+            try:
+                rel = p.resolve().relative_to(repo_root_resolved).as_posix()
+            except ValueError:
+                rel = p.as_posix()
+        else:
+            rel = p.as_posix()
         counts[rel] += 1
+
     return dict(counts)
 
 
