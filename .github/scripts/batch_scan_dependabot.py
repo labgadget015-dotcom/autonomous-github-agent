@@ -63,7 +63,9 @@ def main() -> None:
         sys.exit("GITHUB_REPOSITORY not set")
 
     dry_run = os.environ.get("DRY_RUN", "true").lower() == "true"
-    exceptions_file = os.environ.get("EXCEPTIONS_FILE", ".github/dependabot-exceptions.yml")
+    exceptions_file = os.environ.get(
+        "EXCEPTIONS_FILE", ".github/dependabot-exceptions.yml"
+    )
     blocklist = _load_blocklist_pip(exceptions_file)
 
     g = Github(token)
@@ -74,8 +76,7 @@ def main() -> None:
 
     prs = list(repo.get_pulls(state="open"))
     dep_prs = [
-        p for p in prs
-        if p.user and p.user.login == "dependabot[bot]" and not p.draft
+        p for p in prs if p.user and p.user.login == "dependabot[bot]" and not p.draft
     ]
 
     rows: list[tuple[int, str, str, str, str]] = []
@@ -101,9 +102,7 @@ def main() -> None:
         "|----|------|----------|------|-------|",
     ]
     for num, tier, decision, bump, title in rows:
-        summary_lines.append(
-            f"| #{num} | {tier} | `{decision}` | {bump} | {title} |"
-        )
+        summary_lines.append(f"| #{num} | {tier} | `{decision}` | {bump} | {title} |")
 
     output = "\n".join(summary_lines)
     print(output)
