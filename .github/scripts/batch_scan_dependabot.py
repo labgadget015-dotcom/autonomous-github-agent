@@ -22,31 +22,39 @@ import yaml
 from github import Github, GithubException
 
 
-def _load_blocklist_pip(exceptions_file: str) -> list[str]:
+def _load_blocklist(exceptions_file: str) -> set[str]:
+    """Return a flat set of all blocklisted package names across all ecosystems."""
     p = Path(exceptions_file)
     if not p.exists():
-        return []
+        return set()
     with open(p, encoding="utf-8") as f:
         data = yaml.safe_load(f) or {}
-    return [str(v).lower() for v in data.get("pip", [])]
+    names: set[str] = set()
+    for vs in data.values():
+        if isinstance(vs, list):
+            names.update(str(v).lower() for v in vs)
+    return names
 
 
 def _bump_kind(title: str) -> str:
     m = re.search(r"\bfrom\s+(\S+)\s+to\s+(\S+)", title, re.IGNORECASE)
     if not m:
         return "unknown"
-    old_major = re.match(r"(\d+)", m.group(1))
-    new_major = re.match(r"(\d+)", m.group(2))
+    # Strip leading "v"/"V" so Actions-style tags (v4 → v5) are classified correctly.
+    old_ver = m.group(1).lstrip("vV")
+    new_ver = m.group(2).lstrip("vV")
+    old_major = re.match(r"(\d+)", old_ver)
+    new_major = re.match(r"(\d+)", new_ver)
     if old_major and new_major and old_major.group(1) != new_major.group(1):
         return "major"
-    old_minor = re.match(r"\d+\.(\d+)", m.group(1))
-    new_minor = re.match(r"\d+\.(\d+)", m.group(2))
+    old_minor = re.match(r"\d+\.(\d+)", old_ver)
+    new_minor = re.match(r"\d+\.(\d+)", new_ver)
     if old_minor and new_minor and old_minor.group(1) != new_minor.group(1):
         return "minor"
     return "patch"
 
 
-def _is_blocklisted(title: str, blocklist: list[str]) -> bool:
+def _is_blocklisted(title: str, blocklist: set[str]) -> bool:
     m = re.search(r"bump\s+(\S+)\s+from", title, re.IGNORECASE)
     if m:
         return m.group(1).lower() in blocklist
@@ -66,7 +74,7 @@ def main() -> None:
     exceptions_file = os.environ.get(
         "EXCEPTIONS_FILE", ".github/dependabot-exceptions.yml"
     )
-    blocklist = _load_blocklist_pip(exceptions_file)
+    blocklist = _load_blocklist(exceptions_file)
 
     g = Github(token)
     try:

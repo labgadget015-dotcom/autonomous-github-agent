@@ -33,10 +33,13 @@ from pathlib import Path
 
 import yaml
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
+# Dependabot fetch-metadata reports GitHub Actions updates with ecosystem
+# "github_actions"; normalise to "actions" to match the exceptions file key.
+_ECOSYSTEM_ALIASES: dict[str, str] = {"github_actions": "actions"}
 
 
 def _load_exceptions(path: str) -> dict[str, list[str]]:
@@ -46,7 +49,7 @@ def _load_exceptions(path: str) -> dict[str, list[str]]:
     with open(p, encoding="utf-8") as f:
         data = yaml.safe_load(f) or {}
     return {
-        k: [str(v).lower() for v in vs]
+        k.lower(): [str(v).lower() for v in vs]
         for k, vs in data.items()
         if isinstance(vs, list)
     }
@@ -58,7 +61,9 @@ def _is_blocklisted(
     exceptions: dict[str, list[str]],
 ) -> list[str]:
     blocked: list[str] = []
-    ecosystem_key = ecosystem.lower() if ecosystem else ""
+    # Normalise ecosystem name (e.g. "github_actions" → "actions").
+    normalised = ecosystem.lower() if ecosystem else ""
+    ecosystem_key = _ECOSYSTEM_ALIASES.get(normalised, normalised)
     blocklist = exceptions.get(ecosystem_key, [])
     for name in dep_names:
         if name.lower() in blocklist:
