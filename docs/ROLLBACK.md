@@ -1,5 +1,116 @@
 # Rollback Manifest
 
+## ce5dbd9 — 2026-07-01 05:18 UTC
+
+- **SHA**: `ce5dbd94c82e7eee8dd459d0f64543df1a46235d`
+- **Author**: Gadget Lab
+- **Message**: docs: update contact email to labgadget015@gmail.com
+- **Files changed**: 1 file(s)
+
+**Changed files:**
+- `README.md`
+
+---
+
+## ac7d664 — 2026-07-01 05:07 UTC
+
+- **SHA**: `ac7d6648d381ebab64cf23442e25b47c0aeaef51`
+- **Author**: Gadget Lab
+- **Message**: docs: add Work With Gadget Lab CTA section to README
+- **Files changed**: 1 file(s)
+
+**Changed files:**
+- `README.md`
+
+---
+
+## a45ba72 — 2026-06-30 05:38 UTC
+
+- **SHA**: `a45ba72e472bcc7d3b7ef8ea85bc6db85fa390b7`
+- **Author**: GadgetAI
+- **Message**: fix: black format 6 test files + retry push loop in all 4 commit workflows
+- **Files changed**: 10 file(s)
+
+**Changed files:**
+- `.github/workflows/changelog.yml`
+- `.github/workflows/pre-commit-ci.yml`
+- `.github/workflows/security_scan.yml`
+- `.github/workflows/test_metrics.yml`
+- `tests/test_autonomous_agents.py`
+- `tests/unit/test_autopilot.py`
+- `tests/unit/test_code_review_agent.py`
+- `tests/unit/test_dependency_agent.py`
+- `tests/unit/test_security_scan_agent.py`
+- `tests/unit/test_triage_agent.py`
+
+---
+
+## ba1a987 — 2026-06-30 05:29 UTC
+
+- **SHA**: `ba1a9877fd85a4c416c0f0115b29c1538c6843e7`
+- **Author**: GadgetAI
+- **Message**: fix(workflows): git pull --rebase before push in security_scan, test_metrics, pre-commit-ci
+- **Files changed**: 3 file(s)
+
+**Changed files:**
+- `.github/workflows/pre-commit-ci.yml`
+- `.github/workflows/security_scan.yml`
+- `.github/workflows/test_metrics.yml`
+
+---
+
+## f90c4de — 2026-06-30 05:25 UTC
+
+- **SHA**: `f90c4dec919dd1b52b3b7c669106e34418eacf82`
+- **Author**: GadgetAI
+- **Message**: test: add 97 unit tests for autopilot, code_review, dependency, security_scan, triage agents
+- **Files changed**: 5 file(s)
+
+**Changed files:**
+- `tests/unit/test_autopilot.py`
+- `tests/unit/test_code_review_agent.py`
+- `tests/unit/test_dependency_agent.py`
+- `tests/unit/test_security_scan_agent.py`
+- `tests/unit/test_triage_agent.py`
+
+---
+
+## f2492bc — 2026-06-30 05:24 UTC
+
+- **SHA**: `f2492bcdabab87c2f73bf569b8c93a367514a414`
+- **Author**: GadgetAI
+- **Message**: fix(changelog): git pull --rebase before push to handle concurrent workflow collisions
+- **Files changed**: 1 file(s)
+
+**Changed files:**
+- `.github/workflows/changelog.yml`
+
+---
+
+## 9cb29a6 — 2026-06-30 05:21 UTC
+
+- **SHA**: `9cb29a65836ffc5eb1969149dd5ed123d06221e0`
+- **Author**: GadgetAI
+- **Message**: fix(test): update llm_router complexity thresholds to match new routing logic
+- **Files changed**: 1 file(s)
+
+**Changed files:**
+- `tests/unit/test_llm_router.py`
+
+---
+
+## d4257f8 — 2026-06-30 05:18 UTC
+
+- **SHA**: `d4257f8ba65ea5b51e57dbb61371393557de1243`
+- **Author**: GadgetAI
+- **Message**: fix(n8n-health-check): only alert on host down, not DRC timeout
+- **Files changed**: 1 file(s)
+
+**Changed files:**
+- `.github/workflows/n8n-health-check.yml`
+
+---
+
 ## 70bc0ca — 2026-06-30 05:14 UTC
 
 - **SHA**: `70bc0cabc4e76a8b29deb4d9860db6433baf6faf`

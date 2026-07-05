@@ -316,16 +316,35 @@ jobs:
                 body += '\n---\n';
                 body += `**Action Required:** These vulnerabilities were detected in the \`main\` branch. `;
                 body += `Please address them immediately.\n\n`;
+                body += `Last detected: ${new Date().toISOString().split('T')[0]} — `;
                 body += `[View Full Report](${context.payload.repository.html_url}/actions/runs/${context.runId})`;
 
-                await github.rest.issues.create({
+                // Reuse an existing open issue for this alert instead of
+                // creating a new dated one on every failed run.
+                const existing = await github.rest.issues.listForRepo({
                   owner: context.repo.owner,
                   repo: context.repo.repo,
-                  title: `🚨 Critical Security Vulnerabilities - ${new Date().toISOString().split('T')[0]}`,
-                  body: body,
-                  labels: ['security', 'critical', 'automated'],
-                  assignees: [context.payload.repository.owner.login]
+                  labels: 'security,critical,automated',
+                  state: 'open'
                 });
+
+                if (existing.data.length > 0) {
+                  await github.rest.issues.update({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    issue_number: existing.data[0].number,
+                    body: body
+                  });
+                } else {
+                  await github.rest.issues.create({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    title: '🚨 Critical Security Vulnerabilities Detected',
+                    body: body,
+                    labels: ['security', 'critical', 'automated'],
+                    assignees: [context.payload.repository.owner.login]
+                  });
+                }
               }
             } catch (e) {
               console.log('Error creating issue:', e);
@@ -362,6 +381,5 @@ jobs:
             echo "No changes."
           else
             git commit -m "chore: rollback manifest entry [skip ci]"
-
-            git push
+            for i in 1 2 3; do git pull --rebase && git push && break || sleep $((i * 5)); done
           fi

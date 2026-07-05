@@ -49,8 +49,10 @@ class AuditLogger:
         self.log_dir.mkdir(parents=True, exist_ok=True)
 
         db_url = f"sqlite:///{self.log_dir / 'audit.db'}"
-        if log_dir is None and hasattr(effective_config, "database") and hasattr(
-            effective_config.database, "url"
+        if (
+            log_dir is None
+            and hasattr(effective_config, "database")
+            and hasattr(effective_config.database, "url")
         ):
             db_url = effective_config.database.url
 

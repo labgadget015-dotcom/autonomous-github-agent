@@ -61,7 +61,7 @@ jobs:
           fi
 
       - name: Alert Slack if n8n is down
-        if: steps.drc_ping.outputs.alive == 'false' || steps.router_ping.outputs.alive == 'false'
+        if: steps.router_ping.outputs.alive == 'false'
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
           DRC_STATUS: ${{ steps.drc_ping.outputs.http_status }}

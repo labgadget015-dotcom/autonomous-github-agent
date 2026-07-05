@@ -11,7 +11,7 @@ A state-of-the-art, autonomous AI system for end-to-end GitHub repository and pr
 - **Issue Management**: Auto-triage, label, assign, and link related issues
 - **Branch Operations**: Automated merge, rebase, conflict resolution
 - **Security First**: Dependency scanning, secret detection, OWASP compliance
-- **CI/CD Optimization**: Workflow analysis and auto-healing
+- **CI/CD Optimization**: Workflow analysis and auto-healingh
 - **Documentation Generation**: Always up-to-date README, API docs, changelogs
 - **Audit Logging**: Full traceability with rollback support
 
@@ -214,5 +214,27 @@ Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 MIT License - see [LICENSE](LICENSE) for details.
 
 ## 🙏 Acknowledgments
+
+Built with PyGithub, modern LLMs, and a passion for automation.
+
+---
+
+## 🤝 Work With Gadget Lab
+
+**Gadget Lab** builds AI automation systems for businesses that want to move faster without hiring more people.
+
+This agent is part of a broader stack we run in production — including autonomous n8n workflows, LLM-powered ops systems, and self-healing infrastructure.
+
+**If you want this kind of automation working in your business:**
+
+- 📧 **Get in touch:** [labgadget015@gmail.com](mailto:labgadget015@gmail.com)
+- - 💼 **What we build:** Custom AI agents, workflow automation, GitHub CI/CD intelligence, and ops dashboards
+  - - 🎯 **Who we work with:** UK SMBs and technical teams who want real automation, not just demos
+   
+    - > *"We don't just design systems — we run them. Everything in this repo is live in our own production stack."*
+      >
+      > ---
+      >
+      > *Built by [Gadget Lab](https://github.com/labgadget015-dotcom) · AI Automation Architect · UK*
 
 Built with [PyGithub](https://github.com/PyGithub/PyGithub), modern LLMs, and a passion for automation.

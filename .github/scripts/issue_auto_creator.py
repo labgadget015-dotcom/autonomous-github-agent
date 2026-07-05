@@ -33,17 +33,52 @@ class IssueAutoCreator:
             print("⚠️  Missing required environment variables")
             sys.exit(0)
 
-    def _make_request(self, endpoint: str, data: dict) -> dict | None:
-        """Make authenticated POST request to GitHub API."""
-        url = f"{self.api_base}/repos/{self.repo}/{endpoint}"
-        headers = {
+    def _headers(self) -> dict:
+        return {
             "Authorization": f"token {self.github_token}",
             "Accept": "application/vnd.github.v3+json",
             "Content-Type": "application/json",
         }
 
+    def _make_request(self, endpoint: str, data: dict) -> dict | None:
+        """Make authenticated POST request to GitHub API."""
+        url = f"{self.api_base}/repos/{self.repo}/{endpoint}"
+
         try:
-            response = requests.post(url, headers=headers, json=data, timeout=30)
+            response = requests.post(
+                url, headers=self._headers(), json=data, timeout=30
+            )
+            response.raise_for_status()
+            return response.json()
+        except requests.exceptions.RequestException as e:
+            print(f"⚠️  API request failed: {e}")
+            return None
+
+    def _find_open_issue(self, labels: list[str]) -> dict | None:
+        """Return an existing open issue matching all labels, or None."""
+        url = f"{self.api_base}/repos/{self.repo}/issues"
+        params = {"state": "open", "labels": ",".join(labels)}
+
+        try:
+            response = requests.get(
+                url, headers=self._headers(), params=params, timeout=30
+            )
+            response.raise_for_status()
+            for issue in response.json():
+                if "pull_request" not in issue:
+                    return issue
+        except requests.exceptions.RequestException as e:
+            print(f"⚠️  Failed to list existing issues: {e}")
+        return None
+
+    def _update_issue(self, issue_number: int, data: dict) -> dict | None:
+        """PATCH an existing issue's title/body instead of creating a new one."""
+        url = f"{self.api_base}/repos/{self.repo}/issues/{issue_number}"
+
+        try:
+            response = requests.patch(
+                url, headers=self._headers(), json=data, timeout=30
+            )
             response.raise_for_status()
             return response.json()
         except requests.exceptions.RequestException as e:
@@ -217,12 +252,29 @@ Code quality has fallen below the acceptable threshold. This requires immediate 
         return body
 
     def create_issues(self, issues: list[dict]) -> None:
-        """Create GitHub issues."""
+        """Create GitHub issues, upserting into an existing open issue per label set
+        instead of creating a new one on every run."""
         if not issues:
             print("✅ No issues to create")
             return
 
         for issue_data in issues:
+            existing = self._find_open_issue(issue_data["labels"])
+            if existing:
+                result = self._update_issue(
+                    existing["number"],
+                    {"title": issue_data["title"], "body": issue_data["body"]},
+                )
+                if result:
+                    print(
+                        f"🔄 Updated existing issue #{existing['number']}: {issue_data['title']}"
+                    )
+                else:
+                    print(
+                        f"❌ Failed to update issue #{existing['number']}: {issue_data['title']}"
+                    )
+                continue
+
             result = self._make_request("issues", issue_data)
             if result:
                 issue_number = result.get("number", "unknown")

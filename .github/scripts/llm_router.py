@@ -57,19 +57,21 @@ class LLMRouter:
 
     # Task types cheap enough to always serve locally.
     # Criteria: short output, low-stakes errors, no multi-step reasoning needed.
-    _LOCAL_TASK_TYPES = frozenset([
-        "format",
-        "lint_simple",
-        "doc",
-        "doc_simple",
-        "triage",          # issue label suggestion
-        "changelog",       # changelog entry generation
-        "summarize",       # short text summaries
-        "label",           # PR / issue label selection
-        "classify",        # single-dimension classification
-        "rename",          # identifier / file rename suggestion
-        "comment_simple",  # short inline code comments
-    ])
+    _LOCAL_TASK_TYPES = frozenset(
+        [
+            "format",
+            "lint_simple",
+            "doc",
+            "doc_simple",
+            "triage",  # issue label suggestion
+            "changelog",  # changelog entry generation
+            "summarize",  # short text summaries
+            "label",  # PR / issue label selection
+            "classify",  # single-dimension classification
+            "rename",  # identifier / file rename suggestion
+            "comment_simple",  # short inline code comments
+        ]
+    )
 
     def classify(self, task_type: str, context: dict) -> TaskComplexity:
         if task_type in self._LOCAL_TASK_TYPES:

@@ -23,6 +23,7 @@ from autonomous_agent.cli import (
 
 # ── helpers ───────────────────────────────────────────────────────────────────
 
+
 def _make_deps():
     github = Mock()
     llm = Mock()
@@ -33,6 +34,7 @@ def _make_deps():
 
 
 # ── BranchManagerAgent ────────────────────────────────────────────────────────
+
 
 class TestBranchManagerAgent:
     def setup_method(self):
@@ -124,6 +126,7 @@ class TestBranchManagerAgent:
 
 
 # ── CodeReviewerAgent ─────────────────────────────────────────────────────────
+
 
 class TestCodeReviewerAgent:
     def setup_method(self):
@@ -276,6 +279,7 @@ class TestCodeReviewerAgent:
 
 # ── DocumentationGeneratorAgent ───────────────────────────────────────────────
 
+
 class TestDocumentationGeneratorAgent:
     def setup_method(self):
         self.github, self.llm, self.audit = _make_deps()
@@ -323,6 +327,7 @@ class TestDocumentationGeneratorAgent:
 
 
 # ── IssueManagerAgent ─────────────────────────────────────────────────────────
+
 
 class TestIssueManagerAgent:
     def setup_method(self):
@@ -435,6 +440,7 @@ class TestIssueManagerAgent:
 
 # ── SecurityScannerAgent ──────────────────────────────────────────────────────
 
+
 class TestSecurityScannerAgent:
     def setup_method(self):
         self.github, self.llm, self.audit = _make_deps()
@@ -535,6 +541,7 @@ class TestSecurityScannerAgent:
 
 # ── WorkflowOptimizerAgent ────────────────────────────────────────────────────
 
+
 class TestWorkflowOptimizerAgent:
     def setup_method(self):
         self.github, self.llm, self.audit = _make_deps()
@@ -601,6 +608,7 @@ class TestWorkflowOptimizerAgent:
 
 
 # ── CLI ───────────────────────────────────────────────────────────────────────
+
 
 class TestCLI:
     def setup_method(self):
