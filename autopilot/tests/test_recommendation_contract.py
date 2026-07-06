@@ -3,6 +3,7 @@
 Run:  python -m pytest autopilot/tests/test_recommendation_contract.py -q
   or:  python autopilot/tests/test_recommendation_contract.py
 """
+
 import os
 import sys
 import tempfile
@@ -76,7 +77,7 @@ def test_ledger_debounce_suppresses_duplicate():
         path = tf.name
     try:
         r = _good()
-        assert should_post(r, path)[0] is True   # first raise allowed
+        assert should_post(r, path)[0] is True  # first raise allowed
         record(r, path)
 
         # immediate re-raise of same signature -> suppressed
@@ -94,6 +95,7 @@ def test_done_status_blocks_repost():
         r = _good()
         record(r, path)
         from decisions.ledger import transition
+
         transition(r.signature(), "done", path=path)
 
         allow, reason = should_post(r, path)
@@ -113,8 +115,10 @@ def test_assigned_status_debounces_repost():
         r = _good()
         record(r, path)
         from decisions.ledger import transition
-        transition(r.signature(), "assigned", owner="U0AKJK1J7GR",
-                   due="2026-07-05", path=path)
+
+        transition(
+            r.signature(), "assigned", owner="U0AKJK1J7GR", due="2026-07-05", path=path
+        )
 
         # Immediate re-raise while assigned must be suppressed.
         allow, reason = should_post(r, path)
@@ -141,12 +145,15 @@ def test_formatter_rejects_invalid():
 
 # --- New: config-driven behaviour ---
 
+
 def test_config_overrides_max_step_len():
     """validate() should honour max_step_len from a custom config file."""
     import config_loader
+
     config_loader.reset_cache()
     cfg = tempfile.NamedTemporaryFile(
-        mode="w", suffix=".yaml", delete=False, encoding="utf-8")
+        mode="w", suffix=".yaml", delete=False, encoding="utf-8"
+    )
     cfg.write("message_contract:\n  max_step_len: 20\n")
     cfg.close()
     try:
@@ -165,9 +172,11 @@ def test_config_overrides_max_step_len():
 def test_config_overrides_debounce_window():
     """should_post() should honour repost_policy from a custom config file."""
     import config_loader
+
     config_loader.reset_cache()
     cfg = tempfile.NamedTemporaryFile(
-        mode="w", suffix=".yaml", delete=False, encoding="utf-8")
+        mode="w", suffix=".yaml", delete=False, encoding="utf-8"
+    )
     cfg.write(
         "recommendation_debounce:\n"
         "  repost_policy:\n"
@@ -181,6 +190,7 @@ def test_config_overrides_debounce_window():
         config_loader.reset_cache()
         r = _good()
         from decisions.ledger import record, should_post
+
         record(r, ledger.name)
         allow, reason = should_post(r, ledger.name)
         assert allow is False, reason  # 100000h window always suppresses
@@ -192,13 +202,16 @@ def test_config_overrides_debounce_window():
 
 # --- New: status validation ---
 
+
 def test_transition_rejects_unknown_status():
     from decisions.ledger import transition
+
     ledger = tempfile.NamedTemporaryFile(suffix=".jsonl", delete=False)
     ledger.close()
     try:
         r = _good()
         from decisions.ledger import record
+
         record(r, ledger.name)
         try:
             transition(r.signature(), "assiged", path=ledger.name)  # typo
@@ -211,10 +224,12 @@ def test_transition_rejects_unknown_status():
 
 # --- New: concurrent-writer safety ---
 
+
 def test_concurrent_writers_do_not_lose_entries():
     """Parallel record() calls must all land — file locking prevents races."""
     import threading
     from decisions.ledger import record
+
     ledger = tempfile.NamedTemporaryFile(suffix=".jsonl", delete=False)
     ledger.close()
     try:
@@ -238,10 +253,11 @@ def test_concurrent_writers_do_not_lose_entries():
 
         assert errors == [], errors
         from decisions.ledger import _load
+
         entries = _load(ledger.name)
-        assert len(entries) == n_writers * n_each, (
-            f"expected {n_writers * n_each}, got {len(entries)} (lost entries)"
-        )
+        assert (
+            len(entries) == n_writers * n_each
+        ), f"expected {n_writers * n_each}, got {len(entries)} (lost entries)"
         # seq values should be unique 0..N-1 (no collisions from the race)
         seqs = sorted(e.get("seq", -1) for e in entries)
         assert seqs == list(range(n_writers * n_each)), "seq collisions detected"

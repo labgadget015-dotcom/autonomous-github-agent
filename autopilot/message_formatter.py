@@ -12,6 +12,7 @@ Template:
 
 This replaces the old bot format that buried the subject behind a run_id.
 """
+
 from __future__ import annotations
 
 from config_loader import get_status_tag

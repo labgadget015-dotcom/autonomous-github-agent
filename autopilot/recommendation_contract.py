@@ -10,6 +10,7 @@ Enforces the executive-grade message contract for DRC recommendations:
 Wired into the DRC recommendation pipeline: a recommendation that fails
 validate() is withheld (P0) or warned (P1) before posting to Slack.
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -31,18 +32,18 @@ RUN_ID_TOKEN = "run_"
 @dataclass
 class Recommendation:
     severity: Severity
-    headline: str                 # outcome, NOT run_id
-    impact_if_ignored: str        # required for P0/P1
+    headline: str  # outcome, NOT run_id
+    impact_if_ignored: str  # required for P0/P1
     steps: list[str]
-    due_date: str                 # YYYY-MM-DD or ""
-    owner: str = "unassigned"     # @user_id or "unassigned"
+    due_date: str  # YYYY-MM-DD or ""
+    owner: str = "unassigned"  # @user_id or "unassigned"
     status: Status = "open"
-    blocked_by: str = ""          # prerequisite, "" if none
+    blocked_by: str = ""  # prerequisite, "" if none
     target_repo: str = ""
     file_or_workflow_path: str = ""
-    action_verb: str = ""          # "create" | "configure" | "rotate" | ...
-    prior_run_id: str = ""         # for Ref: footer + de-dup
-    run_id: str = ""               # current raise's id (footer only)
+    action_verb: str = ""  # "create" | "configure" | "rotate" | ...
+    prior_run_id: str = ""  # for Ref: footer + de-dup
+    run_id: str = ""  # current raise's id (footer only)
 
     def signature(self) -> str:
         """Normalised work-item signature for de-dup matching."""
