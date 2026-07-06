@@ -8,18 +8,28 @@ match exists inside its debounce window, the post is suppressed (logged).
 
 Status transitions (open -> assigned -> inflight -> done|dropped) are written
 by the executor agent, NOT the recommender — keeps concerns separate.
-"""
 
+Concurrency: all reads+writes are guarded by an fcntl.flock on POSIX so the
+recommender (record) and executor (transition) agents can't interleave appends
+or race on _next_seq. Falls back to no-op locking on non-POSIX platforms.
+Debounce windows and status tags are read from config.yaml via config_loader.
+"""
 from __future__ import annotations
 
 import json
 import os
 import time
-from dataclasses import asdict
 from datetime import datetime, timezone
 from typing import Optional
 
-from recommendation_contract import Recommendation
+from recommendation_contract import Recommendation, VALID_STATUSES
+from config_loader import get_debounce_hours, get_ledger_path
+
+try:
+    import fcntl  # POSIX only
+    _HAS_FCNTL = True
+except ImportError:
+    _HAS_FCNTL = False
 
 
 def _today_iso() -> str:
@@ -28,17 +38,8 @@ def _today_iso() -> str:
 
 
 DEFAULT_LEDGER_PATH = os.environ.get(
-    "DECISIONS_LEDGER_PATH", "autopilot/decisions/recommendations.jsonl"
+    "DECISIONS_LEDGER_PATH", get_ledger_path()
 )
-
-# Debounce windows in hours, keyed by status of the existing ledger entry.
-DEBOUNCE_HOURS = {
-    "open": 72,
-    "assigned": 168,
-    "inflight": 168,
-    "done": None,  # never repost
-    "dropped": None,  # never repost (superseded/rejected)
-}
 
 
 def _load(path: str = DEFAULT_LEDGER_PATH) -> list[dict]:
@@ -48,11 +49,14 @@ def _load(path: str = DEFAULT_LEDGER_PATH) -> list[dict]:
     with open(path, "r", encoding="utf-8") as f:
         for line in f:
             line = line.strip()
-            if line:
-                try:
-                    out.append(json.loads(line))
-                except json.JSONDecodeError:
-                    continue
+            if not line:
+                continue
+            try:
+                out.append(json.loads(line))
+            except json.JSONDecodeError:
+                # Partial/corrupt line (e.g. a write was interrupted). Skip
+                # rather than crash — locking makes this rare, not impossible.
+                continue
     return out
 
 
@@ -62,10 +66,53 @@ def _next_seq(path: str = DEFAULT_LEDGER_PATH) -> int:
     return len(_load(path))
 
 
+def _lock(fd):
+    """Exclusive lock the ledger file handle (POSIX). No-op elsewhere."""
+    if _HAS_FCNTL:
+        fcntl.flock(fd.fileno(), fcntl.LOCK_EX)
+
+
+def _unlock(fd):
+    if _HAS_FCNTL:
+        fcntl.flock(fd.fileno(), fcntl.LOCK_UN)
+
+
 def _append(entry: dict, path: str = DEFAULT_LEDGER_PATH) -> None:
+    """Append a JSON line under an exclusive file lock.
+
+    Holds the lock across _next_seq + write when called via _append_locked
+    so concurrent writers can't collide on sequence numbers or interleave
+    large entries.
+    """
     os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
     with open(path, "a", encoding="utf-8") as f:
-        f.write(json.dumps(entry, ensure_ascii=False) + "\n")
+        _lock(f)
+        try:
+            f.write(json.dumps(entry, ensure_ascii=False) + "\n")
+            f.flush()
+            os.fsync(f.fileno())
+        finally:
+            _unlock(f)
+
+
+def _append_with_seq(entry: dict, path: str = DEFAULT_LEDGER_PATH) -> dict:
+    """Atomic: assign seq under lock, then append. Prevents _next_seq races."""
+    os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
+    with open(path, "a+", encoding="utf-8") as f:
+        _lock(f)
+        try:
+            f.seek(0, os.SEEK_END)
+            # count existing lines for seq
+            f.seek(0)
+            seq = sum(1 for line in f if line.strip())
+            entry["seq"] = seq
+            f.seek(0, os.SEEK_END)
+            f.write(json.dumps(entry, ensure_ascii=False) + "\n")
+            f.flush()
+            os.fsync(f.fileno())
+        finally:
+            _unlock(f)
+    return entry
 
 
 def latest_match(sig: str, path: str = DEFAULT_LEDGER_PATH) -> Optional[dict]:
@@ -77,13 +124,9 @@ def latest_match(sig: str, path: str = DEFAULT_LEDGER_PATH) -> Optional[dict]:
     matches = [e for e in _load(path) if e.get("sig") == sig]
     if not matches:
         return None
-    return max(
-        matches,
-        key=lambda e: (
-            max(e.get("first_raised_ts", 0), e.get("transitioned_ts", 0)),
-            e.get("seq", 0),
-        ),
-    )
+    return max(matches, key=lambda e: (max(e.get("first_raised_ts", 0),
+                                         e.get("transitioned_ts", 0)),
+                                       e.get("seq", 0)))
 
 
 def should_post(r: Recommendation, path: str = DEFAULT_LEDGER_PATH) -> tuple[bool, str]:
@@ -100,7 +143,7 @@ def should_post(r: Recommendation, path: str = DEFAULT_LEDGER_PATH) -> tuple[boo
         return True, "first raise of this signature"
 
     status = existing.get("status", "open")
-    window = DEBOUNCE_HOURS.get(status, 72)
+    window = get_debounce_hours(status)
 
     if window is None:
         return False, f"existing entry is {status} — never repost"
@@ -109,9 +152,8 @@ def should_post(r: Recommendation, path: str = DEFAULT_LEDGER_PATH) -> tuple[boo
     # window restarts when an item is reassigned/moved to in-flight. Without
     # this, transition entries (which only carry transitioned_ts) default to
     # first_raised_ts=0 -> ~495k hours elapsed -> always reposts.
-    latest_ts = max(
-        existing.get("first_raised_ts", 0), existing.get("transitioned_ts", 0)
-    )
+    latest_ts = max(existing.get("first_raised_ts", 0),
+                    existing.get("transitioned_ts", 0))
     elapsed_h = (time.time() - latest_ts) / 3600.0
     if elapsed_h < window:
         return False, (
@@ -132,32 +174,30 @@ def record(r: Recommendation, path: str = DEFAULT_LEDGER_PATH) -> dict:
         "headline": r.headline,
         "first_raised": _today_iso(),
         "first_raised_ts": int(time.time()),
-        "seq": _next_seq(path),
         "run_id": r.run_id,
         "prior_run_id": r.prior_run_id,
     }
-    _append(entry, path)
-    return entry
+    return _append_with_seq(entry, path)
 
 
 def transition(
-    sig: str,
-    new_status: str,
-    owner: Optional[str] = None,
-    due: Optional[str] = None,
-    path: str = DEFAULT_LEDGER_PATH,
+    sig: str, new_status: str, owner: Optional[str] = None,
+    due: Optional[str] = None, path: str = DEFAULT_LEDGER_PATH,
 ) -> dict:
     """Append a status transition for an existing work item.
 
     Used by the executor agent when work starts / merges / is dropped.
+    Raises ValueError if new_status is not a known lifecycle status.
     """
+    if new_status not in VALID_STATUSES:
+        raise ValueError(
+            f"unknown status {new_status!r}; expected one of {sorted(VALID_STATUSES)}"
+        )
     entry = {
         "sig": sig,
         "status": new_status,
         "owner": owner or "",
         "due": due or "",
         "transitioned_ts": int(time.time()),
-        "seq": _next_seq(path),
     }
-    _append(entry, path)
-    return entry
+    return _append_with_seq(entry, path)
