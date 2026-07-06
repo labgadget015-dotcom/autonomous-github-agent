@@ -44,9 +44,13 @@ class TestExecuteDispatch:
             run(self.agent._execute({"action": "bad_action"}))
 
     def test_review_pr_dispatches(self):
-        self.agent._review_pr = AsyncMock(return_value={"pr_number": 7, "review_length": 100})
+        self.agent._review_pr = AsyncMock(
+            return_value={"pr_number": 7, "review_length": 100}
+        )
         result = run(
-            self.agent._execute({"action": "review_pr", "params": {"repo": "o/r", "pr_number": 7}})
+            self.agent._execute(
+                {"action": "review_pr", "params": {"repo": "o/r", "pr_number": 7}}
+            )
         )
         self.agent._review_pr.assert_called_once_with({"repo": "o/r", "pr_number": 7})
         assert result["pr_number"] == 7

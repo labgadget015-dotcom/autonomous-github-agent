@@ -41,14 +41,20 @@ class TestRunBandit:
         self.agent = _make_agent()
 
     def test_returns_empty_dict_when_file_missing(self):
-        with patch("subprocess.run"), patch("builtins.open", side_effect=FileNotFoundError):
+        with (
+            patch("subprocess.run"),
+            patch("builtins.open", side_effect=FileNotFoundError),
+        ):
             result = self.agent._run_bandit()
         assert result == {}
 
     def test_returns_empty_dict_on_bad_json(self, tmp_path):
         bandit_out = tmp_path / "bandit.json"
         bandit_out.write_text("not-json")
-        with patch("subprocess.run"), patch("builtins.open", mock_open(read_data="not-json")):
+        with (
+            patch("subprocess.run"),
+            patch("builtins.open", mock_open(read_data="not-json")),
+        ):
             result = self.agent._run_bandit()
         assert result == {}
 
@@ -67,7 +73,10 @@ class TestRunPipAudit:
         self.agent = _make_agent()
 
     def test_returns_empty_on_missing_file(self):
-        with patch("subprocess.run"), patch("builtins.open", side_effect=FileNotFoundError):
+        with (
+            patch("subprocess.run"),
+            patch("builtins.open", side_effect=FileNotFoundError),
+        ):
             result = self.agent._run_pip_audit()
         assert result == []
 
@@ -130,7 +139,9 @@ class TestFormatSummary:
     def test_bandit_metrics_used_for_count(self):
         bandit_data = {
             "results": [],
-            "metrics": {"_totals": {"SEVERITY.HIGH": 2, "SEVERITY.MEDIUM": 1, "SEVERITY.LOW": 0}},
+            "metrics": {
+                "_totals": {"SEVERITY.HIGH": 2, "SEVERITY.MEDIUM": 1, "SEVERITY.LOW": 0}
+            },
         }
         report = self.agent._format_summary(bandit_data, [])
         assert "3 issue(s)" in report
@@ -150,7 +161,11 @@ class TestFormatSummary:
 
     def test_vuln_with_no_fix_shows_none(self):
         pip_data = [
-            {"name": "bad", "version": "1.0", "vulns": [{"id": "CVE-x", "fix_versions": []}]}
+            {
+                "name": "bad",
+                "version": "1.0",
+                "vulns": [{"id": "CVE-x", "fix_versions": []}],
+            }
         ]
         report = self.agent._format_summary({}, pip_data)
         assert "none" in report
@@ -221,6 +236,8 @@ class TestExecuteDispatch:
 
     def test_scan_repo_dispatches(self):
         self.agent._scan_repo = AsyncMock(return_value={"created_issue": 1})
-        result = run(self.agent._execute({"action": "scan_repo", "params": {"repo": "o/r"}}))
+        result = run(
+            self.agent._execute({"action": "scan_repo", "params": {"repo": "o/r"}})
+        )
         self.agent._scan_repo.assert_called_once()
         assert result["created_issue"] == 1

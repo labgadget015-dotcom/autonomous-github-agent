@@ -47,7 +47,9 @@ def _make_autopilot(tmp_path, token="test-token", extra_cfg=None):
     with (
         patch.dict("os.environ", {"GITHUB_TOKEN": token}),
         patch("autopilot.autopilot.Github", return_value=mock_github),
-        patch.object(Path, "parent", new_callable=lambda: property(lambda self: tmp_path)),
+        patch.object(
+            Path, "parent", new_callable=lambda: property(lambda self: tmp_path)
+        ),
     ):
         ap = GitHubAutopilot.__new__(GitHubAutopilot)
         ap.start_time = time.time()
@@ -197,7 +199,9 @@ class TestAnalyzePriorities:
         issue.title = "Test issue"
         issue.html_url = "http://example.com/1"
         issue.updated_at = MagicMock()
-        issue.updated_at.replace.return_value = datetime.now() - timedelta(days=days_old)
+        issue.updated_at.replace.return_value = datetime.now() - timedelta(
+            days=days_old
+        )
         lbl_objs = []
         for name in labels or []:
             lbl = MagicMock()
@@ -248,7 +252,12 @@ class TestAnalyzePriorities:
         ap = self._make(tmp_path)
         pr = self._mock_pr(days_old=3)
         ap.repo_data = {
-            "acme/repo": {"priority": "medium", "issues": [], "pulls": [pr], "commits": []}
+            "acme/repo": {
+                "priority": "medium",
+                "issues": [],
+                "pulls": [pr],
+                "commits": [],
+            }
         }
         results = ap.analyze_priorities()
         assert any(r["type"] == "pr" for r in results)
@@ -259,7 +268,12 @@ class TestAnalyzePriorities:
         for i, iss in enumerate(issues):
             iss.number = i
         ap.repo_data = {
-            "acme/repo": {"priority": "medium", "issues": issues, "pulls": [], "commits": []}
+            "acme/repo": {
+                "priority": "medium",
+                "issues": issues,
+                "pulls": [],
+                "commits": [],
+            }
         }
         results = ap.analyze_priorities()
         assert len(results) <= ap.config["analysis"]["top_priorities"]
