@@ -37,7 +37,7 @@ def format(r: Recommendation) -> str:
     blocked = f"Blocked by: {r.blocked_by}" if r.blocked_by else "Blocked by: none"
     impact_line = f"If not done by {r.due_date or 'TBD'}: {r.impact_if_ignored}"
     steps = "\n".join(f"{i}. {s}" for i, s in enumerate(r.steps, 1))
-    owner = r.owner if r.owner != "unassigned" else "unassigned"
+    owner = r.owner
     due = r.due_date or "TBD"
     status = STATUS_TAG.get(r.status, "🟡 Open")
     ref = r.prior_run_id if r.prior_run_id else "none"

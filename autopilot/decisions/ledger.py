@@ -16,9 +16,16 @@ import json
 import os
 import time
 from dataclasses import asdict
+from datetime import datetime, timezone
 from typing import Optional
 
 from recommendation_contract import Recommendation
+
+
+def _today_iso() -> str:
+    """Current UTC date as YYYY-MM-DD (for the first_raised ledger field)."""
+    return datetime.now(timezone.utc).strftime("%Y-%m-%d")
+
 
 DEFAULT_LEDGER_PATH = os.environ.get(
     "DECISIONS_LEDGER_PATH", "autopilot/decisions/recommendations.jsonl"
@@ -98,7 +105,14 @@ def should_post(r: Recommendation, path: str = DEFAULT_LEDGER_PATH) -> tuple[boo
     if window is None:
         return False, f"existing entry is {status} — never repost"
 
-    elapsed_h = (time.time() - existing.get("first_raised_ts", 0)) / 3600.0
+    # Use the latest activity timestamp (record OR transition) so the debounce
+    # window restarts when an item is reassigned/moved to in-flight. Without
+    # this, transition entries (which only carry transitioned_ts) default to
+    # first_raised_ts=0 -> ~495k hours elapsed -> always reposts.
+    latest_ts = max(
+        existing.get("first_raised_ts", 0), existing.get("transitioned_ts", 0)
+    )
+    elapsed_h = (time.time() - latest_ts) / 3600.0
     if elapsed_h < window:
         return False, (
             f"existing entry is {status}, raised {elapsed_h:.1f}h ago "
@@ -116,7 +130,7 @@ def record(r: Recommendation, path: str = DEFAULT_LEDGER_PATH) -> dict:
         "due": r.due_date,
         "severity": r.severity,
         "headline": r.headline,
-        "first_raised": r.due_date,
+        "first_raised": _today_iso(),
         "first_raised_ts": int(time.time()),
         "seq": _next_seq(path),
         "run_id": r.run_id,
