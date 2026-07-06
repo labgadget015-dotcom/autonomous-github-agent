@@ -122,6 +122,7 @@ At runtime the agent reads a `context.json` file (see `context.json.example`). S
 - Sessions expire after ~30–60 min of inactivity; autosave silently fails with 401. Claude cannot re-authenticate — Gadget must log in.
 - Canvas drag-and-drop is unreliable; prefer JavaScript/Pinia store manipulation when automating node placement.
 - "Notify Slack — DRC Result" node uses HTTP Request → Slack Incoming Webhook (no OAuth). Channel: `#drc-recommendations` (gadgetai.slack.com). Webhook secret stored as `SLACK_WEBHOOK_URL` GitHub secret.
+- **DRC webhook auth (`x-gadgetlab-token`):** the DRC Agent Loop's `Prepare Input` node gates all real traffic on a static `x-gadgetlab-token` header; the Event Router's "Forward to Agent Loop" node is the sole legitimate sender. The token value lives **only in n8n** (embedded literals in both nodes — never committed to this public repo, never a GitHub secret). Last rotated **2026-07-06**; the old value is retired (rejected with `Unauthorized`). To rotate: set the same new value in both nodes and publish both. Health-check pings are exempt — the `Route Health Ping` IF node short-circuits them to a `Pong` 200 before the gate, so `n8n-health-check.yml` needs no token.
 
 ### GitHub Actions constraints
 
