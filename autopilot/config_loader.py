@@ -5,15 +5,14 @@ stdlib-runnable for tests. This closes the "declared but never read" gap
 flagged in the PR #180 review — ledger/contract/formatter now derive their
 constants from config rather than hardcoding them.
 """
+
 from __future__ import annotations
 
 import copy
 import os
 from typing import Any, Optional
 
-DEFAULT_CONFIG_PATH = os.environ.get(
-    "AUTOPILOT_CONFIG_PATH", "autopilot/config.yaml"
-)
+DEFAULT_CONFIG_PATH = os.environ.get("AUTOPILOT_CONFIG_PATH", "autopilot/config.yaml")
 
 DEFAULTS: dict[str, Any] = {
     "recommendation_debounce": {
@@ -84,9 +83,7 @@ def load_config(path: Optional[str] = None) -> dict[str, Any]:
 
 def get_debounce_hours(status: str) -> Optional[int]:
     """Hours to suppress a re-raise, or None for never-repost."""
-    policy = (
-        load_config()["recommendation_debounce"]["repost_policy"].get(status, {})
-    )
+    policy = load_config()["recommendation_debounce"]["repost_policy"].get(status, {})
     if policy.get("never_repost"):
         return None
     return policy.get("min_hours_between", 72)

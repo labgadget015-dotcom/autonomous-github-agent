@@ -14,6 +14,7 @@ recommender (record) and executor (transition) agents can't interleave appends
 or race on _next_seq. Falls back to no-op locking on non-POSIX platforms.
 Debounce windows and status tags are read from config.yaml via config_loader.
 """
+
 from __future__ import annotations
 
 import json
@@ -27,6 +28,7 @@ from config_loader import get_debounce_hours, get_ledger_path
 
 try:
     import fcntl  # POSIX only
+
     _HAS_FCNTL = True
 except ImportError:
     _HAS_FCNTL = False
@@ -37,9 +39,7 @@ def _today_iso() -> str:
     return datetime.now(timezone.utc).strftime("%Y-%m-%d")
 
 
-DEFAULT_LEDGER_PATH = os.environ.get(
-    "DECISIONS_LEDGER_PATH", get_ledger_path()
-)
+DEFAULT_LEDGER_PATH = os.environ.get("DECISIONS_LEDGER_PATH", get_ledger_path())
 
 
 def _load(path: str = DEFAULT_LEDGER_PATH) -> list[dict]:
@@ -124,9 +124,13 @@ def latest_match(sig: str, path: str = DEFAULT_LEDGER_PATH) -> Optional[dict]:
     matches = [e for e in _load(path) if e.get("sig") == sig]
     if not matches:
         return None
-    return max(matches, key=lambda e: (max(e.get("first_raised_ts", 0),
-                                         e.get("transitioned_ts", 0)),
-                                       e.get("seq", 0)))
+    return max(
+        matches,
+        key=lambda e: (
+            max(e.get("first_raised_ts", 0), e.get("transitioned_ts", 0)),
+            e.get("seq", 0),
+        ),
+    )
 
 
 def should_post(r: Recommendation, path: str = DEFAULT_LEDGER_PATH) -> tuple[bool, str]:
@@ -152,8 +156,9 @@ def should_post(r: Recommendation, path: str = DEFAULT_LEDGER_PATH) -> tuple[boo
     # window restarts when an item is reassigned/moved to in-flight. Without
     # this, transition entries (which only carry transitioned_ts) default to
     # first_raised_ts=0 -> ~495k hours elapsed -> always reposts.
-    latest_ts = max(existing.get("first_raised_ts", 0),
-                    existing.get("transitioned_ts", 0))
+    latest_ts = max(
+        existing.get("first_raised_ts", 0), existing.get("transitioned_ts", 0)
+    )
     elapsed_h = (time.time() - latest_ts) / 3600.0
     if elapsed_h < window:
         return False, (
@@ -181,8 +186,11 @@ def record(r: Recommendation, path: str = DEFAULT_LEDGER_PATH) -> dict:
 
 
 def transition(
-    sig: str, new_status: str, owner: Optional[str] = None,
-    due: Optional[str] = None, path: str = DEFAULT_LEDGER_PATH,
+    sig: str,
+    new_status: str,
+    owner: Optional[str] = None,
+    due: Optional[str] = None,
+    path: str = DEFAULT_LEDGER_PATH,
 ) -> dict:
     """Append a status transition for an existing work item.
 
