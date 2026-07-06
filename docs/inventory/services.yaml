@@ -75,23 +75,42 @@ services:
 
   - name: tim-postgres
     description: "Persistent store — agent_runs table, DRC output history"
-    host: unknown  # managed external Postgres; check n8n credential gndQWH8pCjbtieRf
+    host: 100.98.109.40  # m900-homelab (Tailscale) — CONFIRMED self-hosted, see notes
     port: 5432
-    container_name: null  # not self-hosted
+    container_name: postgres-tim  # postgres:16-alpine, confirmed via `docker ps` on M900
     repo: null
     owner: platform
     criticality: high
     healthcheck_url: null
     creds_location: "n8n credentials: gndQWH8pCjbtieRf (Postgres account) + yzbjlFaqm3pBpc62 (Postgres account 2) — two credentials exist; purpose of second unclear"
-    depends_on: []
+    depends_on:
+      - m900-homelab
     backup_source: unknown
     restore_order: 5
     exposed_to:
-      - n8n-cloud
+      - n8n-cloud  # INTENDED, but see BROKEN note below — not actually reachable
     observability_source:
       - n8n execution history
-    notes: "Schema: tim.agent_runs. Host details in n8n credentials only (not stored here). Second credential yzbjlFaqm3pBpc62 discovered 2026-06-27 — confirm if same host or separate DB."
-    last_verified_at: 2026-06-27T00:00:00Z
+    notes: >
+      Schema: tim.agent_runs. BROKEN as of 2026-07-02: `postgres-tim` container on
+      M900 is Docker-mapped to 127.0.0.1:5432 only (loopback-only, confirmed via `docker ps`
+      and `ss -tlnp` on M900) — not bound to the Tailscale interface, 0.0.0.0, or any
+      Caddy/Tailscale-Funnel proxy (both confirmed absent). n8n Cloud
+      (gadgetlab.app.n8n.cloud) has NO network path to reach this database. The
+      `gndQWH8pCjbtieRf` credential's host value only works when queried from a process
+      running locally on M900 (e.g. the separate self-hosted n8n instance also on M900,
+      proxied at https://m900-homelab.tail8e0dcd.ts.net/n8n). Result: Daily DRC Digest
+      (shhwyRRdoEdedYLa) has failed on every run since at least 2026-06-25 (0 successes
+      in retained execution history), and any n8n-Cloud workflow querying tim.agent_runs
+      will fail identically. Postgres's own pg_hba.conf already allows remote
+      password-auth connections (`host all all all scram-sha-256`) — the ONLY blocker is
+      the Docker port binding. Fix requires a deliberate decision (not yet made): rebind +
+      Tailscale Funnel (exposes DB publicly — real risk), migrate to a managed cloud
+      Postgres, or move the querying workflows onto the local M900 n8n instance. See
+      obsidian-ai-architect-vault memory project_gadgetlab.md for full diagnosis.
+      Second credential yzbjlFaqm3pBpc62 discovered 2026-06-27 — still unconfirmed if
+      same host or separate DB.
+    last_verified_at: 2026-07-02T00:00:00Z
 
   # ── Supporting n8n workflows (active) ──────────────────────────────────────
 
