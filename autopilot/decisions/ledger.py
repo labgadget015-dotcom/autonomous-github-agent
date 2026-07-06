@@ -9,16 +9,22 @@ match exists inside its debounce window, the post is suppressed (logged).
 Status transitions (open -> assigned -> inflight -> done|dropped) are written
 by the executor agent, NOT the recommender — keeps concerns separate.
 """
-
 from __future__ import annotations
 
 import json
 import os
 import time
 from dataclasses import asdict
+from datetime import datetime, timezone
 from typing import Optional
 
 from recommendation_contract import Recommendation
+
+
+def _today_iso() -> str:
+    """Current UTC date as YYYY-MM-DD (for the first_raised ledger field)."""
+    return datetime.now(timezone.utc).strftime("%Y-%m-%d")
+
 
 DEFAULT_LEDGER_PATH = os.environ.get(
     "DECISIONS_LEDGER_PATH", "autopilot/decisions/recommendations.jsonl"
@@ -29,8 +35,8 @@ DEBOUNCE_HOURS = {
     "open": 72,
     "assigned": 168,
     "inflight": 168,
-    "done": None,  # never repost
-    "dropped": None,  # never repost (superseded/rejected)
+    "done": None,        # never repost
+    "dropped": None,     # never repost (superseded/rejected)
 }
 
 
@@ -70,13 +76,9 @@ def latest_match(sig: str, path: str = DEFAULT_LEDGER_PATH) -> Optional[dict]:
     matches = [e for e in _load(path) if e.get("sig") == sig]
     if not matches:
         return None
-    return max(
-        matches,
-        key=lambda e: (
-            max(e.get("first_raised_ts", 0), e.get("transitioned_ts", 0)),
-            e.get("seq", 0),
-        ),
-    )
+    return max(matches, key=lambda e: (max(e.get("first_raised_ts", 0),
+                                         e.get("transitioned_ts", 0)),
+                                       e.get("seq", 0)))
 
 
 def should_post(r: Recommendation, path: str = DEFAULT_LEDGER_PATH) -> tuple[bool, str]:
@@ -98,7 +100,13 @@ def should_post(r: Recommendation, path: str = DEFAULT_LEDGER_PATH) -> tuple[boo
     if window is None:
         return False, f"existing entry is {status} — never repost"
 
-    elapsed_h = (time.time() - existing.get("first_raised_ts", 0)) / 3600.0
+    # Use the latest activity timestamp (record OR transition) so the debounce
+    # window restarts when an item is reassigned/moved to in-flight. Without
+    # this, transition entries (which only carry transitioned_ts) default to
+    # first_raised_ts=0 -> ~495k hours elapsed -> always reposts.
+    latest_ts = max(existing.get("first_raised_ts", 0),
+                    existing.get("transitioned_ts", 0))
+    elapsed_h = (time.time() - latest_ts) / 3600.0
     if elapsed_h < window:
         return False, (
             f"existing entry is {status}, raised {elapsed_h:.1f}h ago "
@@ -116,7 +124,7 @@ def record(r: Recommendation, path: str = DEFAULT_LEDGER_PATH) -> dict:
         "due": r.due_date,
         "severity": r.severity,
         "headline": r.headline,
-        "first_raised": r.due_date,
+        "first_raised": _today_iso(),
         "first_raised_ts": int(time.time()),
         "seq": _next_seq(path),
         "run_id": r.run_id,
@@ -127,11 +135,8 @@ def record(r: Recommendation, path: str = DEFAULT_LEDGER_PATH) -> dict:
 
 
 def transition(
-    sig: str,
-    new_status: str,
-    owner: Optional[str] = None,
-    due: Optional[str] = None,
-    path: str = DEFAULT_LEDGER_PATH,
+    sig: str, new_status: str, owner: Optional[str] = None,
+    due: Optional[str] = None, path: str = DEFAULT_LEDGER_PATH,
 ) -> dict:
     """Append a status transition for an existing work item.
 

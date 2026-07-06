@@ -3,7 +3,6 @@
 Run:  python -m pytest autopilot/tests/test_recommendation_contract.py -q
   or:  python autopilot/tests/test_recommendation_contract.py
 """
-
 import os
 import sys
 import tempfile
@@ -77,7 +76,7 @@ def test_ledger_debounce_suppresses_duplicate():
         path = tf.name
     try:
         r = _good()
-        assert should_post(r, path)[0] is True  # first raise allowed
+        assert should_post(r, path)[0] is True   # first raise allowed
         record(r, path)
 
         # immediate re-raise of same signature -> suppressed
@@ -95,12 +94,32 @@ def test_done_status_blocks_repost():
         r = _good()
         record(r, path)
         from decisions.ledger import transition
-
         transition(r.signature(), "done", path=path)
 
         allow, reason = should_post(r, path)
         assert allow is False
         assert "done" in reason
+    finally:
+        os.unlink(path)
+
+
+def test_assigned_status_debounces_repost():
+    """Regression: transition() entries only carry transitioned_ts, not
+    first_raised_ts. should_post() must use max(ts) so assigned/inflight
+    items stay suppressed within their debounce window (not always repost)."""
+    with tempfile.NamedTemporaryFile(suffix=".jsonl", delete=False) as tf:
+        path = tf.name
+    try:
+        r = _good()
+        record(r, path)
+        from decisions.ledger import transition
+        transition(r.signature(), "assigned", owner="U0AKJK1J7GR",
+                   due="2026-07-05", path=path)
+
+        # Immediate re-raise while assigned must be suppressed.
+        allow, reason = should_post(r, path)
+        assert allow is False, f"expected suppress, got: {reason}"
+        assert "assigned" in reason or "debounce" in reason
     finally:
         os.unlink(path)
 
