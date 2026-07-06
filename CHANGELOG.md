@@ -6,11 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
-## [Unreleased] - 2026-07-01
+## [Unreleased] - 2026-07-06
 
 
 ### ✨ Features
 
+- add DRC recommendation contract + de-dup ledger (804ad5d)
+- **autopilot**: add Staleness Sentinel — automated PR aging & escalation pipeline (eb6bf48)
 - pipeline enchantments — coverage, cost cap, PAT alert, n8n health, Grafana, LLM routing (7eb4212)
 - **dashboard**: live pipeline status page (41beabf)
 - wire CI result feedback back to n8n DRC loop (2ca76ad)
@@ -32,6 +34,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 🐛 Bug Fixes
 
+- debounce assigned/inflight items + minor review fixes (#188) (01bd26a)
+- **automation**: dedupe automated issue creation to cut bot noise (96829f0)
+- make pre-commit auto-fix push from PR branch (d60438e)
+- remove unused variable in staleness_engine, clarify test comments (e721bfd)
 - black format 6 test files + retry push loop in all 4 commit workflows (a45ba72)
 - **workflows**: git pull --rebase before push in security_scan, test_metrics, pre-commit-ci (ba1a987)
 - black formatting + changelog email privacy (4ebc23d)
@@ -123,6 +129,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 📚 Documentation
 
+- **inventory**: record confirmed tim-postgres host + Neon migration + slack manifest (3327d94)
+- **claude**: document DRC webhook x-gadgetlab-token auth + rotation (61eb200)
 - update contact email to labgadget015@gmail.com (ce5dbd9)
 - add Work With Gadget Lab CTA section to README (ac7d664)
 - add health dashboard HTML and Slack app manifest (c8074e1)
@@ -150,6 +158,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 🔨 Chores
 
+- rollback manifest entry [skip ci] (e406fe7)
+- update CHANGELOG [skip ci] (ea8af36)
 - update CHANGELOG [skip ci] (a6461a2)
 - rollback manifest entry [skip ci] (16c8037)
 - rollback manifest entry [skip ci] (60099b7)
@@ -293,6 +303,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 💎 Code Style
 
+- auto-fix pre-commit issues [skip ci] (358ce20)
+- auto-fix pre-commit issues [skip ci] (8063919)
+- auto-fix pre-commit issues [skip ci] (4c9879b)
+- auto-fix pre-commit issues [skip ci] (dd05f95)
 - reformat auto_pr.py and weekly_digest.py at line-length=88 (ad2e102)
 - black-format auto_pr.py and weekly_digest.py (d57927c)
 - black-format AuditLogger __init__ signature (2e44420)
