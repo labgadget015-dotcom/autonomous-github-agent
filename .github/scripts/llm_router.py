@@ -36,7 +36,7 @@ class LLMRouter:
     Decision Matrix:
     - format, lint, doc, triage, changelog, summarize, label, classify,
       rename, comment_simple, security LOW → Local (Llama-70B)
-    - security MEDIUM, review/test_generation <200 lines, complexity 10-20 → Moderate (try local, fall back to cloud)
+    - security MEDIUM, review/test_generation <200 lines, complexity 5-20 → Moderate (try local, fall back to cloud)
     - refactor, architecture, multi_file, review >200 lines → Cloud (GPT-4-Turbo)
     - security HIGH/CRITICAL → Cloud (GPT-4)
     """
@@ -87,9 +87,9 @@ class LLMRouter:
             score = context.get("score", 0)
             if score > 20:
                 return TaskComplexity.COMPLEX
-            if score > 10:
+            if score >= 5:
                 return TaskComplexity.MODERATE
-            return TaskComplexity.SIMPLE  # simple functions → local
+            return TaskComplexity.SIMPLE  # trivial functions → local
 
         if task_type in ["refactor", "architecture", "multi_file"]:
             return TaskComplexity.COMPLEX
