@@ -24,21 +24,9 @@ repos:
     priority: medium
     notes: "Workflow templates"
 
-  # Low Priority (Paused per consolidation strategy)
-  - owner: labgadget015-dotcom
-    name: AI-crypto-trading-bot
-    priority: low
-    notes: "Paused - focus on core product first"
-
-  - owner: labgadget015-dotcom
-    name: ai-ops-desk
-    priority: low
-    notes: "Paused - focus on core product first"
-
-  - owner: labgadget015-dotcom
-    name: ViralVideo
-    priority: low
-    notes: "Paused - focus on core product first"
+# NOTE: AI-crypto-trading-bot, ai-ops-desk, ViralVideo are intentionally
+# omitted — marked "Paused" in the consolidation strategy. Scanning them wastes
+# GitHub API quota (rate_limit_buffer: 100) and adds noise to the daily summary.
 
 # Output configuration
 output:
