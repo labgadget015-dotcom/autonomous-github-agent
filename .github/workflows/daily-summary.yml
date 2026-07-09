@@ -1,0 +1,60 @@
+name: Daily Repository Summary (Autopilot)
+
+# Runs autopilot/autopilot.py to produce DAILY_SUMMARY.md for the configured
+# repos (see autopilot/config.yaml). The script is a standalone CLI that was
+# previously undocumented/idle; this workflow makes the documented
+# "daily summaries" feature actually run on a schedule.
+#
+# Security: runs with the default GITHUB_TOKEN (contents: write on this repo,
+# plus read on the other labgadget015-dotcom repos via the token's account
+# scopes). No secrets are echoed. Output is committed back to the repo so the
+# summary is visible in the file tree.
+
+on:
+  schedule:
+    # Daily at 06:17 UTC (off-round minute to avoid the top-of-hour stampede)
+    - cron: '17 6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  daily-summary:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # Need a real branch so we can commit the summary back
+          ref: ${{ github.ref }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pyyaml python-dotenv PyGithub
+
+      - name: Generate daily summary
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cd autopilot
+          python autopilot.py --config config.yaml --output ../DAILY_SUMMARY.md
+
+      - name: Commit summary
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if [ -n "$(git status --porcelain DAILY_SUMMARY.md)" ]; then
+            git add DAILY_SUMMARY.md
+            git commit -m "docs: daily summary $(date -u +'%Y-%m-%d') [skip ci]"
+            git push
+          else
+            echo "No summary changes — nothing to commit"
+          fi
