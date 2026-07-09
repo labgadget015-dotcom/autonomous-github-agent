@@ -1,78 +1,77 @@
-# Duplicate Package Layout — Analysis & Recommendation
+# Dual Package Layout — Analysis & Decision
 
-**Status:** INVESTIGATION ONLY. Nothing has been deleted or moved. This document
-records a structural hazard found during the 2026-07-09 maintenance pass and
-proposes a fix for your decision.
+**Status:** DECIDED — take no action (Option C). Updated 2026-07-09 after a deeper
+investigation corrected the earlier draft of this file.
 
-## Symptom
+## The two trees
 
-The repo contains TWO parallel source trees that import the same module names:
+- **Top-level:** `core/`, `agents/`, `overseer/`, `autopilot/` — the legacy layout.
+- **`autonomous_agent/`:** `core/`, `agents/` only — the *installable* package
+  (`pyproject.toml` `[project.scripts]`, `setup.py`, CI, `pytest.ini --cov`).
 
-- **Top-level:** `core/`, `agents/`, `overseer/`, `autopilot/`
-  (the tree the unit tests import — see `tests/unit/test_*.py`)
-- **`autonomous_agent/`:** `core/`, `agents/` only — **no `overseer/`, no `autopilot/`**
+## What the investigation actually found (corrected)
 
-## Why `autonomous_agent/` exists
+The two trees are **NOT** diverged copies of the same code, and the package is
+**NOT** stale or untested. They are *different implementations* with **incompatible
+APIs**, and BOTH are exercised by the passing test suite (1339 passed, 2 skipped).
 
-It is the *installable* package. It is referenced by:
-- `pyproject.toml` → `[project.scripts] autonomous-agent = "autonomous_agent.cli:main"`
-  and `[tool.setuptools.packages.find] include = ["autonomous_agent*"]`
-- `setup.py` → entry points `autonomous-agent` / `aga`
-- `pytest.ini` → `--cov=autonomous_agent` (coverage target that currently shows 0%
-  because the top-level tests never exercise it)
-- `workflows/ci.yml` → `pytest --cov=autonomous_agent`
-- `DEPLOYMENT.md`, install scripts — instruct `import autonomous_agent`
+Concrete proof — `core/audit_logger.py` vs `autonomous_agent/core/audit_logger.py`:
 
-## The hazard
+| | top-level `core/audit_logger.py` | `autonomous_agent/core/audit_logger.py` |
+|---|---|---|
+| Style | **async** | **sync** |
+| Storage | file + optional Postgres + optional S3 | SQLAlchemy ORM (SQLite/Postgres) + JSON-line mirror |
+| Signature | `log_action(agent, action, params, result, task_id)` | `log_action(agent_name, action, repository, details, rollback_instructions)` |
+| Features | SHA-256 hash chain, `verify_chain()`, `get_audit_trail()` | `get_logs()`, `get_rollback_instructions()` |
+| Lines | 338 | 139 |
 
-The two trees are **out of sync**, not just duplicated:
+`core/github_client.py` vs `autonomous_agent/core/github_client.py` differs by 360
+lines with the same async/sync split.
 
-| Module | Relationship |
-|--------|--------------|
-| `core/` | `autonomous_agent/core/` files DIFFER from top-level `core/` files |
-| `agents/` | Different files on each side (top has `code_review_agent.py`, `dependency_agent.py`; pkg has `code_reviewer.py`, `branch_manager.py`, etc.) |
-| `overseer/` | Only at top level — `autonomous_agent/` has NONE |
-| `autopilot/` | Only at top level — `autonomous_agent/` has NONE |
+### Blast radius if we forced them to one canonical tree
+- **Flat-tree (`core.*`) consumers:** `tests/test_error_recovery.py`,
+  `tests/test_github_operations.py`, `tests/test_core.py`,
+  `tests/unit/test_github_client.py`, `tests/unit/test_audit_chain.py`,
+  `tests/unit/test_audit_logger_extra.py` (7 test files).
+- **Package (`autonomous_agent.core.*`) consumers:** `tests/test_audit_logger.py`,
+  `tests/test_autonomous_agents.py`, `tests/test_github_client_comprehensive.py`,
+  `autonomous_agent/cli.py` (3+ test files + the CLI).
+- `test_audit_chain.py` and `test_error_recovery.py` specifically exercise the
+  async **hash-chain / tamper-evidence** feature, which the package lacks. A blind
+  re-export would break them (`await` on a sync `int`-returning method, missing
+  `verify_chain`/`get_audit_trail`).
 
-Consequences:
-1. Two copies of `core/` that can silently diverge → a fix to one is not a fix to
-   the other. A reviewer changing top-level `core/` may believe the package is
-   fixed when it is not.
-2. `autonomous_agent/` is missing `overseer/` and `autopilot/` entirely, so an
-   `import autonomous_agent` install cannot actually run the overseer or autopilot
-   — the published package is partially broken vs. the working top-level code.
-3. Coverage config (`--cov=autonomous_agent`) measures the wrong tree, hiding the
-   real 68% top-level coverage behind a 0% number.
+So "reconcile" is not a merge — it is a 10-file refactor plus, if tamper-evidence
+is to be kept, building the hash-chain feature into the ORM logger.
 
-## Recommendation (for your decision — NOT yet applied)
+## Decision: Option C — leave both trees as-is (documented debt)
 
-Pick ONE canonical layout and delete the other. Three options:
+- The suite is **green**; nothing is broken.
+- The migration is genuinely *unfinished*, not merely messy — the legacy flat tree
+  exists only because tests depend on a feature the package never received.
+- Payoff of collapsing the trees (single source of truth) does not justify a
+  10-file refactor + possible new feature on a healthy pipeline.
 
-**Option A — Make `autonomous_agent/` canonical (package-first).**
-Move `overseer/` and `autopilot/` into `autonomous_agent/`, delete the top-level
-`core/ agents/ overseer/ autopilot/`, and update test imports to use
-`autonomous_agent.core` etc. Pros: matches pyproject/setup.py/deployment docs
-as-is. Cons: ~40 test files need import rewrites.
+**This corrects the earlier draft of this file**, which wrongly claimed the
+package was stale/untested and recommended deleting it (Option B). Deleting the
+package would break 5 integration tests and the CLI. That recommendation is
+**withdrawn**.
 
-**Option B — Make the top-level tree canonical (simplest).**
-Delete `autonomous_agent/` and repoint `pyproject.toml`/`setup.py`/`pytest.ini`/
-`workflows/ci.yml` to use a top-level package (e.g. add a `src/` layout or just
-`[tool.setuptools] py-modules`). Pros: no test rewrites; tests already import this
-tree. Cons: needs packaging config edits; `import autonomous_agent` in docs must
-change.
+## Guardrails (do NOT silently change one tree and assume the other is fine)
+1. Any edit to `core/audit_logger.py` or `core/github_client.py` must keep the
+   async hash-chain API intact (it is tested by `test_audit_chain.py` /
+   `test_error_recovery.py`).
+2. Any edit to `autonomous_agent/core/*` must keep the sync ORM API intact
+   (tested by `test_audit_logger.py` / `test_github_client_comprehensive.py` /
+   `test_autonomous_agents.py` and used by `cli.py`).
+3. The correct time to finish the migration is when audit/GitHub-client code is
+   being touched anyway — fold it into that work, not as a standalone risk.
 
-**Option C — Keep both but sync via symlink/build step (stopgap).**
-Generate `autonomous_agent/` from the top-level tree at build time (e.g. a
-`build_package.py` or symlink in CI). Pros: no immediate breakage. Cons: adds
-build complexity; doesn't fix the missing `overseer/`/`autopilot/`.
-
-**My recommendation: Option B** — the top-level tree is what actually runs and is
-tested (1339 passing tests exercise it). `autonomous_agent/` is stale and
-incomplete. Repointing packaging to the working tree is lower-risk than rewriting
-40 test imports, and it makes the published package match reality.
-
-## Next step
-
-Confirm A, B, or C and I will execute it (with a full test run to prove no
-regression). Until then, treat `autonomous_agent/` as UNTRUSTED — any change to
-`core/` should be verified on the top-level tree, not the package copy.
+## Future migration paths (only if/when justified)
+- **A — package canonical, retire hash-chain:** re-point the 7 flat-tree test files
+  + `core/github_client.py` to `autonomous_agent.*`, port or retire
+  `test_audit_chain.py`/`test_error_recovery.py`, delete the flat `core/` copies.
+  Lower effort; loses tamper-evidence.
+- **B — package canonical, port hash-chain in:** implement SHA-256 chain +
+  `verify_chain()` + `get_audit_trail()` as a layer on the ORM logger, keep those
+  tests, then delete the flat copies. Higher effort; preserves the security feature.
