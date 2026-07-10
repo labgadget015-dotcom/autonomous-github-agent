@@ -66,6 +66,14 @@ jobs:
           file: ./coverage.xml
           fail_ci_if_error: false
 
+      - name: Upload coverage XML for regression check
+        if: matrix.python-version == '3.11'
+        uses: actions/upload-artifact@v6
+        with:
+          name: coverage-xml
+          path: coverage.xml
+          retention-days: 7
+
   code-quality:
     runs-on: ubuntu-latest
     steps:
@@ -151,3 +159,40 @@ jobs:
           curl -s -X POST https://gadgetlab.app.n8n.cloud/webhook/ci-feedback \
             -H 'Content-Type: application/json' \
             -d "{\"repo\":\"${REPO}\",\"conclusion\":\"${CONCLUSION}\",\"run_url\":\"${RUN_URL}\",\"workflow_name\":\"${WORKFLOW}\",\"run_id\":\"${RUN_ID}\"}" || true
+
+  # Alert on coverage regression via the repo's regression_alert module.
+  # Runs monitoring/regression_alert.py against coverage.xml from the test job
+  # and posts to Slack (#drc-recommendations) when coverage drops below the floor.
+  regression-check:
+    needs: [test]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || !github.event.pull_request.draft
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Download coverage artifact
+        uses: actions/download-artifact@v7
+        with:
+          name: coverage-xml
+          path: .
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Extract coverage % and run regression check
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          if [ ! -f coverage.xml ]; then
+            echo "coverage.xml not found — skipping regression check"
+            exit 0
+          fi
+          COV=$(python -c "import xml.etree.ElementTree as ET; r=ET.parse('coverage.xml').getroot(); print(f\"{float(r.get('line-rate',0))*100:.2f}\")")
+          echo "Current coverage: ${COV}%"
+          python monitoring/regression_alert.py --coverage "$COV" || echo "::warning::Coverage regression detected — see Slack #drc-recommendations"

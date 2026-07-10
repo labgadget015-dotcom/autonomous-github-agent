@@ -24,9 +24,9 @@ inputs:
     required: false
     default: 'true'
   local_llm_endpoint:
-    description: 'Local LLM endpoint URL'
+    description: 'Local LLM endpoint URL (must match LOCAL_LLM_URL env default in .github/scripts/llm_router.py)'
     required: false
-    default: 'http://localhost:11434'
+    default: 'http://localhost:1234/v1'
   complexity_threshold:
     description: 'Complexity threshold for LLM routing (low/medium/high)'
     required: false
