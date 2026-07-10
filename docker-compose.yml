@@ -130,6 +130,41 @@ services:
           memory: 4G
     restart: unless-stopped
 
+  # Pipeline metrics exporter — serves Prometheus /metrics on :8000 so the
+  # `agent:8000` scrape target in monitoring/prometheus.yml actually gets data.
+  # Feeds the regression_alert module + Grafana dashboard.
+  metrics-exporter:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - BUILDKIT_INLINE_CACHE=1
+    image: autonomous-github-agent:latest
+    container_name: autonomous-agent-metrics
+    profiles:
+      - monitoring
+    command: ["python", "monitoring/metrics_exporter.py", "--port", "8000", "--host", "0.0.0.0"]
+    volumes:
+      - ./monitoring:/app/monitoring:ro
+      - ./core:/app/core:ro
+      - ./overseer:/app/overseer:ro
+    environment:
+      - PYTHONUNBUFFERED=1
+      - METRICS_PORT=8000
+    ports:
+      - "8000:8000"
+    networks:
+      - agent-network
+    depends_on:
+      - agent
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8000/metrics').status==200 else 1)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+
 # Named volumes for persistent data
 volumes:
   agent-data:
