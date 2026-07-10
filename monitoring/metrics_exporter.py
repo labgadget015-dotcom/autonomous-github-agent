@@ -140,7 +140,10 @@ class Histogram:
             counts[-1] += value  # last slot = sum
 
     def _render(self) -> str:
-        out = [f"# HELP {self.name} {self.description}", f"# TYPE {self.name} histogram"]
+        out = [
+            f"# HELP {self.name} {self.description}",
+            f"# TYPE {self.name} histogram",
+        ]
         with self._lock:
             if not self._series:
                 out.append(f"{self.name}_count 0")
@@ -150,9 +153,7 @@ class Histogram:
                 cumulative = 0.0
                 for i, upper in enumerate(self.buckets):
                     cumulative += counts[i]
-                    out.append(
-                        f'{self.name}_bucket{suffix}le="{upper}" {cumulative:g}'
-                    )
+                    out.append(f'{self.name}_bucket{suffix}le="{upper}" {cumulative:g}')
                 cumulative += counts[-1] if len(self.buckets) < len(counts) else 0
                 # +Inf bucket
                 total_count = sum(counts[:-1])
@@ -240,7 +241,9 @@ class _Handler(BaseHTTPRequestHandler):
             self.send_response(404)
             self.end_headers()
 
-    def log_message(self, format: str, *args) -> None:  # noqa: A002 — silence default stderr logging
+    def log_message(
+        self, format: str, *args
+    ) -> None:  # noqa: A002 — silence default stderr logging
         pass
 
 
@@ -251,12 +254,19 @@ def serve(port: int = 8000, host: str = "0.0.0.0") -> ThreadingHTTPServer:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Autonomous GitHub Agent metrics exporter")
-    parser.add_argument("--port", type=int, default=8000, help="Port to serve /metrics on")
+    parser = argparse.ArgumentParser(
+        description="Autonomous GitHub Agent metrics exporter"
+    )
+    parser.add_argument(
+        "--port", type=int, default=8000, help="Port to serve /metrics on"
+    )
     parser.add_argument("--host", default="0.0.0.0", help="Bind host")
     args = parser.parse_args()
     srv = serve(args.port, args.host)
-    print(f"metrics exporter listening on http://{args.host}:{args.port}/metrics", flush=True)
+    print(
+        f"metrics exporter listening on http://{args.host}:{args.port}/metrics",
+        flush=True,
+    )
     try:
         srv.serve_forever()
     except KeyboardInterrupt:

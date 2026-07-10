@@ -44,6 +44,7 @@ if _REPO_ROOT not in sys.path:
 
 try:
     import requests  # type: ignore
+
     _REQUESTS = True
     _urllib = None
 except ImportError:  # pragma: no cover
@@ -55,7 +56,6 @@ except ImportError:  # pragma: no cover
 from monitoring.metrics_exporter import metrics  # noqa: E402
 
 DEFAULT_SLACK_CHANNEL = "#drc-recommendations"
-
 
 
 class RegressionMonitor:
@@ -121,7 +121,10 @@ class RegressionMonitor:
 
     def _post_to_slack(self, reason: str) -> bool:
         if not self.slack_webhook:
-            print(f"[regression-alert] (no SLACK_WEBHOOK_URL) {reason}", file=__import__("sys").stderr)
+            print(
+                f"[regression-alert] (no SLACK_WEBHOOK_URL) {reason}",
+                file=__import__("sys").stderr,
+            )
             return False
         text = (
             f":rotating_light: Pipeline regression detected\n"
@@ -143,19 +146,32 @@ class RegressionMonitor:
                 with _urllib.urlopen(req, timeout=10) as r:
                     ok = r.status == 200
             else:
-                print("[regression-alert] no HTTP client available", file=__import__("sys").stderr)
+                print(
+                    "[regression-alert] no HTTP client available",
+                    file=__import__("sys").stderr,
+                )
                 return False
         except Exception as exc:  # noqa: BLE001 — surface but never crash the caller
-            print(f"[regression-alert] slack post failed: {exc}", file=__import__("sys").stderr)
+            print(
+                f"[regression-alert] slack post failed: {exc}",
+                file=__import__("sys").stderr,
+            )
             return False
         if not ok:
-            print("[regression-alert] slack returned non-200", file=__import__("sys").stderr)
+            print(
+                "[regression-alert] slack returned non-200",
+                file=__import__("sys").stderr,
+            )
         return ok
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Check pipeline health and alert on regression")
-    parser.add_argument("--coverage", type=float, default=None, help="Current coverage percent")
+    parser = argparse.ArgumentParser(
+        description="Check pipeline health and alert on regression"
+    )
+    parser.add_argument(
+        "--coverage", type=float, default=None, help="Current coverage percent"
+    )
     parser.add_argument("--coverage-floor", type=float, default=70.0)
     parser.add_argument("--drc-success", type=int, default=None)
     parser.add_argument("--drc-failure", type=int, default=None)
@@ -167,7 +183,10 @@ def main() -> None:
     if args.coverage is not None:
         fired = monitor.check_coverage(args.coverage) is not None or fired
     if args.drc_success is not None and args.drc_failure is not None:
-        fired = monitor.check_failure_rate(args.drc_success, args.drc_failure) is not None or fired
+        fired = (
+            monitor.check_failure_rate(args.drc_success, args.drc_failure) is not None
+            or fired
+        )
     if args.median_risk is not None:
         fired = monitor.check_risk_ceiling(args.median_risk) is not None or fired
 
