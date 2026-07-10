@@ -89,3 +89,45 @@ coverage.xml
 mcp_server/
 .vercel
 .env*
+
+# Auto-generated install/setup spam (one-click installers, marketing .txt) — keep repo clean
+CLICK_ME_TO_INSTALL.txt
+CONFIGURE_*.txt
+CONFIGURE_*.bat
+CORRECT_INSTALL_COMMANDS.txt
+DIAGNOSE.bat
+DOUBLE_CLICK_ME.bat
+*Executive Summary*.txt
+finalize_setup.bat
+FIX_NOW.txt
+HOW_TO_GET_TOKENS.txt
+INDEX.txt
+INSTALLATION_COMPLETE_SUMMARY.txt
+INSTALL_NOW.bat
+PRE_INSTALLATION_CHECKLIST.txt
+run_installation.bat
+run_install.bat
+run_master_install.bat
+SIMPLE_INSTALL.bat
+SIMPLE_TEST_STEPS.txt
+start.bat
+START_INSTALLATION*.txt
+TEST_INSTALLATION.bat
+*_REPORT.md
+*_SUMMARY.md
+*_ANALYSIS.md
+VERIFICATION*.md
+EXECUTION*.md
+DEPLOYMENT*.md
+FINAL_VERIFICATION*.md
+IMPLEMENTATION*.md
+ENHANCEMENT*.md
+COPILOT_*REPORT.md
+INSTALLATION_*.md
+WHAT_NOW.md
+NEXT_STEPS.md
+QUICK_START*.md
+README_INSTALL.md
+START_HERE.md
+# Unrelated business docs accidentally committed
+Ai docs/

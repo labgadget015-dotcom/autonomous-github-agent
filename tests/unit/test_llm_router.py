@@ -85,7 +85,9 @@ class TestClassify:
 
     def test_complexity_low_score_is_simple(self):
         router = self._router()
-        complexity = router.classify("complexity", {"score": 5})
+        # Band logic: score < 5 -> SIMPLE, 5-20 -> MODERATE, >20 -> COMPLEX
+        # (see llm_router.classify docstring "complexity 5-20 -> Moderate").
+        complexity = router.classify("complexity", {"score": 3})
         assert complexity == TaskComplexity.SIMPLE
 
     def test_complexity_mid_score_is_moderate(self):

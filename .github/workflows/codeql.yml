@@ -1,0 +1,46 @@
+name: CodeQL Security Analysis
+
+# GitHub-hosted CodeQL is free for public repositories (this repo went public 2026-06-27).
+# This runs REAL semantic code analysis (not just Bandit's pattern grep) and uploads
+# results to the GitHub Security tab. `security_scan.yml` uploads Bandit's SARIF under
+# the `bandit` category; this workflow uploads CodeQL's under the `codeql` category so
+# both engines appear side-by-side in code scanning.
+
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+  pull-requests: read
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [main]
+  schedule:
+    - cron: '17 3 * * 1'  # Weekly Monday 03:17 UTC — randomized minute to avoid the top-of-hour stampede
+  workflow_dispatch:
+
+jobs:
+  analyze:
+    name: Analyze (Python + JavaScript)
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v4
+        with:
+          languages: python, javascript
+          # Build-mode 'none' — pure source analysis, no compilation needed for this repo.
+          # JS analysis covers the .github/scripts automation + landing/ Next.js app.
+          queries: security-and-quality
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v4
+        with:
+          category: codeql
+          upload: true
