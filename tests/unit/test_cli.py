@@ -8,8 +8,13 @@ from click.testing import CliRunner
 from autonomous_agent.cli import main
 
 
-def _config(token="ghp_abc", provider="openai", api_key="sk-test",
-            automation="semi-auto", agents=("health", "review")):
+def _config(
+    token="ghp_abc",
+    provider="openai",
+    api_key="sk-test",
+    automation="semi-auto",
+    agents=("health", "review"),
+):
     cfg = MagicMock()
     cfg.github.token = token
     cfg.llm.provider = provider
@@ -21,7 +26,9 @@ def _config(token="ghp_abc", provider="openai", api_key="sk-test",
 
 def test_config_check_token_set():
     runner = CliRunner()
-    with patch("autonomous_agent.cli.get_config", return_value=_config(token="ghp_xyz")):
+    with patch(
+        "autonomous_agent.cli.get_config", return_value=_config(token="ghp_xyz")
+    ):
         result = runner.invoke(main, ["config-check"])
     assert result.exit_code == 0
     assert "GitHub Token" in result.output

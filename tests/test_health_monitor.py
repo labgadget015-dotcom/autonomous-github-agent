@@ -79,7 +79,9 @@ async def test_health_monitor_execute_full(monkeypatch):
     mock_github.get_pull_requests.return_value = [old_pr, recent_pr]
 
     # Missing files: README present, LICENSE/others missing
-    readme = MagicMock(); readme.type = "file"; readme.name = "README.md"
+    readme = MagicMock()
+    readme.type = "file"
+    readme.name = "README.md"
     repo.get_contents.return_value = [readme]
 
     mock_github.get_repository.return_value = repo
@@ -143,7 +145,10 @@ async def test_health_monitor_no_issues_paths(monkeypatch):
     names = ["README.md", "LICENSE", ".gitignore", "CONTRIBUTING.md"]
     files = []
     for n in names:
-        f = MagicMock(); f.type = "file"; f.name = n; files.append(f)
+        f = MagicMock()
+        f.type = "file"
+        f.name = n
+        files.append(f)
     repo.get_contents.return_value = files
 
     mock_github.get_repository.return_value = repo
@@ -165,8 +170,13 @@ async def test_health_monitor_branch_exception_is_swallowed(monkeypatch):
     agent, mock_github, _, _ = _make_agent(monkeypatch)
 
     repo = MagicMock()
-    for attr in ["stargazers_count", "forks_count", "open_issues_count",
-                 "watchers_count", "size"]:
+    for attr in [
+        "stargazers_count",
+        "forks_count",
+        "open_issues_count",
+        "watchers_count",
+        "size",
+    ]:
         setattr(repo, attr, 0)
     repo.default_branch = "main"
     repo.archived = False
@@ -187,11 +197,14 @@ async def test_health_monitor_branch_exception_is_swallowed(monkeypatch):
     inner_commit.author = author
     commit = MagicMock()
     commit.commit = inner_commit
-    bad = MagicMock(); bad.name = "broken"
+    bad = MagicMock()
+    bad.name = "broken"
     bad.commit = commit
     repo.get_branches.return_value = [bad]
 
-    readme = MagicMock(); readme.type = "file"; readme.name = "README.md"
+    readme = MagicMock()
+    readme.type = "file"
+    readme.name = "README.md"
     repo.get_contents.return_value = [readme]
 
     mock_github.get_repository.return_value = repo
@@ -207,8 +220,13 @@ async def test_health_monitor_contents_exception_is_swallowed(monkeypatch):
     agent, mock_github, _, _ = _make_agent(monkeypatch)
 
     repo = MagicMock()
-    for attr in ["stargazers_count", "forks_count", "open_issues_count",
-                 "watchers_count", "size"]:
+    for attr in [
+        "stargazers_count",
+        "forks_count",
+        "open_issues_count",
+        "watchers_count",
+        "size",
+    ]:
         setattr(repo, attr, 0)
     repo.default_branch = "main"
     repo.archived = False
