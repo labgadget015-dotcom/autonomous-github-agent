@@ -74,18 +74,31 @@ hosts:
     type: physical
     provider: self-hosted
     hardware: "Lenovo ThinkCentre M900"
-    fqdn: unknown
-    ip: unknown
-    os: unknown  # likely Ubuntu
+    fqdn: m900-homelab.tail8e0dcd.ts.net
+    ip: 100.98.109.40  # Tailscale (confirmed reachable 2026-07-02)
+    os: Ubuntu
     services_hosted:
+      - postgres-tim  # postgres:16-alpine, tim.agent_runs — loopback-only, see tim-postgres notes in services.yaml
+      - n8n  # self-hosted n8nio/n8n, distinct from gadgetlab.app.n8n.cloud; proxied at /n8n via Caddy
+      - grafana
+      - prometheus
+      - cadvisor
+      - node-exporter
+      - portainer
+      - redis
+      - langfuse-web
+      - vaultwarden
+      - ollama  # 127.0.0.1:11434 — local LLM, matches action.yml local_llm_endpoint default
+      - caddy  # reverse proxy, HTTPS on :443, basic-auth protected paths
       - homelab-vm-ha
-      - prometheus  # not confirmed running
     access:
       - method: SSH
-        notes: "SSH access not confirmed from current environment"
+        notes: "Confirmed working 2026-07-02: `ssh -i ~/.ssh/m900_homelab ai@100.98.109.40`"
       - method: tailscale
-        notes: unknown
-    notes: "Homelab host. Referenced in prior sessions but not directly reachable from cloud shell."
+        notes: "Confirmed — node 100.98.109.40, tailnet tail8e0dcd.ts.net"
+      - method: browser (Caddy, HTTPS, basic-auth)
+        url: "https://m900-homelab.tail8e0dcd.ts.net (grafana/prometheus/n8n/portainer/cadvisor/obsidian paths, user: gadget)"
+    notes: "Homelab host. Reachable via Tailscale SSH from this environment as of 2026-07-02. Hosts tim-postgres — see BROKEN network-path note in services.yaml."
 
   - name: localhost-dev
     type: local

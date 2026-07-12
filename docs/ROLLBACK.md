@@ -1,5 +1,14 @@
 # Rollback Manifest
 
+## 46e776a — 2026-07-06 05:39 UTC
+
+- **SHA**: `46e776a61296badbbefb0561bace1b8404bcdd73`
+- **Author**: Gadget Lab
+- **Message**: Merge pull request #190 from labgadget015-dotcom/docs/drc-token-and-infra-inventory
+- **Files changed**: 0 file(s)
+
+---
+
 ## ce5dbd9 — 2026-07-01 05:18 UTC
 
 - **SHA**: `ce5dbd94c82e7eee8dd459d0f64543df1a46235d`
