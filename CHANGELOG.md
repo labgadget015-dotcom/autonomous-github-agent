@@ -6,11 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
-## [Unreleased] - 2026-07-06
+## [Unreleased] - 2026-07-12
 
 
 ### ✨ Features
 
+- **docker**: add metrics-exporter sidecar to monitoring profile (79a8f1b)
+- **observability**: Prometheus metrics exporter + coverage regression alert (3eafc3e)
+- **ci**: schedule autopilot daily-summary generation (5f6afdb)
 - add DRC recommendation contract + de-dup ledger (804ad5d)
 - **autopilot**: add Staleness Sentinel — automated PR aging & escalation pipeline (eb6bf48)
 - pipeline enchantments — coverage, cost cap, PAT alert, n8n health, Grafana, LLM routing (7eb4212)
@@ -34,6 +37,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 🐛 Bug Fixes
 
+- **ci**: correct LLM router complexity bands; add secrets rotation runbook + DRC token alert (686ab03)
 - debounce assigned/inflight items + minor review fixes (#188) (01bd26a)
 - **automation**: dedupe automated issue creation to cut bot noise (96829f0)
 - make pre-commit auto-fix push from PR branch (d60438e)
@@ -44,6 +48,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **changelog**: git pull --rebase before push to handle concurrent workflow collisions (f2492bc)
 - **test**: update llm_router complexity thresholds to match new routing logic (9cb29a6)
 - **n8n-health-check**: only alert on host down, not DRC timeout (d4257f8)
+- **ci**: use noreply bot identity in changelog workflow commits (f261a11)
 - **n8n-health-check**: continue-on-error + 30s timeout for DRC probe (70bc0ca)
 - **ci**: fix IndexError on empty aliases + add autonomous_agent coverage (c515a21)
 - **audit_logger**: proper session lifecycle + dual write (SQLite + JSONL) (a27f556)
@@ -129,6 +134,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 📚 Documentation
 
+- correct package-duplication analysis; record decision to keep dual trees (no merge) (401c2d6)
 - **inventory**: record confirmed tim-postgres host + Neon migration + slack manifest (3327d94)
 - **claude**: document DRC webhook x-gadgetlab-token auth + rotation (61eb200)
 - update contact email to labgadget015@gmail.com (ce5dbd9)
@@ -140,6 +146,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### ✅ Tests
 
+- raise branch coverage past 70% (health_monitor, llm_client, cli) (2cc59c4)
 - add 97 unit tests for autopilot, code_review, dependency, security_scan, triage agents (f90c4de)
 - cover empty-path edge case and simplify CRITICAL gate branch (0e64848)
 - add tests for inline PR commenter, anomaly detector, and remaining modules (b90998e)
@@ -153,11 +160,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 👷 CI/CD
 
+- align workflow coverage sets with pytest.ini (fix PR pipeline 58.99%<70% gate) (4ffe36b)
 - fix update-dashboard commit step (staged-only check, optional coverage.svg) (383249b)
 - lower coverage threshold to 55% (realistic baseline) (05866b6)
 
 ### 🔨 Chores
 
+- green test suite, drop install-spam + Ai docs, add CodeQL workflow (8c0be46)
+- **autopilot**: drop 3 paused repos from daily-summary scan (aa28df5)
+- remove 4 dead top-level agents (triage/code_review/dependency/security_scan) (6c16891)
+- rollback manifest entry [skip ci] (5e7bed2)
+- update CHANGELOG [skip ci] (5f007e2)
 - rollback manifest entry [skip ci] (e406fe7)
 - update CHANGELOG [skip ci] (ea8af36)
 - update CHANGELOG [skip ci] (a6461a2)
@@ -303,8 +316,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 💎 Code Style
 
+- auto-fix pre-commit issues [skip ci] (cfafbb3)
+- auto-fix pre-commit issues [skip ci] (dcd9772)
+- auto-fix pre-commit issues [skip ci] (7ac4a15)
 - auto-fix pre-commit issues [skip ci] (358ce20)
 - auto-fix pre-commit issues [skip ci] (8063919)
+- auto-fix pre-commit issues [skip ci] (156d118)
 - auto-fix pre-commit issues [skip ci] (4c9879b)
 - auto-fix pre-commit issues [skip ci] (dd05f95)
 - reformat auto_pr.py and weekly_digest.py at line-length=88 (ad2e102)
