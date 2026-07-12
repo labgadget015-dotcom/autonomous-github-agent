@@ -1,6 +1,6 @@
 """Tests for health monitor agent."""
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from unittest.mock import MagicMock
 
 import pytest
@@ -37,7 +37,7 @@ def _branch(name, days_old=10, commit_date=None):
 def _pr(number, age_days):
     created = datetime.utcnow() - timedelta(days=age_days)
     if created.tzinfo is None:
-        created = created.replace(tzinfo=timezone.utc)
+        created = created.replace(tzinfo=UTC)
     pr = MagicMock()
     pr.number = number
     pr.title = f"PR {number}"

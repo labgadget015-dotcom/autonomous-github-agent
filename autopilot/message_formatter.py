@@ -15,7 +15,7 @@ This replaces the old bot format that buried the subject behind a run_id.
 
 from __future__ import annotations
 
-from recommendation_contract import Recommendation, SEVERITY_EMOJI, validate
+from recommendation_contract import SEVERITY_EMOJI, Recommendation, validate
 
 STATUS_TAG = {
     "open": "🟡 Open",

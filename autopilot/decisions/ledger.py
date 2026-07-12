@@ -15,16 +15,14 @@ from __future__ import annotations
 import json
 import os
 import time
-from dataclasses import asdict
-from datetime import datetime, timezone
-from typing import Optional
+from datetime import UTC, datetime
 
 from recommendation_contract import Recommendation
 
 
 def _today_iso() -> str:
     """Current UTC date as YYYY-MM-DD (for the first_raised ledger field)."""
-    return datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    return datetime.now(UTC).strftime("%Y-%m-%d")
 
 
 DEFAULT_LEDGER_PATH = os.environ.get(
@@ -45,7 +43,7 @@ def _load(path: str = DEFAULT_LEDGER_PATH) -> list[dict]:
     if not os.path.exists(path):
         return []
     out = []
-    with open(path, "r", encoding="utf-8") as f:
+    with open(path, encoding="utf-8") as f:
         for line in f:
             line = line.strip()
             if line:
@@ -68,7 +66,7 @@ def _append(entry: dict, path: str = DEFAULT_LEDGER_PATH) -> None:
         f.write(json.dumps(entry, ensure_ascii=False) + "\n")
 
 
-def latest_match(sig: str, path: str = DEFAULT_LEDGER_PATH) -> Optional[dict]:
+def latest_match(sig: str, path: str = DEFAULT_LEDGER_PATH) -> dict | None:
     """Return the most recent ledger entry with this signature, or None.
 
     Ordering key = (max ts, seq) so the latest-written entry wins even when
@@ -143,8 +141,8 @@ def record(r: Recommendation, path: str = DEFAULT_LEDGER_PATH) -> dict:
 def transition(
     sig: str,
     new_status: str,
-    owner: Optional[str] = None,
-    due: Optional[str] = None,
+    owner: str | None = None,
+    due: str | None = None,
     path: str = DEFAULT_LEDGER_PATH,
 ) -> dict:
     """Append a status transition for an existing work item.
