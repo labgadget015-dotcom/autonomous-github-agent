@@ -1,0 +1,133 @@
+name: DRC Token Rotation Alert
+
+# Mirrors pat-rotation-alert.yml but for the static x-gadgetlab-token shared
+# secret between the n8n GitHub Event Router and the DRC Agent Loop. The token
+# lives ONLY as embedded literals in two n8n nodes (no GitHub secret, no hard
+# expiry), so the only safe signal is "days since last rotation" against a
+# chosen max-age policy. Rotation is MANUAL and requires Gadget to log into n8n
+# (sessions expire 30-60 min; autosave fails silently with 401) and edit + publish
+# both nodes. See SECRETS_ROTATION.md for the exact steps.
+
+on:
+  schedule:
+    # Run on the 1st of every month at 09:30 UTC (offset from the PAT check)
+    - cron: '30 9 1 * *'
+  workflow_dispatch:
+
+env:
+  LAST_ROTATED: "2026-07-06"   # update after every manual rotation
+  MAX_AGE_DAYS: "180"          # recommend rotating the DRC token every ~6 months
+
+jobs:
+  check-drc-token-age:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Calculate days until DRC token is due for rotation
+        id: age
+        run: |
+          LAST_TS=$(date -d "$LAST_ROTATED" +%s)
+          NOW_TS=$(date +%s)
+          DAYS_SINCE=$(( (NOW_TS - LAST_TS) / 86400 ))
+          DAYS_UNTIL_DUE=$(( MAX_AGE_DAYS - DAYS_SINCE ))
+          echo "days_since=$DAYS_SINCE" >> "$GITHUB_OUTPUT"
+          echo "days_until_due=$DAYS_UNTIL_DUE" >> "$GITHUB_OUTPUT"
+          echo "last_rotated=$LAST_ROTATED" >> "$GITHUB_OUTPUT"
+          echo "DRC token last rotated $LAST_ROTATED — $DAYS_SINCE days ago, $DAYS_UNTIL_DUE days until due (max age $MAX_AGE_DAYS)"
+
+      - name: Determine urgency level
+        id: urgency
+        run: |
+          DAYS=${{ steps.age.outputs.days_until_due }}
+          if [ "$DAYS" -le 7 ]; then
+            echo "level=CRITICAL" >> "$GITHUB_OUTPUT"
+            echo "emoji=🚨" >> "$GITHUB_OUTPUT"
+          elif [ "$DAYS" -le 14 ]; then
+            echo "level=HIGH" >> "$GITHUB_OUTPUT"
+            echo "emoji=⚠️" >> "$GITHUB_OUTPUT"
+          elif [ "$DAYS" -le 30 ]; then
+            echo "level=MEDIUM" >> "$GITHUB_OUTPUT"
+            echo "emoji=🔔" >> "$GITHUB_OUTPUT"
+          elif [ "$DAYS" -le 90 ]; then
+            echo "level=LOW" >> "$GITHUB_OUTPUT"
+            echo "emoji=ℹ️" >> "$GITHUB_OUTPUT"
+          else
+            echo "level=OK" >> "$GITHUB_OUTPUT"
+            echo "emoji=✅" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Post Slack alert (if within 90-day window)
+        if: ${{ steps.age.outputs.days_until_due <= 90 || github.event_name == 'workflow_dispatch' }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          DAYS_SINCE: ${{ steps.age.outputs.days_since }}
+          DAYS_UNTIL_DUE: ${{ steps.age.outputs.days_until_due }}
+          LAST: ${{ steps.age.outputs.last_rotated }}
+          LEVEL: ${{ steps.urgency.outputs.level }}
+          EMOJI: ${{ steps.urgency.outputs.emoji }}
+          REPO: ${{ github.repository }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          if [ -z "$SLACK_WEBHOOK_URL" ]; then
+            echo "SLACK_WEBHOOK_URL not set — skipping Slack notification"
+            exit 0
+          fi
+          curl -s -X POST "$SLACK_WEBHOOK_URL" \
+            -H 'Content-Type: application/json' \
+            -d "{
+              \"text\": \"${EMOJI} *DRC x-gadgetlab-token Rotation Due — ${LEVEL}*\",
+              \"blocks\": [
+                {
+                  \"type\": \"header\",
+                  \"text\": {\"type\": \"plain_text\", \"text\": \"${EMOJI} DRC Token Rotation — ${LEVEL}\"}
+                },
+                {
+                  \"type\": \"section\",
+                  \"fields\": [
+                    {\"type\": \"mrkdwn\", \"text\": \"*Repository:*\\n${REPO}\"},
+                    {\"type\": \"mrkdwn\", \"text\": \"*Last rotated:*\\n${LAST}\"},
+                    {\"type\": \"mrkdwn\", \"text\": \"*Days since:*\\n${DAYS_SINCE}\"},
+                    {\"type\": \"mrkdwn\", \"text\": \"*Days until due:*\\n${DAYS_UNTIL_DUE}\"},
+                    {\"type\": \"mrkdwn\", \"text\": \"*Action Required:*\\nRotate the x-gadgetlab-token in n8n (2 nodes) + publish, or the DRC Agent Loop rejects all real traffic\"}
+                  ]
+                },
+                {
+                  \"type\": \"actions\",
+                  \"elements\": [
+                    {
+                      \"type\": \"button\",
+                      \"text\": {\"type\": \"plain_text\", \"text\": \"View Workflow Run\"},
+                      \"url\": \"${RUN_URL}\"
+                    },
+                    {
+                      \"type\": \"button\",
+                      \"text\": {\"type\": \"plain_text\", \"text\": \"n8n Console\"},
+                      \"url\": \"https://gadgetlab.app.n8n.cloud\"
+                    }
+                  ]
+                }
+              ]
+            }" || echo "Slack notification failed (non-fatal)"
+
+      - name: Write job summary
+        run: |
+          DAYS_SINCE=${{ steps.age.outputs.days_since }}
+          DAYS_UNTIL_DUE=${{ steps.age.outputs.days_until_due }}
+          LAST=${{ steps.age.outputs.last_rotated }}
+          LEVEL=${{ steps.urgency.outputs.level }}
+          EMOJI=${{ steps.urgency.outputs.emoji }}
+          echo "## ${EMOJI} DRC Token Rotation Status: ${LEVEL}" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Field | Value |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|-------|-------|" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Last rotated | \`${LAST}\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Days since | **${DAYS_SINCE}** |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Days until due (max age ${MAX_AGE_DAYS}) | **${DAYS_UNTIL_DUE}** |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Alert level | ${LEVEL} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "**Action:** Log into n8n, update the \`x-gadgetlab-token\` literal in BOTH the Event Router 'Forward to Agent Loop' node and the DRC Agent Loop 'Prepare Input' node to the same new value, publish both, and update \`LAST_ROTATED\` here. See SECRETS_ROTATION.md." >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Fail on critical age
+        if: ${{ steps.age.outputs.days_until_due <= 7 }}
+        run: |
+          echo "::error::DRC token is ${{ steps.age.outputs.days_since }} days old and ${{ steps.age.outputs.days_until_due }} days from due — ROTATE IMMEDIATELY"
+          exit 1

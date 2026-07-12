@@ -154,10 +154,12 @@ jobs:
       - name: Run optimized pytest
         run: |
           pytest \
+            --cov=autonomous_agent \
             --cov=core \
             --cov=agents \
+            --cov=overseer \
             --cov=autopilot \
-            --cov=.github/scripts \
+            --cov=monitoring \
             --cov-report=xml \
             --cov-report=term-missing \
             --cov-report=html \

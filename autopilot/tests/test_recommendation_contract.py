@@ -10,9 +10,9 @@ import tempfile
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from recommendation_contract import Recommendation, validate
-from decisions.ledger import should_post, record, latest_match
+from decisions.ledger import record, should_post
 from message_formatter import format
+from recommendation_contract import Recommendation, validate
 
 
 def _good() -> Recommendation:

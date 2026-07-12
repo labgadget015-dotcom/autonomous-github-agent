@@ -13,8 +13,8 @@ validate() is withheld (P0) or warned (P1) before posting to Slack.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from typing import Literal, Optional
+from dataclasses import dataclass
+from typing import Literal
 
 Severity = Literal["P0", "P1", "P2"]
 Status = Literal["open", "assigned", "inflight", "done", "dropped"]
