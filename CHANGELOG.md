@@ -6,11 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
-## [Unreleased] - 2026-07-12
+## [Unreleased] - 2026-07-17
 
 
 ### ✨ Features
 
+- config-driven contract + concurrent-writer safety (rebased on main) (#202) (01d5764)
 - **docker**: add metrics-exporter sidecar to monitoring profile (79a8f1b)
 - **observability**: Prometheus metrics exporter + coverage regression alert (3eafc3e)
 - **ci**: schedule autopilot daily-summary generation (5f6afdb)
@@ -166,6 +167,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 🔨 Chores
 
+- prune dead ledger functions + apply pre-commit import hygiene (#203) (ff8e4f6)
+- rollback manifest entry [skip ci] (6ae38f1)
+- update CHANGELOG [skip ci] (e172222)
 - green test suite, drop install-spam + Ai docs, add CodeQL workflow (8c0be46)
 - **autopilot**: drop 3 paused repos from daily-summary scan (aa28df5)
 - remove 4 dead top-level agents (triage/code_review/dependency/security_scan) (6c16891)
