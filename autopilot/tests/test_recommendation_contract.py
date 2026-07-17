@@ -228,6 +228,7 @@ def test_transition_rejects_unknown_status():
 def test_concurrent_writers_do_not_lose_entries():
     """Parallel record() calls must all land — file locking prevents races."""
     import threading
+
     from decisions.ledger import record
 
     ledger = tempfile.NamedTemporaryFile(suffix=".jsonl", delete=False)

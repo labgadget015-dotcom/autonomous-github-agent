@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import copy
 import os
-from typing import Any, Optional
+from typing import Any
 
 DEFAULT_CONFIG_PATH = os.environ.get("AUTOPILOT_CONFIG_PATH", "autopilot/config.yaml")
 
@@ -42,7 +42,7 @@ DEFAULTS: dict[str, Any] = {
     },
 }
 
-_cache: Optional[dict[str, Any]] = None
+_cache: dict[str, Any] | None = None
 
 
 def _deep_merge(base: dict[str, Any], over: dict[str, Any]) -> dict[str, Any]:
@@ -54,7 +54,7 @@ def _deep_merge(base: dict[str, Any], over: dict[str, Any]) -> dict[str, Any]:
     return base
 
 
-def load_config(path: Optional[str] = None) -> dict[str, Any]:
+def load_config(path: str | None = None) -> dict[str, Any]:
     """Load and cache the merged config. Falls back to DEFAULTS if PyYAML
     is unavailable or the file is missing.
 
@@ -73,7 +73,7 @@ def load_config(path: Optional[str] = None) -> dict[str, Any]:
         pass
     else:
         if os.path.exists(path):
-            with open(path, "r", encoding="utf-8") as f:
+            with open(path, encoding="utf-8") as f:
                 loaded = yaml.safe_load(f) or {}
             if isinstance(loaded, dict):
                 _deep_merge(cfg, loaded)
@@ -81,7 +81,7 @@ def load_config(path: Optional[str] = None) -> dict[str, Any]:
     return cfg
 
 
-def get_debounce_hours(status: str) -> Optional[int]:
+def get_debounce_hours(status: str) -> int | None:
     """Hours to suppress a re-raise, or None for never-repost."""
     policy = load_config()["recommendation_debounce"]["repost_policy"].get(status, {})
     if policy.get("never_repost"):

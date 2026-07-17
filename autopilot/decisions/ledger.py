@@ -58,13 +58,6 @@ def _load(path: str = DEFAULT_LEDGER_PATH) -> list[dict]:
                 continue
     return out
 
-
-def _next_seq(path: str = DEFAULT_LEDGER_PATH) -> int:
-    """Monotonic append counter — breaks sub-second timestamp ties so the
-    latest-written entry wins in latest_match()."""
-    return len(_load(path))
-
-
 def _lock(fd):
     """Exclusive lock the ledger file handle (POSIX). No-op elsewhere."""
     if _HAS_FCNTL:
@@ -74,24 +67,6 @@ def _lock(fd):
 def _unlock(fd):
     if _HAS_FCNTL:
         fcntl.flock(fd.fileno(), fcntl.LOCK_UN)
-
-
-def _append(entry: dict, path: str = DEFAULT_LEDGER_PATH) -> None:
-    """Append a JSON line under an exclusive file lock.
-
-    Holds the lock across _next_seq + write when called via _append_locked
-    so concurrent writers can't collide on sequence numbers or interleave
-    large entries.
-    """
-    os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
-    with open(path, "a", encoding="utf-8") as f:
-        _lock(f)
-        try:
-            f.write(json.dumps(entry, ensure_ascii=False) + "\n")
-            f.flush()
-            os.fsync(f.fileno())
-        finally:
-            _unlock(f)
 
 
 def _append_with_seq(entry: dict, path: str = DEFAULT_LEDGER_PATH) -> dict:
