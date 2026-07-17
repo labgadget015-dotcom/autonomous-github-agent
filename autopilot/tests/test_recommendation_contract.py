@@ -215,7 +215,7 @@ def test_transition_rejects_unknown_status():
         record(r, ledger.name)
         try:
             transition(r.signature(), "assiged", path=ledger.name)  # typo
-            assert False, "expected ValueError for unknown status"
+            raise AssertionError("expected ValueError for unknown status")
         except ValueError as e:
             assert "assiged" in str(e)
     finally:
