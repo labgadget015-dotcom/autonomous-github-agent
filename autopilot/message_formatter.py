@@ -15,9 +15,11 @@ This replaces the old bot format that buried the subject behind a run_id.
 
 from __future__ import annotations
 
+from config_loader import get_status_tag
 from recommendation_contract import SEVERITY_EMOJI, Recommendation, validate
 
-STATUS_TAG = {
+# Fallback tags if config is unavailable; live values come from config.yaml.
+_STATUS_TAG_FALLBACK = {
     "open": "🟡 Open",
     "assigned": "🔵 Assigned",
     "inflight": "🟠 In-flight",
@@ -39,7 +41,7 @@ def format(r: Recommendation) -> str:
     steps = "\n".join(f"{i}. {s}" for i, s in enumerate(r.steps, 1))
     owner = r.owner
     due = r.due_date or "TBD"
-    status = STATUS_TAG.get(r.status, "🟡 Open")
+    status = get_status_tag(r.status) or _STATUS_TAG_FALLBACK.get(r.status, "🟡 Open")
     ref = r.prior_run_id if r.prior_run_id else "none"
 
     return (

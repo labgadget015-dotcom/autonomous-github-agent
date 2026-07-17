@@ -14,13 +14,14 @@ into a triage queue.
 
 ```
 autopilot/
-├── recommendation_contract.py   # dataclass + validate()
+├── recommendation_contract.py   # dataclass + validate() (config-driven)
 ├── message_formatter.py         # render to the new Slack template
-├── config.yaml                  # recommendation_debounce + status_tags block
+├── config_loader.py             # reads config.yaml, stdlib fallback
+├── config.yaml                   # recommendation_debounce + status_tags block
 ├── decisions/
-│   └── ledger.py                # append-only ledger, should_post() debounce
+│   └── ledger.py                # append-only ledger, should_post() debounce (file-locked)
 └── tests/
-    └── test_recommendation_contract.py
+    └── test_recommendation_contract.py   # 14 tests
 ```
 
 ## The contract
