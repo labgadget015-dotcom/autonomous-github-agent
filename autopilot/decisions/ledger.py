@@ -58,6 +58,7 @@ def _load(path: str = DEFAULT_LEDGER_PATH) -> list[dict]:
                 continue
     return out
 
+
 def _lock(fd):
     """Exclusive lock the ledger file handle (POSIX). No-op elsewhere."""
     if _HAS_FCNTL:
