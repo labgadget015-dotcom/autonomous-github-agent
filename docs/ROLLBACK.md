@@ -1,5 +1,19 @@
 # Rollback Manifest
 
+## ff8e4f6 — 2026-07-17 07:50 UTC
+
+- **SHA**: `ff8e4f67797d3d37736e4ae607400b9d23fa01a2`
+- **Author**: Gadget Lab
+- **Message**: chore: prune dead ledger functions + apply pre-commit import hygiene (#203)
+- **Files changed**: 3 file(s)
+
+**Changed files:**
+- `autopilot/config_loader.py`
+- `autopilot/decisions/ledger.py`
+- `autopilot/tests/test_recommendation_contract.py`
+
+---
+
 ## 1f8b7e9 — 2026-07-12 06:26 UTC
 
 - **SHA**: `1f8b7e90825cdc01f4a676693c2abd5f083be379`
