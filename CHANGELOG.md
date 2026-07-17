@@ -167,6 +167,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 🔨 Chores
 
+- pre-commit assertion fix in contract test (#204) (57bcbd0)
+- update CHANGELOG [skip ci] (f3e19bd)
 - prune dead ledger functions + apply pre-commit import hygiene (#203) (ff8e4f6)
 - rollback manifest entry [skip ci] (6ae38f1)
 - update CHANGELOG [skip ci] (e172222)
