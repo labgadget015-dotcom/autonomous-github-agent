@@ -1,5 +1,18 @@
 # Rollback Manifest
 
+## f02f1d9 — 2026-07-18 06:20 UTC
+
+- **SHA**: `f02f1d9101b4b0d22402ee266192810bca1d9afe`
+- **Author**: Gadget Lab
+- **Message**: feat(vision): stateful-scale governance vision + scale-guardrail watchdog (#207)
+- **Files changed**: 2 file(s)
+
+**Changed files:**
+- `docs/SCALE_GOVERNANCE_VISION.md`
+- `scripts/gadgetlab_maintenance_check.py`
+
+---
+
 ## fde9788 — 2026-07-18 06:11 UTC
 
 - **SHA**: `fde9788e4b6f11a94ae3ba4158838b9b41962575`
