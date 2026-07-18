@@ -1,0 +1,53 @@
+{
+  "risk_scorer": [
+    {
+      "name": "pure_test_docs_change_is_low",
+      "input": {
+        "files_changed": 2,
+        "additions": 10,
+        "deletions": 5,
+        "changed_paths": ["tests/test_x.py", "docs/foo.md"],
+        "test_coverage_delta": 10.0
+      },
+      "expected_score": 0.0,
+      "expected_band": "LOW"
+    },
+    {
+      "name": "security_sensitive_no_tests_is_medium",
+      "input": {
+        "files_changed": 3,
+        "additions": 120,
+        "deletions": 10,
+        "changed_paths": ["core/auth.py", "config/policies.yaml"],
+        "test_coverage_delta": -1.0
+      },
+      "expected_score": 4.0,
+      "expected_band": "MEDIUM"
+    },
+    {
+      "name": "huge_risky_change_is_critical",
+      "input": {
+        "files_changed": 40,
+        "additions": 1500,
+        "deletions": 200,
+        "changed_paths": ["Dockerfile", ".github/workflows/ci.yml", "core/secrets.py"],
+        "test_coverage_delta": -15.0
+      },
+      "expected_score": 10.0,
+      "expected_band": "CRITICAL"
+    }
+  ],
+  "router_classify": [
+    { "name": "format_is_simple", "task_type": "format", "context": {}, "expected": "simple" },
+    { "name": "security_low_is_simple", "task_type": "security", "context": {"severity": "LOW"}, "expected": "simple" },
+    { "name": "security_medium_is_moderate", "task_type": "security", "context": {"severity": "MEDIUM"}, "expected": "moderate" },
+    { "name": "security_high_is_critical", "task_type": "security", "context": {"severity": "HIGH"}, "expected": "critical" },
+    { "name": "complexity_3_is_simple", "task_type": "complexity", "context": {"score": 3}, "expected": "simple" },
+    { "name": "complexity_15_is_moderate", "task_type": "complexity", "context": {"score": 15}, "expected": "moderate" },
+    { "name": "complexity_25_is_complex", "task_type": "complexity", "context": {"score": 25}, "expected": "complex" },
+    { "name": "review_50_is_moderate", "task_type": "review", "context": {"lines_changed": 50}, "expected": "moderate" },
+    { "name": "review_300_is_complex", "task_type": "review", "context": {"lines_changed": 300}, "expected": "complex" },
+    { "name": "architecture_is_complex", "task_type": "architecture", "context": {}, "expected": "complex" },
+    { "name": "unknown_is_moderate", "task_type": "unknown_task", "context": {}, "expected": "moderate" }
+  ]
+}

@@ -42,7 +42,16 @@ class LLMRouter:
     """
 
     def __init__(self):
-        self.local_url = os.getenv("LOCAL_LLM_URL", "http://localhost:1234/v1")
+        # Default to Ollama (http://localhost:11434) — this is what is actually
+        # running on the GadgetLab host (qwen2.5-coder:7b / qwen3.6). The legacy
+        # LM Studio default (http://localhost:1234/v1) is dead here and silently
+        # falls through to paid cloud on every "local/free" task. Matches the
+        # documented default in action.yml / CLAUDE.md.
+        self.local_url = os.getenv("LOCAL_LLM_URL", "http://localhost:11434/v1")
+        # Ollama's OpenAI-compatible endpoint rejects the literal model name
+        # "local"; it needs the real tag. Override via LOCAL_LLM_MODEL if you
+        # swap models.
+        self.local_model = os.getenv("LOCAL_LLM_MODEL", "qwen2.5-coder:7b")
         self.openai_key = os.getenv("OPENAI_API_KEY")
         self.anthropic_key = os.getenv("ANTHROPIC_API_KEY")
 
@@ -108,7 +117,7 @@ class LLMRouter:
             r = requests.post(
                 f"{self.local_url}/chat/completions",
                 json={
-                    "model": "local",
+                    "model": self.local_model,
                     "messages": [{"role": "user", "content": prompt}],
                 },
                 timeout=30,
@@ -116,7 +125,7 @@ class LLMRouter:
             data = r.json()
             return LLMResponse(
                 content=data["choices"][0]["message"]["content"],
-                model="local-llama-70b",
+                model=self.local_model,
                 tokens_used=data.get("usage", {}).get("total_tokens", 0),
                 cost=0.0,
                 latency_ms=(time.time() - start) * 1000,
