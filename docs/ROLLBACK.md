@@ -1,5 +1,21 @@
 # Rollback Manifest
 
+## fde9788 — 2026-07-18 06:11 UTC
+
+- **SHA**: `fde9788e4b6f11a94ae3ba4158838b9b41962575`
+- **Author**: Gadget Lab
+- **Message**: feat(autonomy): human-gated autonomy guardrails + local routing fix (#206)
+- **Files changed**: 5 file(s)
+
+**Changed files:**
+- `.github/scripts/llm_router.py`
+- `docs/STRATEGIC_VISION_HUMAN_GATED_AUTONOMY.md`
+- `docs/human-in-the-loop-protocol.md`
+- `tests/agent_drift_eval.py`
+- `tests/fixtures/agent_drift_golden.json`
+
+---
+
 ## ff8e4f6 — 2026-07-17 07:50 UTC
 
 - **SHA**: `ff8e4f67797d3d37736e4ae607400b9d23fa01a2`
