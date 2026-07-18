@@ -6,11 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
-## [Unreleased] - 2026-07-17
+## [Unreleased] - 2026-07-18
 
 
 ### ✨ Features
 
+- **autonomy**: human-gated autonomy guardrails + local routing fix (#206) (fde9788)
 - config-driven contract + concurrent-writer safety (rebased on main) (#202) (01d5764)
 - **docker**: add metrics-exporter sidecar to monitoring profile (79a8f1b)
 - **observability**: Prometheus metrics exporter + coverage regression alert (3eafc3e)
@@ -167,6 +168,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 🔨 Chores
 
+- update CHANGELOG [skip ci] (0f28299)
+- rollback manifest entry [skip ci] (af59dd5)
 - pre-commit assertion fix in contract test (#204) (57bcbd0)
 - update CHANGELOG [skip ci] (f3e19bd)
 - prune dead ledger functions + apply pre-commit import hygiene (#203) (ff8e4f6)
