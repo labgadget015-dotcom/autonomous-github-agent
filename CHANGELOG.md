@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### ✨ Features
 
+- **watchdog**: monitor autonomy kill-switch (dry_run/require_approval/auto_merge) (#209) (7efb5d2)
 - **vision**: stateful-scale governance vision + scale-guardrail watchdog (#207) (f02f1d9)
 - **autonomy**: human-gated autonomy guardrails + local routing fix (#206) (fde9788)
 - config-driven contract + concurrent-writer safety (rebased on main) (#202) (01d5764)
@@ -170,6 +171,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 🔨 Chores
 
+- rollback manifest entry [skip ci] (82db884)
+- update CHANGELOG [skip ci] (cceee9d)
 - rollback manifest entry [skip ci] (6f1561d)
 - update CHANGELOG [skip ci] (1aa305f)
 - rollback manifest entry [skip ci] (aa045e5)
