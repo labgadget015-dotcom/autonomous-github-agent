@@ -119,11 +119,61 @@ def check_scale_guardrails():
                          f"-> scale guardrail lifted")
 
 
+def check_autonomy_kill_switch():
+    """THE most important guardrail: the agent must NEVER silently go live.
+
+    Safe state = dry_run True AND require_approval True AND auto_merge False.
+    Three silent-bypass paths exist and all are checked:
+      1. Code defaults in core/agent_config.py (dry_run/require_approval/auto_merge)
+      2. Env overrides: AGENT_DRY_RUN=false, AGENT_REQUIRE_APPROVAL=false,
+         AGENT_AUTO_MERGE=true  (any flag: AGENT_<FLAG>=true|false)
+      3. autopilot/staleness_engine.py: ENABLE_LIVE_MODE=true -> dry_run=LIVE
+    """
+    cfg = os.path.join(REPO, "core", "agent_config.py")
+    live = []  # reasons the agent could be live
+    if os.path.exists(cfg):
+        t = open(cfg).read()
+        m = re.search(r"dry_run:\s*bool\s*=\s*(\w+)", t)
+        if m and m.group(1) != "True":
+            live.append(f"dry_run code default is {m.group(1)} (must be True)")
+        m = re.search(r"require_approval:\s*bool\s*=\s*(\w+)", t)
+        if m and m.group(1) != "True":
+            live.append(f"require_approval code default is {m.group(1)} (must be True)")
+        m = re.search(r"auto_merge:\s*bool\s*=\s*(\w+)", t)
+        if m and m.group(1) != "False":
+            live.append(f"auto_merge code default is {m.group(1)} (must be False)")
+
+    # Env overrides (the silent path most likely to bite)
+    for var in ("AGENT_DRY_RUN", "AGENT_REQUIRE_APPROVAL"):
+        if os.environ.get(var, "").lower() == "false":
+            live.append(f"env {var}=false -> kills the approval gate")
+    if os.environ.get("AGENT_AUTO_MERGE", "").lower() == "true":
+        live.append("env AGENT_AUTO_MERGE=true -> auto-merge enabled")
+    if os.environ.get("ENABLE_LIVE_MODE", "").lower() == "true":
+        live.append("env ENABLE_LIVE_MODE=true -> staleness engine runs LIVE (dry_run off)")
+
+    # Config yaml
+    yml = os.path.join(REPO, "config", "agent_config.yaml")
+    if os.path.exists(yml):
+        t = open(yml).read()
+        m = re.search(r"require_approval:\s*(\w+)", t)
+        if m and m.group(1).lower() != "true":
+            live.append(f"config/agent_config.yaml require_approval={m.group(1)} (must be true)")
+
+    if live:
+        flags.append("AUTONOMY KILL-SWITCH DISABLED -> agent may perform REAL GitHub "
+                     f"writes without approval: {'; '.join(live)}")
+    else:
+        lines.append("Autonomy kill-switch intact (dry_run=True, require_approval=True, "
+                     "auto_merge=False; no live env overrides)")
+
+
 check_ollama()
 check_router_default()
 check_drift_harness()
 check_clocks()
 check_scale_guardrails()
+check_autonomy_kill_switch()
 
 print(f"GadgetLab Agent Maintenance - {today.isoformat()}")
 if flags:
