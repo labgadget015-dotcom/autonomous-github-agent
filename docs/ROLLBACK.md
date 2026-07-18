@@ -1,5 +1,17 @@
 # Rollback Manifest
 
+## 7efb5d2 — 2026-07-18 06:37 UTC
+
+- **SHA**: `7efb5d2a35b37b6f171e3b1c3b88bef66a94d74b`
+- **Author**: Gadget Lab
+- **Message**: feat(watchdog): monitor autonomy kill-switch (dry_run/require_approval/auto_merge) (#209)
+- **Files changed**: 1 file(s)
+
+**Changed files:**
+- `scripts/gadgetlab_maintenance_check.py`
+
+---
+
 ## 882a6a7 — 2026-07-18 06:31 UTC
 
 - **SHA**: `882a6a755dcee0c9175fd8e4695d04918eb1c201`
