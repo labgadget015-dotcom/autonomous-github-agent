@@ -137,6 +137,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 📚 Documentation
 
+- **vision**: mark 'compress timelines' as measured via DORA lead-time metric (#208) (882a6a7)
 - correct package-duplication analysis; record decision to keep dual trees (no merge) (401c2d6)
 - **inventory**: record confirmed tim-postgres host + Neon migration + slack manifest (3327d94)
 - **claude**: document DRC webhook x-gadgetlab-token auth + rotation (61eb200)
@@ -169,6 +170,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 🔨 Chores
 
+- rollback manifest entry [skip ci] (6f1561d)
+- update CHANGELOG [skip ci] (1aa305f)
 - rollback manifest entry [skip ci] (aa045e5)
 - update CHANGELOG [skip ci] (e0dd3bd)
 - update CHANGELOG [skip ci] (0f28299)
