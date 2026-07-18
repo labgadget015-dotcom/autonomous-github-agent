@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### ✨ Features
 
+- **vision**: stateful-scale governance vision + scale-guardrail watchdog (#207) (f02f1d9)
 - **autonomy**: human-gated autonomy guardrails + local routing fix (#206) (fde9788)
 - config-driven contract + concurrent-writer safety (rebased on main) (#202) (01d5764)
 - **docker**: add metrics-exporter sidecar to monitoring profile (79a8f1b)
@@ -168,6 +169,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 🔨 Chores
 
+- rollback manifest entry [skip ci] (aa045e5)
+- update CHANGELOG [skip ci] (e0dd3bd)
 - update CHANGELOG [skip ci] (0f28299)
 - rollback manifest entry [skip ci] (af59dd5)
 - pre-commit assertion fix in contract test (#204) (57bcbd0)
