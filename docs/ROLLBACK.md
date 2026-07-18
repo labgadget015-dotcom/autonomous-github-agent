@@ -1,5 +1,17 @@
 # Rollback Manifest
 
+## 882a6a7 — 2026-07-18 06:31 UTC
+
+- **SHA**: `882a6a755dcee0c9175fd8e4695d04918eb1c201`
+- **Author**: Gadget Lab
+- **Message**: docs(vision): mark 'compress timelines' as measured via DORA lead-time metric (#208)
+- **Files changed**: 1 file(s)
+
+**Changed files:**
+- `docs/SCALE_GOVERNANCE_VISION.md`
+
+---
+
 ## f02f1d9 — 2026-07-18 06:20 UTC
 
 - **SHA**: `f02f1d9101b4b0d22402ee266192810bca1d9afe`
