@@ -112,9 +112,10 @@ class TestCallLocal:
     def test_successful_request_returns_response(self):
         router = LLMRouter()
         mock_response = MagicMock()
+        # Ollama native /api/chat shape
         mock_response.json.return_value = {
-            "choices": [{"message": {"content": "Hello!"}}],
-            "usage": {"total_tokens": 50},
+            "message": {"content": "Hello!"},
+            "eval_count": 50,
         }
         with patch("requests.post", return_value=mock_response):
             resp = router.call_local("test prompt")
@@ -122,6 +123,19 @@ class TestCallLocal:
         assert resp.content == "Hello!"
         assert resp.tokens_used == 50
         assert resp.cost == 0.0
+
+    def test_uses_native_ollama_endpoint_not_v1_shim(self):
+        # The /v1/chat/completions shim is ~39s+ slow on this host and trips the
+        # 30s timeout, silently falling through to paid cloud. Local calls must
+        # hit Ollama's native /api/chat endpoint instead.
+        router = LLMRouter()
+        assert router.local_native_url.endswith("/api/chat")
+        assert "/v1/chat/completions" not in router.local_native_url
+
+    def test_native_url_derivation_strips_v1_suffix(self, monkeypatch):
+        monkeypatch.setenv("LOCAL_LLM_URL", "http://myserver:8080/v1")
+        router = LLMRouter()
+        assert router.local_native_url == "http://myserver:8080/api/chat"
 
 
 class TestCallCloud:

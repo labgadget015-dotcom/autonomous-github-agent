@@ -52,6 +52,14 @@ class LLMRouter:
         # "local"; it needs the real tag. Override via LOCAL_LLM_MODEL if you
         # swap models.
         self.local_model = os.getenv("LOCAL_LLM_MODEL", "qwen2.5-coder:7b")
+        # Ollama's OpenAI-compatible /v1/chat/completions shim is pathologically
+        # slow on this host (39s+ under requests vs ~2s for the native /api/chat
+        # endpoint) and trips the 30s timeout, silently falling through to paid
+        # cloud on every "local/free" task. Route local calls at Ollama's native
+        # API instead. Derived from local_url so LOCAL_LLM_URL stays the source
+        # of truth (e.g. "...:11434/v1" -> "...:11434/api/chat").
+        ollama_base = self.local_url.removesuffix("/v1").removesuffix("/")
+        self.local_native_url = f"{ollama_base}/api/chat"
         self.openai_key = os.getenv("OPENAI_API_KEY")
         self.anthropic_key = os.getenv("ANTHROPIC_API_KEY")
 
@@ -115,18 +123,20 @@ class LLMRouter:
         start = time.time()
         try:
             r = requests.post(
-                f"{self.local_url}/chat/completions",
+                self.local_native_url,
                 json={
                     "model": self.local_model,
                     "messages": [{"role": "user", "content": prompt}],
+                    "stream": False,
                 },
                 timeout=30,
             )
+            r.raise_for_status()
             data = r.json()
             return LLMResponse(
-                content=data["choices"][0]["message"]["content"],
+                content=data["message"]["content"],
                 model=self.local_model,
-                tokens_used=data.get("usage", {}).get("total_tokens", 0),
+                tokens_used=data.get("eval_count", 0),
                 cost=0.0,
                 latency_ms=(time.time() - start) * 1000,
                 success=True,
