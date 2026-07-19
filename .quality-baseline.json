@@ -1,0 +1,14 @@
+{
+  "generated_at": "2026-07-04T06:36:49+00:00",
+  "ruff_version": "0.15.20",
+  "total_violations": 24,
+  "per_file": {
+    ".github/scripts/generate_rollback_manifest.py": 1,
+    "autopilot/staleness_engine.py": 5,
+    "tests/test_autonomous_agents.py": 6,
+    "tests/unit/test_dependency_agent.py": 1,
+    "tests/unit/test_security_scan_agent.py": 2,
+    "tests/unit/test_staleness_engine.py": 3,
+    "tests/unit/test_triage_agent.py": 6
+  }
+}
