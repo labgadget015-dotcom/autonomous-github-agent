@@ -6,11 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
-## [Unreleased] - 2026-07-18
+## [Unreleased] - 2026-07-19
 
 
 ### ✨ Features
 
+- **deps**: PyPI-backed dependency audit + draft-PR autopilot (#211) (31f8627)
 - **watchdog**: monitor autonomy kill-switch (dry_run/require_approval/auto_merge) (#209) (7efb5d2)
 - **vision**: stateful-scale governance vision + scale-guardrail watchdog (#207) (f02f1d9)
 - **autonomy**: human-gated autonomy guardrails + local routing fix (#206) (fde9788)
@@ -41,6 +42,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 🐛 Bug Fixes
 
+- **ci**: scope pre-commit auto-fix to PR-diff files only (#213) (6905e8f)
+- **router**: use Ollama native /api/chat so local routing stops falling through to paid cloud (#214) (cb19547)
 - **ci**: correct LLM router complexity bands; add secrets rotation runbook + DRC token alert (686ab03)
 - debounce assigned/inflight items + minor review fixes (#188) (01bd26a)
 - **automation**: dedupe automated issue creation to cut bot noise (96829f0)
@@ -171,6 +174,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 🔨 Chores
 
+- rollback manifest entry [skip ci] (9dd902e)
+- update CHANGELOG [skip ci] (403cfe5)
 - rollback manifest entry [skip ci] (82db884)
 - update CHANGELOG [skip ci] (cceee9d)
 - rollback manifest entry [skip ci] (6f1561d)
