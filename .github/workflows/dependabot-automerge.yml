@@ -23,7 +23,11 @@ name: Dependabot Auto-Merge
 
 on:
   pull_request_target:
-    types: [opened, synchronize, reopened, ready_for_review]
+    # SECURITY: restrict to opened/reopened only. `synchronize` would re-run
+    # this privileged (GITHUB_TOKEN contents:write) workflow on every push to a
+    # PR, letting a PR edit re-trigger automerge against its own code. opened/
+    # reopened is sufficient — CI must pass before a Tier-1 merge anyway.
+    types: [opened, reopened]
 
   workflow_dispatch:
     inputs:
@@ -46,8 +50,9 @@ permissions:
 env:
   PYTHON_VERSION: "3.11"
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
-  # Default dry_run for pull_request_target events
-  DEFAULT_DRY_RUN: "false"
+  # Default dry_run for pull_request_target events — TRUE until the workflow is
+  # proven safe in prod. Flip to "false" only after a monitored dry-run period.
+  DEFAULT_DRY_RUN: "true"
 
 jobs:
   # -----------------------------------------------------------------------
