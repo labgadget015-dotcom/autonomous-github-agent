@@ -13,6 +13,11 @@ Provide a brief description of the changes in this PR.
 - [ ] CI/CD changes
 - [ ] Security fix
 
+## Dependencies
+<!-- List any PRs this PR depends on using the syntax below.
+     The dependency graph resolver reads this field automatically. -->
+Depends on: <!-- e.g. Depends on #123, Depends on owner/repo#456 -->
+
 ## Related Issues
 Closes #(issue number)
 Relates to #(issue number)
