@@ -41,7 +41,9 @@ def check_ollama():
                 f"-> local routing will fall back to cloud"
             )
     except Exception as e:  # noqa: BLE001
-        flags.append(f"Ollama UNREACHABLE on :11434 -> local routing falls back to cloud: {e}")
+        flags.append(
+            f"Ollama UNREACHABLE on :11434 -> local routing falls back to cloud: {e}"
+        )
 
 
 def check_router_default():
@@ -55,7 +57,9 @@ def check_router_default():
     m = re.search(r'os\.getenv\([^,]*,\s*"([^"]+)"', txt)
     default = m.group(1) if m else ""
     if "1234" in default:
-        flags.append("llm_router.py defaults to dead LM Studio :1234 -> local routing broken")
+        flags.append(
+            "llm_router.py defaults to dead LM Studio :1234 -> local routing broken"
+        )
     elif "11434" in default:
         lines.append("llm_router.py defaults to Ollama :11434")
     else:
@@ -65,15 +69,28 @@ def check_router_default():
 def check_drift_harness():
     try:
         r = subprocess.run(
-            [sys.executable, "-m", "pytest", "tests/agent_drift_eval.py",
-             "-q", "--no-cov", "-p", "no:cacheprovider"],
-            cwd=REPO, capture_output=True, text=True, timeout=120,
+            [
+                sys.executable,
+                "-m",
+                "pytest",
+                "tests/agent_drift_eval.py",
+                "-q",
+                "--no-cov",
+                "-p",
+                "no:cacheprovider",
+            ],
+            cwd=REPO,
+            capture_output=True,
+            text=True,
+            timeout=120,
         )
         if r.returncode == 0:
             lines.append("Agent drift eval harness: PASS (0 guardrail drift)")
         else:
-            flags.append("Agent drift eval harness FAILED -> guardrail behavior changed! "
-                         "Run: pytest tests/agent_drift_eval.py")
+            flags.append(
+                "Agent drift eval harness FAILED -> guardrail behavior changed! "
+                "Run: pytest tests/agent_drift_eval.py"
+            )
     except Exception as e:  # noqa: BLE001
         flags.append(f"Could not run drift harness: {e}")
 
@@ -83,14 +100,18 @@ def check_clocks():
     if pat_days <= 30:
         flags.append(f"PAT expires in {pat_days} days (by {PAT_EXPIRY}) -> ROTATE NOW")
     elif pat_days <= 90:
-        flags.append(f"PAT expires in {pat_days} days ({PAT_EXPIRY}) -> schedule rotation")
+        flags.append(
+            f"PAT expires in {pat_days} days ({PAT_EXPIRY}) -> schedule rotation"
+        )
     else:
         lines.append(f"PAT valid {pat_days} days ({PAT_EXPIRY})")
 
     drc_days = (today - DRC_LAST).days
     if drc_days >= 90:
-        flags.append(f"DRC x-gadgetlab-token age {drc_days} days (rotated {DRC_LAST}) "
-                     f"-> consider rotation (manual, n8n)")
+        flags.append(
+            f"DRC x-gadgetlab-token age {drc_days} days (rotated {DRC_LAST}) "
+            f"-> consider rotation (manual, n8n)"
+        )
     else:
         lines.append(f"DRC token age {drc_days} days (rotated {DRC_LAST})")
 
@@ -105,8 +126,10 @@ def check_scale_guardrails():
         if cap is not None and cap <= COST_CAP_MAX:
             lines.append(f"LLM cost cap intact (${cap:g}/run)")
         else:
-            flags.append(f"LLM cost cap DRIFTED to ${cap}/run (> {COST_CAP_MAX:g}) "
-                         f"-> scale guardrail lifted, budget risk")
+            flags.append(
+                f"LLM cost cap DRIFTED to ${cap}/run (> {COST_CAP_MAX:g}) "
+                f"-> scale guardrail lifted, budget risk"
+            )
     pol = os.path.join(REPO, "config", "policies.yaml")
     if os.path.exists(pol):
         t = open(pol).read()
@@ -115,8 +138,10 @@ def check_scale_guardrails():
         if lim is not None and lim <= OP_LIMIT_MAX:
             lines.append(f"Rate limit intact ({lim} ops/hr)")
         else:
-            flags.append(f"Rate limit DRIFTED to {lim} ops/hr (> {OP_LIMIT_MAX}) "
-                         f"-> scale guardrail lifted")
+            flags.append(
+                f"Rate limit DRIFTED to {lim} ops/hr (> {OP_LIMIT_MAX}) "
+                f"-> scale guardrail lifted"
+            )
 
 
 def check_autonomy_kill_switch():
@@ -150,7 +175,9 @@ def check_autonomy_kill_switch():
     if os.environ.get("AGENT_AUTO_MERGE", "").lower() == "true":
         live.append("env AGENT_AUTO_MERGE=true -> auto-merge enabled")
     if os.environ.get("ENABLE_LIVE_MODE", "").lower() == "true":
-        live.append("env ENABLE_LIVE_MODE=true -> staleness engine runs LIVE (dry_run off)")
+        live.append(
+            "env ENABLE_LIVE_MODE=true -> staleness engine runs LIVE (dry_run off)"
+        )
 
     # Config yaml
     yml = os.path.join(REPO, "config", "agent_config.yaml")
@@ -158,14 +185,20 @@ def check_autonomy_kill_switch():
         t = open(yml).read()
         m = re.search(r"require_approval:\s*(\w+)", t)
         if m and m.group(1).lower() != "true":
-            live.append(f"config/agent_config.yaml require_approval={m.group(1)} (must be true)")
+            live.append(
+                f"config/agent_config.yaml require_approval={m.group(1)} (must be true)"
+            )
 
     if live:
-        flags.append("AUTONOMY KILL-SWITCH DISABLED -> agent may perform REAL GitHub "
-                     f"writes without approval: {'; '.join(live)}")
+        flags.append(
+            "AUTONOMY KILL-SWITCH DISABLED -> agent may perform REAL GitHub "
+            f"writes without approval: {'; '.join(live)}"
+        )
     else:
-        lines.append("Autonomy kill-switch intact (dry_run=True, require_approval=True, "
-                     "auto_merge=False; no live env overrides)")
+        lines.append(
+            "Autonomy kill-switch intact (dry_run=True, require_approval=True, "
+            "auto_merge=False; no live env overrides)"
+        )
 
 
 check_ollama()
