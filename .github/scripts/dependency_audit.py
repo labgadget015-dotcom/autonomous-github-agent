@@ -31,9 +31,7 @@ from pathlib import Path
 PYPI_RELEASE_URL = "https://pypi.org/pypi/{name}/json"
 
 # Match a requirement line: name [extras] [op version...]; ignore -r/-e/flags.
-_REQ_LINE = re.compile(
-    r"^\s*([A-Za-z0-9_.\-]+)\s*(?:\[[^\]]*\])?\s*([<>=!~]=?.*)?\s*$"
-)
+_REQ_LINE = re.compile(r"^\s*([A-Za-z0-9_.\-]+)\s*(?:\[[^\]]*\])?\s*([<>=!~]=?.*)?\s*$")
 
 
 @dataclass
@@ -103,7 +101,9 @@ def compare_versions(current: str | None, latest: str) -> str:
     return "minor"
 
 
-def fetch_latest(name: str, timeout: int = 15) -> tuple[str | None, str | None, str | None]:
+def fetch_latest(
+    name: str, timeout: int = 15
+) -> tuple[str | None, str | None, str | None]:
     """Return (latest_version, upload_time_iso, error) for a package name."""
     url = PYPI_RELEASE_URL.format(name=name)
     try:

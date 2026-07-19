@@ -13,6 +13,7 @@ Run:
     cd /home/ai/autonomous-github-agent
     python3 -m pytest tests/agent_drift_eval.py -q --no-cov
 """
+
 from __future__ import annotations
 
 import json
@@ -39,21 +40,21 @@ def _load() -> dict:
 def test_risk_scorer_golden():
     for case in _load()["risk_scorer"]:
         r = score_pull_request(**case["input"])
-        assert r.total_score == pytest.approx(case["expected_score"], abs=0.001), (
-            f"score drift: {case['name']} -> {r.total_score} != {case['expected_score']}"
-        )
-        assert r.band.value == case["expected_band"], (
-            f"band drift: {case['name']} -> {r.band.value} != {case['expected_band']}"
-        )
+        assert r.total_score == pytest.approx(
+            case["expected_score"], abs=0.001
+        ), f"score drift: {case['name']} -> {r.total_score} != {case['expected_score']}"
+        assert (
+            r.band.value == case["expected_band"]
+        ), f"band drift: {case['name']} -> {r.band.value} != {case['expected_band']}"
 
 
 def test_router_classify_golden():
     router = LLMRouter()
     for case in _load()["router_classify"]:
         got = router.classify(case["task_type"], case.get("context", {}))
-        assert got.value == case["expected"], (
-            f"classify drift: {case['name']} -> {got.value} != {case['expected']}"
-        )
+        assert (
+            got.value == case["expected"]
+        ), f"classify drift: {case['name']} -> {got.value} != {case['expected']}"
 
 
 if __name__ == "__main__":
