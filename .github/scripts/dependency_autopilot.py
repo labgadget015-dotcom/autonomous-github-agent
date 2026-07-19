@@ -51,7 +51,9 @@ def bump_requirement(req_path: Path, name: str, new_version: str) -> bool:
     return n > 0
 
 
-def apply_updates(repo_root: Path, results: list[da.AuditResult], use_claude: bool) -> str | None:
+def apply_updates(
+    repo_root: Path, results: list[da.AuditResult], use_claude: bool
+) -> str | None:
     req_path = repo_root / "requirements.txt"
     today = datetime.now(timezone.utc).strftime("%Y%m%d")
     branch = f"deps/patch-{today}"
@@ -105,8 +107,12 @@ def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(description="Scheduled dependency autopilot.")
     p.add_argument("--repo", default=".")
     p.add_argument("--requirements", default=None)
-    p.add_argument("--apply", action="store_true", help="Opt-in: branch + draft PR (patch only)")
-    p.add_argument("--use-claude", action="store_true", help="Delegate minor/major to Claude Code")
+    p.add_argument(
+        "--apply", action="store_true", help="Opt-in: branch + draft PR (patch only)"
+    )
+    p.add_argument(
+        "--use-claude", action="store_true", help="Delegate minor/major to Claude Code"
+    )
     p.add_argument("--report", default=None)
     args = p.parse_args(argv)
 
