@@ -1,5 +1,17 @@
 # Rollback Manifest
 
+## 6905e8f — 2026-07-19 22:16 UTC
+
+- **SHA**: `6905e8f5779154e291b1aae78a057692aeb18123`
+- **Author**: Gadget Lab
+- **Message**: fix(ci): scope pre-commit auto-fix to PR-diff files only (#213)
+- **Files changed**: 1 file(s)
+
+**Changed files:**
+- `.github/workflows/pre-commit-ci.yml`
+
+---
+
 ## 7efb5d2 — 2026-07-18 06:37 UTC
 
 - **SHA**: `7efb5d2a35b37b6f171e3b1c3b88bef66a94d74b`
