@@ -1,0 +1,40 @@
+# Dependabot auto-merge exception list
+#
+# Packages listed here will NOT be auto-merged even for patch/minor bumps.
+# They require human review because minor/patch releases in these packages
+# have historically introduced breaking changes or security-sensitive behaviour.
+#
+# To add a package: append it under the appropriate ecosystem section.
+# To remove a package: delete its entry and open a PR for review.
+
+pip:
+  # Payment / billing — any change here touches money
+  - stripe
+  # Cryptography — security-critical; even patch bumps need review
+  - cryptography
+  - pyopenssl
+  - paramiko
+  # Database drivers — schema/protocol changes can be silent
+  - asyncpg
+  - psycopg2
+  - psycopg2-binary
+  - sqlalchemy
+  - alembic
+  # ML/scientific — ABI incompatibilities are common across minor bumps
+  - scipy
+  - numpy
+  - torch
+  - tensorflow
+  # Web frameworks — middleware behaviour changes can be subtle
+  - django
+  - flask
+  - fastapi
+  # AWS SDK — service API surface is enormous
+  - boto3
+  - botocore
+
+actions:
+  # Actions that have write access to repo contents
+  - actions/checkout
+  - actions/upload-artifact
+  - actions/download-artifact

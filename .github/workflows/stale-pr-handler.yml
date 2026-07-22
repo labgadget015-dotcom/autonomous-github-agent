@@ -1,0 +1,70 @@
+name: Stale PR Handler
+
+# Escalates and closes stale pull requests across the repo.
+# Uses actions/stale to post a warning after 30 days of inactivity
+# and closes the PR after an additional 7 days with no response.
+#
+# Runs daily at 07:00 UTC and can be triggered manually.
+
+on:
+  schedule:
+    - cron: '0 7 * * *'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry-run — log stale PRs without posting comments or closing"
+        required: false
+        default: "true"
+        type: choice
+        options: ["true", "false"]
+
+permissions:
+  pull-requests: write
+  issues: write
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
+jobs:
+  stale:
+    name: "Mark and close stale PRs"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Run actions/stale
+        uses: actions/stale@v9
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+          # --- Pull request settings ---
+          days-before-pr-stale: 30
+          days-before-pr-close: 7
+          stale-pr-label: "stale"
+          close-pr-label: "auto-closed-stale"
+          stale-pr-message: |
+            👋 **Staleness Sentinel** — This pull request has had no activity for **30 days**.
+
+            If this PR is still relevant, please:
+            - Leave a status update comment
+            - Rebase onto the latest `main`
+            - Request a fresh review
+
+            If no activity is recorded in the next **7 days**, this PR will be closed automatically.
+            You can always reopen it if the work becomes relevant again.
+          close-pr-message: |
+            🔒 **Staleness Sentinel** — This pull request has been automatically closed after
+            37 days of inactivity (30-day stale warning + 7-day close window).
+
+            To reopen, simply comment or push a new commit.
+
+          # --- Issue settings (disabled — PRs only) ---
+          days-before-issue-stale: -1
+          days-before-issue-close: -1
+
+          # --- Exemptions ---
+          exempt-pr-labels: "blocked,pinned,work-in-progress,do-not-close"
+          exempt-draft-pr: true
+
+          # --- Safety ---
+          operations-per-run: 30
+          debug-only: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run == 'true' }}

@@ -230,7 +230,7 @@ This agent is part of a broader stack we run in production — including autonom
 - 📧 **Get in touch:** [labgadget015@gmail.com](mailto:labgadget015@gmail.com)
 - - 💼 **What we build:** Custom AI agents, workflow automation, GitHub CI/CD intelligence, and ops dashboards
   - - 🎯 **Who we work with:** UK SMBs and technical teams who want real automation, not just demos
-   
+
     - > *"We don't just design systems — we run them. Everything in this repo is live in our own production stack."*
       >
       > ---

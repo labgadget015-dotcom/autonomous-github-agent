@@ -7,7 +7,7 @@ Reads git metadata from environment variables set by the workflow:
 """
 
 import os
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 
 
 def main():
@@ -17,7 +17,7 @@ def main():
     author = os.environ.get("AUTHOR", "unknown")
     files_changed = os.environ.get("FILES_CHANGED", "").split()
 
-    timestamp = datetime.now(UTC).strftime("%Y-%m-%d %H:%M UTC")
+    timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M timezone.utc")
 
     path = "docs/ROLLBACK.md"
     os.makedirs("docs", exist_ok=True)

@@ -117,7 +117,7 @@ def update_baseline(repo_root: Path, baseline_path: Path) -> None:
 
     current = run_ruff(repo_root)
     data = {
-        "generated_at": datetime.datetime.now(datetime.UTC).isoformat(
+        "generated_at": datetime.datetime.now(datetime.timezone.utc).isoformat(
             timespec="seconds"
         ),
         "ruff_version": ruff_version,

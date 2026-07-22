@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import UTC, datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, patch
 
@@ -39,7 +39,7 @@ def _make_pr(number=1, title="Test PR", days_old=10, html_url="http://example.co
     pr.number = number
     pr.title = title
     pr.html_url = html_url
-    pr.created_at = datetime.now(UTC) - timedelta(days=days_old)
+    pr.created_at = datetime.now(timezone.utc) - timedelta(days=days_old)
     return pr
 
 

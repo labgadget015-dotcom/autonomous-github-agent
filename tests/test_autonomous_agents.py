@@ -1,6 +1,6 @@
 """Tests for autonomous_agent package — agents and CLI."""
 
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from unittest.mock import Mock, patch
 
 import pytest
@@ -71,7 +71,7 @@ class TestBranchManagerAgent:
 
         branch = Mock()
         branch.name = "old-feature"
-        old_date = datetime(2025, 1, 1, tzinfo=UTC)
+        old_date = datetime(2025, 1, 1, tzinfo=timezone.utc)
         branch.commit.commit.author.date = old_date
         repo.get_branches.return_value = [branch]
         self.github.get_repository.return_value = repo
@@ -90,7 +90,7 @@ class TestBranchManagerAgent:
 
         branch = Mock()
         branch.name = "old-feature"
-        old_date = datetime(2025, 1, 1, tzinfo=UTC)
+        old_date = datetime(2025, 1, 1, tzinfo=timezone.utc)
         branch.commit.commit.author.date = old_date
         branch.commit.sha = "abc123"
 
