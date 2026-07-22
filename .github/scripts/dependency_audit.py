@@ -21,11 +21,10 @@ from __future__ import annotations
 import argparse
 import json
 import re
-import sys
 import urllib.error
 import urllib.request
 from dataclasses import asdict, dataclass
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 PYPI_RELEASE_URL = "https://pypi.org/pypi/{name}/json"
@@ -172,7 +171,7 @@ def build_report(results: list[AuditResult], as_json: bool = False) -> str:
     lines = [
         "# Dependency Audit Report",
         "",
-        f"Generated: {datetime.now(timezone.utc).isoformat()}",
+        f"Generated: {datetime.now(UTC).isoformat()}",
     ]
     counts = {k: len(v) for k, v in by_cat.items()}
     lines.append(

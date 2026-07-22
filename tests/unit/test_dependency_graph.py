@@ -7,7 +7,6 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
@@ -275,7 +274,6 @@ class TestBuildDag:
         assert attrs["url"] == "http://x/7"
 
     def test_llm_called_when_no_regex_match(self):
-        from autopilot.dependency_graph import extract_deps_llm
 
         nodes = self._nodes([(1, "o/r", "No explicit dep"), (2, "o/r", "")])
         llm = MagicMock()
@@ -392,7 +390,6 @@ class TestAssignTiers:
 
 class TestApplyLabelsDryRun:
     def test_dry_run_no_api_calls(self):
-        from autopilot.dependency_graph import TIER_LABELS
 
         engine = _make_engine(dry_run=True)
         nodes = [_make_pr_node(pr_id=1, repo="o/r")]
@@ -435,8 +432,9 @@ class TestApplyLabelsLive:
         return _make_engine(dry_run=False)
 
     def test_label_applied_to_pr(self):
-        from autopilot.dependency_graph import TIER_LABELS
         from github import GithubException
+
+        from autopilot.dependency_graph import TIER_LABELS
 
         engine = self._make_live_engine()
         mock_repo = MagicMock()
@@ -524,7 +522,6 @@ class TestRun:
         assert "llm_calls_used" in summary
 
     def test_run_counts_match(self):
-        from autopilot.dependency_graph import ACTIVE_REPOS
 
         engine = _make_engine(dry_run=True)
         prs = [_make_mock_pr(i) for i in range(1, 4)]
