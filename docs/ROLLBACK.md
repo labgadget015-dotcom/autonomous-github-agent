@@ -1,5 +1,17 @@
 # Rollback Manifest
 
+## 0cc1856 — 2026-07-22 06:39 UTC
+
+- **SHA**: `0cc18568a39373a824b46a00b774c7515521ce1a`
+- **Author**: Gadget Lab
+- **Message**: fix(ci): correct malformed YAML in quality-ratchet.yml (#220)
+- **Files changed**: 1 file(s)
+
+**Changed files:**
+- `.github/workflows/quality-ratchet.yml`
+
+---
+
 ## 6905e8f — 2026-07-19 22:16 UTC
 
 - **SHA**: `6905e8f5779154e291b1aae78a057692aeb18123`
