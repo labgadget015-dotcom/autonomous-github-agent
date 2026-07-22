@@ -20,7 +20,7 @@ from __future__ import annotations
 import json
 import os
 import time
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 
 from config_loader import get_debounce_hours, get_ledger_path
 from recommendation_contract import VALID_STATUSES, Recommendation
@@ -34,8 +34,8 @@ except ImportError:
 
 
 def _today_iso() -> str:
-    """Current UTC date as YYYY-MM-DD (for the first_raised ledger field)."""
-    return datetime.now(UTC).strftime("%Y-%m-%d")
+    """Current timezone.utc date as YYYY-MM-DD (for the first_raised ledger field)."""
+    return datetime.now(timezone.utc).strftime("%Y-%m-%d")
 
 
 DEFAULT_LEDGER_PATH = os.environ.get("DECISIONS_LEDGER_PATH", get_ledger_path())

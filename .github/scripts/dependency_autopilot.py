@@ -25,7 +25,7 @@ import argparse
 import re
 import subprocess
 import sys
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
@@ -55,7 +55,7 @@ def apply_updates(
     repo_root: Path, results: list[da.AuditResult], use_claude: bool
 ) -> str | None:
     req_path = repo_root / "requirements.txt"
-    today = datetime.now(UTC).strftime("%Y%m%d")
+    today = datetime.now(timezone.utc).strftime("%Y%m%d")
     branch = f"deps/patch-{today}"
     safe = [r for r in results if r.category in SAFE_CATEGORIES and r.latest]
     if not safe:
