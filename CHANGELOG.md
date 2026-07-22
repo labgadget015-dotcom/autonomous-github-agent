@@ -6,11 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
-## [Unreleased] - 2026-07-19
+## [Unreleased] - 2026-07-22
 
 
 ### ✨ Features
 
+- **autopilot**: PR Dependency Graph Resolver with tier labelling (#185) (d520daa)
 - **deps**: PyPI-backed dependency audit + draft-PR autopilot (#211) (31f8627)
 - **watchdog**: monitor autonomy kill-switch (dry_run/require_approval/auto_merge) (#209) (7efb5d2)
 - **vision**: stateful-scale governance vision + scale-guardrail watchdog (#207) (f02f1d9)
@@ -42,6 +43,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 🐛 Bug Fixes
 
+- **ci**: correct malformed YAML in quality-ratchet.yml (#220) (0cc1856)
+- **184 rebase**: quality ratchet — resolve orphaned-test conflicts vs main (#215) (94636a7)
 - **ci**: scope pre-commit auto-fix to PR-diff files only (#213) (6905e8f)
 - **router**: use Ollama native /api/chat so local routing stops falling through to paid cloud (#214) (cb19547)
 - **ci**: correct LLM router complexity bands; add secrets rotation runbook + DRC token alert (686ab03)
@@ -174,6 +177,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 🔨 Chores
 
+- rollback manifest entry [skip ci] (35858a1)
+- update CHANGELOG [skip ci] (6c31bfd)
 - rollback manifest entry [skip ci] (9dd902e)
 - update CHANGELOG [skip ci] (403cfe5)
 - rollback manifest entry [skip ci] (82db884)
