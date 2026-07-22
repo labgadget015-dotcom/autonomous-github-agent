@@ -103,6 +103,11 @@ ignore = ["E501"]
 "test_env.py" = ["E402", "F841", "E722"]
 # test_branch_protection probes import availability (F401 is intentional)
 "tests/test_branch_protection.py" = ["F401"]
+# Intentional builtin-shadowing / unused-var in API wrappers (pre-existing, deliberate)
+"autopilot/message_formatter.py" = ["A001"]
+"autopilot/staleness_engine.py" = ["F841"]
+"monitoring/metrics_exporter.py" = ["A002"]
+"autopilot/tests/test_recommendation_contract.py" = ["A004"]
 
 [tool.mypy]
 python_version = "3.11"
