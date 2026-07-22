@@ -55,12 +55,12 @@ jobs:
               ? `${header}\n\nNo new ruff violations introduced by this PR. 🎉`
               : `${header}
 
-This PR introduces new ruff violations compared to the baseline.
+              This PR introduces new ruff violations compared to the baseline.
 
-Run \`python .github/scripts/check_quality.py\` locally to see the details, then fix the regressions or run \`ruff check <file> --fix\` to auto-fix them.
+              Run \`python .github/scripts/check_quality.py\` locally to see the details, then fix the regressions or run \`ruff check <file> --fix\` to auto-fix them.
 
-> **Tip:** You can improve the baseline by fixing existing violations in the files you touch, then updating it with:
-> \`python .github/scripts/check_quality.py --update-baseline\``;
+              > **Tip:** You can improve the baseline by fixing existing violations in the files you touch, then updating it with:
+              > \`python .github/scripts/check_quality.py --update-baseline\``;
 
             const { data: comments } = await github.rest.issues.listComments({
               owner: context.repo.owner,
