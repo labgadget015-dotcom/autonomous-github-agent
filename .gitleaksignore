@@ -1,0 +1,21 @@
+# .gitleaksignore — confirmed false positives acknowledged by repository owner
+#
+# Format: <commit>:<file>:<rule>:<line>
+#
+# HOW_TO_GET_TOKENS.txt (documentation file with example token placeholders — file
+# no longer exists in HEAD; findings are in historical commits only)
+2f899b22931b795fb693cda2e5a30bb1f2004a69:HOW_TO_GET_TOKENS.txt:generic-api-key:108
+2f899b22931b795fb693cda2e5a30bb1f2004a69:HOW_TO_GET_TOKENS.txt:generic-api-key:110
+fcf0bd3bd54c8913431bb2fc5a2aa2a9e7aff9b8:HOW_TO_GET_TOKENS.txt:generic-api-key:108
+fcf0bd3bd54c8913431bb2fc5a2aa2a9e7aff9b8:HOW_TO_GET_TOKENS.txt:generic-api-key:110
+#
+# docs/inventory/services.yaml — n8n internal credential identifiers stored in
+# creds_location fields for inventory purposes.  These are n8n's opaque credential
+# IDs (not API keys / passwords); they require authenticated access to the n8n
+# instance to be of any use and do not constitute exposed secrets.
+8e2cd7439e3abefe4fdf418e268715c0059c7e96:docs/inventory/services.yaml:generic-api-key:85
+8e2cd7439e3abefe4fdf418e268715c0059c7e96:docs/inventory/services.yaml:generic-api-key:200
+8e2cd7439e3abefe4fdf418e268715c0059c7e96:docs/inventory/services.yaml:generic-api-key:211
+8e2cd7439e3abefe4fdf418e268715c0059c7e96:docs/inventory/services.yaml:generic-api-key:233
+8e2cd7439e3abefe4fdf418e268715c0059c7e96:docs/inventory/services.yaml:generic-api-key:246
+f782cc6a4792af9c968c2fe2420f481b158230ba:docs/inventory/services.yaml:generic-api-key:85
