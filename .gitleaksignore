@@ -10,7 +10,7 @@ fcf0bd3bd54c8913431bb2fc5a2aa2a9e7aff9b8:HOW_TO_GET_TOKENS.txt:generic-api-key:1
 fcf0bd3bd54c8913431bb2fc5a2aa2a9e7aff9b8:HOW_TO_GET_TOKENS.txt:generic-api-key:110
 #
 # docs/inventory/services.yaml — n8n internal credential identifiers stored in
-# creds_location fields for inventory purposes.  These are n8n's opaque credential
+# creds_location fields for inventory purposes. These are n8n's opaque credential
 # IDs (not API keys / passwords); they require authenticated access to the n8n
 # instance to be of any use and do not constitute exposed secrets.
 8e2cd7439e3abefe4fdf418e268715c0059c7e96:docs/inventory/services.yaml:generic-api-key:85
