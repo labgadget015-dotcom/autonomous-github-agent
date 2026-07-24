@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
-## [Unreleased] - 2026-07-22
+## [Unreleased] - 2026-07-24
 
 
 ### ✨ Features
@@ -43,6 +43,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 🐛 Bug Fixes
 
+- **gitleaks**: suppress false positives in Secret Detection job (37f2eab)
+- **186 rebase + SEC**: dependabot automerge — resolve orphaned tests + harden pull_request_target (#216) (6b9a798)
 - **ci**: correct malformed YAML in quality-ratchet.yml (#220) (0cc1856)
 - **184 rebase**: quality ratchet — resolve orphaned-test conflicts vs main (#215) (94636a7)
 - **ci**: scope pre-commit auto-fix to PR-diff files only (#213) (6905e8f)
@@ -177,6 +179,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 🔨 Chores
 
+- rollback manifest entry [skip ci] (97befda)
+- update CHANGELOG [skip ci] (6591280)
 - rollback manifest entry [skip ci] (35858a1)
 - update CHANGELOG [skip ci] (6c31bfd)
 - rollback manifest entry [skip ci] (9dd902e)
