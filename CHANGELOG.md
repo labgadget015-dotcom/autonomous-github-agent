@@ -5,7 +5,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+
 ## [Unreleased] - 2026-07-24
+
 
 ### ✨ Features
 
@@ -41,6 +43,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 🐛 Bug Fixes
 
+- **autopilot**: yamllint colons/commas — unblocks pre-commit on all PRs (#225) (9e96d7a)
 - **gitleaks**: suppress false positives in Secret Detection job (37f2eab)
 - **186 rebase + SEC**: dependabot automerge — resolve orphaned tests + harden pull_request_target (#216) (6b9a798)
 - **ci**: correct malformed YAML in quality-ratchet.yml (#220) (0cc1856)
@@ -177,6 +180,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 🔨 Chores
 
+- rollback manifest entry [skip ci] (bbf90f8)
+- update CHANGELOG [skip ci] (0072a18)
 - rollback manifest entry [skip ci] (97befda)
 - update CHANGELOG [skip ci] (6591280)
 - rollback manifest entry [skip ci] (35858a1)
@@ -370,6 +375,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - apply black formatting across codebase (afdfdd4)
 
 ## [v1.0.0] - 2026-03-20
+
 
 ### ✨ Features
 
