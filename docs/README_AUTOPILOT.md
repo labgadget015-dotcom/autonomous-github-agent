@@ -70,7 +70,7 @@ autopilot/
     └── validators.py     # Input validation
 ```
 
-See [ARCHITECTURE.md](ARCHITECTURE.md) for detailed design documentation.
+See [architecture.md](architecture.md) for detailed design documentation.
 
 ## ⚙️ Configuration
 
@@ -134,7 +134,7 @@ For detailed usage instructions, see [DAILY_USAGE.md](DAILY_USAGE.md).
 ├── .github/workflows/      # CI/CD pipelines
 ├── SPEC_v0.md             # Technical specification
 ├── ROADMAP_AUTOPILOT.md   # Development roadmap
-└── ARCHITECTURE.md        # Architecture documentation
+└── architecture.md        # Architecture documentation
 ```
 
 ### Running Tests
@@ -166,7 +166,7 @@ See [Issue #42](../../issues/42) for detailed sprint tracking.
 ## 📚 Documentation
 
 - [Technical Specification](SPEC_v0.md) - Complete system design
-- [Architecture](ARCHITECTURE.md) - Design patterns and structure
+- [Architecture](architecture.md) - Design patterns and structure
 - [Roadmap](ROADMAP_AUTOPILOT.md) - Future development plans
 - [Daily Usage Guide](DAILY_USAGE.md) - Operational procedures
 

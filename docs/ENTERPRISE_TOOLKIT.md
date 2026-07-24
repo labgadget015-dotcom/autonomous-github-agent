@@ -291,7 +291,7 @@ make monitoring
 - [FINAL_DEPLOYMENT_STATUS.md](docs/FINAL_DEPLOYMENT_STATUS.md) - Deployment status
 
 ### Contributing
-- [CONTRIBUTING.md](CONTRIBUTING.md) - How to contribute
+- [contributing.md](contributing.md) - How to contribute
 
 ---
 
@@ -397,7 +397,7 @@ make release-major  # Major release
 
 ## 🤝 Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on:
+See [contributing.md](contributing.md) for guidelines on:
 - Code style
 - Testing requirements
 - PR process

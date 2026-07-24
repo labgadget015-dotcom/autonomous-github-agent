@@ -10,13 +10,13 @@ All project documentation lives here. See the table below for quick navigation.
 | [DAILY_USAGE.md](DAILY_USAGE.md) | Day-to-day usage patterns and examples |
 | [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md) | Production deployment instructions |
 | [DOCKER.md](DOCKER.md) | Docker containerization guide |
-| [CONTRIBUTING.md](CONTRIBUTING.md) | How to contribute to the project |
+| [contributing.md](contributing.md) | How to contribute to the project |
 
 ## Architecture & Design
 
 | File | Description |
 |------|-------------|
-| [ARCHITECTURE.md](ARCHITECTURE.md) | System design and component overview |
+| [architecture.md](architecture.md) | System design and component overview |
 | [SPEC_v0.md](SPEC_v0.md) | Original specification document |
 | [AI_OPTIMIZATION.md](AI_OPTIMIZATION.md) | AI optimization system design |
 | [CONSOLIDATION_ROADMAP.md](CONSOLIDATION_ROADMAP.md) | Roadmap for system consolidation |

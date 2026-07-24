@@ -669,6 +669,6 @@ if policy_check['requires_approval']:
 
 ## See Also
 
-- [Architecture Documentation](ARCHITECTURE.md)
+- [Architecture Documentation](architecture.md)
 - [Policy Configuration](../config/policies.yaml)
 - [Agent Configuration](../config/agent_config.yaml)

@@ -390,4 +390,4 @@ gh run watch <run-id>
 - [CI/CD Architecture](../ci-cd-architecture.md)
 - [Troubleshooting Guide](../troubleshooting.md)
 - [Optimization Guide](../optimization-guide.md)
-- [Contributing Guide](../../CONTRIBUTING.md)
+- [Contributing Guide](../../contributing.md)

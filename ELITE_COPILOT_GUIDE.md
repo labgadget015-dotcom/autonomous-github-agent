@@ -434,7 +434,7 @@ print(f"Health Score: {results['health_score']}")
 
 ## Contributing
 
-We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+We welcome contributions! Please see [contributing.md](contributing.md) for guidelines.
 
 ## License
 

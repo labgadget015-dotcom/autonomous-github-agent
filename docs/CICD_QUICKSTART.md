@@ -123,7 +123,7 @@ $ python scripts/validate-implementation.py
 ## 🔗 Quick Links
 
 - **Full Docs:** [`docs/CICD_OPTIMIZATION_IMPLEMENTATION.md`](CICD_OPTIMIZATION_IMPLEMENTATION.md)
-- **Contributing:** [`CONTRIBUTING.md`](../CONTRIBUTING.md)
+- **Contributing:** [`contributing.md`](../contributing.md)
 - **Config:** [`.github/config/analysis-config.yml`](../.github/config/analysis-config.yml)
 - **Workflow:** [`.github/workflows/code-quality-optimized.yml`](../.github/workflows/code-quality-optimized.yml)
 

@@ -290,5 +290,5 @@ See [docs/optimization-guide.md](./optimization-guide.md) for performance tuning
 ## Related Documentation
 
 - [Workflow README](./workflows/README.md)
-- [CONTRIBUTING.md](../CONTRIBUTING.md)
+- [contributing.md](../contributing.md)
 - [README.md](../README.md)

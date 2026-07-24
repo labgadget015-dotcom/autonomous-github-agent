@@ -153,7 +153,6 @@ def process_data(input_data: List[Dict], threshold: float = 0.8) -> Dict[str, An
 import pytest
 from my_module import my_function
 
-
 class TestMyFunction:
     """Test suite for my_function"""
 

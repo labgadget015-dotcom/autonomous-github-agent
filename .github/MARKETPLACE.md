@@ -163,7 +163,7 @@ This action requires:
 
 - **GitHub Issues**: Report bugs and request features
 - **Discussions**: Ask questions and share ideas
-- **Contributing**: Submit PRs (see CONTRIBUTING.md)
+- **Contributing**: Submit PRs (see contributing.md)
 - **Community**: Discord server (join link)
 
 ## Security

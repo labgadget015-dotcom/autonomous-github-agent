@@ -192,7 +192,7 @@ Tracks workflow performance over time:
 2. **CICD_QUICKSTART.md** - Quick reference guide
 3. **INTEGRATION_EXAMPLES.md** - Integration patterns and examples
 4. **PROJECT_COMPLETION_SUMMARY.md** - Overall project summary
-5. **CONTRIBUTING.md** - Contributor guidelines
+5. **contributing.md** - Contributor guidelines
 
 ### Setup Scripts
 - `scripts/setup.sh` - Unix/Linux/macOS setup
@@ -380,7 +380,7 @@ make monitoring
 ### Documentation
 - [CICD Quick Start](CICD_QUICKSTART.md)
 - [Integration Examples](INTEGRATION_EXAMPLES.md)
-- [Contributing Guide](../CONTRIBUTING.md)
+- [Contributing Guide](../contributing.md)
 
 ### Support
 - Create issue: `<repo-url>/issues`

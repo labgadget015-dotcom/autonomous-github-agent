@@ -183,7 +183,7 @@ mypy .
 
 ## 🤝 Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+See [contributing.md](contributing.md) for guidelines.
 
 ## 📄 License
 

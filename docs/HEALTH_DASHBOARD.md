@@ -14,7 +14,6 @@
 | Security Issues | ✅ | 0 |
 | Violations | ✅ | 0 |
 
-
 ---
 
 ## 📊 Test Coverage

@@ -44,10 +44,10 @@ Returns:
 
 ##### `generate_contributing()`
 
-Generate CONTRIBUTING.md file.
+Generate contributing.md file.
 
 Returns:
-    Path to generated CONTRIBUTING.md
+    Path to generated contributing.md
 
 ##### `generate_api_docs()`
 
@@ -69,10 +69,10 @@ Returns:
 
 ### Function: `generate_contributing(self)`
 
-Generate CONTRIBUTING.md file.
+Generate contributing.md file.
 
 Returns:
-    Path to generated CONTRIBUTING.md
+    Path to generated contributing.md
 
 ### Function: `generate_api_docs(self)`
 
@@ -1028,7 +1028,7 @@ Test README generation
 
 ##### `test_generate_contributing()`
 
-Test CONTRIBUTING.md generation
+Test contributing.md generation
 
 ### Class: `TestDependencyManager`
 
@@ -1234,7 +1234,7 @@ Test README generation
 
 ### Function: `test_generate_contributing(self)`
 
-Test CONTRIBUTING.md generation
+Test contributing.md generation
 
 ### Function: `setUp(self)`
 
