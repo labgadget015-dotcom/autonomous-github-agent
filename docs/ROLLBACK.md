@@ -1,5 +1,36 @@
 # Rollback Manifest
 
+## 9e96d7a — 2026-07-24 09:15 timezone.utc
+
+- **SHA**: `9e96d7a8cfc232c6b1685df5c562a73fd9ace20d`
+- **Author**: Gadget Lab
+- **Message**: fix(autopilot): yamllint colons/commas — unblocks pre-commit on all PRs (#225)
+- **Files changed**: 32 file(s)
+
+**Changed files:**
+- `.github/MARKETPLACE.md`
+- `.secrets.baseline`
+- `CHANGELOG.md`
+- `CHANGES_SUMMARY.md`
+- `ELITE_COPILOT_GUIDE.md`
+- `IMPLEMENTATION_FINAL_REPORT.md`
+- `INSTALL.md`
+- `OVERSEER_COMPLETE_SUMMARY.md`
+- `README.md`
+- `START_HERE.md`
+- `autopilot/config.yaml`
+- `docs/API.md`
+- `docs/API_REFERENCE.md`
+- `docs/ARCHITECTURE.md`
+- `docs/CICD_OPTIMIZATION_IMPLEMENTATION.md`
+- `docs/CICD_QUICKSTART.md`
+- `docs/CONTRIBUTING.md`
+- `docs/DAILY_USAGE.md`
+- `docs/ENTERPRISE_TOOLKIT.md`
+- `docs/FEATURE_SUMMARY.md`
+
+---
+
 ## 37f2eab — 2026-07-24 04:27 timezone.utc
 
 - **SHA**: `37f2eabd40e3e34ddecff841a980327672efb229`
