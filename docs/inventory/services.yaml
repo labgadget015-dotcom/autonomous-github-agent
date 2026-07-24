@@ -37,7 +37,7 @@ services:
     owner: platform
     criticality: high
     healthcheck_url: https://gadgetlab.app.n8n.cloud/webhook/github-agent-loop
-    creds_location: "n8n credential: Anthropic account (w2rayAhinr0AJcMf) | GitHub (gkB38oHT6IAyupz8) | Perplexity (I5Z1BiVIUsLHi3Mk — UNBOUND)"
+    creds_location: "n8n credential: Anthropic account (w2rayAhinr0AJcMf) | GitHub (gkB38oHT6IAyupz8) | Perplexity (I5Z1BiVIUsLHi3Mk — UNBOUND)"  # gitleaks:allow
     depends_on:
       - n8n-cloud
       - tim-postgres
@@ -82,7 +82,7 @@ services:
     owner: platform
     criticality: high
     healthcheck_url: null
-    creds_location: "n8n credentials: gndQWH8pCjbtieRf (Postgres account) + yzbjlFaqm3pBpc62 (Postgres account 2) — two credentials exist; purpose of second unclear"
+    creds_location: "n8n credentials: gndQWH8pCjbtieRf (Postgres account) + yzbjlFaqm3pBpc62 (Postgres account 2) — two credentials exist; purpose of second unclear"  # gitleaks:allow
     depends_on:
       - m900-homelab
     backup_source: unknown
@@ -216,7 +216,7 @@ services:
     port: 443
     owner: platform
     criticality: critical
-    creds_location: "GitHub secret: ANTHROPIC_API_KEY (updated 2026-04-27) | n8n credential: w2rayAhinr0AJcMf"
+    creds_location: "GitHub secret: ANTHROPIC_API_KEY (updated 2026-04-27) | n8n credential: w2rayAhinr0AJcMf"  # gitleaks:allow
     depends_on: []
     notes: "Cost cap: $1.00/run (pyproject.toml). Budget: <$50/month total."
     last_verified_at: 2026-06-24T00:00:00Z
@@ -227,7 +227,7 @@ services:
     port: 443
     owner: platform
     criticality: low
-    creds_location: "n8n credential: I5Z1BiVIUsLHi3Mk — NOT YET BOUND to Perplexity Research node"
+    creds_location: "n8n credential: I5Z1BiVIUsLHi3Mk — NOT YET BOUND to Perplexity Research node"  # gitleaks:allow
     depends_on: []
     notes: "BLOCKER: credential unbound. DRC runs but with empty research_context."
     last_verified_at: 2026-06-24T00:00:00Z
@@ -249,7 +249,7 @@ services:
     port: 443
     owner: platform
     criticality: low
-    creds_location: "n8n credential: jg6k7UC6E82TJAoy (Google Drive)"
+    creds_location: "n8n credential: jg6k7UC6E82TJAoy (Google Drive)"  # gitleaks:allow
     depends_on: []
     notes: "2 unfixable validator warnings on Iterative AI Feedback Loop (multipart body issue). DRC loop uses createFromText which works."
     last_verified_at: 2026-06-24T00:00:00Z
@@ -262,7 +262,7 @@ services:
     owner: platform
     criticality: critical
     repo: labgadget015-dotcom/autonomous-github-agent
-    creds_location: "GitHub PAT expires 2027-05-07 | GitHub secret: GH_PAT | n8n credential: gkB38oHT6IAyupz8"
+    creds_location: "GitHub PAT expires 2027-05-07 | GitHub secret: GH_PAT | n8n credential: gkB38oHT6IAyupz8"  # gitleaks:allow
     depends_on: []
     notes: "Repo is private (no GHAS). SARIF upload steps use continue-on-error:true. 12+ GitHub Actions workflows."
     last_verified_at: 2026-06-24T00:00:00Z
