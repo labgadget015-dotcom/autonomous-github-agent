@@ -1,21 +1,41 @@
 # .gitleaksignore — confirmed false positives acknowledged by repository owner
 #
 # Format: <commit>:<file>:<rule>:<line>
-#
-# HOW_TO_GET_TOKENS.txt (documentation file with example token placeholders — file
-# no longer exists in HEAD; findings are in historical commits only)
-2f899b22931b795fb693cda2e5a30bb1f2004a69:HOW_TO_GET_TOKENS.txt:generic-api-key:108
-2f899b22931b795fb693cda2e5a30bb1f2004a69:HOW_TO_GET_TOKENS.txt:generic-api-key:110
+# All entries below were manually verified as NON-SECRETS:
+#   - Documentation example placeholders (file HOW_TO_GET_TOKENS.txt is deleted
+#     from HEAD; findings exist only in historical commits)
+#   - Test fixtures (fake AWS/GitHub keys, model names, filenames, emails)
+# No live credentials, tokens, or API keys are suppressed here.
+
+# HOW_TO_GET_TOKENS.txt — example token placeholders (deleted from HEAD)
+fcf0bd3bd54c8913431bb2fc5a2aa2a9e7aff9b8:HOW_TO_GET_TOKENS.txt:github-pat:35
+593a64900c4023c40aca8e34b6dae9173ff36ad1:HOW_TO_GET_TOKENS.txt:github-pat:35
 fcf0bd3bd54c8913431bb2fc5a2aa2a9e7aff9b8:HOW_TO_GET_TOKENS.txt:generic-api-key:108
 fcf0bd3bd54c8913431bb2fc5a2aa2a9e7aff9b8:HOW_TO_GET_TOKENS.txt:generic-api-key:110
-#
-# docs/inventory/services.yaml — n8n internal credential identifiers stored in
-# creds_location fields for inventory purposes. These are n8n's opaque credential
-# IDs (not API keys / passwords); they require authenticated access to the n8n
-# instance to be of any use and do not constitute exposed secrets.
-8e2cd7439e3abefe4fdf418e268715c0059c7e96:docs/inventory/services.yaml:generic-api-key:85
-8e2cd7439e3abefe4fdf418e268715c0059c7e96:docs/inventory/services.yaml:generic-api-key:200
-8e2cd7439e3abefe4fdf418e268715c0059c7e96:docs/inventory/services.yaml:generic-api-key:211
-8e2cd7439e3abefe4fdf418e268715c0059c7e96:docs/inventory/services.yaml:generic-api-key:233
-8e2cd7439e3abefe4fdf418e268715c0059c7e96:docs/inventory/services.yaml:generic-api-key:246
-f782cc6a4792af9c968c2fe2420f481b158230ba:docs/inventory/services.yaml:generic-api-key:85
+fcf0bd3bd54c8913431bb2fc5a2aa2a9e7aff9b8:HOW_TO_GET_TOKENS.txt:generic-api-key:59
+fcf0bd3bd54c8913431bb2fc5a2aa2a9e7aff9b8:HOW_TO_GET_TOKENS.txt:generic-api-key:88
+fcf0bd3bd54c8913431bb2fc5a2aa2a9e7aff9b8:HOW_TO_GET_TOKENS.txt:generic-api-key:92
+fcf0bd3bd54c8913431bb2fc5a2aa2a9e7aff9b8:HOW_TO_GET_TOKENS.txt:generic-api-key:98
+fcf0bd3bd54c8913431bb2fc5a2aa2a9e7aff9b8:HOW_TO_GET_TOKENS.txt:generic-api-key:102
+593a64900c4023c40aca8e34b6dae9173ff36ad1:HOW_TO_GET_TOKENS.txt:generic-api-key:108
+593a64900c4023c40aca8e34b6dae9173ff36ad1:HOW_TO_GET_TOKENS.txt:generic-api-key:110
+593a64900c4023c40aca8e34b6dae9173ff36ad1:HOW_TO_GET_TOKENS.txt:generic-api-key:59
+593a64900c4023c40aca8e34b6dae9173ff36ad1:HOW_TO_GET_TOKENS.txt:generic-api-key:88
+593a64900c4023c40aca8e34b6dae9173ff36ad1:HOW_TO_GET_TOKENS.txt:generic-api-key:92
+593a64900c4023c40aca8e34b6dae9173ff36ad1:HOW_TO_GET_TOKENS.txt:generic-api-key:98
+593a64900c4023c40aca8e34b6dae9173ff36ad1:HOW_TO_GET_TOKENS.txt:generic-api-key:102
+
+# tests/unit/test_llm_provider.py — claude-3-opus-20240229 model name (fixture)
+055f66a16495f3ec616263e5d39fd63eece1a134:tests/unit/test_llm_provider.py:generic-api-key:167
+
+# tests/test_core.py — "policies.yaml" filename literal in a path fixture
+402e317dd765cd3171f2dabbf8d08ca6455ef6d9:tests/test_core.py:generic-api-key:210
+
+# tests/test_autonomous_agents.py — AWS key test fixture ("AKIA…" placeholder)
+c515a212be4dd45a73bc1bc3405ff60367e5a3a9:tests/test_autonomous_agents.py:aws-access-token:477
+
+# setup.py — author_email value (not a secret)
+52c92df0f013bc068ea547dc3c33c252cad59083:setup.py:generic-api-key:28
+
+# action.yml — author field (GitHub username, not a secret)
+e5908ca5957454514ab19bbad7172afd90c7d654:action.yml:generic-api-key:3
