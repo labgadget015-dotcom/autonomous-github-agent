@@ -174,7 +174,7 @@ autonomous-github-agent/
     ├── README.md                    # Overview
     ├── INSTALL.md                   # Installation guide
     ├── DEPLOYMENT.md                # Deployment checklist
-    ├── CONTRIBUTING.md              # Contribution guide
+    ├── contributing.md              # Contribution guide
     ├── LICENSE                      # MIT license
     └── docs/
         ├── architecture.md          # System architecture

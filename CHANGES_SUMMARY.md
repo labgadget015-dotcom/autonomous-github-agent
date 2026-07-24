@@ -61,7 +61,7 @@ This implementation consists of the following commits:
 - `CONTRIBUTING_GENERATED.md` - Auto-generated contributing guide
 - `docs/API_REFERENCE.md` - API reference documentation
 - `docs/USER_GUIDE.md` - User guide
-- `docs/ARCHITECTURE.md` - Architecture documentation
+- `docs/architecture.md` - Architecture documentation
 - `docs/api/scripts_*.md` (3 files) - Script API documentation
 
 ## Files Modified (5)
@@ -81,7 +81,7 @@ This implementation consists of the following commits:
    - Fixed project name placeholder
    - Added repository URL
 
-4. **docs/ARCHITECTURE.md**
+4. **docs/architecture.md**
    - Fixed project name placeholder
 
 5. **CONTRIBUTING_GENERATED.md**

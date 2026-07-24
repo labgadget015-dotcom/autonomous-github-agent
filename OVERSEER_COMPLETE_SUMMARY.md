@@ -37,7 +37,7 @@ The code analyzer performs comprehensive AST-based analysis to detect:
 Automatically generates:
 
 - Enhanced README.md with comprehensive project information
-- CONTRIBUTING.md guidelines
+- contributing.md guidelines
 - API documentation from docstrings
 - Architecture documentation
 - User guides

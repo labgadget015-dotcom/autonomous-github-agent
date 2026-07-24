@@ -109,7 +109,7 @@ Successfully delivered a **world-class CI/CD optimization system** that transfor
     - Historical trends
 
 #### Documentation (4)
-14. `CONTRIBUTING.md`
+14. `contributing.md`
     - Comprehensive contributor guide
     - Development workflow
     - Code quality standards
@@ -404,7 +404,7 @@ Triggers automatically on:
 |----------|---------|----------|
 | **Implementation Details** | Full technical specs | `docs/CICD_OPTIMIZATION_IMPLEMENTATION.md` |
 | **Quick Start** | Fast reference | `docs/CICD_QUICKSTART.md` |
-| **Contributing Guide** | Developer onboarding | `CONTRIBUTING.md` |
+| **Contributing Guide** | Developer onboarding | `contributing.md` |
 | **Configuration Reference** | Settings documentation | `.github/config/analysis-config.yml` |
 | **Completion Summary** | Project status | `docs/PROJECT_COMPLETION_SUMMARY.md` |
 

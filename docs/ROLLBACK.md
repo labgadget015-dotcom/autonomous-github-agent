@@ -621,7 +621,7 @@
 - `00_READ_ME_FIRST.md`
 - `CONFIGURE_TOKENS.txt`
 - `CONFIGURE_WIZARD.bat`
-- `CONTRIBUTING.md`
+- `contributing.md`
 - `CORRECT_INSTALL_COMMANDS.txt`
 - `DEPLOYMENT.md`
 - `DIAGNOSE.bat`

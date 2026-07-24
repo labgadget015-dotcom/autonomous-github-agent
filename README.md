@@ -207,7 +207,7 @@ mypy .
 
 ## 🤝 Contributing
 
-Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+Contributions welcome! See [contributing.md](contributing.md) for guidelines.
 
 ## 📄 License
 

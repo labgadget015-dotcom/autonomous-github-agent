@@ -230,7 +230,7 @@ docker-compose up -d
 
 **Files Created:**
 - `scripts/test-local.py` - Local testing script
-- `CONTRIBUTING.md` - Comprehensive contributor guide
+- `contributing.md` - Comprehensive contributor guide
 - `.env.example` - Already exists, enhanced
 
 **Features:**
@@ -283,7 +283,7 @@ autonomous-github-agent/
 ├── .coveragerc                          ✨ NEW - Coverage config
 ├── .pre-commit-config.yaml              🔄 UPDATED
 ├── pytest.ini                           🔄 UPDATED
-└── CONTRIBUTING.md                      ✨ NEW - Contributor guide
+└── contributing.md                      ✨ NEW - Contributor guide
 ```
 
 ---

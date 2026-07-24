@@ -363,7 +363,7 @@ A: Not in v0. Web dashboard is planned for v0.2 (see ROADMAP).
 
 - [README](README_AUTOPILOT.md) - Installation and features
 - [SPEC](SPEC_v0.md) - Technical specification
-- [ARCHITECTURE](ARCHITECTURE.md) - System design
+- [ARCHITECTURE](architecture.md) - System design
 - [ROADMAP](ROADMAP_AUTOPILOT.md) - Future plans
 
 ## 📞 Support

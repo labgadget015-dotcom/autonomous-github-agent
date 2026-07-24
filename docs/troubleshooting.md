@@ -592,4 +592,4 @@ If none of these solutions work:
 - [CI/CD Architecture](./ci-cd-architecture.md)
 - [Workflow README](./workflows/README.md)
 - [Optimization Guide](./optimization-guide.md)
-- [Contributing Guide](../CONTRIBUTING.md)
+- [Contributing Guide](../contributing.md)

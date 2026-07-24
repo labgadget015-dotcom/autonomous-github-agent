@@ -63,7 +63,7 @@
 3. `INTEGRATION_EXAMPLES.md` - Integration patterns
 4. `PROJECT_COMPLETION_SUMMARY.md` - Project overview
 5. `FEATURE_SUMMARY.md` - Feature catalog
-6. `CONTRIBUTING.md` - Contributor guidelines
+6. `contributing.md` - Contributor guidelines
 7. `FINAL_DEPLOYMENT_STATUS.md` - This document
 
 ### Development Tools (2)
@@ -249,7 +249,7 @@ make monitoring
 ### For Developers
 - [Quick Start Guide](CICD_QUICKSTART.md) - Get started in 5 minutes
 - [Integration Examples](INTEGRATION_EXAMPLES.md) - Real-world patterns
-- [Contributing Guide](../CONTRIBUTING.md) - How to contribute
+- [Contributing Guide](../contributing.md) - How to contribute
 
 ### For Operators
 - [Implementation Guide](CICD_OPTIMIZATION_IMPLEMENTATION.md) - Full technical details

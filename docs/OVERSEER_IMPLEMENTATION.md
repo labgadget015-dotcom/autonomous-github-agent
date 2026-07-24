@@ -52,7 +52,7 @@ overseer/
 #### 2. **Documentation Generator** (`doc_generator.py`)
 - **Capabilities**:
   - Auto-generates README.md from repository structure
-  - Creates CONTRIBUTING.md with setup instructions
+  - Creates contributing.md with setup instructions
   - Generates API documentation from Python docstrings
   - Detects repository technology stack
   - Framework-aware content generation
@@ -214,7 +214,7 @@ A comprehensive demonstration script that showcases all 7 capabilities with form
 
 ✅ **2. Documentation Generation**
 - Auto-generated README.md
-- Auto-generated CONTRIBUTING.md
+- Auto-generated contributing.md
 - API documentation from docstrings
 - Framework-aware content
 
