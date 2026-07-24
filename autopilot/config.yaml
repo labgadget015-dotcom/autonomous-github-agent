@@ -119,11 +119,11 @@ recommendation_debounce:
     - file_or_workflow_path  # e.g. ".github/workflows/smoke-test.yml"
 
   repost_policy:
-    open:     {min_hours_between: 72,  require_status_change: true}
+    open: {min_hours_between: 72, require_status_change: true}
     assigned: {min_hours_between: 168, require_owner_change: false}
     inflight: {min_hours_between: 168, require_owner_change: false}
-    done:     {never_repost: true}
-    dropped:  {never_repost: true}
+    done: {never_repost: true}
+    dropped: {never_repost: true}
 
   # Before emitting, query the decision ledger for a matching signature.
   check_ledger_first: true
@@ -133,11 +133,11 @@ recommendation_debounce:
 
 # Status lifecycle surfaced in-channel via emoji tags.
 status_tags:
-  open:     "🟡 Open"
+  open: "🟡 Open"
   assigned: "🔵 Assigned"
   inflight: "🟠 In-flight"
-  done:     "✅ Done"
-  dropped:  "❌ Dropped"
+  done: "✅ Done"
+  dropped: "❌ Dropped"
 
 message_contract:
   max_step_len: 120
