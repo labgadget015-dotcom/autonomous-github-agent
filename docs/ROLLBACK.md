@@ -1,5 +1,18 @@
 # Rollback Manifest
 
+## 37f2eab — 2026-07-24 04:27 timezone.utc
+
+- **SHA**: `37f2eabd40e3e34ddecff841a980327672efb229`
+- **Author**: Copilot
+- **Message**: fix(gitleaks): suppress false positives in Secret Detection job
+- **Files changed**: 2 file(s)
+
+**Changed files:**
+- `.gitleaksignore`
+- `docs/inventory/services.yaml`
+
+---
+
 ## 0cc1856 — 2026-07-22 06:39 UTC
 
 - **SHA**: `0cc18568a39373a824b46a00b774c7515521ce1a`
