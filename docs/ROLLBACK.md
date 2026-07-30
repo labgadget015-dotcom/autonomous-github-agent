@@ -1,5 +1,17 @@
 # Rollback Manifest
 
+## 67051cb — 2026-07-30 23:05 timezone.utc
+
+- **SHA**: `67051cb99e260ddc1b4472d31f4b5c414b91d5c1`
+- **Author**: Gadget Lab
+- **Message**: style: add trailing newline to CHANGELOG.md (end-of-file-fixer) (#232)
+- **Files changed**: 1 file(s)
+
+**Changed files:**
+- `CHANGELOG.md`
+
+---
+
 ## 4f9c274 — 2026-07-26 08:00 timezone.utc
 
 - **SHA**: `4f9c2744e04bca0454dacadf710908bd6d1859f2`
