@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
-## [Unreleased] - 2026-07-26
+## [Unreleased] - 2026-07-30
 
 
 ### ✨ Features
@@ -180,6 +180,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 🔨 Chores
 
+- update CHANGELOG [skip ci] (594f530)
+- rollback manifest entry [skip ci] (8ee0d96)
 - rollback manifest entry [skip ci] (f974b59)
 - update CHANGELOG [skip ci] (22d90eb)
 - rollback manifest entry [skip ci] (bbf90f8)
@@ -353,6 +355,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 💎 Code Style
 
+- add trailing newline to CHANGELOG.md (end-of-file-fixer) (#232) (67051cb)
 - auto-fix pre-commit issues [skip ci] (cfafbb3)
 - auto-fix pre-commit issues [skip ci] (dcd9772)
 - auto-fix pre-commit issues [skip ci] (7ac4a15)
