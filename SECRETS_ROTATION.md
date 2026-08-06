@@ -4,17 +4,17 @@ Single source of truth for rotating the credentials that keep the GadgetLab
 autonomous agent pipeline alive. If any of these lapse, the pipeline degrades or
 goes fully offline.
 
-Last updated: 2026-07-09
+Last updated: 2026-08-04
 
 ## Inventory
 
 | Secret / Token | Where it lives | Expiry | Alert mechanism |
 |----------------|---------------|--------|-----------------|
-| GitHub PAT (`GITHUB_PAT`) | GitHub repo secret | **2027-05-07** | `.github/workflows/pat-rotation-alert.yml` (monthly, Slack, fails ≤7d) |
+| GitHub PAT (repo secret name is **`GH_PAT`** — NOT `GITHUB_PAT`) | GitHub repo secret | **2027-05-07** | `.github/workflows/pat-rotation-alert.yml` (monthly, Slack, fails ≤7d) + Hermes cron `c4a45ae6e6d0` |
 | `ANTHROPIC_API_KEY` | GitHub repo secret | — (no hard expiry; rotated 2026-04-27) | none — review every ~6 months |
 | `OPENAI_API_KEY` | GitHub repo secret | — (no hard expiry; rotated 2026-03-25) | none — review every ~6 months |
-| DRC `x-gadgetlab-token` | **n8n only** (embedded literal in 2 nodes) | Last rotated **2026-07-06** | **none** — see below |
-| `SLACK_WEBHOOK_URL` | GitHub repo secret | — | none |
+| DRC `x-gadgetlab-token` | **n8n only** (embedded literal in 2 nodes) | Last rotated **2026-07-06** | `.github/workflows/drc-token-rotation-alert.yml` (monthly, Slack, 180d max-age) + Hermes crons `56f0f862d9a1` (monthly) & `425e85478d7b` (75-day nudge) |
+| `SLACK_WEBHOOK_URL` / `SLACK_SIGNING_SECRET` | GitHub repo secret | — | none |
 
 ---
 
@@ -32,14 +32,14 @@ miss it without ignoring a failing workflow.
 1. Go to https://github.com/settings/tokens (or org token admin).
 2. Create a new fine-grained or classic PAT with `repo` + `workflow` scopes
    (matches what the workflows need).
-3. In the repo → Settings → Secrets and variables → Actions → update `GITHUB_PAT`.
+3. In the repo → Settings → Secrets and variables → Actions → update `GH_PAT` (the actual repo secret name; the runbook previously said `GITHUB_PAT` in error).
 4. Update the `EXPIRY_DATE` constant in `.github/workflows/pat-rotation-alert.yml`
    (line ~16) so the alert counter starts from the new date.
 5. Confirm the next scheduled run reports OK.
 
 ---
 
-## 2. DRC `x-gadgetlab-token` — NO automated alert (gap to close)
+## 2. DRC `x-gadgetlab-token` — alerting exists (workflow + Hermes cron)
 
 **What it is:** a static shared secret the GitHub Event Router presents in the
 `x-gadgetlab-token` header when forwarding to the DRC Agent Loop. The DRC loop's
@@ -62,12 +62,9 @@ inactivity and autosave silently fails with 401; Claude cannot re-auth):**
    result, not `Unauthorized`. The old value must now be rejected.
 6. Update "last rotated" date wherever it's tracked (CLAUDE.md + this file).
 
-**Recommended remediation (TODO, pending your call):**
-- Add a `drc-token-rotation-alert.yml` mirroring `pat-rotation-alert.yml` with a
-  hardcoded `LAST_ROTATED` date and a 90/30/7-day reminder cadence → Slack.
-- Better: move the token out of node literals into an n8n credential / env var so
-  rotation is a one-place edit and can be referenced by both nodes. This also
-  removes the "embedded literal in two places that must stay in sync" footgun.
+**Recommended remediation (still open):**
+- The `drc-token-rotation-alert.yml` workflow already exists (mirrors `pat-rotation-alert.yml`, 180-day max-age, Slack). The remaining gap is resilience: it alerts only via Slack, so if Slack delivery fails the pipeline has no other signal. The Hermes crons (`56f0f862d9a1` monthly + `425e85478d7b` 75-day nudge) provide a second channel, but both depend on this host being up. Consider also posting to Telegram in the workflow, or rely on the Hermes crons as the independent belt-and-suspenders.
+- Better: move the token out of node literals into an n8n credential / env var so rotation is a one-place edit and can be referenced by both nodes. This also removes the "embedded literal in two places that must stay in sync" footgun.
 
 ---
 
