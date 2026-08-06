@@ -3,7 +3,6 @@
 Run: PYTHONPATH=. /usr/bin/python3 -m pytest tests/unit/test_incident_freeze.py -q --no-cov
 """
 
-
 import pytest
 
 
