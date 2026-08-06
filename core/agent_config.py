@@ -139,12 +139,18 @@ class AgentConfig:
             elif fname in flags:
                 object.__setattr__(self, fname, str(flags[fname]))
 
-    def is_action_allowed(self, action: str) -> bool:
+    def is_action_allowed(self, action: str, scope: str = "agent-core") -> bool:
         """Return True if the named action may proceed given current flags.
 
-        Checks dry_run and specific action toggles.
+        Checks (in order): global incident freeze -> dry_run -> specific action
+        toggles. The freeze is the highest-priority gate: when frozen for the
+        scope (or globally), NO write is permitted regardless of other flags.
         Actions: 'merge', 'close_issue', 'delete_branch', 'label', 'auto_fix'.
         """
+        from core.incident_freeze import freeze as _freeze
+
+        if _freeze.is_frozen(scope):
+            return False
         if self.dry_run:
             return False
         mapping = {
