@@ -39,3 +39,16 @@ c515a212be4dd45a73bc1bc3405ff60367e5a3a9:tests/test_autonomous_agents.py:aws-acc
 
 # action.yml — author field (GitHub username, not a secret)
 e5908ca5957454514ab19bbad7172afd90c7d654:action.yml:generic-api-key:3
+
+# docs/inventory/services.yaml — n8n credential IDs (not secrets, just internal n8n identifiers)
+# and GH/Slack/Google references that are documentation-only inventory entries
+f782cc6a4792af9c968c2fe2420f481b158230ba:docs/inventory/services.yaml:generic-api-key:85
+8e2cd7439e3abefe4fdf418e268715c0059c7e96:docs/inventory/services.yaml:generic-api-key:85
+8e2cd7439e3abefe4fdf418e268715c0059c7e96:docs/inventory/services.yaml:generic-api-key:200
+8e2cd7439e3abefe4fdf418e268715c0059c7e96:docs/inventory/services.yaml:generic-api-key:211
+8e2cd7439e3abefe4fdf418e268715c0059c7e96:docs/inventory/services.yaml:generic-api-key:233
+8e2cd7439e3abefe4fdf418e268715c0059c7e96:docs/inventory/services.yaml:generic-api-key:246
+
+# HOW_TO_GET_TOKENS.txt — example token placeholders (deleted from HEAD), different commit
+2f899b22931b795fb693cda2e5a30bb1f2004a69:HOW_TO_GET_TOKENS.txt:generic-api-key:108
+2f899b22931b795fb693cda2e5a30bb1f2004a69:HOW_TO_GET_TOKENS.txt:generic-api-key:110
