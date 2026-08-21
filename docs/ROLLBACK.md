@@ -1,5 +1,18 @@
 # Rollback Manifest
 
+## a913ce9 — 2026-08-21 03:35 timezone.utc
+
+- **SHA**: `a913ce9851cafe52854d19a4d16ec0f9193d9625`
+- **Author**: Copilot
+- **Message**: fix: suppress false-positive gitleaks findings in historical commits (#257)
+- **Files changed**: 2 file(s)
+
+**Changed files:**
+- `.gitleaksignore`
+- `CHANGELOG.md`
+
+---
+
 ## 67051cb — 2026-07-30 23:05 timezone.utc
 
 - **SHA**: `67051cb99e260ddc1b4472d31f4b5c414b91d5c1`
