@@ -24,6 +24,16 @@ fcf0bd3bd54c8913431bb2fc5a2aa2a9e7aff9b8:HOW_TO_GET_TOKENS.txt:generic-api-key:1
 593a64900c4023c40aca8e34b6dae9173ff36ad1:HOW_TO_GET_TOKENS.txt:generic-api-key:92
 593a64900c4023c40aca8e34b6dae9173ff36ad1:HOW_TO_GET_TOKENS.txt:generic-api-key:98
 593a64900c4023c40aca8e34b6dae9173ff36ad1:HOW_TO_GET_TOKENS.txt:generic-api-key:102
+2f899b22931b795fb693cda2e5a30bb1f2004a69:HOW_TO_GET_TOKENS.txt:generic-api-key:108
+2f899b22931b795fb693cda2e5a30bb1f2004a69:HOW_TO_GET_TOKENS.txt:generic-api-key:110
+
+# docs/inventory/services.yaml — n8n credential IDs (opaque internal identifiers, not secrets)
+f782cc6a4792af9c968c2fe2420f481b158230ba:docs/inventory/services.yaml:generic-api-key:85
+8e2cd7439e3abefe4fdf418e268715c0059c7e96:docs/inventory/services.yaml:generic-api-key:85
+8e2cd7439e3abefe4fdf418e268715c0059c7e96:docs/inventory/services.yaml:generic-api-key:200
+8e2cd7439e3abefe4fdf418e268715c0059c7e96:docs/inventory/services.yaml:generic-api-key:211
+8e2cd7439e3abefe4fdf418e268715c0059c7e96:docs/inventory/services.yaml:generic-api-key:233
+8e2cd7439e3abefe4fdf418e268715c0059c7e96:docs/inventory/services.yaml:generic-api-key:246
 
 # tests/unit/test_llm_provider.py — claude-3-opus-20240229 model name (fixture)
 055f66a16495f3ec616263e5d39fd63eece1a134:tests/unit/test_llm_provider.py:generic-api-key:167
