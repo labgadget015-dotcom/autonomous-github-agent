@@ -5,10 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased] - 2026-07-30
+
+## [Unreleased] - 2026-08-21
+
 
 ### ✨ Features
 
+- **core**: global incident freeze kill-switch (#241) (3be209c)
 - **autopilot**: PR Dependency Graph Resolver with tier labelling (#185) (d520daa)
 - **deps**: PyPI-backed dependency audit + draft-PR autopilot (#211) (31f8627)
 - **watchdog**: monitor autonomy kill-switch (dry_run/require_approval/auto_merge) (#209) (7efb5d2)
@@ -41,6 +44,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 🐛 Bug Fixes
 
+- suppress false-positive gitleaks findings in historical commits (#257) (a913ce9)
 - **autopilot**: yamllint colons/commas — unblocks pre-commit on all PRs (#225) (9e96d7a)
 - **gitleaks**: suppress false positives in Secret Detection job (37f2eab)
 - **186 rebase + SEC**: dependabot automerge — resolve orphaned tests + harden pull_request_target (#216) (6b9a798)
@@ -178,6 +182,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 🔨 Chores
 
+- update CHANGELOG [skip ci] (2e6b5d4)
+- rollback manifest entry [skip ci] (4d64f7c)
 - update CHANGELOG [skip ci] (594f530)
 - rollback manifest entry [skip ci] (8ee0d96)
 - rollback manifest entry [skip ci] (f974b59)
@@ -376,7 +382,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - reformat 2 test files to match black 24.4.2 (pre-commit version) (22527de)
 - apply black formatting to tests/ (5f5eee1)
 - apply black formatting across codebase (afdfdd4)
+
 ## [v1.0.0] - 2026-03-20
+
 
 ### ✨ Features
 
