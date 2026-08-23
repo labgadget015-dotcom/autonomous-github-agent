@@ -199,6 +199,14 @@ jobs:
             # Slack only on FRESH breakage. A stale streak means a known-open
             # incident that nobody has fixed yet - the red job already says so,
             # and re-paging every 30 min just trains people to mute the channel.
+            #
+            # LIMITATION: freshness is measured from the EVENT ROUTER's newest
+            # execution. If the router is healthy and only DRC is failing, this
+            # gates on a router timestamp that has nothing to do with DRC, so a
+            # DRC-only failure may be suppressed from Slack. The job still exits
+            # 1 either way, so the Actions signal is unaffected - but do not rely
+            # on Slack alone for DRC-only faults. Fix in v2: track freshness per
+            # workflow.
             AGE_M=$(( ( $(date -u +%s) - $(date -u -d "$LATEST_AT" +%s) ) / 60 ))
             if [ "$AGE_M" -le "$ALERT_WINDOW_MINUTES" ]; then
               echo "slack=true" >> "$GITHUB_OUTPUT"
