@@ -1,0 +1,217 @@
+name: Intake Canary
+
+# ---------------------------------------------------------------------------
+# WHY THIS EXISTS
+#
+# GitHub -> DRC intake has died silently TWICE:
+#   * 2026-07-23  Event Router "Normalise Issue Payload" threw on every event
+#                 (undetected 7 days)
+#   * 2026-08-22  Event Router "Validate HMAC Signature" rejected 100% of
+#                 traffic - GITHUB_WEBHOOK_SECRET unset (issue #259)
+#
+# Both times, EVERY existing signal reported GREEN during a total outage:
+#
+#   1. GitHub's webhook delivery log  -> 200 OK
+#      The n8n Webhook node answers `onReceived` BEFORE the workflow runs, so
+#      GitHub records a success and the workflow errors asynchronously after.
+#      Verified 2026-08-23: delivery at 06:12:29 = 200 OK; the n8n execution it
+#      spawned (6970) = status "error". The delivery log cannot see this class
+#      of failure. Do not build alerting on it.
+#
+#   2. n8n-health-check.yml's DRC probe -> 200 OK
+#      The "Route Health Ping" IF node (added 2026-07-06 to stop false
+#      pipeline-down alarms) short-circuits pings to a Pong 200 BEFORE the auth
+#      gate and before any real work. It proves n8n is serving HTTP. It proves
+#      nothing about the pipeline. The 07-06 fix for false POSITIVES is what
+#      manufactured this false NEGATIVE.
+#
+#   3. n8n host root -> 200 OK  (proves only that n8n Cloud is up)
+#
+# The ONLY signal that distinguishes a healthy pipeline from a dead one is the
+# n8n *executions* API. That is what this workflow polls.
+#
+# KNOWN GAP (deliberate, v1): this detects executions with status "error". A
+# success-status LOGIC failure - events routed down a wrong branch, DRC never
+# triggered - still slips through. A true end-to-end probe needs a synthetic
+# issue, which costs LLM spend per run and may be eaten by the Event Router's
+# bot-sender filter. Out of scope until the error-class detection is proven.
+# ---------------------------------------------------------------------------
+
+on:
+  schedule:
+    # Every 30 minutes. NOTE: scheduled runs only fire from the DEFAULT branch.
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  N8N_HOST: https://gadgetlab.app.n8n.cloud
+  # Event Router - the component that has broken twice. Webhook-driven, so a
+  # long silence is itself a symptom (hook deleted / workflow deactivated).
+  EVENT_ROUTER_ID: oijizIGJtRzBG94Z
+  # DRC Agent Loop - error check only. A silence check here would be VACUOUS:
+  # the 6-hourly health-check Pong pings always create executions, so DRC can
+  # never look silent even when it is doing no real work.
+  DRC_ID: Wlfhgk4sUfXJcU4D
+  # Guaranteed nightly traffic: the autopilot daily-summary issue lands ~02:26
+  # UTC and produces ~6 Event Router executions. 26h therefore spans at least
+  # one guaranteed burst; anything shorter false-fires on quiet weekends.
+  SILENCE_THRESHOLD_HOURS: '26'
+
+jobs:
+  canary:
+    name: GitHub -> DRC intake canary
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check n8n pipeline execution health
+        id: probe
+        env:
+          N8N_API_KEY: ${{ secrets.N8N_API_KEY }}
+        run: |
+          set -uo pipefail
+
+          # --- Fail loudly on a missing secret -----------------------------
+          # Without this the curl below sends an empty header, n8n returns 401,
+          # and `jq '.data | length'` on the error body yields 0 - which reads
+          # as "zero errors, all healthy". That is the exact silent-pass this
+          # canary exists to prevent. Verified against the live API 2026-08-23.
+          if [ -z "${N8N_API_KEY:-}" ]; then
+            {
+              echo "status=canary_broken"
+              echo "detail=N8N_API_KEY secret is not set on this repository."
+            } >> "$GITHUB_OUTPUT"
+            echo "::error::N8N_API_KEY is not set - the canary cannot see the pipeline."
+            exit 1
+          fi
+
+          fetch() {
+            # $1 = workflow id, $2 = output file. Echoes the HTTP status.
+            curl -s -o "$2" -w '%{http_code}' --max-time 30 \
+              -H "X-N8N-API-KEY: ${N8N_API_KEY}" \
+              "${N8N_HOST}/api/v1/executions?workflowId=$1&limit=20"
+          }
+
+          ROUTER_BODY=/tmp/router.json
+          DRC_BODY=/tmp/drc.json
+
+          ROUTER_HTTP=$(fetch "$EVENT_ROUTER_ID" "$ROUTER_BODY") || ROUTER_HTTP="curl_failed"
+          DRC_HTTP=$(fetch "$DRC_ID" "$DRC_BODY") || DRC_HTTP="curl_failed"
+
+          # --- Assert transport BEFORE reading the body --------------------
+          # A 401/403/5xx body still parses as JSON and still yields 0 errors.
+          # Never fold a transport failure into the healthy path.
+          if [ "$ROUTER_HTTP" != "200" ] || [ "$DRC_HTTP" != "200" ]; then
+            {
+              echo "status=canary_broken"
+              echo "detail=n8n executions API unreachable (Event Router HTTP ${ROUTER_HTTP}, DRC HTTP ${DRC_HTTP}). Key expired, rotated, or n8n Cloud down."
+            } >> "$GITHUB_OUTPUT"
+            echo "::error::n8n API returned ${ROUTER_HTTP}/${DRC_HTTP} - cannot assess pipeline health."
+            exit 1
+          fi
+
+          # Shape guard: a 200 that is not the expected envelope is also a
+          # canary fault, not a healthy pipeline.
+          if ! jq -e '.data | type == "array"' "$ROUTER_BODY" >/dev/null 2>&1; then
+            {
+              echo "status=canary_broken"
+              echo "detail=n8n returned HTTP 200 but the response had no .data array. API shape changed."
+            } >> "$GITHUB_OUTPUT"
+            echo "::error::Unexpected response shape from the executions API."
+            exit 1
+          fi
+
+          # --- Consecutive-error streak, newest first ----------------------
+          # Chosen over "any error in the last N hours" so the signal SELF-CLEARS:
+          # the first successful execution after a fix turns the canary green
+          # immediately, instead of staying red for the length of the window.
+          # (The raw v1 API has no startedAfter filter - verified 2026-08-23 -
+          # so all windowing is done here in jq.)
+          streak() {
+            # Count LEADING "error" statuses only. Deliberately not
+            # `index("success")`: that would count a "running" or "waiting"
+            # execution at position 0 as a failure and fire a false alarm.
+            jq '[.data[].status] | (map(. == "error") | index(false) // length)' "$1"
+          }
+
+          ROUTER_STREAK=$(streak "$ROUTER_BODY")
+          DRC_STREAK=$(streak "$DRC_BODY")
+
+          LATEST_AT=$(jq -r '.data[0].startedAt // empty' "$ROUTER_BODY")
+          TOTAL=$(jq '.data | length' "$ROUTER_BODY")
+
+          echo "Event Router: ${TOTAL} recent executions, ${ROUTER_STREAK} consecutive errors (newest first)"
+          echo "DRC Agent Loop: ${DRC_STREAK} consecutive errors (newest first)"
+          echo "Event Router latest execution: ${LATEST_AT:-<none>}"
+
+          # --- Silence check (Event Router only) ---------------------------
+          if [ -z "$LATEST_AT" ]; then
+            {
+              echo "status=pipeline_down"
+              echo "detail=Event Router has NO executions on record. The GitHub webhook may be deleted or the workflow deactivated."
+            } >> "$GITHUB_OUTPUT"
+            echo "::error::Event Router has no executions at all."
+            exit 1
+          fi
+
+          AGE_H=$(( ( $(date -u +%s) - $(date -u -d "$LATEST_AT" +%s) ) / 3600 ))
+          echo "Event Router last execution age: ${AGE_H}h (threshold ${SILENCE_THRESHOLD_HOURS}h)"
+
+          if [ "$AGE_H" -gt "$SILENCE_THRESHOLD_HOURS" ]; then
+            {
+              echo "status=pipeline_down"
+              echo "detail=Event Router has been SILENT for ${AGE_H}h (threshold ${SILENCE_THRESHOLD_HOURS}h). No GitHub events are arriving - webhook deleted, or workflow deactivated."
+            } >> "$GITHUB_OUTPUT"
+            echo "::error::Event Router silent for ${AGE_H}h."
+            exit 1
+          fi
+
+          # --- Error check -------------------------------------------------
+          if [ "$ROUTER_STREAK" -gt 0 ] || [ "$DRC_STREAK" -gt 0 ]; then
+            ERR_MSG=$(jq -r '.data[0].id // "?"' "$ROUTER_BODY")
+            {
+              echo "status=pipeline_down"
+              echo "detail=Event Router: ${ROUTER_STREAK} consecutive failed executions (latest id ${ERR_MSG}). DRC: ${DRC_STREAK}. GitHub events are being dropped - inbound automation is DEAD."
+            } >> "$GITHUB_OUTPUT"
+            echo "::error::Pipeline erroring - Event Router streak ${ROUTER_STREAK}, DRC streak ${DRC_STREAK}."
+            exit 1
+          fi
+
+          echo "status=healthy" >> "$GITHUB_OUTPUT"
+          echo "Pipeline healthy."
+
+      - name: Alert Slack
+        # Two distinct alert classes, because they need DIFFERENT hands:
+        #   canary_broken -> a developer fixes the canary / rotates the key
+        #   pipeline_down -> Gadget fixes credentials in the n8n UI
+        # Folding them together costs a wasted escalation every time.
+        if: failure() && steps.probe.outputs.status != ''
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          STATUS: ${{ steps.probe.outputs.status }}
+          DETAIL: ${{ steps.probe.outputs.detail }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -uo pipefail
+          if [ -z "${SLACK_WEBHOOK_URL:-}" ]; then
+            echo "::warning::SLACK_WEBHOOK_URL not set - job status is the only signal."
+            exit 0
+          fi
+
+          if [ "$STATUS" = "canary_broken" ]; then
+            HEADLINE=":wrench: *INTAKE CANARY BROKEN* - the canary cannot see the pipeline."
+            ACTION="Needs a developer: the n8n API key is missing, expired, or rotated. Pipeline state is UNKNOWN, not healthy."
+          else
+            HEADLINE=":rotating_light: *GITHUB -> DRC INTAKE IS DOWN* - events are being dropped."
+            ACTION="Needs Gadget in the n8n UI. Note: GitHub's webhook delivery log will still show 200 OK - that is expected and does NOT mean this is a false alarm."
+          fi
+
+          jq -n \
+            --arg text "${HEADLINE}"$'\n\n'"${DETAIL}"$'\n\n'"${ACTION}"$'\n\n'"<${RUN_URL}|View run>" \
+            '{text: $text}' \
+          | curl -s -X POST -H 'Content-Type: application/json' \
+              --max-time 20 -d @- "$SLACK_WEBHOOK_URL" \
+          && echo "Slack alert sent." \
+          || echo "::warning::Slack post failed - job status is the backstop."
