@@ -59,6 +59,13 @@ env:
   # UTC and produces ~6 Event Router executions. 26h therefore spans at least
   # one guaranteed burst; anything shorter false-fires on quiet weekends.
   SILENCE_THRESHOLD_HOURS: '26'
+  # Slack de-duplication. The job goes RED every tick regardless - GitHub
+  # Actions is the continuous signal. Slack is only for NEW breakage, because
+  # an alarm that fires 48x/day during a known-open incident is the exact
+  # input that produced the 2026-07-06 "fix" (move the probe earlier so it
+  # stops complaining) that created this blind spot in the first place.
+  # A failing execution newer than this window counts as fresh.
+  ALERT_WINDOW_MINUTES: '90'
 
 jobs:
   canary:
@@ -73,6 +80,18 @@ jobs:
         run: |
           set -uo pipefail
 
+          # Coarse, stateless reminder gate for conditions that persist until a
+          # human acts (broken key, prolonged silence). Must be computed BEFORE
+          # any branch that can exit, or `set -u` kills the branch that needs it.
+          # hour % 6 == 0 and minute < 30 => ~4 Slack pages/day, at most one per
+          # 30-min tick pair.
+          # 10# forces base-10: `08`/`09` are invalid octal and would error out.
+          if [ $(( 10#$(date -u +%H) % 6 )) -eq 0 ] && [ $(( 10#$(date -u +%M) )) -lt 30 ]; then
+            REMIND=true
+          else
+            REMIND=false
+          fi
+
           # --- Fail loudly on a missing secret -----------------------------
           # Without this the curl below sends an empty header, n8n returns 401,
           # and `jq '.data | length'` on the error body yields 0 - which reads
@@ -82,6 +101,7 @@ jobs:
             {
               echo "status=canary_broken"
               echo "detail=N8N_API_KEY secret is not set on this repository."
+              echo "slack=${REMIND}"
             } >> "$GITHUB_OUTPUT"
             echo "::error::N8N_API_KEY is not set - the canary cannot see the pipeline."
             exit 1
@@ -107,6 +127,7 @@ jobs:
             {
               echo "status=canary_broken"
               echo "detail=n8n executions API unreachable (Event Router HTTP ${ROUTER_HTTP}, DRC HTTP ${DRC_HTTP}). Key expired, rotated, or n8n Cloud down."
+              echo "slack=${REMIND}"
             } >> "$GITHUB_OUTPUT"
             echo "::error::n8n API returned ${ROUTER_HTTP}/${DRC_HTTP} - cannot assess pipeline health."
             exit 1
@@ -118,6 +139,7 @@ jobs:
             {
               echo "status=canary_broken"
               echo "detail=n8n returned HTTP 200 but the response had no .data array. API shape changed."
+              echo "slack=${REMIND}"
             } >> "$GITHUB_OUTPUT"
             echo "::error::Unexpected response shape from the executions API."
             exit 1
@@ -151,6 +173,7 @@ jobs:
             {
               echo "status=pipeline_down"
               echo "detail=Event Router has NO executions on record. The GitHub webhook may be deleted or the workflow deactivated."
+              echo "slack=${REMIND}"
             } >> "$GITHUB_OUTPUT"
             echo "::error::Event Router has no executions at all."
             exit 1
@@ -163,6 +186,7 @@ jobs:
             {
               echo "status=pipeline_down"
               echo "detail=Event Router has been SILENT for ${AGE_H}h (threshold ${SILENCE_THRESHOLD_HOURS}h). No GitHub events are arriving - webhook deleted, or workflow deactivated."
+              echo "slack=${REMIND}"
             } >> "$GITHUB_OUTPUT"
             echo "::error::Event Router silent for ${AGE_H}h."
             exit 1
@@ -170,10 +194,22 @@ jobs:
 
           # --- Error check -------------------------------------------------
           if [ "$ROUTER_STREAK" -gt 0 ] || [ "$DRC_STREAK" -gt 0 ]; then
-            ERR_MSG=$(jq -r '.data[0].id // "?"' "$ROUTER_BODY")
+            ERR_ID=$(jq -r '.data[0].id // "?"' "$ROUTER_BODY")
+
+            # Slack only on FRESH breakage. A stale streak means a known-open
+            # incident that nobody has fixed yet - the red job already says so,
+            # and re-paging every 30 min just trains people to mute the channel.
+            AGE_M=$(( ( $(date -u +%s) - $(date -u -d "$LATEST_AT" +%s) ) / 60 ))
+            if [ "$AGE_M" -le "$ALERT_WINDOW_MINUTES" ]; then
+              echo "slack=true" >> "$GITHUB_OUTPUT"
+            else
+              echo "slack=false" >> "$GITHUB_OUTPUT"
+              echo "Known-open incident (newest failure ${AGE_M}m old) - job fails, Slack suppressed."
+            fi
+
             {
               echo "status=pipeline_down"
-              echo "detail=Event Router: ${ROUTER_STREAK} consecutive failed executions (latest id ${ERR_MSG}). DRC: ${DRC_STREAK}. GitHub events are being dropped - inbound automation is DEAD."
+              echo "detail=Event Router: ${ROUTER_STREAK} consecutive failed executions (latest id ${ERR_ID}, ${AGE_M}m old). DRC: ${DRC_STREAK}. GitHub events are being dropped - inbound automation is DEAD."
             } >> "$GITHUB_OUTPUT"
             echo "::error::Pipeline erroring - Event Router streak ${ROUTER_STREAK}, DRC streak ${DRC_STREAK}."
             exit 1
@@ -187,7 +223,7 @@ jobs:
         #   canary_broken -> a developer fixes the canary / rotates the key
         #   pipeline_down -> Gadget fixes credentials in the n8n UI
         # Folding them together costs a wasted escalation every time.
-        if: failure() && steps.probe.outputs.status != ''
+        if: failure() && steps.probe.outputs.slack == 'true'
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
           STATUS: ${{ steps.probe.outputs.status }}
