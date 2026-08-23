@@ -221,6 +221,13 @@ class ChangelogGenerator:
 
         changelog_text = "\n".join(changelog)
 
+        # Collapse runs of blank lines. Sections are joined with "\n" but each
+        # already ends in a newline, so the naive join yields doubled blanks,
+        # which markdownlint rejects (MD012/no-multiple-blanks). Because this
+        # file is committed with a skip-ci marker, the hook never runs here to
+        # catch it -- it surfaces instead on every unrelated PR.
+        changelog_text = re.sub(r"\n{3,}", "\n\n", changelog_text)
+
         # Save to file
         try:
             with open(output_file, "w", encoding="utf-8") as f:
