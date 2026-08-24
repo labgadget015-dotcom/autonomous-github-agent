@@ -43,6 +43,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 🐛 Bug Fixes
 
+- **ci**: bump gitleaks-action v2 -> v3 (Node 24 runtime) (#264) (b99e5c8)
 - suppress false-positive gitleaks findings in historical commits (#257) (a913ce9)
 - **autopilot**: yamllint colons/commas — unblocks pre-commit on all PRs (#225) (9e96d7a)
 - **gitleaks**: suppress false positives in Secret Detection job (37f2eab)
@@ -182,6 +183,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 🔨 Chores
 
+- rollback manifest entry [skip ci] (b780ace)
+- update CHANGELOG [skip ci] (3ee2abf)
 - rollback manifest entry [skip ci] (d8bd58e)
 - update CHANGELOG [skip ci] (8f65461)
 - **security**: add staged Gitleaks check (e3bbbab)
