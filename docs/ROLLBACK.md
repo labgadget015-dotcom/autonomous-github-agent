@@ -1,5 +1,18 @@
 # Rollback Manifest
 
+## e3bbbab — 2026-08-24 02:48 timezone.utc
+
+- **SHA**: `e3bbbab3efb3baec3ad50aeba4eaacf57c8f8bb9`
+- **Author**: GadgetAI
+- **Message**: chore(security): add staged Gitleaks check
+- **Files changed**: 2 file(s)
+
+**Changed files:**
+- `.gitleaksignore`
+- `.pre-commit-config.yaml`
+
+---
+
 ## 12e8e89 — 2026-08-24 02:29 timezone.utc
 
 - **SHA**: `12e8e89714a244358b99da8305142a76391b02c0`
