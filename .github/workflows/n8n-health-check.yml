@@ -1,5 +1,17 @@
 name: n8n Pipeline Health Check
 
+# SCOPE LIMIT - READ BEFORE TRUSTING THIS WORKFLOW'S GREEN.
+# This checks REACHABILITY ONLY: that n8n Cloud is serving HTTP.
+# It CANNOT detect a broken pipeline, and has already failed to twice
+# (2026-07-23 Normalise Issue Payload, 2026-08-22 HMAC secret unset).
+#   * The DRC probe below hits the "Route Health Ping" IF node, which returns
+#     Pong 200 BEFORE the auth gate and before any real work. A Pong proves
+#     n8n is up. It proves NOTHING about whether GitHub events are flowing.
+#   * Verified 2026-08-23: this workflow reported green while 20/20 consecutive
+#     Event Router executions were erroring and 100% of events were dropped.
+# The authoritative pipeline-health signal is `intake-canary.yml`, which polls
+# the n8n executions API. If the two disagree, the canary is right.
+
 on:
   schedule:
     # Every 6 hours
@@ -86,7 +98,7 @@ jobs:
                   \"fields\": [
                     {\"type\": \"mrkdwn\", \"text\": \"*DRC Webhook:* HTTP ${DRC_STATUS}\"},
                     {\"type\": \"mrkdwn\", \"text\": \"*n8n Host:* HTTP ${HOST_STATUS}\"},
-                    {\"type\": \"mrkdwn\", \"text\": \"*Impact:* GitHub events are not being routed through the DRC loop\"},
+                    {\"type\": \"mrkdwn\", \"text\": \"*Impact:* n8n Cloud is unreachable. NOTE: this check only measures reachability - see intake-canary.yml for actual pipeline health\"},
                     {\"type\": \"mrkdwn\", \"text\": \"*Action:* Check n8n.cloud status and verify workflows are active\"}
                   ]
                 },
@@ -116,12 +128,16 @@ jobs:
           DRC_STATUS=${{ steps.drc_ping.outputs.http_status }}
           HOST_STATUS=${{ steps.router_ping.outputs.http_status }}
 
-          echo "## n8n Pipeline Health" >> "$GITHUB_STEP_SUMMARY"
+          echo "## n8n Reachability (NOT pipeline health)" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "> This workflow only proves n8n Cloud is serving HTTP. The DRC probe" >> "$GITHUB_STEP_SUMMARY"
+          echo "> hits a Pong short-circuit and cannot see a broken pipeline." >> "$GITHUB_STEP_SUMMARY"
+          echo "> Authoritative signal: \`intake-canary.yml\`." >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
           echo "| Endpoint | HTTP Status | Status |" >> "$GITHUB_STEP_SUMMARY"
           echo "|----------|-------------|--------|" >> "$GITHUB_STEP_SUMMARY"
           if [ "$DRC_ALIVE" = "true" ]; then
-            echo "| DRC Webhook | \`${DRC_STATUS}\` | ✅ Reachable |" >> "$GITHUB_STEP_SUMMARY"
+            echo "| DRC Webhook | \`${DRC_STATUS}\` | ✅ Pong received (reachability only) |" >> "$GITHUB_STEP_SUMMARY"
           else
             echo "| DRC Webhook | \`${DRC_STATUS}\` | 🔴 Unreachable |" >> "$GITHUB_STEP_SUMMARY"
           fi

@@ -221,10 +221,22 @@ class ChangelogGenerator:
 
         changelog_text = "\n".join(changelog)
 
+        # Collapse runs of blank lines. Sections are joined with "\n" but each
+        # already ends in a newline, so the naive join yields doubled blanks,
+        # which markdownlint rejects (MD012/no-multiple-blanks). Because this
+        # file is committed with a skip-ci marker, the hook never runs here to
+        # catch it -- it surfaces instead on every unrelated PR.
+        changelog_text = re.sub(r"\n{3,}", "\n\n", changelog_text)
+
         # Save to file
         try:
             with open(output_file, "w", encoding="utf-8") as f:
-                f.write(changelog_text)
+                # Trailing newline is required. Without it end-of-file-fixer
+                # rewrites CHANGELOG.md on every subsequent PR, and because
+                # this file is committed with [skip ci] the hook never runs
+                # here to correct it. That tripped pre-commit-ci.yml's
+                # auto-fix step on PRs that do not touch CHANGELOG.md at all.
+                f.write(changelog_text + "\n")
             print(f"✅ Changelog generated: {output_file}")
         except Exception as e:
             print(f"❌ Error saving changelog: {e}")
