@@ -130,12 +130,3 @@ jobs:
         run: |
           echo "::error::Pre-commit checks failed. Please run 'pre-commit run --all-files' locally to fix issues."
           exit 1
-
-      - name: Upload pre-commit results
-        if: always()
-        uses: actions/upload-artifact@v6
-        with:
-          name: pre-commit-results
-          path: |
-            .pre-commit-config.yaml
-          retention-days: 7
