@@ -5,10 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased] - 2026-08-21
+## [Unreleased] - 2026-08-24
 
 ### ✨ Features
 
+- **ci**: intake canary — detect the silent GitHub→DRC outage class (+ unblock repo-wide pre-commit failures) (#262) (12e8e89)
 - **core**: global incident freeze kill-switch (#241) (3be209c)
 - **autopilot**: PR Dependency Graph Resolver with tier labelling (#185) (d520daa)
 - **deps**: PyPI-backed dependency audit + draft-PR autopilot (#211) (31f8627)
@@ -180,6 +181,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 🔨 Chores
 
+- rollback manifest entry [skip ci] (b7cc8f0)
+- update CHANGELOG [skip ci] (4945bd4)
 - update CHANGELOG [skip ci] (2e6b5d4)
 - rollback manifest entry [skip ci] (4d64f7c)
 - update CHANGELOG [skip ci] (594f530)
