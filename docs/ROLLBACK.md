@@ -1,5 +1,17 @@
 # Rollback Manifest
 
+## c80c75b — 2026-08-24 02:51 timezone.utc
+
+- **SHA**: `c80c75bb5f5940f8bb5475ce514963adf027fa56`
+- **Author**: GadgetAI
+- **Message**: ci: remove empty pre-commit artifact upload
+- **Files changed**: 1 file(s)
+
+**Changed files:**
+- `.github/workflows/pre-commit-ci.yml`
+
+---
+
 ## e3bbbab — 2026-08-24 02:48 timezone.utc
 
 - **SHA**: `e3bbbab3efb3baec3ad50aeba4eaacf57c8f8bb9`
