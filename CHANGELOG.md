@@ -181,6 +181,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 🔨 Chores
 
+- **security**: add staged Gitleaks check (e3bbbab)
+- rollback manifest entry [skip ci] (27ee3bf)
+- update CHANGELOG [skip ci] (960861a)
 - rollback manifest entry [skip ci] (b7cc8f0)
 - update CHANGELOG [skip ci] (4945bd4)
 - update CHANGELOG [skip ci] (2e6b5d4)
