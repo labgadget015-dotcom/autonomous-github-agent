@@ -63,25 +63,50 @@ jobs:
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
 
-          # Check if there are changes to commit
-          if ! git diff --quiet; then
-            echo "Auto-fixing issues found by pre-commit hooks..."
-            # Only stage files that are part of THIS PR's diff, so unrelated
-            # repo-wide reformatting is never dragged into the PR.
-            mapfile -t changed < <(git diff --name-only "origin/${{ github.event.pull_request.base.ref }}...HEAD")
-            if [ ${#changed[@]} -eq 0 ]; then
-              echo "No PR-diff files to auto-fix; skipping commit."
-            else
-              git add "${changed[@]}"
-              git commit -m "style: auto-fix pre-commit issues [skip ci]"
-              if for i in 1 2 3; do git pull --rebase origin "${{ github.head_ref }}" && git push origin "HEAD:${{ github.head_ref }}" && break || sleep $((i * 5)); done; then
-                echo "AUTO_FIXED=true" >> $GITHUB_ENV
-              else
-                echo "::warning::Auto-fix push failed (fork/restricted branch) — manual pull required"
-              fi
-            fi
-          else
+          if git diff --quiet; then
             echo "No auto-fixable changes found"
+            exit 0
+          fi
+
+          echo "Auto-fixing issues found by pre-commit hooks..."
+
+          # `pre-commit run --all-files` scans the whole repo, so it can modify
+          # files this PR never touched. Split what it changed into two sets.
+          git diff --name-only | sort -u > "$RUNNER_TEMP/touched.txt"
+          git diff --name-only "origin/${{ github.event.pull_request.base.ref }}...HEAD" \
+            | sort -u > "$RUNNER_TEMP/in_pr.txt"
+          comm -12 "$RUNNER_TEMP/touched.txt" "$RUNNER_TEMP/in_pr.txt" > "$RUNNER_TEMP/fixable.txt"
+          comm -23 "$RUNNER_TEMP/touched.txt" "$RUNNER_TEMP/in_pr.txt" > "$RUNNER_TEMP/outside.txt"
+
+          # Files outside this PR's diff are pre-existing repo debt. Never stage
+          # them (that was the #213 footgun), but DO report them - they are the
+          # usual reason this job reddens a PR that did not cause the violation.
+          if [ -s "$RUNNER_TEMP/outside.txt" ]; then
+            echo "::warning::pre-commit modified $(wc -l < "$RUNNER_TEMP/outside.txt") file(s) OUTSIDE this PR's diff - pre-existing repo debt, deliberately not staged:"
+            sed 's/^/  /' "$RUNNER_TEMP/outside.txt"
+          fi
+
+          if [ ! -s "$RUNNER_TEMP/fixable.txt" ]; then
+            echo "No PR-diff files to auto-fix; skipping commit."
+            exit 0
+          fi
+
+          xargs -a "$RUNNER_TEMP/fixable.txt" -d '\n' -r git add --
+
+          # A file can be in the PR diff yet left untouched by the hooks, so the
+          # add above may stage nothing at all. `git commit` then exits 1 and,
+          # because GitHub runs steps under `bash -e`, kills this step for a
+          # non-reason. That is the defect this guard closes.
+          if git diff --cached --quiet; then
+            echo "Nothing staged after add; skipping commit."
+            exit 0
+          fi
+
+          git commit -m "style: auto-fix pre-commit issues [skip ci]"
+          if for i in 1 2 3; do git pull --rebase origin "${{ github.head_ref }}" && git push origin "HEAD:${{ github.head_ref }}" && break || sleep $((i * 5)); done; then
+            echo "AUTO_FIXED=true" >> $GITHUB_ENV
+          else
+            echo "::warning::Auto-fix push failed (fork/restricted branch) — manual pull required"
           fi
 
       - name: Comment on PR
