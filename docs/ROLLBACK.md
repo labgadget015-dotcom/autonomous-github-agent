@@ -1,5 +1,17 @@
 # Rollback Manifest
 
+## b99e5c8 — 2026-08-24 02:59 timezone.utc
+
+- **SHA**: `b99e5c80f5a91cf7d97ce4e6ec7d75ac5d664324`
+- **Author**: Gadget Lab
+- **Message**: fix(ci): bump gitleaks-action v2 -> v3 (Node 24 runtime) (#264)
+- **Files changed**: 1 file(s)
+
+**Changed files:**
+- `.github/workflows/security_scan.yml`
+
+---
+
 ## c80c75b — 2026-08-24 02:51 timezone.utc
 
 - **SHA**: `c80c75bb5f5940f8bb5475ce514963adf027fa56`
