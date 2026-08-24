@@ -175,12 +175,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 👷 CI/CD
 
+- remove empty pre-commit artifact upload (c80c75b)
 - align workflow coverage sets with pytest.ini (fix PR pipeline 58.99%<70% gate) (4ffe36b)
 - fix update-dashboard commit step (staged-only check, optional coverage.svg) (383249b)
 - lower coverage threshold to 55% (realistic baseline) (05866b6)
 
 ### 🔨 Chores
 
+- rollback manifest entry [skip ci] (d8bd58e)
+- update CHANGELOG [skip ci] (8f65461)
 - **security**: add staged Gitleaks check (e3bbbab)
 - rollback manifest entry [skip ci] (27ee3bf)
 - update CHANGELOG [skip ci] (960861a)
