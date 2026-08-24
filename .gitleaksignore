@@ -35,6 +35,9 @@ f782cc6a4792af9c968c2fe2420f481b158230ba:docs/inventory/services.yaml:generic-ap
 8e2cd7439e3abefe4fdf418e268715c0059c7e96:docs/inventory/services.yaml:generic-api-key:233
 8e2cd7439e3abefe4fdf418e268715c0059c7e96:docs/inventory/services.yaml:generic-api-key:246
 
+# docs/LANDING_PAGE_CONFIG.json — Stripe publishable key (public client identifier)
+45cf44e93171ba85ea13e931f58870f876157521:docs/LANDING_PAGE_CONFIG.json:stripe-access-token:272
+
 # tests/unit/test_llm_provider.py — claude-3-opus-20240229 model name (fixture)
 055f66a16495f3ec616263e5d39fd63eece1a134:tests/unit/test_llm_provider.py:generic-api-key:167
 
