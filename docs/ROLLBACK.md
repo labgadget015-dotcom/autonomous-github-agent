@@ -1,5 +1,20 @@
 # Rollback Manifest
 
+## 12e8e89 — 2026-08-24 02:29 timezone.utc
+
+- **SHA**: `12e8e89714a244358b99da8305142a76391b02c0`
+- **Author**: Gadget Lab
+- **Message**: feat(ci): intake canary — detect the silent GitHub→DRC outage class (+ unblock repo-wide pre-commit failures) (#262)
+- **Files changed**: 4 file(s)
+
+**Changed files:**
+- `.github/scripts/changelog_generator.py`
+- `.github/workflows/intake-canary.yml`
+- `.github/workflows/n8n-health-check.yml`
+- `CHANGELOG.md`
+
+---
+
 ## a913ce9 — 2026-08-21 03:35 timezone.utc
 
 - **SHA**: `a913ce9851cafe52854d19a4d16ec0f9193d9625`
