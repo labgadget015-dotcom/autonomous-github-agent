@@ -1,2 +1,2 @@
-temporary probe to exercise the auto-fix path   
+temporary probe to exercise the auto-fix path
 no trailing newline here
