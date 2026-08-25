@@ -1,5 +1,14 @@
 # Rollback Manifest
 
+## cf23668 — 2026-08-25 12:10 timezone.utc
+
+- **SHA**: `cf23668f2012679caef99d2bd344967ee2a0816d`
+- **Author**: Copilot
+- **Message**: Initial plan (#267)
+- **Files changed**: 0 file(s)
+
+---
+
 ## b99e5c8 — 2026-08-24 02:59 timezone.utc
 
 - **SHA**: `b99e5c80f5a91cf7d97ce4e6ec7d75ac5d664324`
