@@ -1,8 +1,8 @@
-name: n8n Pipeline Health Check
+name: n8n Reachability Check
 
 # SCOPE LIMIT - READ BEFORE TRUSTING THIS WORKFLOW'S GREEN.
 # This checks REACHABILITY ONLY: that n8n Cloud is serving HTTP.
-# It CANNOT detect a broken pipeline, and has already failed to twice
+# It CANNOT detect a broken pipeline, and has already failed twice
 # (2026-07-23 Normalise Issue Payload, 2026-08-22 HMAC secret unset).
 #   * The DRC probe below hits the "Route Health Ping" IF node, which returns
 #     Pong 200 BEFORE the auth gate and before any real work. A Pong proves
