@@ -1,5 +1,18 @@
 # Rollback Manifest
 
+## 4dbe7cb — 2026-08-26 04:47 timezone.utc
+
+- **SHA**: `4dbe7cb959335b40466d5158db7d5c36046d545c`
+- **Author**: Copilot
+- **Message**: fix(ci): implement unmerged PR #262 review fixes in intake-canary and n8n-health-check (#269)
+- **Files changed**: 2 file(s)
+
+**Changed files:**
+- `.github/workflows/intake-canary.yml`
+- `.github/workflows/n8n-health-check.yml`
+
+---
+
 ## cf23668 — 2026-08-25 12:10 timezone.utc
 
 - **SHA**: `cf23668f2012679caef99d2bd344967ee2a0816d`
