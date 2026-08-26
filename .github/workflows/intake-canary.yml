@@ -134,16 +134,22 @@ jobs:
           fi
 
           # Shape guard: a 200 that is not the expected envelope is also a
-          # canary fault, not a healthy pipeline.
-          if ! jq -e '.data | type == "array"' "$ROUTER_BODY" >/dev/null 2>&1; then
-            {
-              echo "status=canary_broken"
-              echo "detail=n8n returned HTTP 200 but the response had no .data array. API shape changed."
-              echo "slack=${REMIND}"
-            } >> "$GITHUB_OUTPUT"
-            echo "::error::Unexpected response shape from the executions API."
-            exit 1
-          fi
+          # canary fault, not a healthy pipeline. Both bodies are validated so
+          # a malformed DRC response cannot produce a non-numeric streak and
+          # silently suppress the Slack alert.
+          for _body_check in "$ROUTER_BODY:Event Router" "$DRC_BODY:DRC Agent Loop"; do
+            _file="${_body_check%%:*}"
+            _label="${_body_check##*:}"
+            if ! jq -e '.data | type == "array"' "$_file" >/dev/null 2>&1; then
+              {
+                echo "status=canary_broken"
+                echo "detail=n8n returned HTTP 200 for ${_label} but the response had no .data array. API shape changed."
+                echo "slack=${REMIND}"
+              } >> "$GITHUB_OUTPUT"
+              echo "::error::Unexpected response shape from the executions API (${_label})."
+              exit 1
+            fi
+          done
 
           # --- Consecutive-error streak, newest first ----------------------
           # Chosen over "any error in the last N hours" so the signal SELF-CLEARS:
@@ -179,10 +185,11 @@ jobs:
             exit 1
           fi
 
-          AGE_H=$(( ( $(date -u +%s) - $(date -u -d "$LATEST_AT" +%s) ) / 3600 ))
+          AGE_S=$(( $(date -u +%s) - $(date -u -d "$LATEST_AT" +%s) ))
+          AGE_H=$(( AGE_S / 3600 ))
           echo "Event Router last execution age: ${AGE_H}h (threshold ${SILENCE_THRESHOLD_HOURS}h)"
 
-          if [ "$AGE_H" -gt "$SILENCE_THRESHOLD_HOURS" ]; then
+          if [ "$AGE_S" -gt $(( SILENCE_THRESHOLD_HOURS * 3600 )) ]; then
             {
               echo "status=pipeline_down"
               echo "detail=Event Router has been SILENT for ${AGE_H}h (threshold ${SILENCE_THRESHOLD_HOURS}h). No GitHub events are arriving - webhook deleted, or workflow deactivated."
