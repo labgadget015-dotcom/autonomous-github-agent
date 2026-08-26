@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased] - 2026-08-25
+## [Unreleased] - 2026-08-26
 
 ### ✨ Features
 
@@ -43,6 +43,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 🐛 Bug Fixes
 
+- **ci**: implement unmerged PR #262 review fixes in intake-canary and n8n-health-check (#269) (4dbe7cb)
 - **ci**: stop pre-commit auto-fix failing when nothing is staged (#265) (fd67de6)
 - **ci**: bump gitleaks-action v2 -> v3 (Node 24 runtime) (#264) (b99e5c8)
 - suppress false-positive gitleaks findings in historical commits (#257) (a913ce9)
@@ -184,6 +185,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 🔨 Chores
 
+- rollback manifest entry [skip ci] (9634f75)
+- update CHANGELOG [skip ci] (8647588)
 - rollback manifest entry [skip ci] (f7939b0)
 - update CHANGELOG [skip ci] (0ee52ec)
 - rollback manifest entry [skip ci] (b780ace)
