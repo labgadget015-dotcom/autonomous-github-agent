@@ -1,5 +1,18 @@
 # Rollback Manifest
 
+## b609ce1 — 2026-08-27 06:29 timezone.utc
+
+- **SHA**: `b609ce1ffd79113d7cc00ae77b172c9e36e596ea`
+- **Author**: Gadget Lab
+- **Message**: docs: note .venv fix (include-system-site-packages=true) so test commands work (#274)
+- **Files changed**: 2 file(s)
+
+**Changed files:**
+- `.devcontainer/devcontainer-lock.json`
+- `CLAUDE.md`
+
+---
+
 ## 4dbe7cb — 2026-08-26 04:47 timezone.utc
 
 - **SHA**: `4dbe7cb959335b40466d5158db7d5c36046d545c`
