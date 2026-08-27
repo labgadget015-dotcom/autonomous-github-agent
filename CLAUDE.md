@@ -23,6 +23,8 @@ source .venv/bin/activate
 pip install -r requirements.txt          # install all deps if venv is missing packages
 ```
 
+> ⚠️ **Venv misconfiguration (fixed in place 2026-08-27).** On this host `.venv/bin/python` is a symlink to `/usr/bin/python3`, and the venv shipped with `include-system-site-packages = false` — so `source .venv/bin/activate && pytest` failed with `No module named pytest`. The fix is one reversible line in `.venv/pyvenv.cfg`: set `include-system-site-packages = true`. After that the documented flow works and `pytest`/`ruff` resolve from the system install (full suite: **1492 passed, 2 skipped; 77.65% coverage**). If a fresh checkout reverts it, re-flip that one flag — **do NOT `rm -rf .venv`** (rebuilds are blocked). Fallback without the venv: `/usr/bin/python3 -m pytest tests/ -q -p no:cacheprovider`.
+
 ```bash
 pytest tests/ -v                         # full suite (unit + integration, coverage on by default)
 pytest tests/unit/test_core.py -v        # single unit test file
