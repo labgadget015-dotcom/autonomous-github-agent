@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased] - 2026-08-26
+## [Unreleased] - 2026-08-27
 
 ### ✨ Features
 
@@ -151,6 +151,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 📚 Documentation
 
+- note .venv fix (include-system-site-packages=true) so test commands work (#274) (b609ce1)
 - **vision**: mark 'compress timelines' as measured via DORA lead-time metric (#208) (882a6a7)
 - correct package-duplication analysis; record decision to keep dual trees (no merge) (401c2d6)
 - **inventory**: record confirmed tim-postgres host + Neon migration + slack manifest (3327d94)
@@ -185,6 +186,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 🔨 Chores
 
+- rollback manifest entry [skip ci] (7f2f8f8)
+- update CHANGELOG [skip ci] (052696c)
 - rollback manifest entry [skip ci] (9634f75)
 - update CHANGELOG [skip ci] (8647588)
 - rollback manifest entry [skip ci] (f7939b0)
