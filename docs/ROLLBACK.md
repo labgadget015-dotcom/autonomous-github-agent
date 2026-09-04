@@ -1,5 +1,25 @@
 # Rollback Manifest
 
+## 22ac201 — 2026-09-04 08:00 timezone.utc
+
+- **SHA**: `22ac20191c53936f1ff83b1ca21afb46545c8323`
+- **Author**: Gadget Lab
+- **Message**: chore(actions): bump Node 20 actions to Node 24 before Sep 16 removal (#282)
+- **Files changed**: 9 file(s)
+
+**Changed files:**
+- `.github/workflows/auto-pr.yml`
+- `.github/workflows/changelog.yml`
+- `.github/workflows/daily-summary.yml`
+- `.github/workflows/dependabot-automerge.yml`
+- `.github/workflows/deploy-landing.yml`
+- `.github/workflows/release-and-publish.yml`
+- `.github/workflows/set-vercel-env.yml`
+- `.github/workflows/stale-pr-handler.yml`
+- `action.yml`
+
+---
+
 ## b609ce1 — 2026-08-27 06:29 timezone.utc
 
 - **SHA**: `b609ce1ffd79113d7cc00ae77b172c9e36e596ea`
