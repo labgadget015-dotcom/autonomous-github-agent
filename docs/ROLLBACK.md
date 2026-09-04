@@ -1,5 +1,17 @@
 # Rollback Manifest
 
+## 3d2aa0f — 2026-09-04 09:18 timezone.utc
+
+- **SHA**: `3d2aa0f651f9121385e77d4bc23d2d8d3a854453`
+- **Author**: Gadget Lab
+- **Message**: ci: add weekly DRC end-to-end canary (#286)
+- **Files changed**: 1 file(s)
+
+**Changed files:**
+- `.github/workflows/drc-e2e-canary.yml`
+
+---
+
 ## 22ac201 — 2026-09-04 08:00 timezone.utc
 
 - **SHA**: `22ac20191c53936f1ff83b1ca21afb46545c8323`
