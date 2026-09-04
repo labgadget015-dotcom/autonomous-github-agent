@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased] - 2026-08-27
+## [Unreleased] - 2026-09-04
 
 ### ✨ Features
 
@@ -186,6 +186,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 🔨 Chores
 
+- **actions**: bump Node 20 actions to Node 24 before Sep 16 removal (#282) (22ac201)
+- update CHANGELOG [skip ci] (de87124)
+- rollback manifest entry [skip ci] (26c2e8f)
 - rollback manifest entry [skip ci] (7f2f8f8)
 - update CHANGELOG [skip ci] (052696c)
 - rollback manifest entry [skip ci] (9634f75)
