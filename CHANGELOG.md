@@ -179,6 +179,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 👷 CI/CD
 
+- add weekly DRC end-to-end canary (#286) (3d2aa0f)
 - remove empty pre-commit artifact upload (c80c75b)
 - align workflow coverage sets with pytest.ini (fix PR pipeline 58.99%<70% gate) (4ffe36b)
 - fix update-dashboard commit step (staged-only check, optional coverage.svg) (383249b)
@@ -186,6 +187,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 🔨 Chores
 
+- update CHANGELOG [skip ci] (46daab5)
+- rollback manifest entry [skip ci] (8ecacd1)
 - **actions**: bump Node 20 actions to Node 24 before Sep 16 removal (#282) (22ac201)
 - update CHANGELOG [skip ci] (de87124)
 - rollback manifest entry [skip ci] (26c2e8f)
