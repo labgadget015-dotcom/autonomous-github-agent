@@ -1,0 +1,127 @@
+name: DRC End-to-End Canary
+
+# Proves the whole intake path works: GitHub webhook -> HMAC validation ->
+# Event Router -> DRC council -> row in tim.agent_runs.
+#
+# Why this exists: the Event Router drops senders ending in "[bot]", so the
+# nightly Daily Repository Summary issues never reach the council. Until
+# 2026-09-04 the only recurring event that traversed the full path was the PR
+# Triage Pipeline's daily rewrite of issue #164, which was removed because it
+# re-ran the council on an unchanged premise every morning. Without this canary
+# there is no routine end-to-end signal, and the Intake Canary only proves the
+# n8n API is reachable, not that the path works.
+#
+# Cost: one council run per week.
+#
+# The assertion deliberately inspects the "Store to TIM Postgres" node output
+# rather than just the execution status. That node masks its own errors with
+# onError=continueRegularOutput, so a failed write still reports a green
+# execution. That exact failure silently dropped audit rows (issue #284).
+
+on:
+  schedule:
+    - cron: '40 7 * * 1'   # Mondays 07:40 UTC, after the 07:00 stale handler
+  workflow_dispatch:
+
+permissions:
+  issues: write
+
+env:
+  DRC_WORKFLOW_ID: Wlfhgk4sUfXJcU4D
+  N8N_BASE: https://gadgetlab.app.n8n.cloud
+
+jobs:
+  canary:
+    name: "Prove the DRC path end to end"
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: "Record start time"
+        id: t0
+        run: echo "value=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_OUTPUT"
+
+      - name: "Open canary issue"
+        id: open
+        env:
+          # GH_PAT, not GITHUB_TOKEN: the Event Router drops any sender whose
+          # login ends in "[bot]", and GITHUB_TOKEN posts as github-actions[bot].
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
+          set -euo pipefail
+          body=$(cat <<'EOF'
+          Automated weekly canary. Safe to close.
+
+          Context: this line is colon-led, the shape that broke the concatenated INSERT.
+          Quotes: it's got 'single', "double", and \backslashes\ plus a lone $1.
+
+          Expected: one row in tim.agent_runs whose issue_body matches this text.
+          EOF
+          )
+          url=$(gh issue create \
+            --repo "${{ github.repository }}" \
+            --title "[DRC CANARY] weekly end-to-end check $(date -u +%Y-%m-%d)" \
+            --body "$body")
+          echo "number=${url##*/}" >> "$GITHUB_OUTPUT"
+          echo "Opened $url"
+
+      - name: "Wait for a council run and assert the audit write"
+        id: assert
+        env:
+          N8N_API_KEY: ${{ secrets.N8N_API_KEY }}
+          SINCE: ${{ steps.t0.outputs.value }}
+        run: |
+          set -euo pipefail
+          exec_id=""
+          for _ in $(seq 1 40); do
+            exec_id=$(curl -sS -H "X-N8N-API-KEY: $N8N_API_KEY" \
+              "$N8N_BASE/api/v1/executions?workflowId=$DRC_WORKFLOW_ID&limit=20" \
+              | jq -r --arg since "$SINCE" \
+                  '[.data[] | select(.startedAt > $since) | select(.status != "running")]
+                   | sort_by(.startedAt) | last | .id // ""')
+            [ -n "$exec_id" ] && break
+            sleep 15
+          done
+
+          if [ -z "$exec_id" ]; then
+            echo "::error::No DRC execution completed within 10 minutes of opening the canary issue. Intake is broken."
+            exit 1
+          fi
+          echo "DRC execution: $exec_id"
+
+          node=$(curl -sS -H "X-N8N-API-KEY: $N8N_API_KEY" \
+            "$N8N_BASE/api/v1/executions/$exec_id?includeData=true" \
+            | jq -c '.data.resultData.runData["Store to TIM Postgres"][0].data.main[0][0].json // {}')
+
+          # A successful write returns the RETURNING clause. A masked failure
+          # returns an object carrying "error" while the execution stays green.
+          if echo "$node" | jq -e 'has("error")' >/dev/null; then
+            echo "::error::The council ran but the audit write failed silently. $(echo "$node" | jq -r '.message // "no message"')"
+            exit 1
+          fi
+          if ! echo "$node" | jq -e 'has("id") and has("run_id")' >/dev/null; then
+            echo "::error::The audit node returned no row id. Output was: $node"
+            exit 1
+          fi
+          echo "Audit row written: $(echo "$node" | jq -c '{id, run_id, final_recommendation}')"
+
+      - name: "Close the canary issue"
+        if: always() && steps.open.outputs.number != ''
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
+          gh issue close "${{ steps.open.outputs.number }}" \
+            --repo "${{ github.repository }}" \
+            --reason completed \
+            --comment "Canary complete. Result: ${{ steps.assert.outcome }}."
+
+      - name: "Alert Slack on failure"
+        if: failure()
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          # The secrets context is not allowed in an `if`, so gate here instead.
+          [ -n "${SLACK_WEBHOOK_URL:-}" ] || { echo "No Slack webhook configured; skipping alert."; exit 0; }
+          curl -sS -X POST -H 'Content-Type: application/json' \
+            -d "{\"text\":\"DRC end-to-end canary FAILED. The intake path is not delivering audit rows. Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\"}" \
+            "$SLACK_WEBHOOK_URL"
