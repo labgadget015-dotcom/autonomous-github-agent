@@ -129,7 +129,12 @@ class LLMRouter:
                     "messages": [{"role": "user", "content": prompt}],
                     "stream": False,
                 },
-                timeout=30,
+                # 45s (was 30s): a cold Ollama model load can approach 30s on its
+                # own before any inference happens, tripping the old timeout and
+                # silently falling through to paid cloud (see docstring above).
+                # Warm calls finish in ~2-13s regardless, so this only helps the
+                # cold-start case and does not slow the common path.
+                timeout=45,
             )
             r.raise_for_status()
             data = r.json()
