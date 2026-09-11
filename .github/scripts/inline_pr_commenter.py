@@ -263,21 +263,39 @@ Function `{name}` has a cyclomatic complexity of **{complexity}** (threshold: 10
         except SyntaxError:
             return False
 
-        for node in ast.walk(tree):
-            if (
-                isinstance(node, ast.Call)
-                and isinstance(node.func, ast.Attribute)
-                and node.func.attr in {"execute", "executemany"}
-                and len(node.args) >= 2
-            ):
-                first_arg = node.args[0]
-                if isinstance(first_arg, ast.Constant) and isinstance(
-                    first_arg.value, str
+        literal_queries: dict[str, str] = {}
+
+        for stmt in tree.body:
+            if isinstance(stmt, ast.Assign) and len(stmt.targets) == 1:
+                target = stmt.targets[0]
+                if (
+                    isinstance(target, ast.Name)
+                    and isinstance(stmt.value, ast.Constant)
+                    and isinstance(stmt.value.value, str)
                 ):
-                    return any(
-                        re.search(pattern, first_arg.value)
+                    literal_queries[target.id] = stmt.value.value
+
+            for node in ast.walk(stmt):
+                if (
+                    isinstance(node, ast.Call)
+                    and isinstance(node.func, ast.Attribute)
+                    and node.func.attr in {"execute", "executemany"}
+                    and len(node.args) >= 2
+                ):
+                    first_arg = node.args[0]
+                    query_text = None
+                    if isinstance(first_arg, ast.Constant) and isinstance(
+                        first_arg.value, str
+                    ):
+                        query_text = first_arg.value
+                    elif isinstance(first_arg, ast.Name):
+                        query_text = literal_queries.get(first_arg.id)
+
+                    if query_text and any(
+                        re.search(pattern, query_text)
                         for pattern in (r"%s", r"%\([^)]+\)s", r"\?", r":[A-Za-z_]\w*")
-                    )
+                    ):
+                        return True
 
         return False
 
