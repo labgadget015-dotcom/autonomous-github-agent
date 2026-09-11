@@ -5,6 +5,8 @@ Monitors code quality metrics and automatically creates GitHub issues when thres
 """
 
 import json
+import re
+import ast
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -146,6 +148,8 @@ class ThresholdMonitor:
             severity_map = {"HIGH": "critical", "MEDIUM": "high", "LOW": "medium"}
 
             severity = severity_map.get(issue.get("issue_severity", "LOW"), "low")
+            if self._is_likely_safe_b608(issue):
+                severity = "medium"
 
             violations.append(
                 {
@@ -160,6 +164,70 @@ class ThresholdMonitor:
             )
 
         return violations
+
+    @staticmethod
+    def _is_likely_safe_b608(issue: dict) -> bool:
+        """Detect B608 findings that already pass query values separately."""
+        if issue.get("test_id") != "B608":
+            return False
+
+        code = str(issue.get("code", ""))
+        if not code:
+            return False
+
+        try:
+            tree = ast.parse(code)
+        except SyntaxError:
+            return False
+
+        literal_queries: dict[str, str] = {}
+
+        for stmt in tree.body:
+            for target, value in ThresholdMonitor._iter_name_assignments(stmt):
+                if isinstance(value, ast.Constant) and isinstance(value.value, str):
+                    literal_queries[target] = value.value
+                else:
+                    literal_queries.pop(target, None)
+
+            for node in ast.walk(stmt):
+                if (
+                    isinstance(node, ast.Call)
+                    and isinstance(node.func, ast.Attribute)
+                    and node.func.attr in {"execute", "executemany"}
+                    and len(node.args) >= 2
+                ):
+                    first_arg = node.args[0]
+                    query_text = None
+                    if isinstance(first_arg, ast.Constant) and isinstance(
+                        first_arg.value, str
+                    ):
+                        query_text = first_arg.value
+                    elif isinstance(first_arg, ast.Name):
+                        query_text = literal_queries.get(first_arg.id)
+
+                    if query_text and any(
+                        re.search(pattern, query_text)
+                        for pattern in (r"%s", r"%\([^)]+\)s", r"\?", r":[A-Za-z_]\w*")
+                    ):
+                        return True
+
+        return False
+
+    @staticmethod
+    def _iter_name_assignments(stmt: ast.stmt) -> list[tuple[str, ast.AST]]:
+        """Return simple name assignments from a statement in execution order."""
+        if isinstance(stmt, ast.Assign):
+            return [
+                (target.id, stmt.value)
+                for target in stmt.targets
+                if isinstance(target, ast.Name)
+            ]
+        if isinstance(stmt, ast.AnnAssign) and isinstance(stmt.target, ast.Name):
+            value = stmt.value if stmt.value is not None else ast.Constant(value=None)
+            return [(stmt.target.id, value)]
+        if isinstance(stmt, ast.AugAssign) and isinstance(stmt.target, ast.Name):
+            return [(stmt.target.id, stmt.value)]
+        return []
 
     def create_github_issue(self, violation: dict) -> dict:
         """Create GitHub issue data for violation"""

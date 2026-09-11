@@ -80,6 +80,116 @@ class TestLoadAnalysisResults:
         result = bot.load_analysis_results()
         assert any("module.py" in r["path"] for r in result)
 
+    def test_downgrades_safe_b608_result(self, monkeypatch, tmp_path):
+        monkeypatch.chdir(tmp_path)
+        bandit_data = {
+            "results": [
+                {
+                    "filename": "module.py",
+                    "line_number": 5,
+                    "issue_severity": "HIGH",
+                    "issue_text": "Possible SQL injection vector through string-based query construction.",
+                    "issue_confidence": "HIGH",
+                    "test_id": "B608",
+                    "code": 'cursor.execute("SELECT * FROM users WHERE id = %s", (user_id,))',
+                }
+            ]
+        }
+        (tmp_path / "bandit-report.json").write_text(json.dumps(bandit_data))
+        bot = _make_bot(monkeypatch)
+        result = bot.load_analysis_results()
+        assert result[0]["severity"] == "low"
+
+    def test_keeps_unsafe_b608_with_sql_commas_at_high_severity(
+        self, monkeypatch, tmp_path
+    ):
+        monkeypatch.chdir(tmp_path)
+        bandit_data = {
+            "results": [
+                {
+                    "filename": "module.py",
+                    "line_number": 5,
+                    "issue_severity": "HIGH",
+                    "issue_text": "Possible SQL injection vector through string-based query construction.",
+                    "issue_confidence": "HIGH",
+                    "test_id": "B608",
+                    "code": 'cursor.execute("SELECT a, b FROM users WHERE id = %s" % user_id)',
+                }
+            ]
+        }
+        (tmp_path / "bandit-report.json").write_text(json.dumps(bandit_data))
+        bot = _make_bot(monkeypatch)
+        result = bot.load_analysis_results()
+        assert result[0]["severity"] == "high"
+
+    def test_keeps_dynamic_query_variable_b608_at_high_severity(
+        self, monkeypatch, tmp_path
+    ):
+        monkeypatch.chdir(tmp_path)
+        bandit_data = {
+            "results": [
+                {
+                    "filename": "module.py",
+                    "line_number": 5,
+                    "issue_severity": "HIGH",
+                    "issue_text": "Possible SQL injection vector through string-based query construction.",
+                    "issue_confidence": "HIGH",
+                    "test_id": "B608",
+                    "code": 'query = f"SELECT * FROM users WHERE owner = {owner} AND id = %s"\n'
+                    "cursor.execute(query, (user_id,))",
+                }
+            ]
+        }
+        (tmp_path / "bandit-report.json").write_text(json.dumps(bandit_data))
+        bot = _make_bot(monkeypatch)
+        result = bot.load_analysis_results()
+        assert result[0]["severity"] == "high"
+
+    def test_downgrades_literal_query_variable_b608(self, monkeypatch, tmp_path):
+        monkeypatch.chdir(tmp_path)
+        bandit_data = {
+            "results": [
+                {
+                    "filename": "module.py",
+                    "line_number": 5,
+                    "issue_severity": "HIGH",
+                    "issue_text": "Possible SQL injection vector through string-based query construction.",
+                    "issue_confidence": "HIGH",
+                    "test_id": "B608",
+                    "code": 'query = "SELECT * FROM users WHERE id = %s"\n'
+                    "cursor.execute(query, (user_id,))",
+                }
+            ]
+        }
+        (tmp_path / "bandit-report.json").write_text(json.dumps(bandit_data))
+        bot = _make_bot(monkeypatch)
+        result = bot.load_analysis_results()
+        assert result[0]["severity"] == "low"
+
+    def test_keeps_reassigned_query_variable_b608_at_high_severity(
+        self, monkeypatch, tmp_path
+    ):
+        monkeypatch.chdir(tmp_path)
+        bandit_data = {
+            "results": [
+                {
+                    "filename": "module.py",
+                    "line_number": 5,
+                    "issue_severity": "HIGH",
+                    "issue_text": "Possible SQL injection vector through string-based query construction.",
+                    "issue_confidence": "HIGH",
+                    "test_id": "B608",
+                    "code": 'query = "SELECT * FROM users WHERE id = %s"\n'
+                    'query = f"SELECT * FROM users WHERE owner = {owner} AND id = %s"\n'
+                    "cursor.execute(query, (user_id,))",
+                }
+            ]
+        }
+        (tmp_path / "bandit-report.json").write_text(json.dumps(bandit_data))
+        bot = _make_bot(monkeypatch)
+        result = bot.load_analysis_results()
+        assert result[0]["severity"] == "high"
+
     def test_loads_complexity_results(self, monkeypatch, tmp_path):
         monkeypatch.chdir(tmp_path)
         complexity_data = {
@@ -227,3 +337,14 @@ class TestGetSecurityRecommendation:
         bot = _make_bot(monkeypatch)
         rec = bot._get_security_recommendation({"test_id": "B999"})
         assert len(rec) > 0
+
+    def test_safe_b608_mentions_parameterized_query_false_positive(self, monkeypatch):
+        bot = _make_bot(monkeypatch)
+        rec = bot._get_security_recommendation(
+            {
+                "test_id": "B608",
+                "code": 'cursor.execute("SELECT * FROM users WHERE id = %s", (user_id,))',
+            }
+        )
+        assert "parameterized query pattern" in rec
+        assert "allowlist" in rec

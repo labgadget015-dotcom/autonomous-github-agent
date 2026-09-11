@@ -6,6 +6,8 @@ Posts inline comments on PRs with specific code quality issues and suggestions
 
 import json
 import os
+import re
+import ast
 
 import requests
 
@@ -85,12 +87,15 @@ class InlinePRCommentBot:
                 report = json.load(f)
 
             for issue in report.get("results", []):
+                severity = issue.get("issue_severity", "LOW").lower()
+                if self._is_likely_safe_b608(issue):
+                    severity = "low"
                 comments.append(
                     {
                         "path": issue.get("filename", ""),
                         "line": issue.get("line_number", 1),
                         "body": self._format_bandit_comment(issue),
-                        "severity": issue.get("issue_severity", "LOW").lower(),
+                        "severity": severity,
                     }
                 )
         except FileNotFoundError:
@@ -219,6 +224,14 @@ Function `{name}` has a cyclomatic complexity of **{complexity}** (threshold: 10
         """Get security fix recommendation"""
         test_id = issue.get("test_id", "")
 
+        if self._is_likely_safe_b608(issue):
+            return (
+                "This B608 finding already shows a parameterized query pattern "
+                "(for example `cursor.execute(query, params)`). Keep values bound "
+                "separately, and only allowlist any dynamic table/column identifiers "
+                "from trusted code-defined names."
+            )
+
         recommendations = {
             "B101": "Avoid using assert statements in production code. Use proper error handling.",
             "B201": "Never enable debug mode in production Flask applications.",
@@ -228,11 +241,76 @@ Function `{name}` has a cyclomatic complexity of **{complexity}** (threshold: 10
             "B501": "Always verify SSL certificates in production.",
             "B601": "Avoid shell=True in subprocess calls. Use a list of arguments instead.",
             "B602": "Avoid using shell=True. It can lead to shell injection vulnerabilities.",
+            "B608": "Avoid building SQL values into query strings. Keep values parameterized and restrict any dynamic identifiers to an allowlist.",
         }
 
         return recommendations.get(
             test_id, "Review the security documentation for this issue type."
         )
+
+    @staticmethod
+    def _is_likely_safe_b608(issue: dict) -> bool:
+        """Detect Bandit B608 findings that already use a bound-parameter execute call."""
+        if issue.get("test_id") != "B608":
+            return False
+
+        code = str(issue.get("code", ""))
+        if not code:
+            return False
+
+        try:
+            tree = ast.parse(code)
+        except SyntaxError:
+            return False
+
+        literal_queries: dict[str, str] = {}
+
+        for stmt in tree.body:
+            for target, value in InlinePRCommentBot._iter_name_assignments(stmt):
+                if isinstance(value, ast.Constant) and isinstance(value.value, str):
+                    literal_queries[target] = value.value
+                else:
+                    literal_queries.pop(target, None)
+
+            for node in ast.walk(stmt):
+                if (
+                    isinstance(node, ast.Call)
+                    and isinstance(node.func, ast.Attribute)
+                    and node.func.attr in {"execute", "executemany"}
+                    and len(node.args) >= 2
+                ):
+                    first_arg = node.args[0]
+                    query_text = None
+                    if isinstance(first_arg, ast.Constant) and isinstance(
+                        first_arg.value, str
+                    ):
+                        query_text = first_arg.value
+                    elif isinstance(first_arg, ast.Name):
+                        query_text = literal_queries.get(first_arg.id)
+
+                    if query_text and any(
+                        re.search(pattern, query_text)
+                        for pattern in (r"%s", r"%\([^)]+\)s", r"\?", r":[A-Za-z_]\w*")
+                    ):
+                        return True
+
+        return False
+
+    @staticmethod
+    def _iter_name_assignments(stmt: ast.stmt) -> list[tuple[str, ast.AST]]:
+        """Return simple name assignments from a statement in execution order."""
+        if isinstance(stmt, ast.Assign):
+            return [
+                (target.id, stmt.value)
+                for target in stmt.targets
+                if isinstance(target, ast.Name)
+            ]
+        if isinstance(stmt, ast.AnnAssign) and isinstance(stmt.target, ast.Name):
+            value = stmt.value if stmt.value is not None else ast.Constant(value=None)
+            return [(stmt.target.id, value)]
+        if isinstance(stmt, ast.AugAssign) and isinstance(stmt.target, ast.Name):
+            return [(stmt.target.id, stmt.value)]
+        return []
 
     def _map_pylint_severity(self, pylint_type: str) -> str:
         """Map Pylint type to severity"""
