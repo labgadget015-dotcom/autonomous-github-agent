@@ -1,5 +1,24 @@
 # Rollback Manifest
 
+## da1a557 — 2026-09-11 08:56 timezone.utc
+
+- **SHA**: `da1a5575952ab74308d0ee74218ea930f0d00cb7`
+- **Author**: Gadget Lab
+- **Message**: Add Neon skills for database project access (#289)
+- **Files changed**: 8 file(s)
+
+**Changed files:**
+- `.agents/skills/neon-postgres/SKILL.md`
+- `.agents/skills/neon-postgres/references/full-text-search.md`
+- `.agents/skills/neon-postgres/references/hybrid-search.md`
+- `.agents/skills/neon-postgres/references/vector-search.md`
+- `.agents/skills/neon/SKILL.md`
+- `.agents/skills/neon/references/claimable-neon.md`
+- `.secrets.baseline`
+- `skills-lock.json`
+
+---
+
 ## 3d2aa0f — 2026-09-04 09:18 timezone.utc
 
 - **SHA**: `3d2aa0f651f9121385e77d4bc23d2d8d3a854453`
