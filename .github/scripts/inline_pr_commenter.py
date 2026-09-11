@@ -6,6 +6,7 @@ Posts inline comments on PRs with specific code quality issues and suggestions
 
 import json
 import os
+import re
 
 import requests
 
@@ -85,12 +86,15 @@ class InlinePRCommentBot:
                 report = json.load(f)
 
             for issue in report.get("results", []):
+                severity = issue.get("issue_severity", "LOW").lower()
+                if self._is_likely_safe_b608(issue):
+                    severity = "low"
                 comments.append(
                     {
                         "path": issue.get("filename", ""),
                         "line": issue.get("line_number", 1),
                         "body": self._format_bandit_comment(issue),
-                        "severity": issue.get("issue_severity", "LOW").lower(),
+                        "severity": severity,
                     }
                 )
         except FileNotFoundError:
@@ -219,6 +223,14 @@ Function `{name}` has a cyclomatic complexity of **{complexity}** (threshold: 10
         """Get security fix recommendation"""
         test_id = issue.get("test_id", "")
 
+        if self._is_likely_safe_b608(issue):
+            return (
+                "This B608 finding already shows a parameterized query pattern "
+                "(for example `cursor.execute(query, params)`). Keep values bound "
+                "separately, and only allowlist any dynamic table/column identifiers "
+                "from trusted code-defined names."
+            )
+
         recommendations = {
             "B101": "Avoid using assert statements in production code. Use proper error handling.",
             "B201": "Never enable debug mode in production Flask applications.",
@@ -228,11 +240,29 @@ Function `{name}` has a cyclomatic complexity of **{complexity}** (threshold: 10
             "B501": "Always verify SSL certificates in production.",
             "B601": "Avoid shell=True in subprocess calls. Use a list of arguments instead.",
             "B602": "Avoid using shell=True. It can lead to shell injection vulnerabilities.",
+            "B608": "Avoid building SQL values into query strings. Keep values parameterized and restrict any dynamic identifiers to an allowlist.",
         }
 
         return recommendations.get(
             test_id, "Review the security documentation for this issue type."
         )
+
+    @staticmethod
+    def _is_likely_safe_b608(issue: dict) -> bool:
+        """Detect Bandit B608 findings that already use a bound-parameter execute call."""
+        if issue.get("test_id") != "B608":
+            return False
+
+        code = " ".join(str(issue.get("code", "")).split())
+        if not code:
+            return False
+
+        has_placeholder = any(
+            re.search(pattern, code)
+            for pattern in (r"%s", r"%\([^)]+\)s", r"\?", r":[A-Za-z_]\w*")
+        )
+        has_bound_params = re.search(r"\.execute\([^,]+,\s*.+\)", code) is not None
+        return has_placeholder and has_bound_params
 
     def _map_pylint_severity(self, pylint_type: str) -> str:
         """Map Pylint type to severity"""

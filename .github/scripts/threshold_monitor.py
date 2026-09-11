@@ -5,6 +5,7 @@ Monitors code quality metrics and automatically creates GitHub issues when thres
 """
 
 import json
+import re
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -146,6 +147,8 @@ class ThresholdMonitor:
             severity_map = {"HIGH": "critical", "MEDIUM": "high", "LOW": "medium"}
 
             severity = severity_map.get(issue.get("issue_severity", "LOW"), "low")
+            if self._is_likely_safe_b608(issue):
+                severity = "medium"
 
             violations.append(
                 {
@@ -160,6 +163,23 @@ class ThresholdMonitor:
             )
 
         return violations
+
+    @staticmethod
+    def _is_likely_safe_b608(issue: dict) -> bool:
+        """Detect B608 findings that already pass query values separately."""
+        if issue.get("test_id") != "B608":
+            return False
+
+        code = " ".join(str(issue.get("code", "")).split())
+        if not code:
+            return False
+
+        has_placeholder = any(
+            re.search(pattern, code)
+            for pattern in (r"%s", r"%\([^)]+\)s", r"\?", r":[A-Za-z_]\w*")
+        )
+        has_bound_params = re.search(r"\.execute\([^,]+,\s*.+\)", code) is not None
+        return has_placeholder and has_bound_params
 
     def create_github_issue(self, violation: dict) -> dict:
         """Create GitHub issue data for violation"""

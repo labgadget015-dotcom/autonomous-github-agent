@@ -212,6 +212,30 @@ class TestCheckSecurity:
         violations = monitor.check_security(str(bandit_file))
         assert violations[0]["severity"] == "medium"
 
+    def test_safe_b608_is_not_escalated_to_critical(self, tmp_path):
+        bandit_file = tmp_path / "bandit.json"
+        bandit_file.write_text(
+            json.dumps(
+                {
+                    "results": [
+                        {
+                            "issue_text": "Possible SQL injection vector through string-based query construction.",
+                            "issue_severity": "HIGH",
+                            "filename": "src/app.py",
+                            "line_number": 42,
+                            "issue_confidence": "HIGH",
+                            "issue_cwe": {"id": "CWE-89"},
+                            "test_id": "B608",
+                            "code": 'cursor.execute("SELECT * FROM users WHERE id = %s", (user_id,))',
+                        }
+                    ]
+                }
+            )
+        )
+        monitor = _make_monitor(tmp_path)
+        violations = monitor.check_security(str(bandit_file))
+        assert violations[0]["severity"] == "medium"
+
 
 class TestCreateGithubIssue:
     def _monitor(self):

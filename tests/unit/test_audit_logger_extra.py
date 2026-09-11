@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import asyncio
 from pathlib import Path
+from unittest.mock import MagicMock
 
 
 def run(coro):
@@ -142,6 +143,41 @@ class TestClose:
         ).MagicMock()
         al.close()
         mock_conn.close.assert_called_once()
+
+
+class TestWriteToPostgres:
+    def test_write_to_postgres_uses_placeholders_and_separate_values(self, tmp_path):
+        al = _make_logger(tmp_path)
+        cursor = MagicMock()
+        al._pg_conn = MagicMock()
+        al._pg_conn.cursor.return_value = cursor
+
+        log_entry = {
+            "timestamp": "2026-09-11T00:00:00",
+            "task_id": "task-123",
+            "agent": "agent",
+            "action": "create_issue",
+            "params": {"repository": "owner/repo"},
+            "result": {"status": "ok"},
+            "status": "success",
+            "rollback": "close the issue",
+        }
+
+        run(al._write_to_postgres(log_entry))
+
+        query, values = cursor.execute.call_args.args
+        assert "VALUES (%s, %s, %s, %s, %s, %s, %s, %s)" in query
+        assert values == (
+            "2026-09-11T00:00:00",
+            "task-123",
+            "agent",
+            "create_issue",
+            '{"repository": "owner/repo"}',
+            '{"status": "ok"}',
+            "success",
+            "close the issue",
+        )
+        al._pg_conn.commit.assert_called_once()
 
 
 class TestComputeChainHash:

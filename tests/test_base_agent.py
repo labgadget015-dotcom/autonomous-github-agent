@@ -139,8 +139,9 @@ class TestBaseAgent:
     async def test_execute_multiple_calls(self, test_agent):
         """Test multiple sequential execute calls."""
         results = []
-        for i in range(3):
-            result = await test_agent.execute(f"owner/repo{i}", iteration=i)
+        repositories = ["owner/repo0", "owner/repo1", "owner/repo2"]
+        for i, repository in enumerate(repositories):
+            result = await test_agent.execute(repository, iteration=i)
             results.append(result)
 
         assert len(results) == 3
