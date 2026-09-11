@@ -183,14 +183,11 @@ class ThresholdMonitor:
         literal_queries: dict[str, str] = {}
 
         for stmt in tree.body:
-            if isinstance(stmt, ast.Assign) and len(stmt.targets) == 1:
-                target = stmt.targets[0]
-                if (
-                    isinstance(target, ast.Name)
-                    and isinstance(stmt.value, ast.Constant)
-                    and isinstance(stmt.value.value, str)
-                ):
-                    literal_queries[target.id] = stmt.value.value
+            for target, value in ThresholdMonitor._iter_name_assignments(stmt):
+                if isinstance(value, ast.Constant) and isinstance(value.value, str):
+                    literal_queries[target] = value.value
+                else:
+                    literal_queries.pop(target, None)
 
             for node in ast.walk(stmt):
                 if (
@@ -215,6 +212,22 @@ class ThresholdMonitor:
                         return True
 
         return False
+
+    @staticmethod
+    def _iter_name_assignments(stmt: ast.stmt) -> list[tuple[str, ast.AST]]:
+        """Return simple name assignments from a statement in execution order."""
+        if isinstance(stmt, ast.Assign):
+            return [
+                (target.id, stmt.value)
+                for target in stmt.targets
+                if isinstance(target, ast.Name)
+            ]
+        if isinstance(stmt, ast.AnnAssign) and isinstance(stmt.target, ast.Name):
+            value = stmt.value if stmt.value is not None else ast.Constant(value=None)
+            return [(stmt.target.id, value)]
+        if isinstance(stmt, ast.AugAssign) and isinstance(stmt.target, ast.Name):
+            return [(stmt.target.id, stmt.value)]
+        return []
 
     def create_github_issue(self, violation: dict) -> dict:
         """Create GitHub issue data for violation"""
