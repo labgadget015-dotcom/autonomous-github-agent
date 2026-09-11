@@ -57,11 +57,23 @@ Use the CLI (default), `neon env pull`, or the MCP server to get the connection 
 
 ### 3. Pick the connection method and driver
 
-Always pair Neon with an ORM such as **Drizzle** for easy schema management and migrations. Refer to the connection methods guide to pick the correct driver based on how the runtime treats your code: https://neon.com/docs/connect/choose-connection.md.
+**Detect the project's existing driver and use it. Do not introduce a new one.**
+Inspect dependency manifests before writing any connection code: `requirements.txt`,
+`pyproject.toml`, `Pipfile` for Python; `package.json` for JavaScript/TypeScript.
+Match what is already there.
 
-Recommendations:
+- **Python/PostgreSQL (this repository): use `psycopg2`.** It is the established
+  driver here. Do not propose Drizzle, Prisma, or any other TypeScript ORM for
+  Python code — they are not installable in this stack and suggesting them
+  produces unusable output.
+- If no driver is present and the project is Python, default to `psycopg2`.
 
-- Drizzle as ORM (see https://neon.com/docs/guides/drizzle.md)
+The platform notes below apply **only to JavaScript/TypeScript projects**. Refer to
+the connection methods guide to pick a driver based on how the runtime treats your
+code: https://neon.com/docs/connect/choose-connection.md.
+
+JavaScript/TypeScript recommendations:
+
 - On Vercel, use `node-postgres` (`npm install pg`) with Vercel Fluid compute and `import { attachDatabasePool } from "@vercel/functions";`
 - On Cloudflare, use `node-postgres` with Cloudflare Hyperdrive
 - On Neon Functions, use `node-postgres`, as the functions are long-running and reuse the pool across requests.
@@ -71,7 +83,16 @@ Recommendations:
 
 Manage schemas and migrations as code. Avoid running ad hoc schema migrations against your database, since they're hard to manage.
 
-If you're using an ORM, follow your ORM's best practices to manage schemas and migrations. For example, if using Drizzle, only use Drizzle for schema and migration management unless instructed otherwise.
+**Defer to the migration tooling the project already uses.** Detect it before acting:
+look for `migrations/` or `alembic/` directories, an `alembic.ini`, Django's
+`manage.py`, or an ORM's own migration directory. Use what you find and follow its
+conventions.
+
+Do not introduce a second migration system alongside an existing one, and do not
+assume an ORM is present — a project using a raw driver such as `psycopg2` with
+plain SQL migration files is a deliberate choice, not a gap to fill. Only when no
+migration tooling exists at all should you propose one, and then match the
+project's language.
 
 ## Branching
 

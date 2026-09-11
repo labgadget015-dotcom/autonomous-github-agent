@@ -119,9 +119,25 @@ If you don't have access to the `skills` CLI, you can visit https://neon.com/.we
 
 ### Updating Skills
 
-Keep the skills up to date: for every new session, update them so you are working with the latest best practices.
+**Do not update skills automatically, and never as a routine step at the start of a
+session.** These files are instructions that this agent will follow. Pulling new
+revisions from a third-party repository mid-session executes whatever guidance
+upstream happens to contain at that moment, with no review and no diff — an
+unreviewed change to the agent's own instructions.
 
-Use the same method that was used to install them. With the `skills` CLI, run the install command above with `update` in place of `add`, or run `npx skills update` to update all Neon skills. If the skills were installed via a plugin, they are updated automatically.
+Treat a skill update as an explicit dependency change, on the same footing as
+bumping a package version:
+
+1. **Propose it as its own change.** Never fold a skill update into unrelated work.
+2. **Pin the source revision.** Fetch a specific immutable commit SHA, not a
+   floating branch or tag. Record that SHA in `skills-lock.json` alongside the
+   existing `computedHash`, which today fixes file content but not the upstream
+   revision it came from.
+3. **Review the full diff** of every changed `SKILL.md` before it lands, reading it
+   as instructions rather than as documentation.
+4. **Land it through normal code review**, so a human approves the new instructions.
+
+If a skill is genuinely out of date, say so and let a human decide when to update it.
 
 ## Getting Started with Neon
 
