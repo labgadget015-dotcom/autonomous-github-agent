@@ -275,7 +275,7 @@ class TestCheckSecurity:
                             "issue_cwe": {"id": "CWE-89"},
                             "test_id": "B608",
                             "code": 'query = f"SELECT * FROM users WHERE owner = {owner} AND id = %s"\n'
-                            'cursor.execute(query, (user_id,))',
+                            "cursor.execute(query, (user_id,))",
                         }
                     ]
                 }
@@ -300,7 +300,7 @@ class TestCheckSecurity:
                             "issue_cwe": {"id": "CWE-89"},
                             "test_id": "B608",
                             "code": 'query = "SELECT * FROM users WHERE id = %s"\n'
-                            'cursor.execute(query, (user_id,))',
+                            "cursor.execute(query, (user_id,))",
                         }
                     ]
                 }
@@ -326,7 +326,7 @@ class TestCheckSecurity:
                             "test_id": "B608",
                             "code": 'query = "SELECT * FROM users WHERE id = %s"\n'
                             'query = f"SELECT * FROM users WHERE owner = {owner} AND id = %s"\n'
-                            'cursor.execute(query, (user_id,))',
+                            "cursor.execute(query, (user_id,))",
                         }
                     ]
                 }

@@ -100,7 +100,9 @@ class TestLoadAnalysisResults:
         result = bot.load_analysis_results()
         assert result[0]["severity"] == "low"
 
-    def test_keeps_unsafe_b608_with_sql_commas_at_high_severity(self, monkeypatch, tmp_path):
+    def test_keeps_unsafe_b608_with_sql_commas_at_high_severity(
+        self, monkeypatch, tmp_path
+    ):
         monkeypatch.chdir(tmp_path)
         bandit_data = {
             "results": [
@@ -134,7 +136,7 @@ class TestLoadAnalysisResults:
                     "issue_confidence": "HIGH",
                     "test_id": "B608",
                     "code": 'query = f"SELECT * FROM users WHERE owner = {owner} AND id = %s"\n'
-                    'cursor.execute(query, (user_id,))',
+                    "cursor.execute(query, (user_id,))",
                 }
             ]
         }
@@ -155,7 +157,7 @@ class TestLoadAnalysisResults:
                     "issue_confidence": "HIGH",
                     "test_id": "B608",
                     "code": 'query = "SELECT * FROM users WHERE id = %s"\n'
-                    'cursor.execute(query, (user_id,))',
+                    "cursor.execute(query, (user_id,))",
                 }
             ]
         }
@@ -179,7 +181,7 @@ class TestLoadAnalysisResults:
                     "test_id": "B608",
                     "code": 'query = "SELECT * FROM users WHERE id = %s"\n'
                     'query = f"SELECT * FROM users WHERE owner = {owner} AND id = %s"\n'
-                    'cursor.execute(query, (user_id,))',
+                    "cursor.execute(query, (user_id,))",
                 }
             ]
         }
