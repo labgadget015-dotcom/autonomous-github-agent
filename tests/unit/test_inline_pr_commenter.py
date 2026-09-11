@@ -100,6 +100,26 @@ class TestLoadAnalysisResults:
         result = bot.load_analysis_results()
         assert result[0]["severity"] == "low"
 
+    def test_keeps_unsafe_b608_with_sql_commas_at_high_severity(self, monkeypatch, tmp_path):
+        monkeypatch.chdir(tmp_path)
+        bandit_data = {
+            "results": [
+                {
+                    "filename": "module.py",
+                    "line_number": 5,
+                    "issue_severity": "HIGH",
+                    "issue_text": "Possible SQL injection vector through string-based query construction.",
+                    "issue_confidence": "HIGH",
+                    "test_id": "B608",
+                    "code": 'cursor.execute("SELECT a, b FROM users WHERE id = %s" % user_id)',
+                }
+            ]
+        }
+        (tmp_path / "bandit-report.json").write_text(json.dumps(bandit_data))
+        bot = _make_bot(monkeypatch)
+        result = bot.load_analysis_results()
+        assert result[0]["severity"] == "high"
+
     def test_loads_complexity_results(self, monkeypatch, tmp_path):
         monkeypatch.chdir(tmp_path)
         complexity_data = {

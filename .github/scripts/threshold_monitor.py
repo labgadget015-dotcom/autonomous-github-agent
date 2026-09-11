@@ -6,6 +6,7 @@ Monitors code quality metrics and automatically creates GitHub issues when thres
 
 import json
 import re
+import ast
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -170,16 +171,35 @@ class ThresholdMonitor:
         if issue.get("test_id") != "B608":
             return False
 
-        code = " ".join(str(issue.get("code", "")).split())
+        code = str(issue.get("code", ""))
         if not code:
             return False
 
         has_placeholder = any(
-            re.search(pattern, code)
+            re.search(pattern, " ".join(code.split()))
             for pattern in (r"%s", r"%\([^)]+\)s", r"\?", r":[A-Za-z_]\w*")
         )
-        has_bound_params = re.search(r"\.execute\([^,]+,\s*.+\)", code) is not None
+        has_bound_params = ThresholdMonitor._has_bound_execute_params(code)
         return has_placeholder and has_bound_params
+
+    @staticmethod
+    def _has_bound_execute_params(code: str) -> bool:
+        """Return True when the snippet contains execute/executemany with a second arg."""
+        try:
+            tree = ast.parse(code)
+        except SyntaxError:
+            return False
+
+        for node in ast.walk(tree):
+            if (
+                isinstance(node, ast.Call)
+                and isinstance(node.func, ast.Attribute)
+                and node.func.attr in {"execute", "executemany"}
+                and len(node.args) >= 2
+            ):
+                return True
+
+        return False
 
     def create_github_issue(self, violation: dict) -> dict:
         """Create GitHub issue data for violation"""

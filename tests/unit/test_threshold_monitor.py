@@ -236,6 +236,30 @@ class TestCheckSecurity:
         violations = monitor.check_security(str(bandit_file))
         assert violations[0]["severity"] == "medium"
 
+    def test_unsafe_b608_with_sql_commas_stays_critical(self, tmp_path):
+        bandit_file = tmp_path / "bandit.json"
+        bandit_file.write_text(
+            json.dumps(
+                {
+                    "results": [
+                        {
+                            "issue_text": "Possible SQL injection vector through string-based query construction.",
+                            "issue_severity": "HIGH",
+                            "filename": "src/app.py",
+                            "line_number": 42,
+                            "issue_confidence": "HIGH",
+                            "issue_cwe": {"id": "CWE-89"},
+                            "test_id": "B608",
+                            "code": 'cursor.execute("SELECT a, b FROM users WHERE id = %s" % user_id)',
+                        }
+                    ]
+                }
+            )
+        )
+        monitor = _make_monitor(tmp_path)
+        violations = monitor.check_security(str(bandit_file))
+        assert violations[0]["severity"] == "critical"
+
 
 class TestCreateGithubIssue:
     def _monitor(self):
