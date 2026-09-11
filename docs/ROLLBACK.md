@@ -1,5 +1,17 @@
 # Rollback Manifest
 
+## 170419c — 2026-09-11 09:00 timezone.utc
+
+- **SHA**: `170419ceb46b46fa41c78ed40e3801483b959892`
+- **Author**: Gadget Lab
+- **Message**: fix(router): raise local Ollama call timeout 30s->45s to stop cold-start cloud fallback (#299)
+- **Files changed**: 1 file(s)
+
+**Changed files:**
+- `.github/scripts/llm_router.py`
+
+---
+
 ## da1a557 — 2026-09-11 08:56 timezone.utc
 
 - **SHA**: `da1a5575952ab74308d0ee74218ea930f0d00cb7`
