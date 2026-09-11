@@ -43,6 +43,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 🐛 Bug Fixes
 
+- **router**: raise local Ollama call timeout 30s->45s to stop cold-start cloud fallback (#299) (170419c)
 - **ci**: implement unmerged PR #262 review fixes in intake-canary and n8n-health-check (#269) (4dbe7cb)
 - **ci**: stop pre-commit auto-fix failing when nothing is staged (#265) (fd67de6)
 - **ci**: bump gitleaks-action v2 -> v3 (Node 24 runtime) (#264) (b99e5c8)
@@ -187,6 +188,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 🔨 Chores
 
+- update CHANGELOG [skip ci] (1cdae2a)
+- rollback manifest entry [skip ci] (407da03)
 - rollback manifest entry [skip ci] (6f3b327)
 - update CHANGELOG [skip ci] (5b7f70f)
 - update CHANGELOG [skip ci] (46daab5)
