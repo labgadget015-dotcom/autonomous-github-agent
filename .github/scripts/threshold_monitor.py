@@ -175,16 +175,6 @@ class ThresholdMonitor:
         if not code:
             return False
 
-        has_placeholder = any(
-            re.search(pattern, " ".join(code.split()))
-            for pattern in (r"%s", r"%\([^)]+\)s", r"\?", r":[A-Za-z_]\w*")
-        )
-        has_bound_params = ThresholdMonitor._has_bound_execute_params(code)
-        return has_placeholder and has_bound_params
-
-    @staticmethod
-    def _has_bound_execute_params(code: str) -> bool:
-        """Return True when the snippet contains execute/executemany with a second arg."""
         try:
             tree = ast.parse(code)
         except SyntaxError:
@@ -197,7 +187,14 @@ class ThresholdMonitor:
                 and node.func.attr in {"execute", "executemany"}
                 and len(node.args) >= 2
             ):
-                return True
+                first_arg = node.args[0]
+                if isinstance(first_arg, ast.Constant) and isinstance(
+                    first_arg.value, str
+                ):
+                    return any(
+                        re.search(pattern, first_arg.value)
+                        for pattern in (r"%s", r"%\([^)]+\)s", r"\?", r":[A-Za-z_]\w*")
+                    )
 
         return False
 
