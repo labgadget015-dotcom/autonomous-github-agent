@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased] - 2026-09-11
+## [Unreleased] - 2026-09-13
 
 ### ✨ Features
 
@@ -43,6 +43,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 🐛 Bug Fixes
 
+- **autopilot**: harden DRC contract ledger parsing and eliminate test coverage debt (#302) (c43f9b1)
 - **router**: raise local Ollama call timeout 30s->45s to stop cold-start cloud fallback (#299) (170419c)
 - **ci**: implement unmerged PR #262 review fixes in intake-canary and n8n-health-check (#269) (4dbe7cb)
 - **ci**: stop pre-commit auto-fix failing when nothing is staged (#265) (fd67de6)
@@ -188,6 +189,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 🔨 Chores
 
+- rollback manifest entry [skip ci] (4958d4e)
+- update CHANGELOG [skip ci] (b0f297d)
 - update CHANGELOG [skip ci] (1cdae2a)
 - rollback manifest entry [skip ci] (407da03)
 - rollback manifest entry [skip ci] (6f3b327)
