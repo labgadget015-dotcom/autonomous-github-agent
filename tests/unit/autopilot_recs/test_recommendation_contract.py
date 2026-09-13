@@ -1,7 +1,8 @@
 """Tests for autopilot/recommendation_contract.py.
 
-Three layers: the dataclass/Literal schema, validate()'s exact error output,
-and an AST check that validate() reads exactly the config keys it should.
+Four layers: the dataclass/Literal schema, validate()'s exact error output,
+an AST check that validate() reads exactly the config keys it should, and the
+Pydantic V2 engine (RecommendationContract) behind the validate() facade.
 
 The "hardened rules" section pins contract gaps fixed on 2026-09-13; they were
 strict-xfail KNOWN GAP tests until the source was corrected.
@@ -15,13 +16,19 @@ import typing
 from pathlib import Path
 
 import pytest
+from pydantic import ValidationError
 
 from tests.unit.autopilot_recs import _support  # noqa: F401  (sys.path)
 
 # isort: split
 import config_loader  # noqa: E402
 import recommendation_contract as rc  # noqa: E402
-from recommendation_contract import Recommendation, validate  # noqa: E402
+from recommendation_contract import (  # noqa: E402
+    ContractRules,
+    Recommendation,
+    RecommendationContract,
+    validate,
+)
 
 H = "headline must be an outcome, not a run_id"
 P0_OWNER = "P0 with no owner — withhold, escalate to #morning-digest"
@@ -549,3 +556,104 @@ def test_headline_run_id_rule(make_rec, headline, flagged):
         not flagged,
         [H] if flagged else [],
     )
+
+
+# --------------------------------------------------------------------------- #
+# Pydantic V2 engine (RecommendationContract)
+# --------------------------------------------------------------------------- #
+
+
+def test_model_fields_mirror_the_dataclass():
+    model_fields = RecommendationContract.model_fields
+    assert list(model_fields) == [f.name for f in dataclasses.fields(Recommendation)]
+    for f in dataclasses.fields(Recommendation):
+        info = model_fields[f.name]
+        assert info.is_required() is (f.default is MISSING), f.name
+        if f.default is not MISSING:
+            assert info.default == f.default, f.name
+
+
+def test_contract_rules_defaults_match_config_defaults():
+    defaults = config_loader.DEFAULTS["message_contract"]
+    rules = ContractRules()
+    assert rules.max_step_len == defaults["max_step_len"]
+    assert rules.headline_is_outcome is defaults["headline_is_outcome"]
+    for key in ("require_impact_for", "require_due_for", "require_owner_for"):
+        assert getattr(rules, key) == frozenset(defaults[key]), key
+
+
+def test_valid_recommendation_builds_a_model(make_rec):
+    model = RecommendationContract.model_validate(dataclasses.asdict(make_rec()))
+    assert model.severity == "P0"
+    assert model.steps == make_rec().steps
+
+
+@pytest.mark.parametrize(
+    ("field", "coercible"),
+    [
+        ("headline", b"Rotate the GitHub PAT before it expires"),
+        ("due_date", 20270430),
+        ("owner", 12345),
+        ("steps", ("Mint a fine-grained PAT",)),
+    ],
+    ids=["bytes-headline", "int-due", "int-owner", "tuple-steps"],
+)
+def test_model_is_strict_no_type_coercion(make_rec, field, coercible):
+    data = {**dataclasses.asdict(make_rec()), field: coercible}
+    with pytest.raises(ValidationError):
+        RecommendationContract.model_validate(data)
+
+
+def test_model_is_frozen_and_forbids_unknown_fields(make_rec):
+    data = dataclasses.asdict(make_rec())
+    model = RecommendationContract.model_validate(data)
+    with pytest.raises(ValidationError):
+        model.owner = "someone-else"
+    with pytest.raises(ValidationError):
+        RecommendationContract.model_validate({**data, "unexpected": "x"})
+
+
+def test_model_reports_every_violation_in_rule_order(make_rec):
+    rec = make_rec(owner="", due_date="30/04/2027", steps=["line one\nline two"])
+    with pytest.raises(ValidationError) as excinfo:
+        RecommendationContract.model_validate(dataclasses.asdict(rec))
+    (err,) = excinfo.value.errors()
+    assert err["type"] == "recommendation_contract"
+    assert err["ctx"]["violations"] == [
+        "due_date '30/04/2027' is not a YYYY-MM-DD date",
+        P0_OWNER,
+        "step 1 spans multiple lines (one line per step)",
+    ]
+
+
+def test_model_without_context_uses_builtin_rules_not_config(write_config, make_rec):
+    write_config("message_contract:\n  require_owner_for: ['P0', 'P1']\n")
+    rec = make_rec(severity="P1", owner="unassigned")
+    RecommendationContract.model_validate(dataclasses.asdict(rec))  # built-in: P0 only
+    assert validate(rec) == (
+        False,
+        ["P1 with no owner — withhold, escalate to #morning-digest"],
+    )
+
+
+def test_config_is_not_consulted_when_field_types_fail(monkeypatch, make_rec):
+    calls: list[int] = []
+    monkeypatch.setattr(config_loader, "get_contract", lambda: calls.append(1) or {})
+    assert validate(make_rec(headline=None)) == (
+        False,
+        ["headline must be a string, got NoneType"],
+    )
+    assert calls == []
+    assert validate(make_rec()) == (True, [])
+    assert calls == [1]
+
+
+def test_unrecognised_validation_errors_still_never_raise(monkeypatch, make_rec):
+    def fake_model_validate(data, context=None):
+        raise ValidationError.from_exception_data(
+            "RecommendationContract",
+            [{"type": "missing", "loc": ("new_field",), "input": data}],
+        )
+
+    monkeypatch.setattr(RecommendationContract, "model_validate", fake_model_validate)
+    assert validate(make_rec()) == (False, ["new_field: Field required"])

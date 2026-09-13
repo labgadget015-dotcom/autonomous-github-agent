@@ -35,6 +35,13 @@ tests/unit/autopilot_recs/       # full suite: schema, exact errors, ledger corr
 (e.g. `steps=None`, `headline=None`) is reported as an error, so an emitter loop
 can log the reject block and move on.
 
+Under the hood the rules run in a Pydantic V2 model, `RecommendationContract`
+(strict types, frozen, unknown fields forbidden). `validate()` resolves the
+config-driven rules, runs the model, catches `ValidationError` and translates it
+back into the error strings above. `Recommendation` stays the public dataclass.
+Calling `RecommendationContract.model_validate(...)` directly raises on
+violations and applies the built-in default rules, not `config.yaml`.
+
 Every recommendation must carry:
 
 - **severity** — exactly `P0`, `P1` or `P2` (`p0` is rejected, not treated as P2)
@@ -83,12 +90,24 @@ format changed.
 
 - Appends are serialised with `fcntl.flock` and fsync'd; `seq` counts the
   non-blank lines already in the file.
+- **Checksummed lines.** Every append writes
+  `<payload_json>|<first 16 hex chars of sha256(payload_json)>`. Readers split
+  on the **last** `|` (signatures contain pipes), verify the digest, and skip a
+  mismatching line with a `WARNING` naming its line number. Plain-JSON lines
+  written before this format are still read, without a warning.
+  The digest detects accidental corruption and casual hand-edits; it is **not**
+  an HMAC. Anyone who can write the file can recompute a valid digest, so do
+  not treat it as tamper-proofing or a security control.
+  `seq` still counts a skipped mismatching line (it numbers physical lines), so
+  a corrupted line's number is never reused.
 - **Corrupt lines are skipped, never fatal.** A torn write, undecodable bytes
   or a valid-JSON non-object line (`[1, 2]`, `null`) costs only that line.
 - If the previous write was torn (no trailing newline), the next append starts
   a fresh line so it is not glued onto the fragment and lost.
-- **Timestamps fail open.** A non-numeric `first_raised_ts`, `transitioned_ts`
-  or `seq` (string, `null`, boolean, list) reads as `0`. For debounce that
+- **Timestamps fail open, but not silently.** A non-numeric `first_raised_ts`,
+  `transitioned_ts` or `seq` (string, `null`, boolean, list, `NaN`, infinity)
+  reads as `0`, and each `latest_match()` / `should_post()` call logs one
+  summary `WARNING` with per-field counts (never one per line). For debounce that
   means the window looks long elapsed and the item **may repost** — a duplicate
   Slack post is preferred over a crashed recommender. `done`/`dropped` entries
   still never repost, because that rule does not read timestamps.
