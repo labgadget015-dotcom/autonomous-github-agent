@@ -4,10 +4,10 @@ Inline PR Comment Bot
 Posts inline comments on PRs with specific code quality issues and suggestions
 """
 
+import ast
 import json
 import os
 import re
-import ast
 
 import requests
 
