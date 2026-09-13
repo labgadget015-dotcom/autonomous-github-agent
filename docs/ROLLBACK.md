@@ -1,5 +1,28 @@
 # Rollback Manifest
 
+## c43f9b1 — 2026-09-13 05:01 timezone.utc
+
+- **SHA**: `c43f9b12de4ff8ae3d675db6fdde12244821284a`
+- **Author**: Gadget Lab
+- **Message**: fix(autopilot): harden DRC contract ledger parsing and eliminate test coverage debt (#302)
+- **Files changed**: 12 file(s)
+
+**Changed files:**
+- `.github/scripts/inline_pr_commenter.py`
+- `.github/scripts/threshold_monitor.py`
+- `autopilot/README.md`
+- `autopilot/decisions/ledger.py`
+- `autopilot/recommendation_contract.py`
+- `tests/unit/autopilot_recs/__init__.py`
+- `tests/unit/autopilot_recs/_support.py`
+- `tests/unit/autopilot_recs/conftest.py`
+- `tests/unit/autopilot_recs/test_config_loader.py`
+- `tests/unit/autopilot_recs/test_ledger.py`
+- `tests/unit/autopilot_recs/test_message_formatter.py`
+- `tests/unit/autopilot_recs/test_recommendation_contract.py`
+
+---
+
 ## 170419c — 2026-09-11 09:00 timezone.utc
 
 - **SHA**: `170419ceb46b46fa41c78ed40e3801483b959892`
