@@ -13,6 +13,11 @@ Concurrency: all reads+writes are guarded by an fcntl.flock on POSIX so the
 recommender (record) and executor (transition) agents can't interleave appends
 or race on _next_seq. Falls back to no-op locking on non-POSIX platforms.
 Debounce windows and status tags are read from config.yaml via config_loader.
+
+Corruption tolerance: a torn write, undecodable bytes, a non-object JSON line,
+or a non-numeric timestamp never crashes a reader — the bad line is skipped or
+the bad field reads as 0 — and the next append starts on a fresh line so it is
+not glued onto a torn one.
 """
 
 from __future__ import annotations
@@ -41,21 +46,29 @@ def _today_iso() -> str:
 DEFAULT_LEDGER_PATH = os.environ.get("DECISIONS_LEDGER_PATH", get_ledger_path())
 
 
+def _num(entry: dict, key: str) -> float:
+    """Numeric field or 0 — a hand-edited or corrupt value must not crash ordering."""
+    value = entry.get(key, 0)
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        return 0
+    return value
+
+
 def _load(path: str = DEFAULT_LEDGER_PATH) -> list[dict]:
     if not os.path.exists(path):
         return []
-    out = []
-    with open(path, encoding="utf-8") as f:
-        for line in f:
-            line = line.strip()
-            if not line:
-                continue
+    out: list[dict] = []
+    # Binary + per-line decode: one bad byte costs one line, not the whole file.
+    with open(path, "rb") as f:
+        for raw in f:
             try:
-                out.append(json.loads(line))
-            except json.JSONDecodeError:
-                # Partial/corrupt line (e.g. a write was interrupted). Skip
-                # rather than crash — locking makes this rare, not impossible.
+                entry = json.loads(raw.decode("utf-8"))
+            except (UnicodeDecodeError, json.JSONDecodeError):
+                # Blank, partial or corrupt line (e.g. a write was interrupted).
+                # Skip rather than crash — locking makes this rare, not impossible.
                 continue
+            if isinstance(entry, dict):
+                out.append(entry)
     return out
 
 
@@ -71,22 +84,31 @@ def _unlock(fd):
 
 
 def _append_with_seq(entry: dict, path: str = DEFAULT_LEDGER_PATH) -> dict:
-    """Atomic: assign seq under lock, then append. Prevents _next_seq races."""
+    """Atomic: assign seq under lock, then append. Prevents _next_seq races.
+
+    `entry` is only updated with its seq once the line is durably written, so a
+    failed append leaves the caller's dict untouched.
+    """
     os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
-    with open(path, "a+", encoding="utf-8") as f:
+    with open(path, "a+b") as f:
         _lock(f)
         try:
-            f.seek(0, os.SEEK_END)
-            # count existing lines for seq
             f.seek(0)
-            seq = sum(1 for line in f if line.strip())
-            entry["seq"] = seq
-            f.seek(0, os.SEEK_END)
-            f.write(json.dumps(entry, ensure_ascii=False) + "\n")
+            seq, tail = 0, b"\n"
+            for line in f:
+                if line.strip():
+                    seq += 1
+                tail = line
+            line_out = json.dumps({**entry, "seq": seq}, ensure_ascii=False) + "\n"
+            # A torn previous write has no trailing newline; start a fresh line
+            # or this entry would be glued onto it and lost on the next _load.
+            prefix = b"" if tail.endswith(b"\n") else b"\n"
+            f.write(prefix + line_out.encode("utf-8"))
             f.flush()
             os.fsync(f.fileno())
         finally:
             _unlock(f)
+    entry["seq"] = seq
     return entry
 
 
@@ -102,8 +124,8 @@ def latest_match(sig: str, path: str = DEFAULT_LEDGER_PATH) -> dict | None:
     return max(
         matches,
         key=lambda e: (
-            max(e.get("first_raised_ts", 0), e.get("transitioned_ts", 0)),
-            e.get("seq", 0),
+            max(_num(e, "first_raised_ts"), _num(e, "transitioned_ts")),
+            _num(e, "seq"),
         ),
     )
 
@@ -132,7 +154,7 @@ def should_post(r: Recommendation, path: str = DEFAULT_LEDGER_PATH) -> tuple[boo
     # this, transition entries (which only carry transitioned_ts) default to
     # first_raised_ts=0 -> ~495k hours elapsed -> always reposts.
     latest_ts = max(
-        existing.get("first_raised_ts", 0), existing.get("transitioned_ts", 0)
+        _num(existing, "first_raised_ts"), _num(existing, "transitioned_ts")
     )
     elapsed_h = (time.time() - latest_ts) / 3600.0
     if elapsed_h < window:

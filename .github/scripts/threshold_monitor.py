@@ -4,9 +4,9 @@ Threshold Monitor & Auto-Issue Creator
 Monitors code quality metrics and automatically creates GitHub issues when thresholds are violated
 """
 
+import ast
 import json
 import re
-import ast
 import sys
 from datetime import datetime
 from pathlib import Path
