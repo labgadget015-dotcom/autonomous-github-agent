@@ -9,10 +9,13 @@ assert lock ordering, and the config/ledger collaborators of should_post().
 
 from __future__ import annotations
 
+import hashlib
 import inspect
 import json
+import logging
 import re
 import threading
+from collections import Counter
 from datetime import datetime, timezone
 from types import SimpleNamespace
 from unittest import mock
@@ -27,6 +30,21 @@ from decisions import ledger  # noqa: E402
 NOW = 1_800_000_000  # 2027-01-15T08:00:00Z
 HOUR = 3600
 STATUSES_MSG = "expected one of ['assigned', 'done', 'dropped', 'inflight', 'open']"
+LOGGER = "decisions.ledger"
+
+
+def _checksummed(entry: dict) -> str:
+    """Independent oracle for the on-disk line format (does not call ledger code)."""
+    payload = json.dumps(entry, ensure_ascii=False)
+    return f"{payload}|{hashlib.sha256(payload.encode()).hexdigest()[:16]}\n"
+
+
+def _ledger_warnings(caplog) -> list[str]:
+    return [
+        r.getMessage()
+        for r in caplog.records
+        if r.name == LOGGER and r.levelno == logging.WARNING
+    ]
 
 
 @pytest.fixture
@@ -154,9 +172,9 @@ def test_append_creates_parent_dirs_and_numbers_from_zero(ledger_path):
 def test_append_to_bare_filename_uses_cwd(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
     ledger._append_with_seq({"sig": "a"}, "bare.jsonl")
-    assert (tmp_path / "bare.jsonl").read_text(
-        encoding="utf-8"
-    ) == '{"sig": "a", "seq": 0}\n'
+    assert (tmp_path / "bare.jsonl").read_text(encoding="utf-8") == _checksummed(
+        {"sig": "a", "seq": 0}
+    )
 
 
 def test_seq_counts_corrupt_lines_too(ledger_path):
@@ -180,7 +198,7 @@ def test_append_after_torn_write_starts_a_fresh_line(ledger_path):
 
 def test_append_is_utf8_on_disk(ledger_path):
     ledger._append_with_seq({"sig": "✅"}, str(ledger_path))
-    assert ledger_path.read_bytes() == '{"sig": "✅", "seq": 0}\n'.encode()
+    assert ledger_path.read_bytes() == _checksummed({"sig": "✅", "seq": 0}).encode()
 
 
 def test_append_locks_writes_fsyncs_unlocks_in_order(ledger_path, monkeypatch):
@@ -265,11 +283,8 @@ def test_record_writes_exact_schema(clock, ledger_path, make_rec):
         "seq": 0,
     }
     assert entry == expected
-    # Key order and raw (non-escaped) unicode on disk.
-    assert (
-        ledger_path.read_text(encoding="utf-8")
-        == json.dumps(expected, ensure_ascii=False) + "\n"
-    )
+    # Key order, raw (non-escaped) unicode and the checksum suffix on disk.
+    assert ledger_path.read_text(encoding="utf-8") == _checksummed(expected)
 
 
 def test_record_does_not_guard_against_an_empty_signature(clock, ledger_path, make_rec):
@@ -601,3 +616,207 @@ def test_full_lifecycle(clock, ledger_path, make_rec):
         "existing entry is done — never repost",
     )
     assert [e["seq"] for e in ledger._load(path)] == [0, 1, 2]
+
+
+# --------------------------------------------------------------------------- #
+# checksummed line format
+# --------------------------------------------------------------------------- #
+
+
+def test_checksum_split_uses_the_last_pipe(ledger_path, caplog):
+    # Signatures contain "|" and escaped "\|"; only the final pipe is the delimiter.
+    entry = {"sig": "rotate|a\\|b|c", "headline": "x | y"}
+    ledger._append_with_seq(entry, str(ledger_path))
+    assert ledger_path.read_text(encoding="utf-8") == _checksummed({**entry, "seq": 0})
+    with caplog.at_level(logging.WARNING, logger=LOGGER):
+        assert ledger._load(str(ledger_path)) == [{**entry, "seq": 0}]
+    assert _ledger_warnings(caplog) == []
+
+
+def test_edited_payload_is_skipped_with_line_number_warning(ledger_path, caplog):
+    tampered = _checksummed({"sig": "b", "seq": 1}).replace('"b"', '"B"')
+    ledger_path.parent.mkdir(parents=True)
+    ledger_path.write_text(
+        "\n"  # line 1 is blank: numbering counts physical lines
+        + _checksummed({"sig": "a", "seq": 0})
+        + tampered
+        + _checksummed({"sig": "c", "seq": 2}),
+        encoding="utf-8",
+    )
+    with caplog.at_level(logging.WARNING, logger=LOGGER):
+        assert ledger._load(str(ledger_path)) == [
+            {"sig": "a", "seq": 0},
+            {"sig": "c", "seq": 2},
+        ]
+    assert _ledger_warnings(caplog) == [
+        f"ledger {ledger_path} line 3: checksum mismatch — line skipped"
+    ]
+
+
+def test_edited_digest_is_skipped_with_warning(ledger_path, caplog):
+    payload, digest = _checksummed({"sig": "a", "seq": 0}).rstrip("\n").rsplit("|", 1)
+    flipped = ("1" if digest[0] == "0" else "0") + digest[1:]
+    ledger_path.parent.mkdir(parents=True)
+    ledger_path.write_text(f"{payload}|{flipped}\n", encoding="utf-8")
+    with caplog.at_level(logging.WARNING, logger=LOGGER):
+        assert ledger._load(str(ledger_path)) == []
+    assert _ledger_warnings(caplog) == [
+        f"ledger {ledger_path} line 1: checksum mismatch — line skipped"
+    ]
+
+
+def test_legacy_plain_json_lines_load_silently_alongside_new_lines(ledger_path, caplog):
+    _write(ledger_path, {"sig": "legacy", "seq": 0})
+    ledger._append_with_seq({"sig": "new"}, str(ledger_path))
+    with caplog.at_level(logging.WARNING, logger=LOGGER):
+        assert ledger._load(str(ledger_path)) == [
+            {"sig": "legacy", "seq": 0},
+            {"sig": "new", "seq": 1},
+        ]
+    assert _ledger_warnings(caplog) == []
+    legacy_line, new_line = ledger_path.read_text(encoding="utf-8").splitlines(True)
+    assert legacy_line == json.dumps({"sig": "legacy", "seq": 0}) + "\n"  # untouched
+    assert new_line == _checksummed({"sig": "new", "seq": 1})
+
+
+def test_seq_still_counts_checksum_mismatch_lines(ledger_path, caplog):
+    # seq numbers physical lines: a skipped (mismatching) line keeps its number,
+    # so a corrupted or forged line can never cause a seq to be reused.
+    tampered = _checksummed({"sig": "a", "seq": 0}).replace('"a"', '"A"')
+    ledger_path.parent.mkdir(parents=True)
+    ledger_path.write_text(tampered, encoding="utf-8")
+    with caplog.at_level(logging.WARNING, logger=LOGGER):
+        assert ledger._append_with_seq({"sig": "b"}, str(ledger_path))["seq"] == 1
+        assert ledger._load(str(ledger_path)) == [{"sig": "b", "seq": 1}]
+    assert _ledger_warnings(caplog) == [
+        f"ledger {ledger_path} line 1: checksum mismatch — line skipped"
+    ]
+
+
+@pytest.mark.parametrize(
+    "suffix",
+    ["|abc", "|" + "0" * 15, "|" + "0" * 17, "|" + "g" * 16, "|" + "A" * 16],
+    ids=["torn-digest", "15-hex", "17-hex", "non-hex", "uppercase-hex"],
+)
+def test_malformed_digest_suffix_is_skipped_as_corrupt(ledger_path, caplog, suffix):
+    # Not a checksummed line and not valid JSON: skipped like any torn line.
+    ledger_path.parent.mkdir(parents=True)
+    ledger_path.write_text(
+        '{"sig": "a"}' + suffix + "\n" + _checksummed({"sig": "b"}), encoding="utf-8"
+    )
+    with caplog.at_level(logging.WARNING, logger=LOGGER):
+        assert ledger._load(str(ledger_path)) == [{"sig": "b"}]
+    assert _ledger_warnings(caplog) == []
+
+
+def test_tampered_transition_is_detected_by_should_post(
+    clock, ledger_path, make_rec, caplog
+):
+    rec, path = make_rec(), str(ledger_path)
+    ledger.record(rec, path)
+    ledger.transition(SIG, "done", path=path)
+    text = ledger_path.read_text(encoding="utf-8")
+    ledger_path.write_text(
+        text.replace('"status": "done"', '"status": "open"'), encoding="utf-8"
+    )
+    with caplog.at_level(logging.WARNING, logger=LOGGER):
+        # The forged "open" line is dropped; the verified record line still debounces.
+        assert ledger.should_post(rec, path) == (
+            False,
+            "existing entry is open, raised 0.0h ago (debounce 72h) — suppress",
+        )
+    assert _ledger_warnings(caplog) == [
+        f"ledger {path} line 2: checksum mismatch — line skipped"
+    ]
+
+
+# --------------------------------------------------------------------------- #
+# _num_safe: coercion accounting
+# --------------------------------------------------------------------------- #
+
+
+def test_num_safe_counts_only_present_unusable_values():
+    tally: Counter[str] = Counter()
+    entry = {
+        "str": "yesterday",
+        "null": None,
+        "bool": True,
+        "list": [1],
+        "nan": float("nan"),
+        "inf": float("inf"),
+        "int": 5,
+        "float": 2.5,
+    }
+    keys = ["str", "null", "bool", "list", "nan", "inf", "int", "float", "missing"]
+    assert [ledger._num_safe(entry, k, tally) for k in keys] == [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        2.5,
+        0,
+    ]
+    assert tally == Counter(
+        {"str": 1, "null": 1, "bool": 1, "list": 1, "nan": 1, "inf": 1}
+    )
+
+
+def test_latest_match_logs_one_summary_warning_per_call(ledger_path, caplog):
+    _write(
+        ledger_path,
+        {"sig": SIG, "status": "open", "first_raised_ts": "yesterday", "seq": "x"},
+        {"sig": SIG, "status": "open", "first_raised_ts": None, "seq": 1},
+        {"sig": SIG, "status": "assigned", "transitioned_ts": 5, "seq": 2},
+        {"sig": "other", "first_raised_ts": "not evaluated"},
+    )
+    with caplog.at_level(logging.WARNING, logger=LOGGER):
+        assert ledger.latest_match(SIG, str(ledger_path))["status"] == "assigned"
+        ledger.latest_match(SIG, str(ledger_path))
+    summary = (
+        f"ledger {ledger_path}: coerced 3 non-numeric value(s) to 0 "
+        "(first_raised_ts=2, seq=1)"
+    )
+    assert _ledger_warnings(caplog) == [summary, summary]  # one per call, not per line
+
+
+def test_nan_timestamp_on_disk_fails_open_and_is_reported(
+    clock, ledger_path, make_rec, caplog
+):
+    ledger_path.parent.mkdir(parents=True)
+    ledger_path.write_text(
+        f'{{"sig": "{SIG}", "status": "open", "first_raised_ts": NaN}}\n',
+        encoding="utf-8",
+    )
+    with caplog.at_level(logging.WARNING, logger=LOGGER):
+        assert ledger.should_post(make_rec(), str(ledger_path)) == (
+            True,
+            "debounce window elapsed (500000.0h >= 72h)",
+        )
+    assert _ledger_warnings(caplog) == [
+        f"ledger {ledger_path}: coerced 1 non-numeric value(s) to 0 (first_raised_ts=1)"
+    ]
+
+
+def test_should_post_summary_does_not_double_count_the_winner(
+    clock, ledger_path, make_rec, caplog
+):
+    _write(ledger_path, {"sig": SIG, "status": "open", "first_raised_ts": "yesterday"})
+    with caplog.at_level(logging.WARNING, logger=LOGGER):
+        ledger.should_post(make_rec(), str(ledger_path))
+    assert _ledger_warnings(caplog) == [
+        f"ledger {ledger_path}: coerced 1 non-numeric value(s) to 0 (first_raised_ts=1)"
+    ]
+
+
+def test_clean_ledger_logs_nothing(clock, ledger_path, make_rec, caplog):
+    rec, path = make_rec(), str(ledger_path)
+    ledger.record(rec, path)
+    ledger.transition(SIG, "assigned", path=path)
+    with caplog.at_level(logging.WARNING, logger=LOGGER):
+        ledger.should_post(rec, path)
+        ledger.latest_match(SIG, path)
+        ledger._load(path)
+    assert _ledger_warnings(caplog) == []
