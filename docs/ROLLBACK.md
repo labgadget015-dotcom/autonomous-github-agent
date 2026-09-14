@@ -1,5 +1,21 @@
 # Rollback Manifest
 
+## f22cb04 — 2026-09-14 05:14 timezone.utc
+
+- **SHA**: `f22cb04f2cf9929c33fdcf3b9f320f635c13da4c`
+- **Author**: Gadget Lab
+- **Message**: refactor(autopilot): migrate recommendation contract to Pydantic V2 (#303)
+- **Files changed**: 5 file(s)
+
+**Changed files:**
+- `autopilot/README.md`
+- `autopilot/decisions/ledger.py`
+- `autopilot/recommendation_contract.py`
+- `tests/unit/autopilot_recs/test_ledger.py`
+- `tests/unit/autopilot_recs/test_recommendation_contract.py`
+
+---
+
 ## c43f9b1 — 2026-09-13 05:01 timezone.utc
 
 - **SHA**: `c43f9b12de4ff8ae3d675db6fdde12244821284a`
