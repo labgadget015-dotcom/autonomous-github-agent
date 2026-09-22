@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased] - 2026-09-14
+## [Unreleased] - 2026-09-22
 
 ### ✨ Features
 
@@ -43,6 +43,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 🐛 Bug Fixes
 
+- **context**: filter hidden dirs relative to workspace, not absolute path (#315) (d24aba3)
 - **autopilot**: harden DRC contract ledger parsing and eliminate test coverage debt (#302) (c43f9b1)
 - **router**: raise local Ollama call timeout 30s->45s to stop cold-start cloud fallback (#299) (170419c)
 - **ci**: implement unmerged PR #262 review fixes in intake-canary and n8n-health-check (#269) (4dbe7cb)
@@ -193,6 +194,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 🔨 Chores
 
+- rollback manifest entry [skip ci] (8670e1c)
+- update CHANGELOG [skip ci] (0d6c81f)
 - update CHANGELOG [skip ci] (7cd890a)
 - rollback manifest entry [skip ci] (72e7eb5)
 - rollback manifest entry [skip ci] (4958d4e)
