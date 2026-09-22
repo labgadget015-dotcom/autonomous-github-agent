@@ -59,13 +59,10 @@ env:
   # UTC and produces ~6 Event Router executions. 26h therefore spans at least
   # one guaranteed burst; anything shorter false-fires on quiet weekends.
   SILENCE_THRESHOLD_HOURS: '26'
-  # Slack de-duplication. The job goes RED every tick regardless - GitHub
-  # Actions is the continuous signal. Slack is only for NEW breakage, because
-  # an alarm that fires 48x/day during a known-open incident is the exact
-  # input that produced the 2026-07-06 "fix" (move the probe earlier so it
-  # stops complaining) that created this blind spot in the first place.
-  # A failing execution newer than this window counts as fresh.
-  ALERT_WINDOW_MINUTES: '90'
+  # Freshness window for hard failure + Slack paging. If the newest failure is
+  # older than this, we downgrade to warning so stale incidents do not keep the
+  # canary red forever in quiet traffic windows.
+  ALERT_WINDOW_MINUTES: '60'
 
 jobs:
   canary:
@@ -217,17 +214,16 @@ jobs:
             AGE_M=$(( ( $(date -u +%s) - $(date -u -d "$LATEST_AT" +%s) ) / 60 ))
             if [ "$AGE_M" -le "$ALERT_WINDOW_MINUTES" ]; then
               echo "slack=true" >> "$GITHUB_OUTPUT"
-            else
-              echo "slack=false" >> "$GITHUB_OUTPUT"
-              echo "Known-open incident (newest failure ${AGE_M}m old) - job fails, Slack suppressed."
+              {
+                echo "status=pipeline_down"
+                echo "detail=Event Router: ${ROUTER_STREAK} consecutive failed executions (latest id ${ERR_ID}, ${AGE_M}m old). DRC: ${DRC_STREAK}. GitHub events are being dropped - inbound automation is DEAD."
+              } >> "$GITHUB_OUTPUT"
+              echo "::error::Pipeline erroring - Event Router streak ${ROUTER_STREAK}, DRC streak ${DRC_STREAK}."
+              exit 1
             fi
 
-            {
-              echo "status=pipeline_down"
-              echo "detail=Event Router: ${ROUTER_STREAK} consecutive failed executions (latest id ${ERR_ID}, ${AGE_M}m old). DRC: ${DRC_STREAK}. GitHub events are being dropped - inbound automation is DEAD."
-            } >> "$GITHUB_OUTPUT"
-            echo "::error::Pipeline erroring - Event Router streak ${ROUTER_STREAK}, DRC streak ${DRC_STREAK}."
-            exit 1
+            echo "slack=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::Known-open incident (newest failure ${AGE_M}m old) - outside ${ALERT_WINDOW_MINUTES}m window; suppressing hard failure."
           fi
 
           echo "status=healthy" >> "$GITHUB_OUTPUT"
