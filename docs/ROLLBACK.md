@@ -1,5 +1,17 @@
 # Rollback Manifest
 
+## d24aba3 — 2026-09-22 09:05 timezone.utc
+
+- **SHA**: `d24aba353fb5e67f7490562a427c397186afcc71`
+- **Author**: Gadget Lab
+- **Message**: fix(context): filter hidden dirs relative to workspace, not absolute path (#315)
+- **Files changed**: 1 file(s)
+
+**Changed files:**
+- `.github/scripts/gather_context.py`
+
+---
+
 ## f22cb04 — 2026-09-14 05:14 timezone.utc
 
 - **SHA**: `f22cb04f2cf9929c33fdcf3b9f320f635c13da4c`
