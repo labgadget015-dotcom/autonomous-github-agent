@@ -1,5 +1,17 @@
 # Rollback Manifest
 
+## 4ba93bb — 2026-09-22 10:46 timezone.utc
+
+- **SHA**: `4ba93bbc760fc3fa27bf136b7d288e871c42826c`
+- **Author**: Copilot
+- **Message**: Intake Canary: fail only on fresh execution errors; downgrade stale streaks (#316)
+- **Files changed**: 1 file(s)
+
+**Changed files:**
+- `.github/workflows/intake-canary.yml`
+
+---
+
 ## d24aba3 — 2026-09-22 09:05 timezone.utc
 
 - **SHA**: `d24aba353fb5e67f7490562a427c397186afcc71`
