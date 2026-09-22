@@ -194,6 +194,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 🔨 Chores
 
+- rollback manifest entry [skip ci] (8ab9362)
+- update CHANGELOG [skip ci] (a106544)
 - rollback manifest entry [skip ci] (8670e1c)
 - update CHANGELOG [skip ci] (0d6c81f)
 - update CHANGELOG [skip ci] (7cd890a)
