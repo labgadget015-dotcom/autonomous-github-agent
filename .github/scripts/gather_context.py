@@ -92,10 +92,15 @@ class SmartContextGatherer:
         files = []
         try:
             for file_path in self.workspace.rglob("*"):
-                if file_path.is_file() and not any(
-                    part.startswith(".") for part in file_path.parts
-                ):
-                    files.append(str(file_path.relative_to(self.workspace)))
+                if not file_path.is_file():
+                    continue
+                relative_path = file_path.relative_to(self.workspace)
+                # Only inspect the path *relative to the workspace*: an absolute
+                # path may contain hidden ancestor dirs (e.g. /home/x/.cache/repo)
+                # that would otherwise filter out every file in the repo.
+                if any(part.startswith(".") for part in relative_path.parts):
+                    continue
+                files.append(str(relative_path))
         except Exception as e:
             print(f"Warning: Error gathering files: {e}")
 
