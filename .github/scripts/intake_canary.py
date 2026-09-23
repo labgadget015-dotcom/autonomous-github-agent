@@ -18,6 +18,7 @@ evidence carries ids, statuses, timestamps and counts, never response bodies.
 
 from __future__ import annotations
 
+import http.client
 import json
 import os
 import sys
@@ -286,7 +287,12 @@ def fetch_executions(host: str, api_key: str, workflow_id: str) -> Fetch:
             status, raw = resp.status, resp.read()
     except urllib.error.HTTPError as exc:
         return Fetch(exc.code)
-    except (urllib.error.URLError, TimeoutError, OSError) as exc:
+    except (
+        urllib.error.URLError,
+        http.client.HTTPException,
+        TimeoutError,
+        OSError,
+    ) as exc:
         return Fetch(f"transport_error:{type(exc).__name__}")
     try:
         return Fetch(status, json.loads(raw))
@@ -294,8 +300,7 @@ def fetch_executions(host: str, api_key: str, workflow_id: str) -> Fetch:
         return Fetch(status, None)
 
 
-def main() -> int:
-    now = datetime.now(timezone.utc)
+def judge(now: datetime) -> tuple[Config, Verdict]:
     cfg = Config(
         router_id=os.environ["EVENT_ROUTER_ID"],
         drc_id=os.environ["DRC_ID"],
@@ -309,7 +314,23 @@ def main() -> int:
         drc = fetch_executions(host, api_key, cfg.drc_id)
     else:
         router = drc = Fetch("not_fetched")
-    v = evaluate(cfg, router, drc, now, api_key_present=bool(api_key))
+    return cfg, evaluate(cfg, router, drc, now, api_key_present=bool(api_key))
+
+
+def main() -> int:
+    now = datetime.now(timezone.utc)
+    try:
+        cfg, v = judge(now)
+    except Exception as exc:  # noqa: BLE001 - a crash must still emit UNKNOWN + outputs
+        cfg = Config(
+            os.environ.get("EVENT_ROUTER_ID", "?"), os.environ.get("DRC_ID", "?")
+        )
+        v = Verdict(
+            UNKNOWN,
+            "canary_broken",
+            f"Canary crashed ({type(exc).__name__}). Pipeline state is UNKNOWN.",
+            remind_now(now),
+        )
     ev = evidence(cfg, v, now)
     ev_line = json.dumps(ev, separators=(",", ":"), sort_keys=True)
 

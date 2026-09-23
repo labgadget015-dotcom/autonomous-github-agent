@@ -7,6 +7,7 @@ judged on the router's timestamp, and unparseable data read as zero errors.
 
 from __future__ import annotations
 
+import http.client
 import importlib.util
 import json
 import sys
@@ -310,3 +311,50 @@ def test_main_uses_fetched_responses(tmp_path, monkeypatch):
     assert canary.main() == 0
     out = (tmp_path / "out").read_text()
     assert "status=stale_incident" in out and "status=healthy" not in out
+
+
+@pytest.mark.parametrize("exc", [RuntimeError("boom"), http.client.IncompleteRead(b"")])
+def test_crash_still_emits_unknown_outputs(tmp_path, monkeypatch, exc):
+    monkeypatch.setenv("GITHUB_OUTPUT", str(tmp_path / "out"))
+    monkeypatch.delenv("GITHUB_STEP_SUMMARY", raising=False)
+    monkeypatch.setenv("EVENT_ROUTER_ID", "ROUTER")
+    monkeypatch.setenv("DRC_ID", "DRC")
+    monkeypatch.setenv("N8N_API_KEY", "test-key")
+
+    def explode(*_):
+        raise exc
+
+    monkeypatch.setattr(canary, "fetch_executions", explode)
+    assert canary.main() == 1
+    lines = dict(
+        line.split("=", 1) for line in (tmp_path / "out").read_text().splitlines()
+    )
+    assert (lines["status"], lines["verdict"]) == ("canary_broken", "UNKNOWN")
+    assert json.loads(lines["evidence"])["exit_code"] == 1
+
+
+def test_bad_threshold_env_is_unknown_not_traceback(tmp_path, monkeypatch):
+    monkeypatch.setenv("GITHUB_OUTPUT", str(tmp_path / "out"))
+    monkeypatch.setenv("EVENT_ROUTER_ID", "ROUTER")
+    monkeypatch.setenv("DRC_ID", "DRC")
+    monkeypatch.setenv("ALERT_WINDOW_MINUTES", "sixty")
+    assert canary.main() == 1
+    assert "status=canary_broken" in (tmp_path / "out").read_text()
+
+
+def test_incomplete_read_is_transport_error(monkeypatch):
+    class Resp:
+        status = 200
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *a):
+            return False
+
+        def read(self):
+            raise http.client.IncompleteRead(b"{")
+
+    monkeypatch.setattr(canary.urllib.request, "urlopen", lambda *a, **k: Resp())
+    f = canary.fetch_executions("https://example.invalid", "k", "ROUTER")
+    assert f.http_status == "transport_error:IncompleteRead"
