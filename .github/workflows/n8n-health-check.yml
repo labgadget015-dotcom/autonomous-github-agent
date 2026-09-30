@@ -11,12 +11,25 @@ name: n8n Reachability Check
 #     Event Router executions were erroring and 100% of events were dropped.
 # The authoritative pipeline-health signal is `intake-canary.yml`, which polls
 # the n8n executions API. If the two disagree, the canary is right.
+#
+# 2026-09-30: this check itself could not go red. A DRC 404 counted as alive,
+# the Pong body was never checked, and the job failed only if BOTH the DRC
+# probe AND the host root were down - and the host root answers 200 even when
+# n8n refuses to run anything (the 2026-09-23 execution-quota outage: every
+# ping execution errored, this job stayed green). Now the DRC probe is alive
+# only on a 2xx whose body carries pong=true, with one retry for cold starts,
+# and a failed DRC probe fails the job on its own.
 
 on:
   schedule:
     # Every 6 hours
     - cron: '0 */6 * * *'
   workflow_dispatch:
+
+env:
+  # Single place to repoint when the DRC moves off n8n Cloud.
+  DRC_WEBHOOK_URL: https://gadgetlab.app.n8n.cloud/webhook/github-agent-loop
+  N8N_HOST: https://gadgetlab.app.n8n.cloud
 
 jobs:
   health-check:
@@ -25,41 +38,40 @@ jobs:
       - name: Ping n8n DRC webhook
         id: drc_ping
         continue-on-error: true
-        env:
-          N8N_WEBHOOK_URL: https://gadgetlab.app.n8n.cloud/webhook/github-agent-loop
         run: |
-          # Probe the DRC webhook with a 30s timeout.
-          # n8n may take a moment to respond on cold start; timeout is non-fatal —
-          # the host check in the next step is the authoritative liveness signal.
-          HTTP_STATUS=$(curl -s -o /tmp/n8n_response.txt -w "%{http_code}" \
-            --max-time 30 \
-            -X POST "$N8N_WEBHOOK_URL" \
-            -H 'Content-Type: application/json' \
-            -d '{"source":"health-check","event":"ping","repository":"health-monitor"}') \
-            || HTTP_STATUS="timeout"
-
+          # Alive = HTTP 2xx AND the Route Health Ping -> Pong body
+          # ({"status":"alive","pong":true}). A 2xx without it means n8n answered
+          # but the workflow did not run (quota block, error before Pong, wrong
+          # workflow on the path). One retry covers a cold start.
+          probe() {
+            curl -s -o /tmp/n8n_response.txt -w "%{http_code}" \
+              --max-time 30 \
+              -X POST "$DRC_WEBHOOK_URL" \
+              -H 'Content-Type: application/json' \
+              -d '{"source":"health-check","event":"ping","repository":"health-monitor"}' \
+              || echo "timeout"
+          }
+          ALIVE=false
+          for attempt in 1 2; do
+            HTTP_STATUS=$(probe)
+            echo "attempt ${attempt}: HTTP ${HTTP_STATUS}"
+            head -c 500 /tmp/n8n_response.txt 2>/dev/null; echo
+            if [[ "$HTTP_STATUS" =~ ^2[0-9][0-9]$ ]] && jq -e '.pong == true' /tmp/n8n_response.txt >/dev/null 2>&1; then
+              ALIVE=true
+              break
+            fi
+            [ "$attempt" = 1 ] && sleep 20
+          done
           echo "http_status=$HTTP_STATUS" >> "$GITHUB_OUTPUT"
-          echo "n8n DRC responded: HTTP $HTTP_STATUS"
-          cat /tmp/n8n_response.txt 2>/dev/null || true
-
-          if [[ "$HTTP_STATUS" =~ ^[0-9]+$ ]] && [[ "$HTTP_STATUS" -ge 200 && "$HTTP_STATUS" -lt 300 ]]; then
-            echo "alive=true" >> "$GITHUB_OUTPUT"
-          elif [[ "$HTTP_STATUS" -eq 404 ]]; then
-            # 404 = n8n is up but workflow is inactive/disabled
-            echo "alive=true" >> "$GITHUB_OUTPUT"
-            echo "::warning::n8n DRC webhook returned 404 — workflow may be inactive"
-          else
-            # timeout or 5xx — not necessarily fatal; host check decides
-            echo "alive=false" >> "$GITHUB_OUTPUT"
-            echo "::warning::DRC webhook probe returned '$HTTP_STATUS' — host check is authoritative"
+          echo "alive=$ALIVE" >> "$GITHUB_OUTPUT"
+          if [ "$ALIVE" != "true" ]; then
+            echo "::error::DRC health ping got no Pong (last HTTP '$HTTP_STATUS') - the webhook is not running the workflow"
           fi
 
       - name: Ping n8n GitHub Event Router
         id: router_ping
-        env:
-          # The Event Router webhook is the GitHub-facing endpoint; we probe n8n host directly
-          N8N_HOST: https://gadgetlab.app.n8n.cloud
         run: |
+          # Host root only: proves the server answers HTTP, nothing more.
           HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
             --max-time 10 \
             "$N8N_HOST")
@@ -73,7 +85,7 @@ jobs:
           fi
 
       - name: Alert Slack if n8n is down
-        if: steps.router_ping.outputs.alive == 'false'
+        if: steps.drc_ping.outputs.alive != 'true' || steps.router_ping.outputs.alive == 'false'
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
           DRC_STATUS: ${{ steps.drc_ping.outputs.http_status }}
@@ -98,7 +110,7 @@ jobs:
                   \"fields\": [
                     {\"type\": \"mrkdwn\", \"text\": \"*DRC Webhook:* HTTP ${DRC_STATUS}\"},
                     {\"type\": \"mrkdwn\", \"text\": \"*n8n Host:* HTTP ${HOST_STATUS}\"},
-                    {\"type\": \"mrkdwn\", \"text\": \"*Impact:* n8n Cloud is unreachable. NOTE: this check only measures reachability - see intake-canary.yml for actual pipeline health\"},
+                    {\"type\": \"mrkdwn\", \"text\": \"*Impact:* the DRC webhook returned no Pong or the n8n host is down. NOTE: this check only measures reachability - see intake-canary.yml for actual pipeline health\"},
                     {\"type\": \"mrkdwn\", \"text\": \"*Action:* Check n8n.cloud status and verify workflows are active\"}
                   ]
                 },
@@ -139,7 +151,7 @@ jobs:
           if [ "$DRC_ALIVE" = "true" ]; then
             echo "| DRC Webhook | \`${DRC_STATUS}\` | ✅ Pong received (reachability only) |" >> "$GITHUB_STEP_SUMMARY"
           else
-            echo "| DRC Webhook | \`${DRC_STATUS}\` | 🔴 Unreachable |" >> "$GITHUB_STEP_SUMMARY"
+            echo "| DRC Webhook | \`${DRC_STATUS}\` | 🔴 No Pong |" >> "$GITHUB_STEP_SUMMARY"
           fi
           if [ "$HOST_ALIVE" = "true" ]; then
             echo "| n8n Host | \`${HOST_STATUS}\` | ✅ Up |" >> "$GITHUB_STEP_SUMMARY"
@@ -147,8 +159,8 @@ jobs:
             echo "| n8n Host | \`${HOST_STATUS}\` | 🔴 Down |" >> "$GITHUB_STEP_SUMMARY"
           fi
 
-      - name: Fail if n8n is confirmed down
-        if: steps.drc_ping.outputs.alive == 'false' && steps.router_ping.outputs.alive == 'false'
+      - name: Fail if the DRC gave no Pong or the host is down
+        if: steps.drc_ping.outputs.alive != 'true' || steps.router_ping.outputs.alive == 'false'
         run: |
-          echo "::error::n8n appears to be completely unreachable"
+          echo "::error::DRC Pong missing or n8n host down"
           exit 1
