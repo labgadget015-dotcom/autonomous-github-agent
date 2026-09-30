@@ -49,13 +49,14 @@ jobs:
               -X POST "$DRC_WEBHOOK_URL" \
               -H 'Content-Type: application/json' \
               -d '{"source":"health-check","event":"ping","repository":"health-monitor"}' \
-              || echo "timeout"
+              || true   # curl already printed 000 on transport failure
           }
           ALIVE=false
           for attempt in 1 2; do
+            rm -f /tmp/n8n_response.txt   # never judge attempt 2 on attempt 1's body
             HTTP_STATUS=$(probe)
             echo "attempt ${attempt}: HTTP ${HTTP_STATUS}"
-            head -c 500 /tmp/n8n_response.txt 2>/dev/null; echo
+            head -c 500 /tmp/n8n_response.txt 2>/dev/null || true; echo
             if [[ "$HTTP_STATUS" =~ ^2[0-9][0-9]$ ]] && jq -e '.pong == true' /tmp/n8n_response.txt >/dev/null 2>&1; then
               ALIVE=true
               break
