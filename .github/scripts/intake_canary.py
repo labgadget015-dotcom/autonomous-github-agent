@@ -5,9 +5,12 @@ executions API is the only trustworthy signal for this pipeline.
 
 Invariants (each has tests in tests/unit/test_intake_canary.py):
   * fresh failure (newest failure within ALERT_WINDOW_MINUTES) -> exit 1, Slack
-  * stale failure (streak still open, newest failure older)   -> exit 0 with a
-    warning and status ``stale_incident``, carrying the failing execution id.
-    It is NEVER reported as ``healthy``.
+  * stale failure (streak still open, newest failure older)   -> exit 1,
+    status ``stale_incident``, carrying the failing execution id; Slack only on
+    the ~4/day reminder gate. It is NEVER reported as ``healthy`` and NEVER
+    exits 0: an unresolved streak with no success since is an outage (2026-09-23
+    n8n Cloud quota exhaustion kept every execution erroring for days while an
+    exit-0 warning left the job green).
   * missing key, transport error, bad shape, missing or unparseable fields,
     unrecognised execution status                              -> UNKNOWN, exit 1
   * every run emits one JSON evidence object (stdout, step output, step summary)
@@ -88,7 +91,7 @@ class Verdict:
 
     @property
     def exit_code(self) -> int:
-        return 0 if self.verdict in (HEALTHY, STALE) else 1
+        return 0 if self.verdict == HEALTHY else 1
 
 
 def parse_ts(value: Any) -> datetime:
@@ -253,7 +256,7 @@ def evaluate(
         f"Known-open incident, NOT healthy: {summary}. No failure within the "
         f"{cfg.alert_window_minutes}m alert window and no success since - the streak "
         "is unresolved.",
-        False,
+        remind,
         workflows,
     )
 
@@ -341,7 +344,7 @@ def main() -> int:
             f"at {w.newest_failure_started_at}"
         )
     print(f"CANARY_EVIDENCE {ev_line}")
-    annotation = {FAIL: "error", UNKNOWN: "error", STALE: "warning"}.get(v.verdict)
+    annotation = {FAIL: "error", UNKNOWN: "error", STALE: "error"}.get(v.verdict)
     if annotation:
         print(f"::{annotation}::[{v.verdict}] {v.detail}")
     else:

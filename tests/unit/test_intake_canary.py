@@ -150,14 +150,14 @@ def test_freshness_boundary(age_s, verdict):
     assert run(router=ok(ex(5, "error", age_s))).verdict == verdict
 
 
-def test_stale_incident_is_warning_never_healthy():
+def test_stale_incident_fails_job_never_healthy():
     # Mirrors live state on 2026-09-23: router 20/20 errors, newest 100m old.
     # The bash canary printed "Pipeline healthy." and set status=healthy here.
     v = run(router=ok(*(ex(10911 - i, "error", 6000 + i) for i in range(20))))
     assert (v.verdict, v.status, v.exit_code, v.slack) == (
         "WARN_STALE",
         "stale_incident",
-        0,
+        1,
         False,
     )
     assert v.status != "healthy"
@@ -181,6 +181,14 @@ def test_drc_only_stale_failure_correlates_drc_execution():
     v = run(drc=ok(ex(88, "error", WINDOW_S + 600), ex(87, "success", WINDOW_S + 900)))
     assert v.verdict == "WARN_STALE"
     assert "(newest id 88," in v.detail
+
+
+@pytest.mark.parametrize("hh, mm, slack", [(12, 10, True), (9, 40, False)])
+def test_stale_incident_pages_only_on_reminder_gate(hh, mm, slack):
+    v = run(
+        router=ok(ex(5, "error", 2 * WINDOW_S)), now=NOW.replace(hour=hh, minute=mm)
+    )
+    assert (v.verdict, v.exit_code, v.slack) == ("WARN_STALE", 1, slack)
 
 
 def test_one_fresh_workflow_outranks_one_stale():
@@ -308,7 +316,7 @@ def test_main_uses_fetched_responses(tmp_path, monkeypatch):
         lambda host, key, wf: ok(stale) if wf == "ROUTER" else ok(),
     )
 
-    assert canary.main() == 0
+    assert canary.main() == 1
     out = (tmp_path / "out").read_text()
     assert "status=stale_incident" in out and "status=healthy" not in out
 

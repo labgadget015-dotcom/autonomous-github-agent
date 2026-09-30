@@ -59,10 +59,11 @@ env:
   # UTC and produces ~6 Event Router executions. 26h therefore spans at least
   # one guaranteed burst; anything shorter false-fires on quiet weekends.
   SILENCE_THRESHOLD_HOURS: '26'
-  # Freshness window for hard failure + Slack paging. If the newest failure is
-  # older than this, we downgrade to a warning (status=stale_incident, with the
-  # failing execution id) so stale incidents do not keep the canary red forever
-  # in quiet traffic windows. A stale incident is never reported as healthy.
+  # Freshness window for immediate Slack paging. If the newest failure is older
+  # than this (status=stale_incident, with the failing execution id), Slack is
+  # paged only on the ~4/day reminder gate - but the job still FAILS: a streak
+  # with no success since is an outage, not a recovered one. Exiting 0 here kept
+  # the canary green through the 2026-09-23 n8n Cloud quota outage.
   ALERT_WINDOW_MINUTES: '60'
 
 jobs:
@@ -87,8 +88,8 @@ jobs:
         #
         # Freshness is judged PER WORKFLOW from that workflow's newest failure,
         # so a DRC-only failure is no longer gated on the router's timestamp.
-        # A stale streak exits 0 with a warning and status=stale_incident; it
-        # is never reported as healthy.
+        # A stale streak exits 1 with status=stale_incident (Slack on the
+        # reminder gate only); it is never reported as healthy.
         env:
           N8N_API_KEY: ${{ secrets.N8N_API_KEY }}
         run: python3 .github/scripts/intake_canary.py
