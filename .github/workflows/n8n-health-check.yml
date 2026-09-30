@@ -27,9 +27,11 @@ on:
   workflow_dispatch:
 
 env:
-  # Single place to repoint when the DRC moves off n8n Cloud.
-  DRC_WEBHOOK_URL: https://gadgetlab.app.n8n.cloud/webhook/github-agent-loop
-  N8N_HOST: https://gadgetlab.app.n8n.cloud
+  # DRC + Event Router moved off n8n Cloud to the M900 on 2026-09-30 (Cloud execution
+  # quota exhausted). Webhooks are public via Tailscale Funnel at /n8n/webhook/*; the rest
+  # of /n8n/ sits behind Caddy basic_auth, so the host probe sees 401 = up (<500).
+  DRC_WEBHOOK_URL: https://m900-homelab.tail8e0dcd.ts.net/n8n/webhook/github-agent-loop
+  N8N_HOST: https://m900-homelab.tail8e0dcd.ts.net/n8n/
 
 jobs:
   health-check:
