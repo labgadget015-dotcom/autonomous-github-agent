@@ -27,14 +27,22 @@ name: Intake Canary
 #
 #   3. n8n host root -> 200 OK  (proves only that n8n Cloud is up)
 #
-# The ONLY signal that distinguishes a healthy pipeline from a dead one is the
-# n8n *executions* API. That is what this workflow polls.
+# Signal source (since the 2026-09-30 M900 cutover): the Neon audit tables
+# the pipeline itself writes - tim.intake_events (one row per delivery that
+# passed HMAC) and tim.agent_runs (DRC audit write). The old source, the n8n
+# Cloud executions API, is dead, and the M900's API is behind basic_auth and
+# unreachable from runners. Evaluation logic + rationale:
+# .github/scripts/intake_canary_neon.py
 #
-# KNOWN GAP (deliberate, v1): this detects executions with status "error". A
-# success-status LOGIC failure - events routed down a wrong branch, DRC never
-# triggered - still slips through. A true end-to-end probe needs a synthetic
-# issue, which costs LLM spend per run and may be eaten by the Event Router's
-# bot-sender filter. Out of scope until the error-class detection is proven.
+# This closes the v1 KNOWN GAP: a forwarded event with no audit row is a DRC
+# failure even when every n8n execution reports success.
+#
+# KNOWN GAP (v2): router ERRORS that happen before the shadow-log node write
+# nothing, so they surface as silence (<= SILENCE_THRESHOLD_HOURS), not
+# within 30 minutes as before.
+#
+# NEON_CANARY_DSN is the read-only `canary_ro` role: column-level SELECT on the
+# two tables only, default_transaction_read_only, 15s statement timeout.
 # ---------------------------------------------------------------------------
 
 on:
@@ -47,190 +55,85 @@ permissions:
   contents: read
 
 env:
-  N8N_HOST: https://gadgetlab.app.n8n.cloud
-  # Event Router - the component that has broken twice. Webhook-driven, so a
-  # long silence is itself a symptom (hook deleted / workflow deactivated).
-  EVENT_ROUTER_ID: oijizIGJtRzBG94Z
-  # DRC Agent Loop - error check only. A silence check here would be VACUOUS:
-  # the 6-hourly health-check Pong pings always create executions, so DRC can
-  # never look silent even when it is doing no real work.
-  DRC_ID: Wlfhgk4sUfXJcU4D
-  # Guaranteed nightly traffic: the autopilot daily-summary issue lands ~02:26
-  # UTC and produces ~6 Event Router executions. 26h therefore spans at least
-  # one guaranteed burst; anything shorter false-fires on quiet weekends.
+  # Guaranteed daily traffic: issue #164 is edited every morning (~06:28 UTC)
+  # and the autopilot summary issue lands overnight. 26h therefore spans at
+  # least one guaranteed delivery; anything shorter false-fires on weekends.
   SILENCE_THRESHOLD_HOURS: '26'
-  # Freshness window for hard failure + Slack paging. If the newest failure is
-  # older than this, we downgrade to warning so stale incidents do not keep the
-  # canary red forever in quiet traffic windows.
+  # A DRC failure younger than this pages Slack immediately; older ones page
+  # only on the ~4/day reminder gate. The job FAILS either way while the
+  # unmatched event is inside the 48h lookback - never downgraded to green.
   ALERT_WINDOW_MINUTES: '60'
 
 jobs:
   canary:
     name: GitHub -> DRC intake canary
     runs-on: ubuntu-latest
+    timeout-minutes: 5
 
     steps:
-      - name: Check n8n pipeline execution health
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: .github/scripts
+
+      - name: Check intake health from Neon
         id: probe
         env:
-          N8N_API_KEY: ${{ secrets.N8N_API_KEY }}
+          NEON_CANARY_DSN: ${{ secrets.NEON_CANARY_DSN }}
         run: |
           set -uo pipefail
 
-          # Coarse, stateless reminder gate for conditions that persist until a
-          # human acts (broken key, prolonged silence). Must be computed BEFORE
-          # any branch that can exit, or `set -u` kills the branch that needs it.
-          # hour % 6 == 0 and minute < 30 => ~4 Slack pages/day, at most one per
-          # 30-min tick pair.
-          # 10# forces base-10: `08`/`09` are invalid octal and would error out.
+          # ~4 reminder pages/day for conditions that persist until a human
+          # acts. 10# forces base-10: `08`/`09` are invalid octal.
           if [ $(( 10#$(date -u +%H) % 6 )) -eq 0 ] && [ $(( 10#$(date -u +%M) )) -lt 30 ]; then
-            REMIND=true
+            export REMIND=true
           else
-            REMIND=false
+            export REMIND=false
           fi
 
-          # --- Fail loudly on a missing secret -----------------------------
-          # Without this the curl below sends an empty header, n8n returns 401,
-          # and `jq '.data | length'` on the error body yields 0 - which reads
-          # as "zero errors, all healthy". That is the exact silent-pass this
-          # canary exists to prevent. Verified against the live API 2026-08-23.
-          if [ -z "${N8N_API_KEY:-}" ]; then
+          broken() {
             {
               echo "status=canary_broken"
-              echo "detail=N8N_API_KEY secret is not set on this repository."
+              echo "detail=$1"
               echo "slack=${REMIND}"
             } >> "$GITHUB_OUTPUT"
-            echo "::error::N8N_API_KEY is not set - the canary cannot see the pipeline."
+            echo "::error::$1"
             exit 1
-          fi
-
-          fetch() {
-            # $1 = workflow id, $2 = output file. Echoes the HTTP status.
-            curl -s -o "$2" -w '%{http_code}' --max-time 30 \
-              -H "X-N8N-API-KEY: ${N8N_API_KEY}" \
-              "${N8N_HOST}/api/v1/executions?workflowId=$1&limit=20"
           }
 
-          ROUTER_BODY=/tmp/router.json
-          DRC_BODY=/tmp/drc.json
+          [ -n "${NEON_CANARY_DSN:-}" ] || broken "NEON_CANARY_DSN secret is not set - the canary cannot see the pipeline."
 
-          ROUTER_HTTP=$(fetch "$EVENT_ROUTER_ID" "$ROUTER_BODY") || ROUTER_HTTP="curl_failed"
-          DRC_HTTP=$(fetch "$DRC_ID" "$DRC_BODY") || DRC_HTTP="curl_failed"
+          # DB clock (now()) is the reference for every age, not the runner's.
+          SNAPSHOT=$(psql "$NEON_CANARY_DSN" -X -At -v ON_ERROR_STOP=1 <<'SQL'
+          SELECT json_build_object(
+            'now', now(),
+            'latest_at', (SELECT max(received_at) FROM tim.intake_events),
+            'forwarded', (SELECT count(*) FROM tim.intake_events
+                          WHERE path = 'forwarded'
+                            AND received_at > now() - interval '48 hours'),
+            'unmatched', COALESCE((
+              SELECT json_agg(json_build_object(
+                       'id', e.id, 'received_at', e.received_at,
+                       'issue_number', e.issue_number) ORDER BY e.received_at DESC)
+              FROM tim.intake_events e
+              WHERE e.path = 'forwarded'
+                AND e.received_at > now() - interval '48 hours'
+                -- grace: Forward can time out before a slow council finishes
+                AND e.received_at < now() - interval '5 minutes'
+                AND NOT EXISTS (
+                  SELECT 1 FROM tim.agent_runs r
+                  WHERE r.issue_number = e.issue_number
+                    AND r.created_at BETWEEN e.received_at - interval '15 minutes'
+                                         AND e.received_at + interval '5 minutes')
+            ), '[]'::json))
+          SQL
+          ) || broken "Neon query failed (unreachable, role/password changed, or schema changed)."
 
-          # --- Assert transport BEFORE reading the body --------------------
-          # A 401/403/5xx body still parses as JSON and still yields 0 errors.
-          # Never fold a transport failure into the healthy path.
-          if [ "$ROUTER_HTTP" != "200" ] || [ "$DRC_HTTP" != "200" ]; then
-            {
-              echo "status=canary_broken"
-              echo "detail=n8n executions API unreachable (Event Router HTTP ${ROUTER_HTTP}, DRC HTTP ${DRC_HTTP}). Key expired, rotated, or n8n Cloud down."
-              echo "slack=${REMIND}"
-            } >> "$GITHUB_OUTPUT"
-            echo "::error::n8n API returned ${ROUTER_HTTP}/${DRC_HTTP} - cannot assess pipeline health."
-            exit 1
-          fi
-
-          # Shape guard: a 200 that is not the expected envelope is also a
-          # canary fault, not a healthy pipeline. Both bodies are validated so
-          # a malformed DRC response cannot produce a non-numeric streak and
-          # silently suppress the Slack alert.
-          for _body_check in "$ROUTER_BODY:Event Router" "$DRC_BODY:DRC Agent Loop"; do
-            _file="${_body_check%%:*}"
-            _label="${_body_check##*:}"
-            if ! jq -e '.data | type == "array"' "$_file" >/dev/null 2>&1; then
-              {
-                echo "status=canary_broken"
-                echo "detail=n8n returned HTTP 200 for ${_label} but the response had no .data array. API shape changed."
-                echo "slack=${REMIND}"
-              } >> "$GITHUB_OUTPUT"
-              echo "::error::Unexpected response shape from the executions API (${_label})."
-              exit 1
-            fi
-          done
-
-          # --- Consecutive-error streak, newest first ----------------------
-          # Chosen over "any error in the last N hours" so the signal SELF-CLEARS:
-          # the first successful execution after a fix turns the canary green
-          # immediately, instead of staying red for the length of the window.
-          # (The raw v1 API has no startedAfter filter - verified 2026-08-23 -
-          # so all windowing is done here in jq.)
-          streak() {
-            # Count LEADING "error" statuses only. Deliberately not
-            # `index("success")`: that would count a "running" or "waiting"
-            # execution at position 0 as a failure and fire a false alarm.
-            jq '[.data[].status] | (map(. == "error") | index(false) // length)' "$1"
-          }
-
-          ROUTER_STREAK=$(streak "$ROUTER_BODY")
-          DRC_STREAK=$(streak "$DRC_BODY")
-
-          LATEST_AT=$(jq -r '.data[0].startedAt // empty' "$ROUTER_BODY")
-          TOTAL=$(jq '.data | length' "$ROUTER_BODY")
-
-          echo "Event Router: ${TOTAL} recent executions, ${ROUTER_STREAK} consecutive errors (newest first)"
-          echo "DRC Agent Loop: ${DRC_STREAK} consecutive errors (newest first)"
-          echo "Event Router latest execution: ${LATEST_AT:-<none>}"
-
-          # --- Silence check (Event Router only) ---------------------------
-          if [ -z "$LATEST_AT" ]; then
-            {
-              echo "status=pipeline_down"
-              echo "detail=Event Router has NO executions on record. The GitHub webhook may be deleted or the workflow deactivated."
-              echo "slack=${REMIND}"
-            } >> "$GITHUB_OUTPUT"
-            echo "::error::Event Router has no executions at all."
-            exit 1
-          fi
-
-          AGE_S=$(( $(date -u +%s) - $(date -u -d "$LATEST_AT" +%s) ))
-          AGE_H=$(( AGE_S / 3600 ))
-          echo "Event Router last execution age: ${AGE_H}h (threshold ${SILENCE_THRESHOLD_HOURS}h)"
-
-          if [ "$AGE_S" -gt $(( SILENCE_THRESHOLD_HOURS * 3600 )) ]; then
-            {
-              echo "status=pipeline_down"
-              echo "detail=Event Router has been SILENT for ${AGE_H}h (threshold ${SILENCE_THRESHOLD_HOURS}h). No GitHub events are arriving - webhook deleted, or workflow deactivated."
-              echo "slack=${REMIND}"
-            } >> "$GITHUB_OUTPUT"
-            echo "::error::Event Router silent for ${AGE_H}h."
-            exit 1
-          fi
-
-          # --- Error check -------------------------------------------------
-          if [ "$ROUTER_STREAK" -gt 0 ] || [ "$DRC_STREAK" -gt 0 ]; then
-            ERR_ID=$(jq -r '.data[0].id // "?"' "$ROUTER_BODY")
-
-            # Slack + hard failure only on FRESH breakage. A stale streak is
-            # downgraded to warning so old failures do not pin the workflow red
-            # when there is no fresh evidence of ongoing breakage.
-            #
-            # LIMITATION: freshness is measured from the EVENT ROUTER's newest
-            # execution. If the router is healthy and only DRC is failing, this
-            # gates on a router timestamp that has nothing to do with DRC, so a
-            # DRC-only failure may be suppressed from Slack. Do not rely on Slack
-            # alone for DRC-only faults. Fix in v2: track freshness per workflow.
-            AGE_M=$(( ( $(date -u +%s) - $(date -u -d "$LATEST_AT" +%s) ) / 60 ))
-            if [ "$AGE_M" -le "$ALERT_WINDOW_MINUTES" ]; then
-              echo "slack=true" >> "$GITHUB_OUTPUT"
-              {
-                echo "status=pipeline_down"
-                echo "detail=Event Router: ${ROUTER_STREAK} consecutive failed executions (latest id ${ERR_ID}, ${AGE_M}m old). DRC: ${DRC_STREAK}. GitHub events are being dropped - inbound automation is DEAD."
-              } >> "$GITHUB_OUTPUT"
-              echo "::error::Pipeline erroring - Event Router streak ${ROUTER_STREAK}, DRC streak ${DRC_STREAK}."
-              exit 1
-            fi
-
-            echo "slack=false" >> "$GITHUB_OUTPUT"
-            echo "::warning::Known-open incident (newest failure ${AGE_M}m old) - outside ${ALERT_WINDOW_MINUTES}m window; suppressing hard failure."
-          fi
-
-          echo "status=healthy" >> "$GITHUB_OUTPUT"
-          echo "Pipeline healthy."
+          echo "$SNAPSHOT" | python3 .github/scripts/intake_canary_neon.py
 
       - name: Alert Slack
         # Two distinct alert classes, because they need DIFFERENT hands:
         #   canary_broken -> a developer fixes the canary / rotates the key
-        #   pipeline_down -> Gadget fixes credentials in the n8n UI
+        #   pipeline_down / drc_failing -> Gadget fixes the M900 n8n
         # Folding them together costs a wasted escalation every time.
         if: failure() && steps.probe.outputs.slack == 'true'
         env:
@@ -247,10 +150,13 @@ jobs:
 
           if [ "$STATUS" = "canary_broken" ]; then
             HEADLINE=":wrench: *INTAKE CANARY BROKEN* - the canary cannot see the pipeline."
-            ACTION="Needs a developer: the n8n API key is missing, expired, or rotated. Pipeline state is UNKNOWN, not healthy."
+            ACTION="Needs a developer: NEON_CANARY_DSN is missing, the canary_ro role/password changed, or the tim schema changed. Pipeline state is UNKNOWN, not healthy."
+          elif [ "$STATUS" = "drc_failing" ]; then
+            HEADLINE=":rotating_light: *DRC COUNCIL IS FAILING* - forwarded events produced no audit row."
+            ACTION="Check the DRC Agent Loop executions on the M900 n8n (Wlfhgk4sUfXJcU4D) - Anthropic credential, token gate, or Neon write."
           else
             HEADLINE=":rotating_light: *GITHUB -> DRC INTAKE IS DOWN* - events are being dropped."
-            ACTION="Needs Gadget in the n8n UI. Note: GitHub's webhook delivery log will still show 200 OK - that is expected and does NOT mean this is a false alarm."
+            ACTION="Needs Gadget: check the M900 n8n Event Router (oijizIGJtRzBG94Z), the GitHub webhook, and the Funnel. Note: GitHub's webhook delivery log will still show 200 OK - that is expected and does NOT mean this is a false alarm."
           fi
 
           jq -n \
