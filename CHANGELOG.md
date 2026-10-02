@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased] - 2026-09-22
+## [Unreleased] - 2026-10-02
 
 ### ✨ Features
 
@@ -43,6 +43,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 🐛 Bug Fixes
 
+- **canaries**: read Neon audit tables instead of the dead n8n Cloud API (5e9c4da)
+- **canaries**: read Neon audit tables instead of the dead n8n Cloud API (fb2ab24)
 - **context**: filter hidden dirs relative to workspace, not absolute path (#315) (d24aba3)
 - **autopilot**: harden DRC contract ledger parsing and eliminate test coverage debt (#302) (c43f9b1)
 - **router**: raise local Ollama call timeout 30s->45s to stop cold-start cloud fallback (#299) (170419c)
@@ -194,6 +196,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 🔨 Chores
 
+- update CHANGELOG [skip ci] (9423f1f)
+- rollback manifest entry [skip ci] (0d7710f)
 - rollback manifest entry [skip ci] (8ab9362)
 - update CHANGELOG [skip ci] (a106544)
 - rollback manifest entry [skip ci] (8670e1c)
