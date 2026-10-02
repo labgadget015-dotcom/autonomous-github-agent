@@ -1,5 +1,14 @@
 # Rollback Manifest
 
+## 5e9c4da — 2026-10-02 06:42 timezone.utc
+
+- **SHA**: `5e9c4da37fcba40b09283767d246466a11d1983f`
+- **Author**: Gadget Lab
+- **Message**: fix(canaries): read Neon audit tables instead of the dead n8n Cloud API
+- **Files changed**: 0 file(s)
+
+---
+
 ## 4ba93bb — 2026-09-22 10:46 timezone.utc
 
 - **SHA**: `4ba93bbc760fc3fa27bf136b7d288e871c42826c`
