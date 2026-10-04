@@ -1,5 +1,17 @@
 # Rollback Manifest
 
+## 98e71ce — 2026-10-04 08:59 timezone.utc
+
+- **SHA**: `98e71ce31729574950fe0a7cdd7b07536403fb10`
+- **Author**: Gadget Lab
+- **Message**: fix(reachability): require a real Pong; a failed DRC probe fails the job (#337)
+- **Files changed**: 1 file(s)
+
+**Changed files:**
+- `.github/workflows/n8n-health-check.yml`
+
+---
+
 ## 5e9c4da — 2026-10-02 06:42 timezone.utc
 
 - **SHA**: `5e9c4da37fcba40b09283767d246466a11d1983f`
