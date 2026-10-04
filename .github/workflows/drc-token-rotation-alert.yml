@@ -101,7 +101,7 @@ jobs:
                     {
                       \"type\": \"button\",
                       \"text\": {\"type\": \"plain_text\", \"text\": \"n8n Console\"},
-                      \"url\": \"https://gadgetlab.app.n8n.cloud\"
+                      \"url\": \"https://m900-homelab.tail8e0dcd.ts.net/n8n/\"
                     }
                   ]
                 }
