@@ -156,7 +156,8 @@ jobs:
           WORKFLOW: ${{ github.workflow }}
           RUN_ID: ${{ github.run_id }}
         run: |
-          curl -s -X POST https://gadgetlab.app.n8n.cloud/webhook/ci-feedback \
+          # n8n moved to the M900 on 2026-09-30; webhooks are public via Funnel at /n8n/webhook/*.
+          curl -s --max-time 15 -X POST https://m900-homelab.tail8e0dcd.ts.net/n8n/webhook/ci-feedback \
             -H 'Content-Type: application/json' \
             -d "{\"repo\":\"${REPO}\",\"conclusion\":\"${CONCLUSION}\",\"run_url\":\"${RUN_URL}\",\"workflow_name\":\"${WORKFLOW}\",\"run_id\":\"${RUN_ID}\"}" || true
 
