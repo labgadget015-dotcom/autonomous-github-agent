@@ -1,7 +1,8 @@
 name: n8n Reachability Check
 
 # SCOPE LIMIT - READ BEFORE TRUSTING THIS WORKFLOW'S GREEN.
-# This checks REACHABILITY ONLY: that n8n Cloud is serving HTTP.
+# This checks REACHABILITY ONLY: that the M900 n8n is serving HTTP and the DRC
+# webhook returns its Pong.
 # It CANNOT detect a broken pipeline, and has already failed twice
 # (2026-07-23 Normalise Issue Payload, 2026-08-22 HMAC secret unset).
 #   * The DRC probe below hits the "Route Health Ping" IF node, which returns
@@ -9,8 +10,9 @@ name: n8n Reachability Check
 #     n8n is up. It proves NOTHING about whether GitHub events are flowing.
 #   * Verified 2026-08-23: this workflow reported green while 20/20 consecutive
 #     Event Router executions were erroring and 100% of events were dropped.
-# The authoritative pipeline-health signal is `intake-canary.yml`, which polls
-# the n8n executions API. If the two disagree, the canary is right.
+# The authoritative pipeline-health signal is `intake-canary.yml`, which reads
+# the Neon audit tables (tim.intake_events / tim.agent_runs) the pipeline
+# itself writes. If the two disagree, the canary is right.
 #
 # 2026-09-30: this check itself could not go red. A DRC 404 counted as alive,
 # the Pong body was never checked, and the job failed only if BOTH the DRC
@@ -114,7 +116,7 @@ jobs:
                     {\"type\": \"mrkdwn\", \"text\": \"*DRC Webhook:* HTTP ${DRC_STATUS}\"},
                     {\"type\": \"mrkdwn\", \"text\": \"*n8n Host:* HTTP ${HOST_STATUS}\"},
                     {\"type\": \"mrkdwn\", \"text\": \"*Impact:* the DRC webhook returned no Pong or the n8n host is down. NOTE: this check only measures reachability - see intake-canary.yml for actual pipeline health\"},
-                    {\"type\": \"mrkdwn\", \"text\": \"*Action:* Check n8n.cloud status and verify workflows are active\"}
+                    {\"type\": \"mrkdwn\", \"text\": \"*Action:* Check the M900 n8n (container n8n, /healthz) and that the DRC Agent Loop is active\"}
                   ]
                 },
                 {
@@ -128,7 +130,7 @@ jobs:
                     {
                       \"type\": \"button\",
                       \"text\": {\"type\": \"plain_text\", \"text\": \"n8n Dashboard\"},
-                      \"url\": \"https://gadgetlab.app.n8n.cloud\"
+                      \"url\": \"${N8N_HOST}\"
                     }
                   ]
                 }
@@ -145,7 +147,7 @@ jobs:
 
           echo "## n8n Reachability (NOT pipeline health)" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "> This workflow only proves n8n Cloud is serving HTTP. The DRC probe" >> "$GITHUB_STEP_SUMMARY"
+          echo "> This workflow only proves the M900 n8n is serving HTTP. The DRC probe" >> "$GITHUB_STEP_SUMMARY"
           echo "> hits a Pong short-circuit and cannot see a broken pipeline." >> "$GITHUB_STEP_SUMMARY"
           echo "> Authoritative signal: \`intake-canary.yml\`." >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
