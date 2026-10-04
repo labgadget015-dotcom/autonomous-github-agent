@@ -197,6 +197,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 🔨 Chores
 
+- **n8n**: repoint ci-feedback webhook and token-rotation link to the M900 (#344) (b945dce)
+- update CHANGELOG [skip ci] (38ca6b6)
+- rollback manifest entry [skip ci] (2468b75)
 - update CHANGELOG [skip ci] (64501b8)
 - rollback manifest entry [skip ci] (4868866)
 - update CHANGELOG [skip ci] (9423f1f)
