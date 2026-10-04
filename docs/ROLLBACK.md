@@ -1,5 +1,18 @@
 # Rollback Manifest
 
+## b945dce — 2026-10-04 09:21 timezone.utc
+
+- **SHA**: `b945dce049880735d309a92894ebd14138439412`
+- **Author**: Gadget Lab
+- **Message**: chore(n8n): repoint ci-feedback webhook and token-rotation link to the M900 (#344)
+- **Files changed**: 2 file(s)
+
+**Changed files:**
+- `.github/workflows/ai_agent_workflow.yml`
+- `.github/workflows/drc-token-rotation-alert.yml`
+
+---
+
 ## 98e71ce — 2026-10-04 08:59 timezone.utc
 
 - **SHA**: `98e71ce31729574950fe0a7cdd7b07536403fb10`
