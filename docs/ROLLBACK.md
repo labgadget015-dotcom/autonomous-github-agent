@@ -1,5 +1,19 @@
 # Rollback Manifest
 
+## f350faf — 2026-10-22 06:35 timezone.utc
+
+- **SHA**: `f350faf09403a09c9ecfd1430f099bbb6502a118`
+- **Author**: Gadget Lab
+- **Message**: chore(skills): add run-autonomous-github-agent skill + driver (#366)
+- **Files changed**: 3 file(s)
+
+**Changed files:**
+- `.claude/skills/run-autonomous-github-agent/SKILL.md`
+- `.claude/skills/run-autonomous-github-agent/driver.sh`
+- `.claude/skills/run-autonomous-github-agent/mcp_client.py`
+
+---
+
 ## b945dce — 2026-10-04 09:21 timezone.utc
 
 - **SHA**: `b945dce049880735d309a92894ebd14138439412`
