@@ -1,5 +1,18 @@
 # Rollback Manifest
 
+## db6bd35 — 2026-10-31 08:05 timezone.utc
+
+- **SHA**: `db6bd35ca4536fbaf5eb692a13f2ef3044ca9288`
+- **Author**: Gadget Lab
+- **Message**: ci(canary): add twice-daily synthetic webhook ping for Intake Canary (#379)
+- **Files changed**: 2 file(s)
+
+**Changed files:**
+- `.github/workflows/intake-canary.yml`
+- `.github/workflows/intake-synthetic-ping.yml`
+
+---
+
 ## f350faf — 2026-10-22 06:35 timezone.utc
 
 - **SHA**: `f350faf09403a09c9ecfd1430f099bbb6502a118`
