@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased] - 2026-10-22
+## [Unreleased] - 2026-10-31
 
 ### ✨ Features
 
@@ -189,6 +189,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 👷 CI/CD
 
+- **canary**: add twice-daily synthetic webhook ping for Intake Canary (#379) (db6bd35)
 - add weekly DRC end-to-end canary (#286) (3d2aa0f)
 - remove empty pre-commit artifact upload (c80c75b)
 - align workflow coverage sets with pytest.ini (fix PR pipeline 58.99%<70% gate) (4ffe36b)
@@ -197,6 +198,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 🔨 Chores
 
+- update CHANGELOG [skip ci] (81e716c)
+- rollback manifest entry [skip ci] (e6ae23b)
 - **skills**: add run-autonomous-github-agent skill + driver (#366) (f350faf)
 - update CHANGELOG [skip ci] (d707917)
 - rollback manifest entry [skip ci] (9e4df28)
