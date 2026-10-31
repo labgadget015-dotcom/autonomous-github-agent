@@ -55,9 +55,11 @@ permissions:
   contents: read
 
 env:
-  # Guaranteed daily traffic: issue #164 is edited every morning (~06:28 UTC)
-  # and the autopilot summary issue lands overnight. 26h therefore spans at
-  # least one guaranteed delivery; anything shorter false-fires on weekends.
+  # Guaranteed traffic: intake-synthetic-ping.yml has GitHub ping the webhook
+  # at 05:17 and 17:17 UTC (logged as event_type='ping', path='ignored').
+  # Organic traffic (issue #164 edits, autopilot summaries) is NOT guaranteed:
+  # 2026-10-22..24 had zero deliveries and this canary false-fired (PR #370).
+  # 26h spans at least two scheduled pings.
   SILENCE_THRESHOLD_HOURS: '26'
   # A DRC failure younger than this pages Slack immediately; older ones page
   # only on the ~4/day reminder gate. The job FAILS either way while the

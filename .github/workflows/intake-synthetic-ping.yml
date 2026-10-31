@@ -1,0 +1,59 @@
+name: Intake Synthetic Ping
+
+# ---------------------------------------------------------------------------
+# WHY THIS EXISTS
+#
+# intake-canary.yml alerts when tim.intake_events has been silent for
+# SILENCE_THRESHOLD_HOURS. It assumed organic traffic every day, but that
+# assumption failed: 2026-10-22 06:00Z -> 10-24 08:00Z saw ZERO webhook
+# deliveries, and the canary paged "pipeline_down" on a healthy pipeline
+# (PR #370). A quiet repo and a dead pipeline looked identical.
+#
+# This job asks GitHub to send webhook 639039220 a `ping` twice a day. The ping
+# takes the REAL path: GitHub signs it -> Funnel -> Caddy -> Event Router ->
+# Validate HMAC -> Ignore Event -> Shadow: Log Intake Event, which writes an
+# `event_type='ping', path='ignored'` row. Silence past the threshold then
+# means the pipeline really is down. Verified end-to-end 2026-10-31 08:01Z.
+#
+# Cost: none. Pings route to `Ignore Event` and never reach the DRC loop or
+# an LLM.
+#
+# Failure direction is safe. If this job breaks (e.g. GH_PAT expires), the
+# canary loses its synthetic floor and can false-POSITIVE on quiet days again.
+# It never hides a real outage. GitHub returns 204 here even when the delivery
+# itself fails, so this job only proves the ping was REQUESTED. Whether the
+# pipeline received it is the canary's job, not this one's.
+#
+# Hook pings need admin rights on the repo, which GITHUB_TOKEN can never have,
+# hence GH_PAT.
+# ---------------------------------------------------------------------------
+
+on:
+  schedule:
+    # Twice daily, so one dropped/delayed scheduled run still leaves a ping
+    # well inside the canary's 26h window. Off the hour to dodge the
+    # top-of-hour Actions scheduling backlog.
+    - cron: '17 5,17 * * *'
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  ping:
+    name: Ping GitHub -> n8n intake webhook
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+
+    steps:
+      - name: Request webhook ping
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+          HOOK_ID: '639039220'
+        run: |
+          set -euo pipefail
+          if [ -z "${GH_TOKEN:-}" ]; then
+            echo "::error::GH_PAT secret is not set - cannot ping the intake webhook."
+            exit 1
+          fi
+          gh api -X POST "repos/${GITHUB_REPOSITORY}/hooks/${HOOK_ID}/pings"
+          echo "Ping requested for hook ${HOOK_ID}. Delivery is judged by intake-canary.yml via tim.intake_events."
