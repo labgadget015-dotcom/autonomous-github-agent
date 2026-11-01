@@ -1,5 +1,17 @@
 # Rollback Manifest
 
+## 4b649fb — 2026-11-01 10:13 timezone.utc
+
+- **SHA**: `4b649fb4080ecbf153f471e5fcdc350998b19388`
+- **Author**: Gadget Lab
+- **Message**: fix(health-check): alert Slack when the n8n host is actually down (#381)
+- **Files changed**: 1 file(s)
+
+**Changed files:**
+- `.github/workflows/n8n-health-check.yml`
+
+---
+
 ## db6bd35 — 2026-10-31 08:05 timezone.utc
 
 - **SHA**: `db6bd35ca4536fbaf5eb692a13f2ef3044ca9288`
