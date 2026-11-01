@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased] - 2026-10-31
+## [Unreleased] - 2026-11-01
 
 ### ✨ Features
 
@@ -43,6 +43,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 🐛 Bug Fixes
 
+- **health-check**: alert Slack when the n8n host is actually down (#381) (4b649fb)
 - **reachability**: require a real Pong; a failed DRC probe fails the job (#337) (98e71ce)
 - **canaries**: read Neon audit tables instead of the dead n8n Cloud API (5e9c4da)
 - **canaries**: read Neon audit tables instead of the dead n8n Cloud API (fb2ab24)
@@ -198,6 +199,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 🔨 Chores
 
+- rollback manifest entry [skip ci] (f41fb6b)
+- update CHANGELOG [skip ci] (4ea7784)
 - update CHANGELOG [skip ci] (81e716c)
 - rollback manifest entry [skip ci] (e6ae23b)
 - **skills**: add run-autonomous-github-agent skill + driver (#366) (f350faf)
