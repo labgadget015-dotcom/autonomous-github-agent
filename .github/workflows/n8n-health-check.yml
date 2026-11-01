@@ -75,11 +75,16 @@ jobs:
 
       - name: Ping n8n GitHub Event Router
         id: router_ping
+        continue-on-error: true
         run: |
           # Host root only: proves the server answers HTTP, nothing more.
+          # `|| true` is load-bearing: with the host down curl exits non-zero
+          # (2026-11-01: exit 35), bash -e killed this step before alive=false
+          # was written, and the Slack alert below was skipped. curl -w already
+          # printed 000 on transport failure.
           HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
             --max-time 10 \
-            "$N8N_HOST")
+            "$N8N_HOST" || true)
           echo "http_status=$HTTP_STATUS" >> "$GITHUB_OUTPUT"
           echo "n8n host responded: HTTP $HTTP_STATUS"
 
@@ -90,7 +95,7 @@ jobs:
           fi
 
       - name: Alert Slack if n8n is down
-        if: steps.drc_ping.outputs.alive != 'true' || steps.router_ping.outputs.alive == 'false'
+        if: always() && (steps.drc_ping.outputs.alive != 'true' || steps.router_ping.outputs.alive != 'true')
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
           DRC_STATUS: ${{ steps.drc_ping.outputs.http_status }}
@@ -165,7 +170,7 @@ jobs:
           fi
 
       - name: Fail if the DRC gave no Pong or the host is down
-        if: steps.drc_ping.outputs.alive != 'true' || steps.router_ping.outputs.alive == 'false'
+        if: always() && (steps.drc_ping.outputs.alive != 'true' || steps.router_ping.outputs.alive != 'true')
         run: |
           echo "::error::DRC Pong missing or n8n host down"
           exit 1
