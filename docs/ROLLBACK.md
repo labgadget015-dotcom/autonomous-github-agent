@@ -1,5 +1,17 @@
 # Rollback Manifest
 
+## 357629a — 2026-11-02 05:52 timezone.utc
+
+- **SHA**: `357629a668f0e6e2873146c6f353d9ab4dabb97e`
+- **Author**: Gadget Lab
+- **Message**: chore(skills): add verify skill (#367)
+- **Files changed**: 1 file(s)
+
+**Changed files:**
+- `.claude/skills/verify/SKILL.md`
+
+---
+
 ## 4b649fb — 2026-11-01 10:13 timezone.utc
 
 - **SHA**: `4b649fb4080ecbf153f471e5fcdc350998b19388`
