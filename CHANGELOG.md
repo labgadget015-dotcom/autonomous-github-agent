@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased] - 2026-11-01
+## [Unreleased] - 2026-11-02
 
 ### ✨ Features
 
@@ -199,6 +199,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 🔨 Chores
 
+- **skills**: add verify skill (#367) (357629a)
+- update CHANGELOG [skip ci] (834324f)
+- rollback manifest entry [skip ci] (3c70c2e)
 - rollback manifest entry [skip ci] (f41fb6b)
 - update CHANGELOG [skip ci] (4ea7784)
 - update CHANGELOG [skip ci] (81e716c)
