@@ -12,7 +12,9 @@ Most changes land in `.github/workflows/` + `.github/scripts/`. Surface = Action
 - `gh run view --log` often returns EMPTY. Use the API instead:
   `gh api repos/labgadget015-dotcom/autonomous-github-agent/actions/jobs/<job_id>/logs`
   and `.../check-runs/<job_id>/annotations` (canary verdicts are `::notice::`/`::error::`).
-- Read-only workflows (Intake Canary) are safe to `gh workflow run <file> --ref main`.
+- Intake Canary only reads Neon, but failed runs can send live Slack incident alerts.
+  Confirm notifications are acceptable before `gh workflow run intake-canary.yml --ref main`;
+  use existing runs or the local SQL replay below for notification-free checks.
 - PAID / side-effecting — do NOT dispatch without asking: `drc-e2e-canary.yml` (opens a
   real issue + one DRC council run on LLM spend).
 
